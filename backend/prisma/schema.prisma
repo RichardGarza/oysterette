@@ -1,0 +1,111 @@
+// Oysterette App - Prisma Schema
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Model
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String   // hashed with bcrypt
+
+  // User preferences stored as JSON
+  preferences Json?    @default("{}")
+
+  // Relations
+  reviews     Review[]
+  topOysters  UserTopOyster[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// Oyster Model
+model Oyster {
+  id             String   @id @default(uuid())
+  name           String   @unique
+  species        String
+  origin         String   // e.g., "Deep Bay"
+  standoutNotes  String?  // e.g., "Favorite, dense flavorful"
+
+  // 10-point scale attributes
+  size           Int      @default(5)  // 1 (Tiny) to 10 (Huge)
+  body           Int      @default(5)  // 1 (Thin) to 10 (Extremely Fat)
+  sweetBrininess Int      @default(5)  // 1 (Very Sweet) to 10 (Very Salty)
+  flavorfulness  Int      @default(5)  // 1 (Boring) to 10 (Extremely Bold)
+  creaminess     Int      @default(5)  // 1 (None) to 10 (Nothing But Cream)
+
+  // Relations
+  reviews        Review[]
+  topOysterUsers UserTopOyster[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("oysters")
+}
+
+// Review Model
+model Review {
+  id       String       @id @default(uuid())
+
+  // Relations
+  userId   String
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  oysterId String
+  oyster   Oyster       @relation(fields: [oysterId], references: [id], onDelete: Cascade)
+
+  // Rating: Loved It, Liked It, Meh, Hated It
+  rating   ReviewRating
+
+  // 10-point scale sliders
+  size           Int?     // User's rating 1-10
+  body           Int?
+  sweetBrininess Int?
+  flavorfulness  Int?
+  creaminess     Int?
+
+  // Personal notes
+  notes    String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, oysterId])  // One review per user per oyster
+  @@map("reviews")
+}
+
+// User's Top Oysters (Many-to-Many relationship)
+model UserTopOyster {
+  id       String @id @default(uuid())
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  oysterId String
+  oyster   Oyster @relation(fields: [oysterId], references: [id], onDelete: Cascade)
+
+  rank     Int    // Order in user's top list (1, 2, 3, etc.)
+
+  addedAt  DateTime @default(now())
+
+  @@unique([userId, oysterId])
+  @@map("user_top_oysters")
+}
+
+// Enum for Review Ratings
+enum ReviewRating {
+  LOVED_IT
+  LIKED_IT
+  MEH
+  HATED_IT
+}

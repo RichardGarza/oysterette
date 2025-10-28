@@ -1,0 +1,61 @@
+import express, { Express, Request, Response } from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import authRoutes from './routes/authRoutes';
+import oysterRoutes from './routes/oysterRoutes';
+import reviewRoutes from './routes/reviewRoutes';
+import userRoutes from './routes/userRoutes';
+import prisma from './lib/prisma';
+
+dotenv.config();
+
+const app: Express = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    message: 'Oysterette API Server',
+    version: '2.0.0',
+    endpoints: {
+      auth: '/api/auth',
+      oysters: '/api/oysters',
+      reviews: '/api/reviews',
+      users: '/api/users',
+    },
+  });
+});
+
+app.use('/api/auth', authRoutes);
+app.use('/api/oysters', oysterRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/users', userRoutes);
+
+// Health check endpoint
+app.get('/health', async (req: Request, res: Response) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).json({ status: 'healthy', database: 'connected' });
+  } catch (error) {
+    res.status(500).json({ status: 'unhealthy', database: 'disconnected' });
+  }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, closing server gracefully');
+  await prisma.$disconnect();
+  process.exit(0);
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`✅ Oysterette API Server running on port ${PORT}`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV}`);
+  console.log(`🗄️  Database: PostgreSQL`);
+});
