@@ -111,9 +111,141 @@ https://oysterette-production.up.railway.app/api
 
 ---
 
-### Phase 5: Future Enhancements (Optional)
+### Phase 5: Feature Roadmap - Core Enhancements
 
-#### 5a. Improve Search Functionality (HIGH PRIORITY)
+#### 5.1 User Rating & Review System (HIGH PRIORITY)
+**Goal:** Allow users to rate and review oysters, influencing the overall scores
+
+**Features to Implement:**
+
+1. **Rating Submission Page**
+   - User profile integration
+   - Rating interface (1-5 stars or custom scale)
+   - Review text/notes
+   - Attribute ratings (size, body, sweet/brininess, flavorfulness, creaminess)
+   - Photo upload for oyster pictures (future enhancement)
+
+2. **Rating Weight Algorithm**
+   - Decide balance between seed data and user ratings
+   - Options:
+     - Simple average (seed + user ratings)
+     - Weighted by number of ratings (more ratings = more influence)
+     - Decay old ratings over time
+     - Trust score based on user history
+   - **Example:** 70% user ratings, 30% seed data initially
+
+3. **Overall Score Calculation**
+   - Aggregate all ratings into single score
+   - Display on oyster cards
+   - Sort/filter by score
+   - Show breakdown: "4.2/5 (based on 47 ratings + seed data)"
+
+4. **Database Schema Updates Needed:**
+   ```sql
+   - Extend User model with rating history
+   - Add weightedScore field to Oyster model
+   - Track rating_count and average_rating
+   - Store seed_rating separately from user_rating
+   ```
+
+**Technical Considerations:**
+- Backend: Add rating aggregation endpoints
+- Frontend: Create rating UI components
+- Database: Efficiently calculate and cache scores
+- Real-time updates vs batch processing
+
+---
+
+#### 5.2 Predictive Recommendations System (MEDIUM PRIORITY)
+**Goal:** "Would you like this oyster based on what you rated similarly?"
+
+**Features:**
+
+1. **Collaborative Filtering**
+   - Find users with similar taste profiles
+   - Recommend oysters they rated highly
+   - "Users who liked X also liked Y"
+
+2. **Content-Based Filtering**
+   - Analyze attributes user rated highly
+   - Suggest oysters with similar characteristics
+   - Example: User likes creamy, sweet oysters → recommend similar profiles
+
+3. **Recommendation Display**
+   - "You might like..." section on home screen
+   - "Similar oysters" on detail pages
+   - Personalized feed ordering
+
+**Implementation Approach:**
+- **Simple (MVP):** Attribute similarity matching
+- **Advanced:** Machine learning model (TensorFlow.js)
+- **Hybrid:** Combine both approaches
+
+**Libraries to Consider:**
+- `ml-knn` for k-nearest neighbors
+- `natural` for text similarity (notes/descriptions)
+- Custom algorithm based on attribute weights
+
+---
+
+#### 5.3 User Database Management (HIGH PRIORITY)
+**Goal:** Proper user data management and profiles
+
+**Features Needed:**
+
+1. **User Profile Page**
+   - Display name, email, join date
+   - Total ratings submitted
+   - Favorite oysters (top 3-5)
+   - Rating history
+
+2. **User Settings**
+   - Update profile information
+   - Preferences (notification settings, display options)
+   - Privacy controls
+
+3. **Database Schema:**
+   - Already have User model from Prisma
+   - Extend with:
+     - Profile picture URL
+     - Bio/description
+     - Location (optional)
+     - Taste preferences (auto-computed from ratings)
+     - Account stats (total_ratings, join_date, etc.)
+
+4. **Admin Features (Future)**
+   - Moderate reviews
+   - Ban/flag users
+   - View user analytics
+
+---
+
+#### 5.4 Oyster Photo Gallery (LOW PRIORITY - Future)
+**Goal:** Visual gallery of oyster photos
+
+**Features:**
+- Upload photos when submitting reviews
+- Display photo carousel on oyster detail page
+- User-contributed photos vs official photos
+- Photo moderation system
+
+**Technical Requirements:**
+- Image storage: Cloudinary, AWS S3, or Supabase Storage
+- Image optimization/compression
+- Upload UI in mobile app
+- Backend API for photo management
+
+**Considerations:**
+- Storage costs (free tiers: Cloudinary 25GB, Supabase 1GB)
+- Moderation workflow
+- Image quality guidelines
+- Copyright/attribution
+
+---
+
+### Phase 6: Future Enhancements (Optional)
+
+#### 6.1 Improve Search Functionality (HIGH PRIORITY)
 **Goal:** Implement fuzzy search to handle misspellings and typos
 
 **Current Issue:**
@@ -159,13 +291,22 @@ Use fuzzy string matching library like:
 
 ---
 
-#### 5b. iOS Distribution via TestFlight
+#### 6.2 iOS Distribution Options
+
+**Option A: Expo Go (Quick & Free - RECOMMENDED FOR INITIAL TESTING)**
+- Friends download free "Expo Go" app from App Store
+- Share QR code or link: `npx expo start --tunnel`
+- Instant testing without build process
+- Limited: Some native features won't work
+- Requires dev server running
+
+**Option B: TestFlight (Full Native App - Production Ready)**
 - Requires Apple Developer account ($99/year)
 - Build iOS app with EAS
 - Submit to App Store Connect
 - Invite testers via TestFlight
 
-#### 5b. Implement OAuth Authentication
+#### 6.3 Implement OAuth Authentication
 **Recommended:** Clerk (https://clerk.com)
 - Free tier: 10,000 monthly active users
 - Easy OAuth integration (Google, Apple, GitHub)
@@ -177,7 +318,7 @@ Use fuzzy string matching library like:
 3. Add authentication screens
 4. Protect API routes with Clerk middleware
 
-#### 5c. Enhanced Styling
+#### 6.4 Enhanced Styling
 **Consider:**
 - NativeWind (Tailwind for React Native)
 - React Native Paper (Material Design)
@@ -185,7 +326,7 @@ Use fuzzy string matching library like:
 - Improved card designs
 - Loading animations
 
-#### 5d. Feedback Collection
+#### 6.5 Feedback Collection
 **Options:**
 - In-app feedback form
 - Instabug (free tier)
