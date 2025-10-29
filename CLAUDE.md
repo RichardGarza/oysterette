@@ -66,48 +66,58 @@ https://oysterette-production.up.railway.app/api
 
 ## 🔄 IN PROGRESS
 
-### Phase 3: Testing Mobile App with Production Backend
-- [ ] Restart Expo development server
-- [ ] Reload app in iOS Simulator
-- [ ] Verify oysters load from production API
-- [ ] Test search functionality
-- [ ] Test oyster detail views
+### Phase 5.1: User Rating System ✅ (JUST COMPLETED!)
+**Status:** Backend + Mobile UI Complete - Ready for Deployment
 
-**Next Step:** Restart Expo server to pick up production API changes
+**What We Built:**
+- ✅ Database schema with aggregated rating fields
+- ✅ Sophisticated rating calculation service
+- ✅ Auto-recalculation on review create/update/delete
+- ✅ Mobile UI components (RatingDisplay, RatingBreakdown)
+- ✅ Integrated ratings into oyster list cards
+
+**How It Works:**
+1. User submits review → Auto-calculates ratings
+2. Dynamic weighting: More reviews = more user influence
+3. Algorithm: 70% user ratings + 30% seed data (after 5+ reviews)
+4. Overall score (0-10): 40% rating + 60% attributes
+5. Real-time updates on all devices
+
+**Next Steps:**
+- Deploy backend to Railway (migration will auto-run)
+- Publish OTA update: `npm run deploy-update "Add rating system"`
+- Friends' apps will auto-update within minutes!
 
 ---
 
 ## 📋 REMAINING TASKS
 
-### Phase 4: Build Android APK for Distribution
-**Goal:** Create shareable APK file for friends to test
+### Phase 4: Build Android APK for Distribution ✅
+**Status:** COMPLETE
 
-**Steps:**
-1. Install EAS CLI globally
-   ```bash
-   npm install -g eas-cli
-   ```
+**Accomplishments:**
+- ✅ Installed EAS CLI and Expo Orbit
+- ✅ Configured EAS Update for OTA updates
+- ✅ Created deployment automation scripts
+- ✅ Successfully built Android APK
+- ✅ APK Link: https://expo.dev/accounts/rgactr/projects/oysterette/builds/45f05f60-fe6d-4fe3-bfbb-9da657b2c7e1
 
-2. Login to Expo account
-   ```bash
-   cd mobile-app
-   eas login
-   ```
+**Deployment Workflow:**
+```bash
+# Quick updates (no new APK needed):
+npm run deploy-update "Fix bug in search"
 
-3. Configure EAS build
-   ```bash
-   eas build:configure
-   ```
+# Local APK build (1-3 minutes):
+npm run build:android:local
 
-4. Build Android APK (preview/development build)
-   ```bash
-   eas build --platform android --profile preview
-   ```
+# Cloud APK build (5-10 minutes):
+npm run build:android:cloud
+```
 
-5. Download APK from EAS dashboard
-6. Share APK link with friends for testing
-
-**Alternative:** Build for internal distribution via Google Play Console
+**Auto-Update System:**
+- Friends install APK once
+- Future updates push automatically via EAS Update
+- No need to rebuild/redistribute APK for code changes
 
 ---
 
