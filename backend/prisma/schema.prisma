@@ -36,12 +36,26 @@ model Oyster {
   origin         String   // e.g., "Deep Bay"
   standoutNotes  String?  // e.g., "Favorite, dense flavorful"
 
-  // 10-point scale attributes
+  // 10-point scale attributes (seed data / baseline)
   size           Int      @default(5)  // 1 (Tiny) to 10 (Huge)
   body           Int      @default(5)  // 1 (Thin) to 10 (Extremely Fat)
   sweetBrininess Int      @default(5)  // 1 (Very Sweet) to 10 (Very Salty)
   flavorfulness  Int      @default(5)  // 1 (Boring) to 10 (Extremely Bold)
   creaminess     Int      @default(5)  // 1 (None) to 10 (Nothing But Cream)
+
+  // Aggregated rating data (calculated from user reviews)
+  totalReviews    Int     @default(0)   // Total number of user reviews
+  avgRating       Float   @default(0)   // Average rating (LOVED_IT=4, LIKED_IT=3, MEH=2, HATED_IT=1)
+
+  // Aggregated attribute scores (weighted average of seed + user data)
+  avgSize           Float?  // Calculated average size rating
+  avgBody           Float?  // Calculated average body rating
+  avgSweetBrininess Float?  // Calculated average sweet/brininess rating
+  avgFlavorfulness  Float?  // Calculated average flavorfulness rating
+  avgCreaminess     Float?  // Calculated average creaminess rating
+
+  // Overall weighted score (0-10 scale)
+  overallScore    Float   @default(5)   // Weighted combination of all factors
 
   // Relations
   reviews        Review[]

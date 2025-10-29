@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { ReviewRating } from '@prisma/client';
+import { recalculateOysterRatings } from '../services/ratingService';
 
 // Create a review
 export const createReview = async (req: Request, res: Response): Promise<void> => {
@@ -92,6 +93,9 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
         },
       },
     });
+
+    // Recalculate oyster ratings after creating review
+    await recalculateOysterRatings(oysterId);
 
     res.status(201).json({
       success: true,
@@ -215,6 +219,9 @@ export const updateReview = async (req: Request, res: Response): Promise<void> =
       },
     });
 
+    // Recalculate oyster ratings after updating review
+    await recalculateOysterRatings(existingReview.oysterId);
+
     res.status(200).json({
       success: true,
       data: review,
@@ -262,10 +269,16 @@ export const deleteReview = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
+    // Store oysterId before deleting
+    const oysterId = existingReview.oysterId;
+
     // Delete review
     await prisma.review.delete({
       where: { id: reviewId },
     });
+
+    // Recalculate oyster ratings after deleting review
+    await recalculateOysterRatings(oysterId);
 
     res.status(200).json({
       success: true,

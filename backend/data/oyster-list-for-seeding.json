@@ -9216,5 +9216,170 @@
     "standout_note": "Sweet with briny notes",
     "origin": "Peconic Bay",
     "species": "Crassostrea virginica"
-  }
+  },
+    {
+      "name": "Silver Fox",
+      "size": 4,
+      "body": 6,
+      "sweet_brininess": 7,
+      "flavorfulness": 8,
+      "creaminess": 6,
+      "standout_note": "High salinity with buttery finish",
+      "origin": "Napeague Bay, NY",
+      "species": "Crassostrea virginica"
+    },
+    {
+      "name": "Umami",
+      "size": 4,
+      "body": 5,
+      "sweet_brininess": 5,
+      "flavorfulness": 7,
+      "creaminess": 4,
+      "standout_note": "Tender, clean, sweet, light",
+      "origin": "Narragansett Bay, RI",
+      "species": "Crassostrea virginica"
+    },
+    {
+      "name": "Wild Goose",
+      "size": 6,
+      "body": 6,
+      "sweet_brininess": 6,
+      "flavorfulness": 8,
+      "creaminess": 6,
+      "standout_note": "Smooth silky with sweet finish",
+      "origin": "Narragansett Bay, RI",
+      "species": "Crassostrea virginica"
+    },
+    {
+      "name": "Point Lookout",
+      "size": 4,
+      "body": 7,
+      "sweet_brininess": 5,
+      "flavorfulness": 7,
+      "creaminess": 4,
+      "standout_note": "Sweet plump with clean finish",
+      "origin": "Chesapeake Bay, MD",
+      "species": "Crassostrea virginica"
+    },
+    {
+      "name": "Big Rock",
+      "size": 5,
+      "body": 5,
+      "sweet_brininess": 7,
+      "flavorfulness": 7,
+      "creaminess": 3,
+      "standout_note": "Crisp salty delicate",
+      "origin": "Harwich, MA",
+      "species": "Crassostrea virginica"
+    },
+    {
+      "name": "East Dennis",
+      "size": 6,
+      "body": 7,
+      "sweet_brininess": 8,
+      "flavorfulness": 8,
+      "creaminess": 4,
+      "standout_note": "High brine plump umami",
+      "origin": "Quivet Neck, MA",
+      "species": "Crassostrea virginica"
+    },
+    {
+      "name": "Powder Point",
+      "size": 6,
+      "body": 7,
+      "sweet_brininess": 6,
+      "flavorfulness": 8,
+      "creaminess": 5,
+      "standout_note": "Balanced salty sweet clean",
+      "origin": "Duxbury, MA",
+      "species": "Crassostrea virginica"
+    },
+    {
+      "name": "Moondancer",
+      "size": 5,
+      "body": 6,
+      "sweet_brininess": 6,
+      "flavorfulness": 8,
+      "creaminess": 4,
+      "standout_note": "Sweet crisp mineral",
+      "origin": "Damariscotta, ME",
+      "species": "Crassostrea virginica"
+    },
+    {
+      "name": "White Stone",
+      "size": 5,
+      "body": 7,
+      "sweet_brininess": 6,
+      "flavorfulness": 8,
+      "creaminess": 6,
+      "standout_note": "Buttery cucumber finish",
+      "origin": "Windmill Point, VA",
+      "species": "Crassostrea virginica"
+    },
+    {
+      "name": "Black Duck Salt",
+      "size": 6,
+      "body": 6,
+      "sweet_brininess": 8,
+      "flavorfulness": 8,
+      "creaminess": 4,
+      "standout_note": "High salinity grassy",
+      "origin": "Hog Island Bay, VA",
+      "species": "Crassostrea virginica"
+    },
+    {
+      "name": "Skookum",
+      "size": 5,
+      "body": 6,
+      "sweet_brininess": 4,
+      "flavorfulness": 8,
+      "creaminess": 5,
+      "standout_note": "Sweet musky vegetable",
+      "origin": "Puget Sound, WA",
+      "species": "Crassostrea gigas"
+    },
+    {
+      "name": "Shibumi",
+      "size": 4,
+      "body": 8,
+      "sweet_brininess": 4,
+      "flavorfulness": 8,
+      "creaminess": 8,
+      "standout_note": "Plump buttery sweet",
+      "origin": "Henderson Inlet, WA",
+      "species": "Crassostrea gigas"
+    },
+    {
+      "name": "Capital",
+      "size": 4,
+      "body": 6,
+      "sweet_brininess": 7,
+      "flavorfulness": 7,
+      "creaminess": 4,
+      "standout_note": "Crisp salty clean",
+      "origin": "Spencer Cove, WA",
+      "species": "Crassostrea gigas"
+    },
+    {
+      "name": "Hood Canal",
+      "size": 5,
+      "body": 7,
+      "sweet_brininess": 5,
+      "flavorfulness": 8,
+      "creaminess": 7,
+      "standout_note": "Creamy melon",
+      "origin": "Hood Canal, WA",
+      "species": "Crassostrea gigas"
+    },
+    {
+      "name": "Neptune’s Choice",
+      "size": 7,
+      "body": 7,
+      "sweet_brininess": 6,
+      "flavorfulness": 8,
+      "creaminess": 7,
+      "standout_note": "Sweet creamy melon",
+      "origin": "Hood Canal, WA",
+      "species": "Crassostrea gigas"
+    }
 ]
