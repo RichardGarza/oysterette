@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
-import { ReviewRating } from '../generated/prisma';
+import { ReviewRating } from '@prisma/client';
 
 // Create a review
 export const createReview = async (req: Request, res: Response): Promise<void> => {
