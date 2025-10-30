@@ -269,7 +269,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#ecf0f1',
     flexWrap: 'wrap',
-    gap: 8,
   },
   attributeItem: {
     alignItems: 'center',

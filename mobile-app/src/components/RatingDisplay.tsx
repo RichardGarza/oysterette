@@ -36,6 +36,17 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
 
   const currentSize = sizeStyles[size];
 
+  // Don't show rating if there are no reviews
+  if (totalReviews === 0) {
+    return (
+      <View style={styles.container}>
+        <Text style={[styles.noReviews, { fontSize: currentSize.fontSize - 2 }]}>
+          No reviews yet
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.scoreContainer}>
@@ -68,15 +79,9 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
         </View>
       )}
 
-      {showDetails && totalReviews > 0 && (
+      {showDetails && (
         <Text style={[styles.reviewCount, { fontSize: currentSize.fontSize - 4 }]}>
           ({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})
-        </Text>
-      )}
-
-      {totalReviews === 0 && showDetails && (
-        <Text style={[styles.noReviews, { fontSize: currentSize.fontSize - 4 }]}>
-          No reviews yet
         </Text>
       )}
     </View>
@@ -170,7 +175,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
   scoreContainer: {
     flexDirection: 'row',
@@ -185,7 +189,7 @@ const styles = StyleSheet.create({
   },
   starsContainer: {
     flexDirection: 'row',
-    gap: 2,
+    marginLeft: 8,
   },
   star: {
     color: '#fbbf24',
@@ -231,17 +235,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   barsContainer: {
-    gap: 8,
+    marginTop: 4,
   },
   ratingBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    marginBottom: 8,
   },
   ratingBarLabel: {
     width: 80,
     fontSize: 12,
     color: '#374151',
+    marginRight: 8,
   },
   barBackground: {
     flex: 1,
@@ -249,6 +254,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e5e7eb',
     borderRadius: 4,
     overflow: 'hidden',
+    marginRight: 8,
   },
   barFill: {
     height: '100%',

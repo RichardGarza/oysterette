@@ -32,6 +32,29 @@ function ratingToNumber(rating: ReviewRating): number {
 }
 
 /**
+ * Calculate flavor modifier for overall score
+ * Flavorfulness slightly influences the overall rating
+ */
+function calculateFlavorModifier(flavorfulness: number): number {
+  // 5 = neutral (no change)
+  // Higher values add to score, lower values subtract
+  const modifierMap: { [key: number]: number } = {
+    10: 0.5,
+    9: 0.4,
+    8: 0.3,
+    7: 0.15,
+    6: 0.05,
+    5: 0,
+    4: -0.1,
+    3: -0.2,
+    2: -0.3,
+    1: -0.4,
+  };
+
+  return modifierMap[flavorfulness] || 0;
+}
+
+/**
  * Calculate dynamic weight for user ratings based on review count
  * More reviews = more weight on user ratings
  */
@@ -118,12 +141,14 @@ export async function recalculateOysterRatings(oysterId: string): Promise<void> 
     const avgCreaminess = calculateWeightedAttribute(oyster.creaminess, creaminessValues, userWeight);
 
     // Calculate overall score (0-10 scale)
-    // Weighted combination: 40% rating, 60% attributes
-    const normalizedRating = (avgRating / 4) * 10; // Convert 4-point to 10-point scale
-    const attributeAverage =
-      (avgSize + avgBody + avgSweetBrininess + avgFlavorfulness + avgCreaminess) / 5;
-
-    const overallScore = normalizedRating * 0.4 + attributeAverage * 0.6;
+    // Based on user reviews (LOVED_IT, LIKED_IT, MEH, HATED_IT)
+    // Plus a small flavor modifier based on flavorfulness attribute
+    let overallScore = 0;
+    if (reviewCount > 0) {
+      const baseScore = (avgRating / 4) * 10;
+      const flavorModifier = calculateFlavorModifier(Math.round(avgFlavorfulness));
+      overallScore = Math.max(0, Math.min(10, baseScore + flavorModifier));
+    }
 
     // Update oyster with calculated values
     await prisma.oyster.update({
