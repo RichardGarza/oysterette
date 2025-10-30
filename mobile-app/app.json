@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Oysterette",
+    "slug": "oysterette",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/71f928a7-e51a-4136-8b2d-b1c3ff5dcda7"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.oysterette.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "71f928a7-e51a-4136-8b2d-b1c3ff5dcda7"
+      }
+    }
+  }
+}
