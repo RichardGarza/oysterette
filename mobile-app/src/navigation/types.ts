@@ -8,6 +8,7 @@ export type RootStackParamList = {
   OysterList: undefined;
   OysterDetail: { oysterId: string };
   AddOyster: undefined;
+  Settings: undefined;
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<
