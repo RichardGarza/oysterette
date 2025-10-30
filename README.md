@@ -296,25 +296,86 @@ Set in Railway dashboard (same as above):
 
 ## 📈 Future Roadmap
 
-### Phase 5.2: Predictive Recommendations (Next)
+### Phase 5.2: User Experience Enhancements
+- **Dark Mode / Light Mode / System Setting**
+  - Theme switching with persistent preferences
+  - System-level theme detection
+  - Smooth transitions between themes
+
+- **Settings Page**
+  - Profile information management
+  - App preferences (theme, notifications)
+  - Connected accounts (Google, X/Twitter OAuth)
+  - Log out functionality
+  - Account deletion option
+
+- **Social Features**
+  - Share oyster profiles (text, social media)
+  - Send oysters to friends via messaging
+  - Social media integration (X, Instagram, Facebook)
+  - "Share Your Top 5" feature
+
+### Phase 5.3: Advanced Rating & Voting System
+- **Review Voting System**
+  - "Agree" and "Don't Agree" buttons on reviews
+  - Weighted review influence based on community feedback
+  - Asymmetric weighting: agrees (+1.0 weight), disagrees (-0.6 weight)
+  - Net voting score affects individual review's contribution to overall rating
+
+- **Reviewer Credibility System**
+  - User credibility score based on review history
+  - More "agrees" = higher reviewer weight (up to 1.5x multiplier)
+  - Credibility affects how much their reviews influence oyster scores
+  - Neutral bias at 1:1 agree/disagree ratio
+  - Progressive scaling: +4 agrees, -2 disagrees = +2 bias score
+
+- **Enhanced Score Precision**
+  - Store ratings with 2 decimal places (e.g., 6.75)
+  - Display ratings with 1 decimal place, rounded (e.g., 6.8)
+  - Maintain integer display for attribute sliders
+  - More granular scoring for competitive rankings
+
+### Phase 5.4: Rating Contributions
+- **Community Data Enrichment**
+  - Edit oyster details when rating
+  - Contribute species for "Unknown" entries
+  - Add origin information for incomplete listings
+  - Update standout notes collaboratively
+  - Version history for edits
+
+- **Review Button & Interface**
+  - Prominent "Rate This Oyster" button on detail pages
+  - Quick-rate from list view
+  - Review editing and deletion
+  - Photo uploads with reviews (future)
+
+### Phase 5.5: Predictive Recommendations
 - Collaborative filtering
-- Content-based filtering
+- Content-based filtering based on attribute preferences
 - "You might like..." suggestions
+- Similar oysters recommendations
 
-### Phase 5.3: User Profiles
-- Profile pages
-- Rating history
-- Account statistics
+### Phase 5.6: User Profiles & History
+- Profile pages with statistics
+- Rating history timeline
+- Review analytics (most helpful, total agrees)
+- Reviewer badges and achievements
+- Following other users
 
-### Phase 5.4: Photo Gallery
+### Phase 5.7: Photo Gallery
 - User-uploaded oyster photos
 - Image storage (Cloudinary/Supabase)
+- Photo moderation system
+- Gallery view on oyster detail pages
 
-### Phase 6: Enhancements
-- Fuzzy search (handle typos)
-- OAuth authentication (Google, Apple)
+### Phase 6: Polish & Distribution
+- Fuzzy search (handle typos, phonetic matching)
+- OAuth authentication (Google, Apple, X/Twitter)
 - iOS TestFlight distribution
-- Enhanced styling
+- Google Play Store submission
+- Enhanced UI/UX styling
+- Performance optimizations
+- Push notifications for review responses
 
 ---
 

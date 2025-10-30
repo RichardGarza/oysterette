@@ -89,10 +89,10 @@ export const createOyster = async (req: Request, res: Response): Promise<void> =
     } = req.body;
 
     // Validation
-    if (!name || !species || !origin) {
+    if (!name) {
       res.status(400).json({
         success: false,
-        error: 'Name, species, and origin are required',
+        error: 'Name is required',
       });
       return;
     }
@@ -113,8 +113,8 @@ export const createOyster = async (req: Request, res: Response): Promise<void> =
     const oyster = await prisma.oyster.create({
       data: {
         name,
-        species,
-        origin,
+        species: species || 'Unknown',
+        origin: origin || 'Unknown',
         standoutNotes,
         size: size || 5,
         body: body || 5,
