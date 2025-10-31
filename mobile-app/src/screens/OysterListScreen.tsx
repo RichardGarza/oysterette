@@ -14,6 +14,7 @@ import { OysterListScreenNavigationProp } from '../navigation/types';
 import { oysterApi } from '../services/api';
 import { Oyster } from '../types/Oyster';
 import { RatingDisplay } from '../components/RatingDisplay';
+import { EmptyState } from '../components/EmptyState';
 
 export default function OysterListScreen() {
   const navigation = useNavigation<OysterListScreenNavigationProp>();
@@ -166,11 +167,23 @@ export default function OysterListScreen() {
         refreshing={loading}
         onRefresh={fetchOysters}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {error ? 'Unable to load oysters' : 'No oysters found'}
-            </Text>
-          </View>
+          !loading && !error ? (
+            searchQuery.trim() !== '' ? (
+              <EmptyState
+                icon="🔎"
+                title="No Oysters Found"
+                description={`No results for "${searchQuery}". Try a different search term or browse all oysters.`}
+                actionLabel="Clear Search"
+                onAction={() => handleSearch('')}
+              />
+            ) : (
+              <EmptyState
+                icon="🦪"
+                title="No Oysters Available"
+                description="The oyster collection is empty. Check back later or add the first oyster!"
+              />
+            )
+          ) : null
         }
       />
 

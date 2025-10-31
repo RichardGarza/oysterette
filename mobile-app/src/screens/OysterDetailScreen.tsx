@@ -14,6 +14,7 @@ import { oysterApi, voteApi } from '../services/api';
 import { Oyster } from '../types/Oyster';
 import { RatingDisplay, RatingBreakdown } from '../components/RatingDisplay';
 import { ReviewCard } from '../components/ReviewCard';
+import { EmptyState } from '../components/EmptyState';
 
 export default function OysterDetailScreen() {
   const route = useRoute<OysterDetailScreenRouteProp>();
@@ -178,21 +179,27 @@ export default function OysterDetailScreen() {
           {renderAttributeBar(oyster.creaminess, 'Creaminess (1=None → 10=Creamy)')}
         </View>
 
-        {oyster.reviews && oyster.reviews.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              Reviews ({oyster.reviews.length})
-            </Text>
-            {oyster.reviews.map((review) => (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            Reviews {oyster.reviews && oyster.reviews.length > 0 && `(${oyster.reviews.length})`}
+          </Text>
+          {oyster.reviews && oyster.reviews.length > 0 ? (
+            oyster.reviews.map((review) => (
               <ReviewCard
                 key={review.id}
                 review={review}
                 userVote={userVotes[review.id] ?? null}
                 onVoteChange={handleVoteChange}
               />
-            ))}
-          </View>
-        )}
+            ))
+          ) : (
+            <EmptyState
+              icon="📝"
+              title="No Reviews Yet"
+              description="Be the first to share your tasting experience with this oyster! Your review will help others discover new favorites."
+            />
+          )}
+        </View>
 
         <View style={styles.section}>
           <Text style={styles.metaText}>
