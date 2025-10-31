@@ -6,6 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
   SafeAreaView,
+  RefreshControl,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { OysterDetailScreenRouteProp } from '../navigation/types';
@@ -19,6 +20,7 @@ export default function OysterDetailScreen() {
   const { oysterId } = route.params;
   const [oyster, setOyster] = useState<Oyster | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userVotes, setUserVotes] = useState<Record<string, boolean | null>>({});
 
@@ -26,9 +28,13 @@ export default function OysterDetailScreen() {
     fetchOyster();
   }, [oysterId]);
 
-  const fetchOyster = async () => {
+  const fetchOyster = async (isRefreshing = false) => {
     try {
-      setLoading(true);
+      if (isRefreshing) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
       const data = await oysterApi.getById(oysterId);
       setOyster(data);
@@ -48,13 +54,21 @@ export default function OysterDetailScreen() {
       setError('Failed to load oyster details');
       console.error('Error fetching oyster:', err);
     } finally {
-      setLoading(false);
+      if (isRefreshing) {
+        setRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
+  };
+
+  const onRefresh = () => {
+    fetchOyster(true);
   };
 
   const handleVoteChange = () => {
     // Refresh oyster data when a vote changes
-    fetchOyster();
+    fetchOyster(true);
   };
 
   const renderAttributeBar = (value: number, label: string) => {
@@ -104,7 +118,17 @@ export default function OysterDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#3498db"
+            colors={['#3498db']}
+          />
+        }
+      >
         <View style={styles.header}>
           <Text style={styles.name}>{oyster.name}</Text>
           <View style={styles.speciesBadge}>
