@@ -5,6 +5,7 @@ import authRoutes from './routes/authRoutes';
 import oysterRoutes from './routes/oysterRoutes';
 import reviewRoutes from './routes/reviewRoutes';
 import userRoutes from './routes/userRoutes';
+import voteRoutes from './routes/voteRoutes';
 import prisma from './lib/prisma';
 
 dotenv.config();
@@ -27,6 +28,7 @@ app.get('/', (req: Request, res: Response) => {
       oysters: '/api/oysters',
       reviews: '/api/reviews',
       users: '/api/users',
+      votes: '/api/reviews/:reviewId/vote',
     },
   });
 });
@@ -35,6 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/oysters', oysterRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api', voteRoutes);
 
 // Health check endpoint
 app.get('/health', async (req: Request, res: Response) => {

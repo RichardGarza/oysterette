@@ -18,9 +18,16 @@ model User {
   // User preferences stored as JSON
   preferences Json?    @default("{}")
 
+  // Reviewer credibility metrics
+  credibilityScore  Float   @default(1.0)  // Multiplier for review influence (0.5 to 1.5)
+  totalAgrees       Int     @default(0)    // Total "Agree" votes received
+  totalDisagrees    Int     @default(0)    // Total "Disagree" votes received
+  reviewCount       Int     @default(0)    // Total reviews written
+
   // Relations
-  reviews     Review[]
-  topOysters  UserTopOyster[]
+  reviews        Review[]
+  topOysters     UserTopOyster[]
+  votesGiven     ReviewVote[]   @relation("VoterVotes")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -91,6 +98,15 @@ model Review {
   // Personal notes
   notes    String?
 
+  // Community voting metrics
+  agreeCount     Int      @default(0)    // Total "Agree" votes
+  disagreeCount  Int      @default(0)    // Total "Disagree" votes
+  netVoteScore   Float    @default(0)    // Weighted: agrees(+1.0) + disagrees(-0.6)
+  weightedScore  Float    @default(1.0)  // Final weight multiplier for this review (0.4 to 1.5)
+
+  // Relations
+  votes    ReviewVote[]
+
   createdAt DateTime @default(now())
 
   @@unique([userId, oysterId])  // One review per user per oyster
@@ -113,6 +129,26 @@ model UserTopOyster {
 
   @@unique([userId, oysterId])
   @@map("user_top_oysters")
+}
+
+// Review Vote Model (Agree/Disagree on reviews)
+model ReviewVote {
+  id       String   @id @default(uuid())
+
+  // Relations
+  userId   String
+  voter    User     @relation("VoterVotes", fields: [userId], references: [id], onDelete: Cascade)
+
+  reviewId String
+  review   Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  // Vote type: true = Agree, false = Disagree
+  isAgree  Boolean
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, reviewId])  // One vote per user per review
+  @@map("review_votes")
 }
 
 // Enum for Review Ratings

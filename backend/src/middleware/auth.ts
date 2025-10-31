@@ -1,15 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/auth';
 
-// Extend Express Request type to include userId
-declare global {
-  namespace Express {
-    interface Request {
-      userId?: string;
-    }
-  }
-}
-
 export const authenticate = async (
   req: Request,
   res: Response,
