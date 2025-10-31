@@ -57,6 +57,12 @@ export interface Review {
   notes?: string;
   createdAt: string;
 
+  // Voting metrics
+  agreeCount: number;
+  disagreeCount: number;
+  netVoteScore: number;
+  weightedScore: number;
+
   // Relations
   user?: {
     id: string;

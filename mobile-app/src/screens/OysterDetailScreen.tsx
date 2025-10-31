@@ -9,9 +9,10 @@ import {
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { OysterDetailScreenRouteProp } from '../navigation/types';
-import { oysterApi } from '../services/api';
+import { oysterApi, voteApi } from '../services/api';
 import { Oyster } from '../types/Oyster';
 import { RatingDisplay, RatingBreakdown } from '../components/RatingDisplay';
+import { ReviewCard } from '../components/ReviewCard';
 
 export default function OysterDetailScreen() {
   const route = useRoute<OysterDetailScreenRouteProp>();
@@ -19,6 +20,7 @@ export default function OysterDetailScreen() {
   const [oyster, setOyster] = useState<Oyster | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userVotes, setUserVotes] = useState<Record<string, boolean | null>>({});
 
   useEffect(() => {
     fetchOyster();
@@ -30,12 +32,29 @@ export default function OysterDetailScreen() {
       setError(null);
       const data = await oysterApi.getById(oysterId);
       setOyster(data);
+
+      // Fetch user votes for all reviews
+      if (data && data.reviews && data.reviews.length > 0) {
+        try {
+          const reviewIds = data.reviews.map(r => r.id);
+          const votes = await voteApi.getUserVotes(reviewIds);
+          setUserVotes(votes);
+        } catch (voteError) {
+          console.error('Error fetching votes:', voteError);
+          // Continue even if votes fail
+        }
+      }
     } catch (err) {
       setError('Failed to load oyster details');
       console.error('Error fetching oyster:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVoteChange = () => {
+    // Refresh oyster data when a vote changes
+    fetchOyster();
   };
 
   const renderAttributeBar = (value: number, label: string) => {
@@ -140,18 +159,13 @@ export default function OysterDetailScreen() {
             <Text style={styles.sectionTitle}>
               Reviews ({oyster.reviews.length})
             </Text>
-            {oyster.reviews.map((review, index) => (
-              <View key={review.id} style={styles.reviewCard}>
-                <View style={styles.reviewHeader}>
-                  <Text style={styles.reviewRating}>{review.rating.replace('_', ' ')}</Text>
-                  <Text style={styles.reviewDate}>
-                    {new Date(review.createdAt).toLocaleDateString()}
-                  </Text>
-                </View>
-                {review.notes && (
-                  <Text style={styles.reviewNotes}>{review.notes}</Text>
-                )}
-              </View>
+            {oyster.reviews.map((review) => (
+              <ReviewCard
+                key={review.id}
+                review={review}
+                userVote={userVotes[review.id] ?? null}
+                onVoteChange={handleVoteChange}
+              />
             ))}
           </View>
         )}

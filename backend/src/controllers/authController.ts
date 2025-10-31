@@ -131,6 +131,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 // Get current user profile
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
   try {
+    // @ts-ignore - userId is added by auth middleware
     if (!req.userId) {
       res.status(401).json({
         success: false,
@@ -140,7 +141,8 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: (req.userId as string) },
+      // @ts-ignore - userId is added by auth middleware
+      where: { id: req.userId as string },
       select: {
         id: true,
         email: true,

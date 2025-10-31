@@ -12,6 +12,7 @@ export async function voteOnReview(req: Request, res: Response) {
     const { reviewId } = req.params;
     const { isAgree } = req.body;
 
+    // @ts-ignore - userId is added by auth middleware
     if (!req.userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -20,8 +21,8 @@ export async function voteOnReview(req: Request, res: Response) {
       return res.status(400).json({ error: 'isAgree must be a boolean' });
     }
 
-    // @ts-expect-error - TypeScript doesn't narrow req.userId after null check
-    await votingService.voteOnReview((req.userId as string), reviewId, isAgree);
+    // @ts-ignore - userId is added by auth middleware
+    await votingService.voteOnReview(req.userId as string, reviewId, isAgree);
 
     res.json({ message: 'Vote recorded successfully' });
   } catch (error: any) {
@@ -35,12 +36,13 @@ export async function removeVote(req: Request, res: Response) {
   try {
     const { reviewId } = req.params;
 
+    // @ts-ignore - userId is added by auth middleware
     if (!req.userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // @ts-expect-error - TypeScript doesn't narrow req.userId after null check
-    await votingService.removeVote((req.userId as string), reviewId);
+    // @ts-ignore - userId is added by auth middleware
+    await votingService.removeVote(req.userId as string, reviewId);
 
     res.json({ message: 'Vote removed successfully' });
   } catch (error: any) {
@@ -52,6 +54,7 @@ export async function removeVote(req: Request, res: Response) {
 // GET /api/reviews/votes?reviewIds=id1,id2,id3
 export async function getUserVotes(req: Request, res: Response) {
   try {
+    // @ts-ignore - userId is added by auth middleware
     if (!req.userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -63,7 +66,8 @@ export async function getUserVotes(req: Request, res: Response) {
     }
 
     const reviewIdArray = reviewIds.split(',');
-    const voteMap = await votingService.getUserVotes((req.userId as string), reviewIdArray);
+    // @ts-ignore - userId is added by auth middleware
+    const voteMap = await votingService.getUserVotes(req.userId as string, reviewIdArray);
 
     // Convert Map to object for JSON response
     const votes: Record<string, boolean | null> = {};

@@ -207,6 +207,43 @@ export const reviewApi = {
   },
 };
 
+// Vote API
+export const voteApi = {
+  // Vote on a review (agree/disagree)
+  vote: async (reviewId: string, isAgree: boolean): Promise<{ message: string }> => {
+    const response = await api.post<{ message: string }>(`/reviews/${reviewId}/vote`, {
+      isAgree,
+    });
+    return response.data;
+  },
+
+  // Remove vote from a review
+  removeVote: async (reviewId: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/reviews/${reviewId}/vote`);
+    return response.data;
+  },
+
+  // Get user's votes for multiple reviews
+  getUserVotes: async (reviewIds: string[]): Promise<Record<string, boolean | null>> => {
+    const response = await api.get<{ votes: Record<string, boolean | null> }>(
+      `/reviews/votes?reviewIds=${reviewIds.join(',')}`
+    );
+    return response.data.votes;
+  },
+
+  // Get user credibility info
+  getUserCredibility: async (userId: string): Promise<{
+    credibilityScore: number;
+    totalAgrees: number;
+    totalDisagrees: number;
+    reviewCount: number;
+    badge: { level: string; color: string; icon: string };
+  }> => {
+    const response = await api.get(`/users/${userId}/credibility`);
+    return response.data;
+  },
+};
+
 // User API
 export const userApi = {
   // Get user's top oysters
