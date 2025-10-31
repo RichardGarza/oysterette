@@ -7,9 +7,10 @@ import {
   ActivityIndicator,
   SafeAreaView,
   RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
-import { useRoute } from '@react-navigation/native';
-import { OysterDetailScreenRouteProp } from '../navigation/types';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { OysterDetailScreenRouteProp, OysterDetailScreenNavigationProp } from '../navigation/types';
 import { oysterApi, voteApi } from '../services/api';
 import { Oyster } from '../types/Oyster';
 import { RatingDisplay, RatingBreakdown } from '../components/RatingDisplay';
@@ -18,6 +19,7 @@ import { EmptyState } from '../components/EmptyState';
 
 export default function OysterDetailScreen() {
   const route = useRoute<OysterDetailScreenRouteProp>();
+  const navigation = useNavigation<OysterDetailScreenNavigationProp>();
   const { oysterId } = route.params;
   const [oyster, setOyster] = useState<Oyster | null>(null);
   const [loading, setLoading] = useState(true);
@@ -180,9 +182,20 @@ export default function OysterDetailScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Reviews {oyster.reviews && oyster.reviews.length > 0 && `(${oyster.reviews.length})`}
-          </Text>
+          <View style={styles.reviewsHeader}>
+            <Text style={styles.sectionTitle}>
+              Reviews {oyster.reviews && oyster.reviews.length > 0 && `(${oyster.reviews.length})`}
+            </Text>
+            <TouchableOpacity
+              style={styles.writeReviewButton}
+              onPress={() => navigation.navigate('AddReview', {
+                oysterId: oyster.id,
+                oysterName: oyster.name
+              })}
+            >
+              <Text style={styles.writeReviewButtonText}>✍️ Write Review</Text>
+            </TouchableOpacity>
+          </View>
           {oyster.reviews && oyster.reviews.length > 0 ? (
             oyster.reviews.map((review) => (
               <ReviewCard
@@ -364,5 +377,22 @@ const styles = StyleSheet.create({
     color: '#f39c12',
     fontStyle: 'italic',
     marginTop: 8,
+  },
+  reviewsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  writeReviewButton: {
+    backgroundColor: '#27ae60',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  writeReviewButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

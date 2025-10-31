@@ -8,6 +8,7 @@ export type RootStackParamList = {
   OysterList: undefined;
   OysterDetail: { oysterId: string };
   AddOyster: undefined;
+  AddReview: { oysterId: string; oysterName: string };
   Settings: undefined;
 };
 
@@ -29,4 +30,14 @@ export type OysterDetailScreenNavigationProp = NativeStackNavigationProp<
 export type OysterDetailScreenRouteProp = RouteProp<
   RootStackParamList,
   'OysterDetail'
+>;
+
+export type AddReviewScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'AddReview'
+>;
+
+export type AddReviewScreenRouteProp = RouteProp<
+  RootStackParamList,
+  'AddReview'
 >;
