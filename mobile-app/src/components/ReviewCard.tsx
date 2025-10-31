@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Review } from '../types/Oyster';
 import { voteApi } from '../services/api';
 
@@ -41,6 +42,9 @@ export function ReviewCard({ review, userVote, onVoteChange }: ReviewCardProps) 
   };
 
   const handleVote = async (isAgree: boolean) => {
+    // Trigger haptic feedback immediately for responsive feel
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     try {
       setVoting(true);
 

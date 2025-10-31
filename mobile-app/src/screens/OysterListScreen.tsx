@@ -15,11 +15,13 @@ import { oysterApi } from '../services/api';
 import { Oyster } from '../types/Oyster';
 import { RatingDisplay } from '../components/RatingDisplay';
 import { EmptyState } from '../components/EmptyState';
+import { OysterCardSkeleton } from '../components/OysterCardSkeleton';
 
 export default function OysterListScreen() {
   const navigation = useNavigation<OysterListScreenNavigationProp>();
   const [oysters, setOysters] = useState<Oyster[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -27,9 +29,13 @@ export default function OysterListScreen() {
     fetchOysters();
   }, []);
 
-  const fetchOysters = async () => {
+  const fetchOysters = async (isRefreshing = false) => {
     try {
-      setLoading(true);
+      if (isRefreshing) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
       const data = await oysterApi.getAll();
       setOysters(data);
@@ -37,8 +43,16 @@ export default function OysterListScreen() {
       setError('Failed to load oysters. Please check your backend connection.');
       console.error('Error fetching oysters:', err);
     } finally {
-      setLoading(false);
+      if (isRefreshing) {
+        setRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
+  };
+
+  const onRefresh = () => {
+    fetchOysters(true);
   };
 
   const handleSearch = async (query: string) => {
@@ -123,10 +137,30 @@ export default function OysterListScreen() {
 
   if (loading && oysters.length === 0) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#3498db" />
-        <Text style={styles.loadingText}>Loading oysters...</Text>
-      </View>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>Oyster Collection</Text>
+            <TouchableOpacity
+              style={styles.settingsButton}
+              onPress={() => navigation.navigate('Settings')}
+            >
+              <Text style={styles.settingsIcon}>⚙️</Text>
+            </TouchableOpacity>
+          </View>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search oysters..."
+            value={searchQuery}
+            onChangeText={handleSearch}
+          />
+        </View>
+        <View style={styles.listContainer}>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <OysterCardSkeleton key={i} />
+          ))}
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -164,8 +198,8 @@ export default function OysterListScreen() {
         renderItem={renderOysterItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
-        refreshing={loading}
-        onRefresh={fetchOysters}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         ListEmptyComponent={
           !loading && !error ? (
             searchQuery.trim() !== '' ? (
