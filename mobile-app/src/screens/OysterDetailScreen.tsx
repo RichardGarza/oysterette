@@ -17,6 +17,8 @@ import { RatingDisplay, RatingBreakdown } from '../components/RatingDisplay';
 import { ReviewCard } from '../components/ReviewCard';
 import { EmptyState } from '../components/EmptyState';
 
+type SortOption = 'helpful' | 'recent' | 'highest' | 'lowest';
+
 export default function OysterDetailScreen() {
   const route = useRoute<OysterDetailScreenRouteProp>();
   const navigation = useNavigation<OysterDetailScreenNavigationProp>();
@@ -26,6 +28,7 @@ export default function OysterDetailScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userVotes, setUserVotes] = useState<Record<string, boolean | null>>({});
+  const [sortBy, setSortBy] = useState<SortOption>('helpful');
 
   useEffect(() => {
     fetchOyster();
@@ -72,6 +75,27 @@ export default function OysterDetailScreen() {
   const handleVoteChange = () => {
     // Refresh oyster data when a vote changes
     fetchOyster(true);
+  };
+
+  const getSortedReviews = () => {
+    if (!oyster?.reviews) return [];
+
+    const reviews = [...oyster.reviews];
+
+    switch (sortBy) {
+      case 'helpful':
+        return reviews.sort((a, b) => b.netVoteScore - a.netVoteScore);
+      case 'recent':
+        return reviews.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      case 'highest':
+        const ratingOrder = { LOVED_IT: 4, LIKED_IT: 3, MEH: 2, HATED_IT: 1 };
+        return reviews.sort((a, b) => ratingOrder[b.rating] - ratingOrder[a.rating]);
+      case 'lowest':
+        const ratingOrderLow = { LOVED_IT: 4, LIKED_IT: 3, MEH: 2, HATED_IT: 1 };
+        return reviews.sort((a, b) => ratingOrderLow[a.rating] - ratingOrderLow[b.rating]);
+      default:
+        return reviews;
+    }
   };
 
   const renderAttributeBar = (value: number, label: string) => {
@@ -196,8 +220,46 @@ export default function OysterDetailScreen() {
               <Text style={styles.writeReviewButtonText}>✍️ Write Review</Text>
             </TouchableOpacity>
           </View>
+
+          {oyster.reviews && oyster.reviews.length > 0 && (
+            <View style={styles.sortTabs}>
+              <TouchableOpacity
+                style={[styles.sortTab, sortBy === 'helpful' && styles.sortTabActive]}
+                onPress={() => setSortBy('helpful')}
+              >
+                <Text style={[styles.sortTabText, sortBy === 'helpful' && styles.sortTabTextActive]}>
+                  Most Helpful
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.sortTab, sortBy === 'recent' && styles.sortTabActive]}
+                onPress={() => setSortBy('recent')}
+              >
+                <Text style={[styles.sortTabText, sortBy === 'recent' && styles.sortTabTextActive]}>
+                  Most Recent
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.sortTab, sortBy === 'highest' && styles.sortTabActive]}
+                onPress={() => setSortBy('highest')}
+              >
+                <Text style={[styles.sortTabText, sortBy === 'highest' && styles.sortTabTextActive]}>
+                  Highest
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.sortTab, sortBy === 'lowest' && styles.sortTabActive]}
+                onPress={() => setSortBy('lowest')}
+              >
+                <Text style={[styles.sortTabText, sortBy === 'lowest' && styles.sortTabTextActive]}>
+                  Lowest
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           {oyster.reviews && oyster.reviews.length > 0 ? (
-            oyster.reviews.map((review) => (
+            getSortedReviews().map((review) => (
               <ReviewCard
                 key={review.id}
                 review={review}
@@ -393,6 +455,31 @@ const styles = StyleSheet.create({
   writeReviewButtonText: {
     color: '#fff',
     fontSize: 14,
+    fontWeight: '600',
+  },
+  sortTabs: {
+    flexDirection: 'row',
+    marginBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  sortTab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  sortTabActive: {
+    borderBottomColor: '#3498db',
+  },
+  sortTabText: {
+    fontSize: 13,
+    color: '#7f8c8d',
+    fontWeight: '500',
+  },
+  sortTabTextActive: {
+    color: '#3498db',
     fontWeight: '600',
   },
 });

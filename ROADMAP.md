@@ -1,9 +1,9 @@
 # Oysterette v2.0 - Development Roadmap
 
-## Project Status: Phase 5.3 Complete ✅
+## Project Status: Phase 6 In Progress ✅
 
-**Last Updated:** October 30, 2025
-**Current Commit:** d0563bb - Phase 5.3: Advanced Rating & Voting System - Complete Implementation
+**Last Updated:** October 31, 2025
+**Current Commit:** Review Sorting & Submission Features Complete
 
 ---
 
@@ -114,26 +114,34 @@
 - [ ] Optimize vote state management if needed
 - [ ] Add loading states where missing
 
-### Phase 6.2: UI/UX Refinement
+### Phase 6.2: UI/UX Refinement ✅
 **Estimated Duration:** 2-3 days
 **Priority:** MEDIUM
+**Status:** Mostly Complete
 
 - [ ] Review and improve overall app styling
-- [ ] Add haptic feedback for vote buttons
-- [ ] Improve loading states and animations
-- [ ] Add pull-to-refresh on oyster details
+- [x] Add haptic feedback for vote buttons
+- [x] Improve loading states and animations
+- [x] Add pull-to-refresh on oyster details
 - [ ] Enhance credibility badge design
-- [ ] Add empty states for screens with no data
+- [x] Add empty states for screens with no data
 - [ ] Improve error message presentation
 
-### Phase 6.3: Additional Features (Optional)
+### Phase 6.3: Additional Features (Optional) 🚧
 **Priority:** LOW
+**Status:** Partial Progress
 
+- [x] **Review submission functionality** (Oct 31)
+  - AddReviewScreen with emoji ratings and sliders
+  - Form validation and API integration
+  - Write Review button in OysterDetailScreen
+- [x] **Review sorting options** (Oct 31)
+  - Sort by: Most Helpful, Most Recent, Highest, Lowest
+  - Tab-based UI with visual feedback
 - [ ] Add ability to edit/delete own reviews
 - [ ] Add user profile screen
 - [ ] Add "Top Oysters" list feature
 - [ ] Add oyster favorites/bookmarks
-- [ ] Add review sorting options (most helpful, newest, etc.)
 - [ ] Add review filtering by rating
 
 ---
