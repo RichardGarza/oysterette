@@ -67,11 +67,7 @@ export default function RegisterScreen() {
 
     try {
       setLoading(true);
-      const response = await authApi.register({
-        name: name.trim(),
-        email: email.trim(),
-        password,
-      });
+      const response = await authApi.register(email.trim(), name.trim(), password);
 
       // Save token and user data
       await authStorage.saveToken(response.token);

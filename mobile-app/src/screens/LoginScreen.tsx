@@ -36,7 +36,7 @@ export default function LoginScreen() {
 
     try {
       setLoading(true);
-      const response = await authApi.login({ email: email.trim(), password });
+      const response = await authApi.login(email.trim(), password);
 
       // Save token and user data
       await authStorage.saveToken(response.token);

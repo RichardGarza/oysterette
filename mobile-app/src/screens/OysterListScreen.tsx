@@ -187,7 +187,7 @@ export default function OysterListScreen() {
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={fetchOysters}>
+          <TouchableOpacity style={styles.retryButton} onPress={() => fetchOysters()}>
             <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>
