@@ -9,9 +9,11 @@ import {
   SafeAreaView,
   TextInput,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { OysterListScreenNavigationProp } from '../navigation/types';
 import { oysterApi } from '../services/api';
+import { favoritesStorage } from '../services/favorites';
 import { Oyster } from '../types/Oyster';
 import { RatingDisplay } from '../components/RatingDisplay';
 import { EmptyState } from '../components/EmptyState';
@@ -24,10 +26,18 @@ export default function OysterListScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   useEffect(() => {
     fetchOysters();
+    loadFavorites();
   }, []);
+
+  const loadFavorites = async () => {
+    const favs = await favoritesStorage.getFavorites();
+    setFavorites(new Set(favs));
+  };
 
   const fetchOysters = async (isRefreshing = false) => {
     try {
@@ -55,6 +65,21 @@ export default function OysterListScreen() {
     fetchOysters(true);
   };
 
+  const handleToggleFavorite = async (oysterId: string, e: any) => {
+    e.stopPropagation(); // Prevent card navigation
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newState = await favoritesStorage.toggleFavorite(oysterId);
+    if (newState) {
+      setFavorites(prev => new Set([...prev, oysterId]));
+    } else {
+      setFavorites(prev => {
+        const next = new Set(prev);
+        next.delete(oysterId);
+        return next;
+      });
+    }
+  };
+
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.trim() === '') {
@@ -73,6 +98,13 @@ export default function OysterListScreen() {
     }
   };
 
+  const getFilteredOysters = () => {
+    if (!showFavoritesOnly) {
+      return oysters;
+    }
+    return oysters.filter(oyster => favorites.has(oyster.id));
+  };
+
   const renderOysterItem = ({ item }: { item: Oyster }) => (
     <TouchableOpacity
       style={styles.card}
@@ -80,8 +112,18 @@ export default function OysterListScreen() {
     >
       <View style={styles.cardHeader}>
         <Text style={styles.oysterName}>{item.name}</Text>
-        <View style={styles.speciesContainer}>
-          <Text style={styles.species}>{item.species}</Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity
+            onPress={(e) => handleToggleFavorite(item.id, e)}
+            style={styles.favoriteButton}
+          >
+            <Text style={styles.favoriteIcon}>
+              {favorites.has(item.id) ? '❤️' : '🤍'}
+            </Text>
+          </TouchableOpacity>
+          <View style={styles.speciesContainer}>
+            <Text style={styles.species}>{item.species}</Text>
+          </View>
         </View>
       </View>
 
@@ -148,6 +190,26 @@ export default function OysterListScreen() {
               <Text style={styles.settingsIcon}>⚙️</Text>
             </TouchableOpacity>
           </View>
+
+          <View style={styles.filterTabs}>
+            <TouchableOpacity
+              style={[styles.filterTab, !showFavoritesOnly && styles.filterTabActive]}
+              onPress={() => setShowFavoritesOnly(false)}
+            >
+              <Text style={[styles.filterTabText, !showFavoritesOnly && styles.filterTabTextActive]}>
+                All
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.filterTab, showFavoritesOnly && styles.filterTabActive]}
+              onPress={() => setShowFavoritesOnly(true)}
+            >
+              <Text style={[styles.filterTabText, showFavoritesOnly && styles.filterTabTextActive]}>
+                ❤️ Favorites
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <TextInput
             style={styles.searchInput}
             placeholder="Search oysters..."
@@ -176,6 +238,26 @@ export default function OysterListScreen() {
             <Text style={styles.settingsIcon}>⚙️</Text>
           </TouchableOpacity>
         </View>
+
+        <View style={styles.filterTabs}>
+          <TouchableOpacity
+            style={[styles.filterTab, !showFavoritesOnly && styles.filterTabActive]}
+            onPress={() => setShowFavoritesOnly(false)}
+          >
+            <Text style={[styles.filterTabText, !showFavoritesOnly && styles.filterTabTextActive]}>
+              All
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterTab, showFavoritesOnly && styles.filterTabActive]}
+            onPress={() => setShowFavoritesOnly(true)}
+          >
+            <Text style={[styles.filterTabText, showFavoritesOnly && styles.filterTabTextActive]}>
+              ❤️ Favorites
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         <TextInput
           style={styles.searchInput}
           placeholder="Search oysters..."
@@ -194,7 +276,7 @@ export default function OysterListScreen() {
       )}
 
       <FlatList
-        data={oysters}
+        data={getFilteredOysters()}
         renderItem={renderOysterItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
@@ -202,7 +284,15 @@ export default function OysterListScreen() {
         onRefresh={onRefresh}
         ListEmptyComponent={
           !loading && !error ? (
-            searchQuery.trim() !== '' ? (
+            showFavoritesOnly ? (
+              <EmptyState
+                icon="❤️"
+                title="No Favorites Yet"
+                description="You haven't added any oysters to your favorites. Tap the heart icon on an oyster to save it here!"
+                actionLabel="View All Oysters"
+                onAction={() => setShowFavoritesOnly(false)}
+              />
+            ) : searchQuery.trim() !== '' ? (
               <EmptyState
                 icon="🔎"
                 title="No Oysters Found"
@@ -264,6 +354,34 @@ const styles = StyleSheet.create({
   settingsIcon: {
     fontSize: 24,
   },
+  filterTabs: {
+    flexDirection: 'row',
+    marginBottom: 15,
+    gap: 10,
+  },
+  filterTab: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  filterTabActive: {
+    backgroundColor: '#e8f4f8',
+    borderColor: '#3498db',
+  },
+  filterTabText: {
+    fontSize: 14,
+    color: '#7f8c8d',
+    fontWeight: '500',
+  },
+  filterTabTextActive: {
+    color: '#3498db',
+    fontWeight: '600',
+  },
   searchInput: {
     backgroundColor: '#f5f5f5',
     padding: 12,
@@ -296,6 +414,17 @@ const styles = StyleSheet.create({
     color: '#2c3e50',
     flex: 1,
     marginRight: 10,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  favoriteButton: {
+    padding: 4,
+  },
+  favoriteIcon: {
+    fontSize: 20,
   },
   speciesContainer: {
     backgroundColor: '#e8f4f8',

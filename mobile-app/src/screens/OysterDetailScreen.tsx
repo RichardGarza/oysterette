@@ -9,9 +9,11 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { OysterDetailScreenRouteProp, OysterDetailScreenNavigationProp } from '../navigation/types';
 import { oysterApi, voteApi } from '../services/api';
+import { favoritesStorage } from '../services/favorites';
 import { Oyster } from '../types/Oyster';
 import { RatingDisplay, RatingBreakdown } from '../components/RatingDisplay';
 import { ReviewCard } from '../components/ReviewCard';
@@ -29,10 +31,17 @@ export default function OysterDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [userVotes, setUserVotes] = useState<Record<string, boolean | null>>({});
   const [sortBy, setSortBy] = useState<SortOption>('helpful');
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     fetchOyster();
+    loadFavoriteStatus();
   }, [oysterId]);
+
+  const loadFavoriteStatus = async () => {
+    const favorited = await favoritesStorage.isFavorite(oysterId);
+    setIsFavorite(favorited);
+  };
 
   const fetchOyster = async (isRefreshing = false) => {
     try {
@@ -75,6 +84,12 @@ export default function OysterDetailScreen() {
   const handleVoteChange = () => {
     // Refresh oyster data when a vote changes
     fetchOyster(true);
+  };
+
+  const handleToggleFavorite = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newState = await favoritesStorage.toggleFavorite(oysterId);
+    setIsFavorite(newState);
   };
 
   const getSortedReviews = () => {
@@ -157,7 +172,17 @@ export default function OysterDetailScreen() {
         }
       >
         <View style={styles.header}>
-          <Text style={styles.name}>{oyster.name}</Text>
+          <View style={styles.nameRow}>
+            <Text style={styles.name}>{oyster.name}</Text>
+            <TouchableOpacity
+              onPress={handleToggleFavorite}
+              style={styles.favoriteButton}
+            >
+              <Text style={styles.favoriteIcon}>
+                {isFavorite ? '❤️' : '🤍'}
+              </Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.speciesBadge}>
             <Text style={styles.speciesText}>{oyster.species}</Text>
           </View>
@@ -308,11 +333,24 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
+  nameRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
   name: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#2c3e50',
-    marginBottom: 10,
+    flex: 1,
+  },
+  favoriteButton: {
+    padding: 4,
+    marginLeft: 10,
+  },
+  favoriteIcon: {
+    fontSize: 28,
   },
   speciesBadge: {
     backgroundColor: '#e8f4f8',
