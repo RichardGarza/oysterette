@@ -138,11 +138,18 @@
 - [x] **Review sorting options** (Oct 31)
   - Sort by: Most Helpful, Most Recent, Highest, Lowest
   - Tab-based UI with visual feedback
+- [x] **Favorites/Bookmarks** (Oct 31)
+  - AsyncStorage-based local persistence
+  - Heart icon toggle on list and detail screens
+  - Filter tabs (All/Favorites) on oyster list
+  - Empty state for favorites view
+- [x] **Review filtering by rating** (Oct 31)
+  - Filter chips with emojis (All, Loved, Liked, Meh, Hated)
+  - Works in combination with sort options
+  - Clean chip-based UI design
 - [ ] Add ability to edit/delete own reviews
 - [ ] Add user profile screen
 - [ ] Add "Top Oysters" list feature
-- [ ] Add oyster favorites/bookmarks
-- [ ] Add review filtering by rating
 
 ---
 

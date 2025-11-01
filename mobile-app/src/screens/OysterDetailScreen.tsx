@@ -20,6 +20,7 @@ import { ReviewCard } from '../components/ReviewCard';
 import { EmptyState } from '../components/EmptyState';
 
 type SortOption = 'helpful' | 'recent' | 'highest' | 'lowest';
+type RatingFilter = 'ALL' | 'LOVED_IT' | 'LIKED_IT' | 'MEH' | 'HATED_IT';
 
 export default function OysterDetailScreen() {
   const route = useRoute<OysterDetailScreenRouteProp>();
@@ -31,6 +32,7 @@ export default function OysterDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [userVotes, setUserVotes] = useState<Record<string, boolean | null>>({});
   const [sortBy, setSortBy] = useState<SortOption>('helpful');
+  const [ratingFilter, setRatingFilter] = useState<RatingFilter>('ALL');
   const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
@@ -95,8 +97,14 @@ export default function OysterDetailScreen() {
   const getSortedReviews = () => {
     if (!oyster?.reviews) return [];
 
-    const reviews = [...oyster.reviews];
+    let reviews = [...oyster.reviews];
 
+    // Apply rating filter
+    if (ratingFilter !== 'ALL') {
+      reviews = reviews.filter(review => review.rating === ratingFilter);
+    }
+
+    // Apply sorting
     switch (sortBy) {
       case 'helpful':
         return reviews.sort((a, b) => b.netVoteScore - a.netVoteScore);
@@ -247,15 +255,59 @@ export default function OysterDetailScreen() {
           </View>
 
           {oyster.reviews && oyster.reviews.length > 0 && (
-            <View style={styles.sortTabs}>
-              <TouchableOpacity
-                style={[styles.sortTab, sortBy === 'helpful' && styles.sortTabActive]}
-                onPress={() => setSortBy('helpful')}
-              >
-                <Text style={[styles.sortTabText, sortBy === 'helpful' && styles.sortTabTextActive]}>
-                  Most Helpful
-                </Text>
-              </TouchableOpacity>
+            <>
+              <View style={styles.filterChipsContainer}>
+                <TouchableOpacity
+                  style={[styles.filterChip, ratingFilter === 'ALL' && styles.filterChipActive]}
+                  onPress={() => setRatingFilter('ALL')}
+                >
+                  <Text style={[styles.filterChipText, ratingFilter === 'ALL' && styles.filterChipTextActive]}>
+                    All
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.filterChip, ratingFilter === 'LOVED_IT' && styles.filterChipActive]}
+                  onPress={() => setRatingFilter('LOVED_IT')}
+                >
+                  <Text style={[styles.filterChipText, ratingFilter === 'LOVED_IT' && styles.filterChipTextActive]}>
+                    😍 Loved
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.filterChip, ratingFilter === 'LIKED_IT' && styles.filterChipActive]}
+                  onPress={() => setRatingFilter('LIKED_IT')}
+                >
+                  <Text style={[styles.filterChipText, ratingFilter === 'LIKED_IT' && styles.filterChipTextActive]}>
+                    😊 Liked
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.filterChip, ratingFilter === 'MEH' && styles.filterChipActive]}
+                  onPress={() => setRatingFilter('MEH')}
+                >
+                  <Text style={[styles.filterChipText, ratingFilter === 'MEH' && styles.filterChipTextActive]}>
+                    😐 Meh
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.filterChip, ratingFilter === 'HATED_IT' && styles.filterChipActive]}
+                  onPress={() => setRatingFilter('HATED_IT')}
+                >
+                  <Text style={[styles.filterChipText, ratingFilter === 'HATED_IT' && styles.filterChipTextActive]}>
+                    🤢 Hated
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.sortTabs}>
+                <TouchableOpacity
+                  style={[styles.sortTab, sortBy === 'helpful' && styles.sortTabActive]}
+                  onPress={() => setSortBy('helpful')}
+                >
+                  <Text style={[styles.sortTabText, sortBy === 'helpful' && styles.sortTabTextActive]}>
+                    Most Helpful
+                  </Text>
+                </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.sortTab, sortBy === 'recent' && styles.sortTabActive]}
                 onPress={() => setSortBy('recent')}
@@ -281,6 +333,7 @@ export default function OysterDetailScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
+            </>
           )}
 
           {oyster.reviews && oyster.reviews.length > 0 ? (
@@ -493,6 +546,33 @@ const styles = StyleSheet.create({
   writeReviewButtonText: {
     color: '#fff',
     fontSize: 14,
+    fontWeight: '600',
+  },
+  filterChipsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 15,
+  },
+  filterChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  filterChipActive: {
+    backgroundColor: '#e8f4f8',
+    borderColor: '#3498db',
+  },
+  filterChipText: {
+    fontSize: 13,
+    color: '#7f8c8d',
+    fontWeight: '500',
+  },
+  filterChipTextActive: {
+    color: '#3498db',
     fontWeight: '600',
   },
   sortTabs: {
