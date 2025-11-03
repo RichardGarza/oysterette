@@ -28,13 +28,13 @@ describe('Vote API Integration Tests', () => {
   const testUser = {
     email: 'votetest@oysterette.com',
     name: 'Vote Test User',
-    password: 'testpassword123',
+    password: 'TestPassword123',
   };
 
   const otherUser = {
     email: 'voteother@oysterette.com',
     name: 'Other Vote User',
-    password: 'testpassword123',
+    password: 'TestPassword123',
   };
 
   // Setup

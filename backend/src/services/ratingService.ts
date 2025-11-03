@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma';
 import { ReviewRating } from '@prisma/client';
+import logger from '../utils/logger';
 
 /**
  * Rating Service
@@ -240,9 +241,9 @@ export async function recalculateOysterRatings(oysterId: string): Promise<void> 
       },
     });
 
-    console.log(`✅ Recalculated ratings for oyster: ${oyster.name} (${reviewCount} reviews)`);
+    logger.info(`✅ Recalculated ratings for oyster: ${oyster.name} (${reviewCount} reviews)`);
   } catch (error) {
-    console.error('Error recalculating oyster ratings:', error);
+    logger.error('Error recalculating oyster ratings:', error);
     throw error;
   }
 }
@@ -257,15 +258,15 @@ export async function recalculateAllRatings(): Promise<void> {
       select: { id: true, name: true },
     });
 
-    console.log(`📊 Recalculating ratings for ${oysters.length} oysters...`);
+    logger.info(`📊 Recalculating ratings for ${oysters.length} oysters...`);
 
     for (const oyster of oysters) {
       await recalculateOysterRatings(oyster.id);
     }
 
-    console.log('✅ All oyster ratings recalculated successfully');
+    logger.info('✅ All oyster ratings recalculated successfully');
   } catch (error) {
-    console.error('Error recalculating all ratings:', error);
+    logger.error('Error recalculating all ratings:', error);
     throw error;
   }
 }

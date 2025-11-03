@@ -25,13 +25,13 @@ describe('Review API Integration Tests', () => {
   const testUser = {
     email: 'reviewtest@oysterette.com',
     name: 'Review Test User',
-    password: 'testpassword123',
+    password: 'TestPassword123',
   };
 
   const otherUser = {
     email: 'otheruser@oysterette.com',
     name: 'Other User',
-    password: 'testpassword123',
+    password: 'TestPassword123',
   };
 
   // Setup: Create users, oyster, and review

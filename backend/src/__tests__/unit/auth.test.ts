@@ -3,7 +3,7 @@ import { hashPassword, comparePassword, generateToken, verifyToken } from '../..
 describe('Auth Utilities', () => {
   describe('hashPassword', () => {
     it('should hash a password', async () => {
-      const password = 'testpassword123';
+      const password = 'TestPassword123';
       const hash = await hashPassword(password);
 
       expect(hash).toBeDefined();
@@ -12,7 +12,7 @@ describe('Auth Utilities', () => {
     });
 
     it('should generate different hashes for the same password', async () => {
-      const password = 'testpassword123';
+      const password = 'TestPassword123';
       const hash1 = await hashPassword(password);
       const hash2 = await hashPassword(password);
 
@@ -22,7 +22,7 @@ describe('Auth Utilities', () => {
 
   describe('comparePassword', () => {
     it('should return true for matching password and hash', async () => {
-      const password = 'testpassword123';
+      const password = 'TestPassword123';
       const hash = await hashPassword(password);
       const result = await comparePassword(password, hash);
 
@@ -30,7 +30,7 @@ describe('Auth Utilities', () => {
     });
 
     it('should return false for non-matching password', async () => {
-      const password = 'testpassword123';
+      const password = 'TestPassword123';
       const wrongPassword = 'wrongpassword';
       const hash = await hashPassword(password);
       const result = await comparePassword(wrongPassword, hash);

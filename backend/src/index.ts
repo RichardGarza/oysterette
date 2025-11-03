@@ -8,11 +8,21 @@ import reviewRoutes from './routes/reviewRoutes';
 import userRoutes from './routes/userRoutes';
 import voteRoutes from './routes/voteRoutes';
 import prisma from './lib/prisma';
+import logger from './utils/logger';
+import {
+  initSentry,
+  getSentryRequestHandler,
+  getSentryTracingHandler,
+  getSentryErrorHandler,
+} from './utils/sentry';
 
 dotenv.config();
 
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize Sentry (must be first)
+initSentry(app);
 
 // Rate limiting
 const authLimiter = rateLimit({
@@ -32,6 +42,10 @@ const apiLimiter = rateLimit({
 });
 
 // Middleware
+// Sentry request handler (must be first middleware)
+app.use(getSentryRequestHandler());
+app.use(getSentryTracingHandler());
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -67,16 +81,19 @@ app.get('/health', async (req: Request, res: Response) => {
   }
 });
 
+// Sentry error handler (must be after all routes)
+app.use(getSentryErrorHandler());
+
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, closing server gracefully');
+  logger.info('SIGTERM received, closing server gracefully');
   await prisma.$disconnect();
   process.exit(0);
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`✅ Oysterette API Server running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-  console.log(`🗄️  Database: PostgreSQL`);
+  logger.info(`✅ Oysterette API Server running on port ${PORT}`);
+  logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
+  logger.info(`🗄️  Database: PostgreSQL`);
 });

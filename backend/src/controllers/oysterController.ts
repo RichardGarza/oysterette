@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import logger from '../utils/logger';
 import prisma from '../lib/prisma';
 
 // Get all oysters
@@ -19,7 +20,7 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
       data: oysters,
     });
   } catch (error) {
-    console.error('Get all oysters error:', error);
+    logger.error('Get all oysters error:', error);
     res.status(500).json({
       success: false,
       error: 'Server Error',
@@ -65,7 +66,7 @@ export const getOysterById = async (req: Request, res: Response): Promise<void> 
       data: oyster,
     });
   } catch (error) {
-    console.error('Get oyster by ID error:', error);
+    logger.error('Get oyster by ID error:', error);
     res.status(500).json({
       success: false,
       error: 'Server Error',
@@ -129,7 +130,7 @@ export const createOyster = async (req: Request, res: Response): Promise<void> =
       data: oyster,
     });
   } catch (error) {
-    console.error('Create oyster error:', error);
+    logger.error('Create oyster error:', error);
     res.status(400).json({
       success: false,
       error: 'Invalid data',
@@ -153,7 +154,7 @@ export const updateOyster = async (req: Request, res: Response): Promise<void> =
       data: oyster,
     });
   } catch (error) {
-    console.error('Update oyster error:', error);
+    logger.error('Update oyster error:', error);
     res.status(400).json({
       success: false,
       error: 'Failed to update oyster',
@@ -175,7 +176,7 @@ export const deleteOyster = async (req: Request, res: Response): Promise<void> =
       data: {},
     });
   } catch (error) {
-    console.error('Delete oyster error:', error);
+    logger.error('Delete oyster error:', error);
     res.status(500).json({
       success: false,
       error: 'Server Error',
@@ -217,7 +218,7 @@ export const searchOysters = async (req: Request, res: Response): Promise<void> 
       data: oysters,
     });
   } catch (error) {
-    console.error('Search oysters error:', error);
+    logger.error('Search oysters error:', error);
     res.status(500).json({
       success: false,
       error: 'Server Error',

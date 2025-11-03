@@ -28,7 +28,7 @@ describe('Oyster API Integration Tests', () => {
       .send({
         email: 'test@oysterette.com',
         name: 'Test User',
-        password: 'testpassword123',
+        password: 'TestPassword123',
       });
 
     authToken = response.body.data.token;

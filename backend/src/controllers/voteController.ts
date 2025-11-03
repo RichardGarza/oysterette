@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import logger from '../utils/logger';
 import * as votingService from '../services/votingService';
 
 /**
@@ -24,7 +25,7 @@ export async function voteOnReview(req: Request, res: Response) {
 
     res.json({ message: 'Vote recorded successfully' });
   } catch (error: any) {
-    console.error('Error voting on review:', error);
+    logger.error('Error voting on review:', error);
     res.status(400).json({ error: error.message });
   }
 }
@@ -42,7 +43,7 @@ export async function removeVote(req: Request, res: Response) {
 
     res.json({ message: 'Vote removed successfully' });
   } catch (error: any) {
-    console.error('Error removing vote:', error);
+    logger.error('Error removing vote:', error);
     res.status(400).json({ error: error.message });
   }
 }
@@ -71,7 +72,7 @@ export async function getUserVotes(req: Request, res: Response) {
 
     res.json({ votes });
   } catch (error: any) {
-    console.error('Error getting user votes:', error);
+    logger.error('Error getting user votes:', error);
     res.status(500).json({ error: error.message });
   }
 }
@@ -105,7 +106,7 @@ export async function getUserCredibility(req: Request, res: Response) {
       badge,
     });
   } catch (error: any) {
-    console.error('Error getting user credibility:', error);
+    logger.error('Error getting user credibility:', error);
     res.status(500).json({ error: error.message });
   }
 }

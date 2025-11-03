@@ -1,20 +1,13 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { hashPassword, comparePassword, generateToken } from '../utils/auth';
+import logger from '../utils/logger';
 
 // Register new user
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, name, password } = req.body;
-
-    // Validation
-    if (!email || !name || !password) {
-      res.status(400).json({
-        success: false,
-        error: 'Email, name, and password are required',
-      });
-      return;
-    }
+    // Validation handled by Zod middleware
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -58,7 +51,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       },
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error('Registration error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error during registration',
@@ -70,15 +63,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
-
-    // Validation
-    if (!email || !password) {
-      res.status(400).json({
-        success: false,
-        error: 'Email and password are required',
-      });
-      return;
-    }
+    // Validation handled by Zod middleware
 
     // Find user
     const user = await prisma.user.findUnique({
@@ -120,7 +105,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       },
     });
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error('Login error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error during login',
@@ -164,7 +149,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
       data: user,
     });
   } catch (error) {
-    console.error('Get profile error:', error);
+    logger.error('Get profile error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error',

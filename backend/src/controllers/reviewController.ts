@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import logger from '../utils/logger';
 import prisma from '../lib/prisma';
 import { ReviewRating } from '@prisma/client';
 import { recalculateOysterRatings } from '../services/ratingService';
@@ -102,7 +103,7 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
       data: review,
     });
   } catch (error) {
-    console.error('Create review error:', error);
+    logger.error('Create review error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error',
@@ -134,7 +135,7 @@ export const getOysterReviews = async (req: Request, res: Response): Promise<voi
       data: reviews,
     });
   } catch (error) {
-    console.error('Get oyster reviews error:', error);
+    logger.error('Get oyster reviews error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error',
@@ -167,7 +168,7 @@ export const getUserReviews = async (req: Request, res: Response): Promise<void>
       data: reviews,
     });
   } catch (error) {
-    console.error('Get user reviews error:', error);
+    logger.error('Get user reviews error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error',
@@ -227,7 +228,7 @@ export const updateReview = async (req: Request, res: Response): Promise<void> =
       data: review,
     });
   } catch (error) {
-    console.error('Update review error:', error);
+    logger.error('Update review error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error',
@@ -285,7 +286,7 @@ export const deleteReview = async (req: Request, res: Response): Promise<void> =
       data: {},
     });
   } catch (error) {
-    console.error('Delete review error:', error);
+    logger.error('Delete review error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error',

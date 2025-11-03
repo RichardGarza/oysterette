@@ -14,7 +14,7 @@ describe('Auth API Integration Tests', () => {
   const testUser = {
     email: 'authtest@oysterette.com',
     name: 'Auth Test User',
-    password: 'testpassword123',
+    password: 'TestPassword123',
   };
 
   // Cleanup before and after tests

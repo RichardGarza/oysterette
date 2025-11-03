@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import logger from '../utils/logger';
 import prisma from '../lib/prisma';
 
 // Get user's top oysters
@@ -26,7 +27,7 @@ export const getTopOysters = async (req: Request, res: Response): Promise<void> 
       data: topOysters,
     });
   } catch (error) {
-    console.error('Get top oysters error:', error);
+    logger.error('Get top oysters error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error',
@@ -107,7 +108,7 @@ export const addTopOyster = async (req: Request, res: Response): Promise<void> =
       data: topOyster,
     });
   } catch (error) {
-    console.error('Add top oyster error:', error);
+    logger.error('Add top oyster error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error',
@@ -148,7 +149,7 @@ export const removeTopOyster = async (req: Request, res: Response): Promise<void
       data: {},
     });
   } catch (error) {
-    console.error('Remove top oyster error:', error);
+    logger.error('Remove top oyster error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error',
@@ -185,7 +186,7 @@ export const updatePreferences = async (req: Request, res: Response): Promise<vo
       data: user,
     });
   } catch (error) {
-    console.error('Update preferences error:', error);
+    logger.error('Update preferences error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error',
@@ -243,7 +244,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
       data: user,
     });
   } catch (error) {
-    console.error('Update profile error:', error);
+    logger.error('Update profile error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error',
