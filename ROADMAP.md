@@ -225,6 +225,15 @@
   - Token regeneration rate: ~8,333 tokens/hour (200k over 24 hours)
   - User wants to track conversation length to avoid cutoffs
 
+- **Testing Policy:** Add tests with each new feature to keep the app robust
+  - Write tests for new features before committing
+  - Run all tests after implementing each new feature
+  - Ensure tests pass before committing code
+  - Backend: Unit tests for controllers, services, and utilities
+  - Mobile: Component tests for UI components and screens
+  - Integration tests for API endpoints
+  - This maintains code quality and catches regressions early
+
 ### Environment Setup:
 - **Backend:** Node.js, TypeScript, Express, Prisma, PostgreSQL
 - **Database:** Neon (production), PostgreSQL (local)
