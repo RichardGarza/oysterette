@@ -94,13 +94,6 @@ export default function SettingsScreen() {
     }
   };
 
-  const cycleTheme = () => {
-    const modes: ThemeMode[] = ['light', 'dark', 'system'];
-    const currentIndex = modes.indexOf(themeMode);
-    const nextIndex = (currentIndex + 1) % modes.length;
-    setThemeMode(modes[nextIndex]);
-  };
-
   const styles = createStyles(theme.colors, isDark);
 
   return (
@@ -125,7 +118,7 @@ export default function SettingsScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Appearance</Text>
         <View style={styles.card}>
-          <TouchableOpacity style={styles.settingItem} onPress={cycleTheme}>
+          <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
               <Text style={styles.settingLabel}>Theme</Text>
               <Text style={styles.settingDescription}>
@@ -133,8 +126,28 @@ export default function SettingsScreen() {
                 {themeMode === 'system' && ` (${isDark ? 'Dark' : 'Light'})`}
               </Text>
             </View>
-            <Text style={styles.settingValue}>{getThemeLabel(themeMode)}</Text>
-          </TouchableOpacity>
+          </View>
+          <View style={styles.themeOptions}>
+            {(['light', 'dark', 'system'] as ThemeMode[]).map((mode) => (
+              <TouchableOpacity
+                key={mode}
+                style={[
+                  styles.themeButton,
+                  themeMode === mode && styles.themeButtonActive,
+                ]}
+                onPress={() => setThemeMode(mode)}
+              >
+                <Text
+                  style={[
+                    styles.themeButtonText,
+                    themeMode === mode && styles.themeButtonTextActive,
+                  ]}
+                >
+                  {getThemeLabel(mode)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </View>
 
@@ -255,6 +268,29 @@ const createStyles = (colors: any, isDark: boolean) =>
       fontSize: 16,
       color: colors.primary,
       fontWeight: '500',
+    },
+    themeOptions: {
+      paddingHorizontal: 16,
+      paddingBottom: 16,
+    },
+    themeButton: {
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      marginTop: 8,
+      backgroundColor: colors.inputBackground,
+    },
+    themeButtonActive: {
+      borderColor: colors.primary,
+      borderWidth: 2,
+    },
+    themeButtonText: {
+      fontSize: 15,
+      color: colors.text,
+    },
+    themeButtonTextActive: {
+      fontWeight: '600',
+      color: colors.primary,
     },
     logoutButton: {
       backgroundColor: colors.cardBackground,
