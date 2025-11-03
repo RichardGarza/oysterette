@@ -81,6 +81,11 @@ app.get('/health', async (req: Request, res: Response) => {
   }
 });
 
+// Sentry test endpoint (remove after testing)
+app.get('/debug-sentry', function mainHandler(req: Request, res: Response) {
+  throw new Error('My first Sentry error!');
+});
+
 // Sentry error handler (must be after all routes)
 app.use(getSentryErrorHandler());
 
