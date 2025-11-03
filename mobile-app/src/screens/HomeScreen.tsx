@@ -8,9 +8,13 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from '../navigation/types';
+import { useTheme } from '../context/ThemeContext';
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const { theme } = useTheme();
+
+  const styles = createStyles(theme.colors);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -55,63 +59,64 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#7f8c8d',
-    textAlign: 'center',
-    marginBottom: 40,
-  },
-  button: {
-    backgroundColor: '#3498db',
-    paddingHorizontal: 40,
-    paddingVertical: 15,
-    borderRadius: 25,
-    marginBottom: 15,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  topOystersButton: {
-    backgroundColor: '#f39c12',
-  },
-  secondaryButton: {
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#3498db',
-    marginBottom: 30,
-  },
-  secondaryButtonText: {
-    color: '#3498db',
-  },
-  infoContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    marginTop: 20,
-  },
-  infoText: {
-    fontSize: 16,
-    color: '#555',
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    title: {
+      fontSize: 36,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginBottom: 10,
+    },
+    subtitle: {
+      fontSize: 18,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginBottom: 40,
+    },
+    button: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 40,
+      paddingVertical: 15,
+      borderRadius: 25,
+      marginBottom: 15,
+    },
+    buttonText: {
+      color: '#fff',
+      fontSize: 18,
+      fontWeight: '600',
+    },
+    topOystersButton: {
+      backgroundColor: colors.warning,
+    },
+    secondaryButton: {
+      backgroundColor: colors.card,
+      borderWidth: 2,
+      borderColor: colors.primary,
+      marginBottom: 30,
+    },
+    secondaryButtonText: {
+      color: colors.primary,
+    },
+    infoContainer: {
+      backgroundColor: colors.card,
+      padding: 20,
+      borderRadius: 10,
+      marginTop: 20,
+    },
+    infoText: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 24,
+    },
+  });

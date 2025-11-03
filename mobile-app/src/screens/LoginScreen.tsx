@@ -16,6 +16,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { authApi } from '../services/api';
 import { authStorage } from '../services/auth';
+import { useTheme } from '../context/ThemeContext';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -27,6 +28,9 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
+
+  const styles = createStyles(theme.colors);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -77,6 +81,7 @@ export default function LoginScreen() {
               keyboardType="email-address"
               autoComplete="email"
               editable={!loading}
+              placeholderTextColor={theme.colors.textSecondary}
             />
 
             <Text style={styles.label}>Password</Text>
@@ -88,6 +93,7 @@ export default function LoginScreen() {
               secureTextEntry
               autoCapitalize="none"
               editable={!loading}
+              placeholderTextColor={theme.colors.textSecondary}
             />
 
             <TouchableOpacity
@@ -126,95 +132,96 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#7f8c8d',
-  },
-  form: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#555',
-    marginBottom: 8,
-    marginTop: 12,
-  },
-  input: {
-    backgroundColor: '#f8f9fa',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#2c3e50',
-  },
-  button: {
-    backgroundColor: '#3498db',
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  registerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  registerText: {
-    fontSize: 14,
-    color: '#555',
-  },
-  registerLink: {
-    fontSize: 14,
-    color: '#3498db',
-    fontWeight: '600',
-  },
-  skipButton: {
-    alignItems: 'center',
-    marginTop: 15,
-    paddingVertical: 10,
-  },
-  skipText: {
-    fontSize: 14,
-    color: '#7f8c8d',
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    keyboardView: {
+      flex: 1,
+    },
+    content: {
+      flex: 1,
+      justifyContent: 'center',
+      padding: 20,
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: 40,
+    },
+    title: {
+      fontSize: 36,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginBottom: 8,
+    },
+    subtitle: {
+      fontSize: 18,
+      color: colors.textSecondary,
+    },
+    form: {
+      backgroundColor: colors.card,
+      padding: 20,
+      borderRadius: 12,
+      shadowColor: colors.shadowColor,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    label: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: colors.textSecondary,
+      marginBottom: 8,
+      marginTop: 12,
+    },
+    input: {
+      backgroundColor: colors.inputBackground,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 8,
+      padding: 12,
+      fontSize: 16,
+      color: colors.text,
+    },
+    button: {
+      backgroundColor: colors.primary,
+      paddingVertical: 15,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginTop: 20,
+    },
+    buttonDisabled: {
+      opacity: 0.6,
+    },
+    buttonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    registerContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      marginTop: 20,
+    },
+    registerText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
+    registerLink: {
+      fontSize: 14,
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    skipButton: {
+      alignItems: 'center',
+      marginTop: 15,
+      paddingVertical: 10,
+    },
+    skipText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
+  });

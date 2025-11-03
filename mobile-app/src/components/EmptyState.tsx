@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
 interface EmptyStateProps {
   icon?: string;
@@ -16,6 +17,10 @@ export function EmptyState({
   actionLabel,
   onAction,
 }: EmptyStateProps) {
+  const { theme } = useTheme();
+
+  const styles = createStyles(theme.colors);
+
   return (
     <View style={styles.container}>
       <Text style={styles.icon}>{icon}</Text>
@@ -32,41 +37,44 @@ export function EmptyState({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  icon: {
-    fontSize: 64,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#2c3e50',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  description: {
-    fontSize: 16,
-    color: '#7f8c8d',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 20,
-  },
-  button: {
-    backgroundColor: '#3498db',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 20,
-    marginTop: 10,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 40,
+      backgroundColor: colors.background,
+    },
+    icon: {
+      fontSize: 64,
+      marginBottom: 20,
+      color: colors.text,
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: '600',
+      color: colors.text,
+      textAlign: 'center',
+      marginBottom: 10,
+    },
+    description: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 24,
+      marginBottom: 20,
+    },
+    button: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 24,
+      paddingVertical: 12,
+      borderRadius: 20,
+      marginTop: 10,
+    },
+    buttonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: '600',
+    },
+  });
