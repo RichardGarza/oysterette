@@ -147,9 +147,14 @@
   - Filter chips with emojis (All, Loved, Liked, Meh, Hated)
   - Works in combination with sort options
   - Clean chip-based UI design
+- [x] **Top Oysters list feature** (Nov 2)
+  - TopOystersScreen showing top 50 oysters by rating
+  - Circular ranking badges (#1, #2, etc.)
+  - Filters to only show oysters with reviews
+  - Pull-to-refresh functionality
+  - Gold "🏆 Top Oysters" button on HomeScreen
 - [ ] Add ability to edit/delete own reviews
 - [ ] Add user profile screen
-- [ ] Add "Top Oysters" list feature
 
 ---
 
