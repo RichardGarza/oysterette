@@ -13,7 +13,7 @@ import {
   initSentry,
   getSentryRequestHandler,
   getSentryTracingHandler,
-  getSentryErrorHandler,
+  setupSentryErrorHandler,
 } from './utils/sentry';
 
 dotenv.config();
@@ -87,7 +87,7 @@ app.get('/debug-sentry', function mainHandler(req: Request, res: Response) {
 });
 
 // Sentry error handler (must be after all routes)
-app.use(getSentryErrorHandler());
+setupSentryErrorHandler(app);
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {

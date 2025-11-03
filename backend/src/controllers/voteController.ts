@@ -21,7 +21,7 @@ export async function voteOnReview(req: Request, res: Response) {
       return res.status(400).json({ error: 'isAgree must be a boolean' });
     }
 
-    await votingService.voteOnReview(req.userId, reviewId, isAgree);
+    await votingService.voteOnReview(req.userId!, reviewId!, isAgree);
 
     res.json({ message: 'Vote recorded successfully' });
   } catch (error: any) {
@@ -39,7 +39,7 @@ export async function removeVote(req: Request, res: Response) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    await votingService.removeVote(req.userId, reviewId);
+    await votingService.removeVote(req.userId!, reviewId!);
 
     res.json({ message: 'Vote removed successfully' });
   } catch (error: any) {
@@ -62,7 +62,7 @@ export async function getUserVotes(req: Request, res: Response) {
     }
 
     const reviewIdArray = reviewIds.split(',');
-    const voteMap = await votingService.getUserVotes(req.userId, reviewIdArray);
+    const voteMap = await votingService.getUserVotes(req.userId!, reviewIdArray);
 
     // Convert Map to object for JSON response
     const votes: Record<string, boolean | null> = {};

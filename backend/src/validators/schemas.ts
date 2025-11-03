@@ -26,9 +26,7 @@ export const loginSchema = z.object({
 // Review Schemas
 export const createReviewSchema = z.object({
   oysterId: z.string().uuid('Invalid oyster ID'),
-  rating: z.nativeEnum(ReviewRating, {
-    errorMap: () => ({ message: 'Invalid rating value' }),
-  }),
+  rating: z.nativeEnum(ReviewRating),
   notes: z.string().max(1000, 'Notes too long').optional(),
   size: z.number().int().min(1).max(10, 'Size must be between 1 and 10'),
   body: z.number().int().min(1).max(10, 'Body must be between 1 and 10'),
@@ -74,10 +72,7 @@ export const updateOysterSchema = z.object({
 
 // Vote Schemas
 export const voteSchema = z.object({
-  isAgree: z.boolean({
-    required_error: 'isAgree is required',
-    invalid_type_error: 'isAgree must be a boolean',
-  }),
+  isAgree: z.boolean(),
 });
 
 // Query Schemas

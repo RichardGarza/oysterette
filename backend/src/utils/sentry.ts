@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/node';
-import { ProfilingIntegration } from '@sentry/profiling-node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { Express } from 'express';
 import logger from './logger';
 
@@ -29,14 +29,8 @@ export function initSentry(app: Express): void {
       profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
       integrations: [
-        // Enable HTTP calls tracing
-        new Sentry.Integrations.Http({ tracing: true }),
-
-        // Enable Express.js middleware tracing
-        new Sentry.Integrations.Express({ app }),
-
         // Enable profiling
-        new ProfilingIntegration(),
+        nodeProfilingIntegration(),
       ],
 
       // Filter out sensitive data
@@ -69,7 +63,8 @@ export function getSentryRequestHandler() {
   if (!process.env.SENTRY_DSN) {
     return (req: any, res: any, next: any) => next();
   }
-  return Sentry.Handlers.requestHandler();
+  // No-op for now - Sentry auto-instruments Express in newer versions
+  return (req: any, res: any, next: any) => next();
 }
 
 /**
@@ -79,17 +74,19 @@ export function getSentryTracingHandler() {
   if (!process.env.SENTRY_DSN) {
     return (req: any, res: any, next: any) => next();
   }
-  return Sentry.Handlers.tracingHandler();
+  // No-op for now - Sentry auto-instruments Express in newer versions
+  return (req: any, res: any, next: any) => next();
 }
 
 /**
- * Get Sentry error handler middleware
+ * Setup Sentry error handler
  */
-export function getSentryErrorHandler() {
+export function setupSentryErrorHandler(app: Express) {
   if (!process.env.SENTRY_DSN) {
-    return (err: any, req: any, res: any, next: any) => next(err);
+    return;
   }
-  return Sentry.Handlers.errorHandler();
+
+  Sentry.setupExpressErrorHandler(app);
 }
 
 /**

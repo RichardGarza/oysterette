@@ -27,7 +27,7 @@ export function validate(schema: ZodSchema, target: ValidationTarget = 'body') {
     } catch (error) {
       if (error instanceof ZodError) {
         // Format Zod validation errors into user-friendly messages
-        const errors = error.errors.map((err) => ({
+        const errors = error.issues.map((err: any) => ({
           field: err.path.join('.'),
           message: err.message,
         }));
