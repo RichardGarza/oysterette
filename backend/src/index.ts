@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/authRoutes';
 import oysterRoutes from './routes/oysterRoutes';
 import reviewRoutes from './routes/reviewRoutes';
@@ -12,6 +13,23 @@ dotenv.config();
 
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
+
+// Rate limiting
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 requests per window per IP
+  message: 'Too many authentication attempts, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // 100 requests per window per IP
+  message: 'Too many requests, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Middleware
 app.use(cors());
@@ -33,11 +51,11 @@ app.get('/', (req: Request, res: Response) => {
   });
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/oysters', oysterRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api', voteRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/oysters', apiLimiter, oysterRoutes);
+app.use('/api/reviews', apiLimiter, reviewRoutes);
+app.use('/api/users', apiLimiter, userRoutes);
+app.use('/api', apiLimiter, voteRoutes);
 
 // Health check endpoint
 app.get('/health', async (req: Request, res: Response) => {

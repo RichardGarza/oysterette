@@ -48,3 +48,4 @@ backend/src/generated/
 *.sqlite
 *.sqlite3
 *.db
+.aider*

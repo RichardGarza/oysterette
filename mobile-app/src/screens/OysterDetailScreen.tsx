@@ -19,6 +19,8 @@ import { favoritesStorage } from '../services/favorites';
 import { Oyster, Review } from '../types/Oyster';
 import { useTheme } from '../context/ThemeContext';
 import { EmptyState } from '../components/EmptyState';
+import { RatingDisplay } from '../components/RatingDisplay';
+import { ReviewCard } from '../components/ReviewCard';
 
 type SortOption = 'helpful' | 'recent' | 'highest' | 'lowest';
 type RatingFilter = 'ALL' | 'LOVED_IT' | 'LIKED_IT' | 'MEH' | 'HATED_IT';
@@ -221,8 +223,12 @@ export default function OysterDetailScreen() {
           )}
 
           <View style={styles.headerRating}>
-            {/* Assuming RatingDisplay is themed separately */}
-            <Text>Rating Display Placeholder</Text>
+            <RatingDisplay
+              overallScore={oyster.overallScore || 0}
+              totalReviews={oyster.totalReviews || 0}
+              size="medium"
+              showDetails={true}
+            />
           </View>
         </View>
 
@@ -354,8 +360,15 @@ export default function OysterDetailScreen() {
 
           {oyster.reviews && oyster.reviews.length > 0 ? (
             getSortedReviews().map((review) => (
-              {/* Assuming ReviewCard is themed separately */}
-              <Text key={review.id}>Review Card Placeholder</Text>
+              <ReviewCard
+                key={review.id}
+                review={review}
+                userVote={userVotes[review.id] || null}
+                onVoteChange={handleVoteChange}
+                currentUserId={currentUserId || undefined}
+                onEdit={handleEditReview}
+                onDelete={handleDeleteReview}
+              />
             ))
           ) : (
             <EmptyState

@@ -211,13 +211,18 @@ export async function recalculateOysterRatings(oysterId: string): Promise<void> 
     );
 
     // Calculate overall score (0-10 scale)
-    // Based on user reviews (LOVED_IT, LIKED_IT, MEH, HATED_IT)
-    // Plus a small flavor modifier based on flavorfulness attribute
+    // Formula: 40% rating + 60% attributes average
     let overallScore = 0;
     if (reviewCount > 0) {
-      const baseScore = (avgRating / 4) * 10;
-      const flavorModifier = calculateFlavorModifier(Math.round(avgFlavorfulness));
-      overallScore = Math.max(0, Math.min(10, baseScore + flavorModifier));
+      // Normalize avgRating (1-4) to 10-point scale
+      const normalizedRating = (avgRating / 4) * 10;
+
+      // Calculate average of all attributes
+      const attributesAverage = (avgSize + avgBody + avgSweetBrininess + avgFlavorfulness + avgCreaminess) / 5;
+
+      // Overall score: 40% rating + 60% attributes
+      overallScore = (normalizedRating * 0.4) + (attributesAverage * 0.6);
+      overallScore = Math.max(0, Math.min(10, overallScore));
     }
 
     // Update oyster with calculated values
