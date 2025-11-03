@@ -213,6 +213,13 @@
 
 ## 📋 Development Notes
 
+### User Preferences:
+- **Token Reporting:** Display token usage and remaining tokens after each request/response
+  - Format: "Current: X / 200,000 (Y% used) | Remaining: Z tokens (W%)"
+  - Include time until next 50k tokens regenerate (hours and minutes)
+  - Token regeneration rate: ~8,333 tokens/hour (200k over 24 hours)
+  - User wants to track conversation length to avoid cutoffs
+
 ### Environment Setup:
 - **Backend:** Node.js, TypeScript, Express, Prisma, PostgreSQL
 - **Database:** Neon (production), PostgreSQL (local)
