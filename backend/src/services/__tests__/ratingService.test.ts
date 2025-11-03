@@ -62,11 +62,11 @@ describe('Rating Service', () => {
         flavorfulness: 5,
         creaminess: 5,
         reviews: [
-          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9 },
-          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9 },
-          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9 },
-          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9 },
-          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9 },
+          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
         ],
       };
 
@@ -94,9 +94,9 @@ describe('Rating Service', () => {
         flavorfulness: 5,
         creaminess: 5,
         reviews: [
-          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: null, sweetBrininess: null, flavorfulness: null, creaminess: null },
-          { rating: 'LIKED_IT' as ReviewRating, size: 7, body: null, sweetBrininess: null, flavorfulness: null, creaminess: null },
-          { rating: 'MEH' as ReviewRating, size: 5, body: null, sweetBrininess: null, flavorfulness: null, creaminess: null },
+          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: null, sweetBrininess: null, flavorfulness: null, creaminess: null, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LIKED_IT' as ReviewRating, size: 7, body: null, sweetBrininess: null, flavorfulness: null, creaminess: null, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'MEH' as ReviewRating, size: 5, body: null, sweetBrininess: null, flavorfulness: null, creaminess: null, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
         ],
       };
 
@@ -222,8 +222,8 @@ describe('Rating Service', () => {
         flavorfulness: 5,
         creaminess: 5,
         reviews: [
-          { rating: 'LOVED_IT' as ReviewRating, size: 10, body: 10, sweetBrininess: 10, flavorfulness: 10, creaminess: 10 },
-          { rating: 'LOVED_IT' as ReviewRating, size: 10, body: 10, sweetBrininess: 10, flavorfulness: 10, creaminess: 10 },
+          { rating: 'LOVED_IT' as ReviewRating, size: 10, body: 10, sweetBrininess: 10, flavorfulness: 10, creaminess: 10, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVED_IT' as ReviewRating, size: 10, body: 10, sweetBrininess: 10, flavorfulness: 10, creaminess: 10, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
         ],
       };
 
@@ -251,11 +251,11 @@ describe('Rating Service', () => {
         flavorfulness: 8,
         creaminess: 8,
         reviews: [
-          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8 },
-          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8 },
-          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8 },
-          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8 },
-          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8 },
+          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
         ],
       };
 
