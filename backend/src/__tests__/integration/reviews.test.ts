@@ -159,19 +159,38 @@ describe('Review API Integration Tests', () => {
 
   describe('DELETE /api/reviews/:reviewId', () => {
     let deleteReviewId: string;
+    let deleteOysterId: string;
 
     beforeEach(async () => {
+      // Create a unique oyster for each delete test to avoid unique constraint issues
+      const oyster = await prisma.oyster.create({
+        data: {
+          name: `Delete Test Oyster ${Date.now()}`,
+          species: 'Crassostrea gigas',
+          origin: 'Test Origin',
+        },
+      });
+      deleteOysterId = oyster.id;
+
       // Create a review to delete
       const reviewResponse = await request(app)
         .post('/api/reviews')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
-          oysterId,
+          oysterId: deleteOysterId,
           rating: 'LIKED_IT',
           notes: 'Review to be deleted',
         });
 
       deleteReviewId = reviewResponse.body.data.id;
+    });
+
+    afterEach(async () => {
+      // Cleanup the oyster created for this test
+      if (deleteOysterId) {
+        await prisma.review.deleteMany({ where: { oysterId: deleteOysterId } });
+        await prisma.oyster.delete({ where: { id: deleteOysterId } });
+      }
     });
 
     it('should delete own review successfully', async () => {
@@ -220,7 +239,7 @@ describe('Review API Integration Tests', () => {
     it('should recalculate oyster ratings after deletion', async () => {
       // Get oyster ratings before deletion
       const oysterBefore = await prisma.oyster.findUnique({
-        where: { id: oysterId },
+        where: { id: deleteOysterId },
         include: { reviews: true },
       });
       const reviewCountBefore = oysterBefore?.reviews.length || 0;
@@ -233,7 +252,7 @@ describe('Review API Integration Tests', () => {
 
       // Get oyster ratings after deletion
       const oysterAfter = await prisma.oyster.findUnique({
-        where: { id: oysterId },
+        where: { id: deleteOysterId },
         include: { reviews: true },
       });
       const reviewCountAfter = oysterAfter?.reviews.length || 0;
