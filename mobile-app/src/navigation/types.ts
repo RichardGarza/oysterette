@@ -1,5 +1,6 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
+import { Review } from '../types/Oyster';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -9,6 +10,7 @@ export type RootStackParamList = {
   OysterDetail: { oysterId: string };
   AddOyster: undefined;
   AddReview: { oysterId: string; oysterName: string };
+  EditReview: { review: Review };
   Settings: undefined;
   TopOysters: undefined;
 };

@@ -5,15 +5,19 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Review } from '../types/Oyster';
-import { voteApi } from '../services/api';
+import { voteApi, reviewApi } from '../services/api';
 
 interface ReviewCardProps {
   review: Review;
   userVote: boolean | null; // true = agree, false = disagree, null = no vote
   onVoteChange: () => void; // Callback to refresh votes after change
+  currentUserId?: string; // Current logged-in user's ID
+  onEdit?: (review: Review) => void; // Callback to edit review
+  onDelete?: () => void; // Callback after delete
 }
 
 interface CredibilityBadge {
@@ -22,10 +26,13 @@ interface CredibilityBadge {
   icon: string;
 }
 
-export function ReviewCard({ review, userVote, onVoteChange }: ReviewCardProps) {
+export function ReviewCard({ review, userVote, onVoteChange, currentUserId, onEdit, onDelete }: ReviewCardProps) {
   const [currentVote, setCurrentVote] = useState<boolean | null>(userVote);
   const [voting, setVoting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [credibilityBadge, setCredibilityBadge] = useState<CredibilityBadge | null>(null);
+
+  const isOwnReview = currentUserId && review.userId === currentUserId;
 
   // Fetch reviewer credibility on mount
   React.useEffect(() => {
@@ -77,6 +84,33 @@ export function ReviewCard({ review, userVote, onVoteChange }: ReviewCardProps) 
     return credibilityBadge.icon ? `${credibilityBadge.icon} ${credibilityBadge.level}` : credibilityBadge.level;
   };
 
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Review',
+      'Are you sure you want to delete this review? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setDeleting(true);
+              await reviewApi.delete(review.id);
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              if (onDelete) onDelete();
+            } catch (error: any) {
+              console.error('Error deleting review:', error);
+              Alert.alert('Error', error.response?.data?.error || 'Failed to delete review');
+            } finally {
+              setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.reviewCard}>
       <View style={styles.reviewHeader}>
@@ -90,9 +124,33 @@ export function ReviewCard({ review, userVote, onVoteChange }: ReviewCardProps) 
             </View>
           )}
         </View>
-        <Text style={styles.reviewDate}>
-          {new Date(review.createdAt).toLocaleDateString()}
-        </Text>
+        <View style={styles.reviewHeaderRight}>
+          <Text style={styles.reviewDate}>
+            {new Date(review.createdAt).toLocaleDateString()}
+          </Text>
+          {isOwnReview && (
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => onEdit && onEdit(review)}
+                disabled={deleting}
+              >
+                <Text style={styles.actionButtonText}>Edit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.deleteButton]}
+                onPress={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <ActivityIndicator size="small" color="#e74c3c" />
+                ) : (
+                  <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Delete</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
       </View>
 
       {review.notes && (
@@ -200,9 +258,36 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
+  reviewHeaderRight: {
+    alignItems: 'flex-end',
+  },
   reviewDate: {
     fontSize: 12,
     color: '#7f8c8d',
+    marginBottom: 4,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  actionButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 4,
+    backgroundColor: '#3498db',
+  },
+  deleteButton: {
+    backgroundColor: '#e74c3c',
+    minWidth: 60,
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    fontSize: 11,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  deleteButtonText: {
+    color: '#fff',
   },
   reviewNotes: {
     fontSize: 14,

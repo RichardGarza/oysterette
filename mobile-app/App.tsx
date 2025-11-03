@@ -11,6 +11,7 @@ import OysterListScreen from './src/screens/OysterListScreen';
 import OysterDetailScreen from './src/screens/OysterDetailScreen';
 import AddOysterScreen from './src/screens/AddOysterScreen';
 import AddReviewScreen from './src/screens/AddReviewScreen';
+import EditReviewScreen from './src/screens/EditReviewScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import TopOystersScreen from './src/screens/TopOystersScreen';
 
@@ -71,6 +72,11 @@ function AppNavigator() {
           name="AddReview"
           component={AddReviewScreen}
           options={{ title: 'Write Review' }}
+        />
+        <Stack.Screen
+          name="EditReview"
+          component={EditReviewScreen}
+          options={{ title: 'Edit Review' }}
         />
         <Stack.Screen
           name="Settings"

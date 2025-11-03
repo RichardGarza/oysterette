@@ -13,8 +13,9 @@ import * as Haptics from 'expo-haptics';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { OysterDetailScreenRouteProp, OysterDetailScreenNavigationProp } from '../navigation/types';
 import { oysterApi, voteApi } from '../services/api';
+import { authStorage } from '../services/auth';
 import { favoritesStorage } from '../services/favorites';
-import { Oyster } from '../types/Oyster';
+import { Oyster, Review } from '../types/Oyster';
 import { RatingDisplay, RatingBreakdown } from '../components/RatingDisplay';
 import { ReviewCard } from '../components/ReviewCard';
 import { EmptyState } from '../components/EmptyState';
@@ -34,11 +35,18 @@ export default function OysterDetailScreen() {
   const [sortBy, setSortBy] = useState<SortOption>('helpful');
   const [ratingFilter, setRatingFilter] = useState<RatingFilter>('ALL');
   const [isFavorite, setIsFavorite] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOyster();
     loadFavoriteStatus();
+    loadCurrentUser();
   }, [oysterId]);
+
+  const loadCurrentUser = async () => {
+    const user = await authStorage.getUser();
+    setCurrentUserId(user?.id || null);
+  };
 
   const loadFavoriteStatus = async () => {
     const favorited = await favoritesStorage.isFavorite(oysterId);
@@ -92,6 +100,15 @@ export default function OysterDetailScreen() {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const newState = await favoritesStorage.toggleFavorite(oysterId);
     setIsFavorite(newState);
+  };
+
+  const handleEditReview = (review: Review) => {
+    navigation.navigate('EditReview', { review });
+  };
+
+  const handleDeleteReview = () => {
+    // Refresh oyster data after review is deleted
+    fetchOyster(true);
   };
 
   const getSortedReviews = () => {
@@ -343,6 +360,9 @@ export default function OysterDetailScreen() {
                 review={review}
                 userVote={userVotes[review.id] ?? null}
                 onVoteChange={handleVoteChange}
+                currentUserId={currentUserId || undefined}
+                onEdit={handleEditReview}
+                onDelete={handleDeleteReview}
               />
             ))
           ) : (
