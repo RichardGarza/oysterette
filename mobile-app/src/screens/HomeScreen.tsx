@@ -28,6 +28,13 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={[styles.button, styles.topOystersButton]}
+          onPress={() => navigation.navigate('TopOysters')}
+        >
+          <Text style={styles.buttonText}>🏆 Top Oysters</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={[styles.button, styles.secondaryButton]}
           onPress={() => navigation.navigate('Login')}
         >
@@ -82,6 +89,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
+  },
+  topOystersButton: {
+    backgroundColor: '#f39c12',
   },
   secondaryButton: {
     backgroundColor: '#fff',

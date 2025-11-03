@@ -10,12 +10,17 @@ export type RootStackParamList = {
   AddOyster: undefined;
   AddReview: { oysterId: string; oysterName: string };
   Settings: undefined;
+  TopOysters: undefined;
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'Home'
->;
+> & {
+  navigate(screen: 'TopOysters'): void;
+  navigate(screen: 'OysterList'): void;
+  navigate(screen: 'Login'): void;
+};
 
 export type OysterListScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,

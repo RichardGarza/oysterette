@@ -12,6 +12,7 @@ import OysterDetailScreen from './src/screens/OysterDetailScreen';
 import AddOysterScreen from './src/screens/AddOysterScreen';
 import AddReviewScreen from './src/screens/AddReviewScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import TopOystersScreen from './src/screens/TopOystersScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -75,6 +76,11 @@ function AppNavigator() {
           name="Settings"
           component={SettingsScreen}
           options={{ title: 'Settings' }}
+        />
+        <Stack.Screen
+          name="TopOysters"
+          component={TopOystersScreen}
+          options={{ title: 'Top Oysters' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
