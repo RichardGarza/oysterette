@@ -36,6 +36,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         id: true,
         email: true,
         name: true,
+        preferences: true,
         createdAt: true,
       },
     });
@@ -99,6 +100,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
           id: user.id,
           email: user.email,
           name: user.name,
+          preferences: user.preferences,
           createdAt: user.createdAt,
         },
         token,
