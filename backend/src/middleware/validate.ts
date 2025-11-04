@@ -21,7 +21,17 @@ export function validate(schema: ZodSchema, target: ValidationTarget = 'body') {
       const validatedData = await schema.parseAsync(dataToValidate);
 
       // Replace the request data with validated/sanitized data
-      req[target] = validatedData;
+      // Use Object.defineProperty for query since it's read-only
+      if (target === 'query') {
+        Object.defineProperty(req, 'query', {
+          value: validatedData,
+          writable: true,
+          enumerable: true,
+          configurable: true,
+        });
+      } else {
+        (req as any)[target] = validatedData;
+      }
 
       next();
     } catch (error) {

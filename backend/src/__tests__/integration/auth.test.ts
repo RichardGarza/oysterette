@@ -177,7 +177,7 @@ describe('Auth API Integration Tests', () => {
       const tempUser = {
         email: 'passwordtest@oysterette.com',
         name: 'Password Test',
-        password: 'securepassword123',
+        password: 'SecurePassword123',
       };
 
       // Register

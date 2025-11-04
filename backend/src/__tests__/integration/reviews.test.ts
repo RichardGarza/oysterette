@@ -147,7 +147,7 @@ describe('Review API Integration Tests', () => {
 
     it('should fail to update non-existent review', async () => {
       const response = await request(app)
-        .put('/api/reviews/nonexistent-id')
+        .put('/api/reviews/123e4567-e89b-12d3-a456-426614174000') // Valid UUID that doesn't exist
         .set('Authorization', `Bearer ${authToken}`)
         .send({ rating: 'LIKED_IT' })
         .expect(404);
@@ -179,6 +179,11 @@ describe('Review API Integration Tests', () => {
         .send({
           oysterId: deleteOysterId,
           rating: 'LIKED_IT',
+          size: 5,
+          body: 6,
+          sweetBrininess: 7,
+          flavorfulness: 8,
+          creaminess: 6,
           notes: 'Review to be deleted',
         });
 
@@ -228,7 +233,7 @@ describe('Review API Integration Tests', () => {
 
     it('should fail to delete non-existent review', async () => {
       const response = await request(app)
-        .delete('/api/reviews/nonexistent-id')
+        .delete('/api/reviews/123e4567-e89b-12d3-a456-426614174000') // Valid UUID that doesn't exist
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
 

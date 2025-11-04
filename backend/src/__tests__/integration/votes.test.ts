@@ -16,6 +16,12 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api', voteRoutes); // Vote routes are nested under /api/reviews
 
+// Error handler for debugging
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('Test app error:', err);
+  res.status(500).json({ error: err.message });
+});
+
 describe('Vote API Integration Tests', () => {
   let authToken: string;
   let userId: string;
@@ -85,6 +91,11 @@ describe('Vote API Integration Tests', () => {
       .send({
         oysterId,
         rating: 'LOVED_IT',
+        size: 7,
+        body: 8,
+        sweetBrininess: 6,
+        flavorfulness: 9,
+        creaminess: 7,
         notes: 'Test review for voting',
       });
 
@@ -96,6 +107,11 @@ describe('Vote API Integration Tests', () => {
       .send({
         oysterId,
         rating: 'LIKED_IT',
+        size: 6,
+        body: 7,
+        sweetBrininess: 5,
+        flavorfulness: 8,
+        creaminess: 6,
         notes: 'Other test review for voting',
       });
 
@@ -332,6 +348,11 @@ describe('Vote API Integration Tests', () => {
           userId: otherUserId,
           oysterId: newOyster.id,
           rating: 'MEH',
+          size: 5,
+          body: 5,
+          sweetBrininess: 5,
+          flavorfulness: 5,
+          creaminess: 5,
         },
       });
 
@@ -383,7 +404,7 @@ describe('Vote API Integration Tests', () => {
 
     it('should fail for non-existent user', async () => {
       const response = await request(app)
-        .get('/api/users/nonexistent-id/credibility')
+        .get('/api/users/123e4567-e89b-12d3-a456-426614174000/credibility') // Valid UUID that doesn't exist
         .set('Authorization', `Bearer ${authToken}`)
         .expect(404);
 
