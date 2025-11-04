@@ -210,43 +210,137 @@ npm run build:android:cloud
 
 ---
 
+### Phase 5.3: Fuzzy Search Implementation ✅ DEPLOYED!
+**Status:** Complete - Live in Production (Jan 3, 2025)
+
+**What We Built:**
+- ✅ Implemented Fuse.js for fuzzy string matching on backend
+- ✅ Weighted search: name (50%), origin (30%), species (20%)
+- ✅ Threshold 0.4 for balanced typo tolerance
+- ✅ Handles misspellings like "Kumaoto" → "Kumamoto"
+- ✅ All 162 tests still passing
+
+**Location:** backend/src/controllers/oysterController.ts:188-244
+
+---
+
+### Phase 5.4: Theme Persistence & User Preferences ✅ DEPLOYED!
+**Status:** Complete - Live in Production (Jan 3, 2025)
+
+**What We Built:**
+
+**Backend:**
+- ✅ User preferences JSON field already in schema
+- ✅ `/users/preferences` endpoint for saving settings
+- ✅ Auth responses include preferences for theme sync
+- ✅ Theme preference syncs across devices
+
+**Mobile App:**
+- ✅ Global settings gear icon on ALL screen headers
+- ✅ Theme syncs to backend when changed (if logged in)
+- ✅ Theme loads from user account on login/register
+- ✅ Auto-login on app start (checks saved token)
+- ✅ Falls back to local AsyncStorage if not logged in
+
+**User Experience:**
+- Settings accessible from any screen (including Home)
+- Change theme → saves locally + syncs to server
+- Login on different device → theme applies automatically
+- Close app → stays logged in, skips home screen
+
+**Locations:**
+- App.tsx:24-31 (global settings button)
+- ThemeContext.tsx:105-143 (sync logic)
+- HomeScreen.tsx:27-55 (auto-login)
+
+---
+
+### Phase 5.5: UX Polish & Bug Fixes ✅ DEPLOYED!
+**Status:** Complete - Live in Production (Jan 3, 2025)
+
+**Fixes Deployed:**
+
+1. **Removed Color Coding from Attribute Sliders**
+   - Issue: Red/orange/green implied good/bad
+   - Fix: All bars use primary blue (scores are descriptive, not qualitative)
+   - Location: OysterDetailScreen.tsx:167-170
+
+2. **Fixed Keyboard Covering Input**
+   - Issue: Keyboard hid text input when writing reviews
+   - Fix: Added KeyboardAvoidingView wrapper
+   - Location: AddReviewScreen.tsx:85-89, 271
+
+3. **Removed Redundant "Was this review helpful?" Text**
+   - Issue: Unnecessary label above Agree/Disagree buttons
+   - Fix: Kept voting buttons, removed question text
+   - Location: ReviewCard.tsx:161-162
+
+4. **Fixed Settings to Show Actual User Data**
+   - Issue: Always showed "Guest User"
+   - Fix: Loads actual user from AsyncStorage
+   - Shows "User Not Logged In" + Login/Sign Up buttons when not authenticated
+   - Location: SettingsScreen.tsx:27-177
+
+---
+
 ## 📋 NEXT PRIORITIES
 
-### Priority 1: Fuzzy Search Implementation (HIGH IMPACT - EASY WIN)
-**Status:** RECOMMENDED NEXT STEP 🎯
+### Priority 1: Google OAuth Login (IN PROGRESS) 🎯
+**Status:** Next Implementation
 
-**Why This First:**
-- Immediate UX improvement - users currently can't find oysters with typos
-- Quick to implement (1-2 hours)
-- High user satisfaction gain
-- No database changes needed
+**Why This Matters:**
+- Faster, easier sign-up (one tap with Google)
+- No password to remember
+- More secure (leverages Google's auth)
+- Better user experience
 
-**Problem:**
-- Search requires exact matches
-- "Kumaoto" won't find "Kumamoto"
-- "Pacfic" won't find "Pacific"
-- Users get frustrated with empty results
+**What We Need:**
+1. **Expo AuthSession** for OAuth flow
+2. **Google Cloud Console** setup (OAuth credentials)
+3. **Backend endpoint** to handle Google login
+4. **UI updates** - "Continue with Google" button
 
-**Solution:** Implement fuzzy string matching
-
-**Recommended Approach:**
-Use **Fuse.js** (most popular, battle-tested)
-- 2M+ downloads per week
-- Zero dependencies
-- Works client-side and server-side
-- Highly configurable
-
-**Implementation:**
+**Implementation Plan:**
 ```bash
-# In backend
-cd backend
-npm install fuse.js
+# In mobile-app
+npm install expo-auth-session expo-random
 
-# Update search endpoint in oysterController.ts
+# In backend
+npm install google-auth-library
 ```
 
-**Example Code:**
-```typescript
+**Backend Changes:**
+- Add `/auth/google` endpoint
+- Verify Google ID token
+- Create or login user
+- Return JWT token
+
+**Mobile Changes:**
+- Add Google sign-in button to Login/Register screens
+- Implement OAuth redirect flow
+- Handle token exchange
+
+**Next Steps:**
+1. Set up Google Cloud Console project
+2. Get OAuth client IDs (Android, iOS, Web)
+3. Implement backend Google auth endpoint
+4. Add Google button to mobile UI
+5. Test OAuth flow
+
+---
+
+### Priority 2: Enhanced Search Features (FUTURE)
+**Status:** Backlog
+
+**Potential Enhancements:**
+- Search filters (species, origin, rating)
+- Sort by various attributes
+- Advanced fuzzy matching with phonetic algorithms
+- Search history/suggestions
+
+---
+
+### Priority 3: User Profile Enhancements (FUTURE)
 import Fuse from 'fuse.js';
 
 const fuse = new Fuse(oysters, {
