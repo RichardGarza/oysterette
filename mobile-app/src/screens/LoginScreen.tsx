@@ -28,7 +28,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { theme } = useTheme();
+  const { theme, loadUserTheme } = useTheme();
 
   const styles = createStyles(theme.colors);
 
@@ -45,6 +45,9 @@ export default function LoginScreen() {
       // Save token and user data
       await authStorage.saveToken(response.token);
       await authStorage.saveUser(response.user);
+
+      // Load user's theme preference
+      loadUserTheme(response.user);
 
       // Navigate to main app
       navigation.navigate('OysterList');

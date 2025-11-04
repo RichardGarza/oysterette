@@ -165,10 +165,12 @@ export default function OysterDetailScreen() {
   };
 
   const getAttributeColor = (value: number) => {
-    if (value <= 3) return theme.colors.error;
-    if (value <= 7) return theme.colors.warning;
-    return theme.colors.success;
+    // Use primary color for all values - scores aren't good/bad, just descriptive
+    return theme.colors.primary;
   };
+
+  // Create styles first, before any early returns
+  const styles = createStyles(theme.colors, isDark);
 
   if (loading) {
     return (
@@ -185,8 +187,6 @@ export default function OysterDetailScreen() {
       </View>
     );
   }
-
-  const styles = createStyles(theme.colors, isDark);
 
   return (
     <SafeAreaView style={styles.container}>

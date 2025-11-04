@@ -1,20 +1,69 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from '../navigation/types';
 import { useTheme } from '../context/ThemeContext';
+import { authStorage } from '../services/auth';
+import { authApi } from '../services/api';
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
-  const { theme } = useTheme();
+  const { theme, loadUserTheme } = useTheme();
+  const [checking, setChecking] = useState(true);
 
   const styles = createStyles(theme.colors);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const token = await authStorage.getToken();
+      const user = await authStorage.getUser();
+
+      if (token && user) {
+        // User is logged in, load their theme and navigate to main app
+        console.log('User already logged in, navigating to OysterList');
+        loadUserTheme(user);
+
+        // Optional: Verify token is still valid by fetching profile
+        try {
+          await authApi.getProfile();
+          navigation.replace('OysterList');
+        } catch (error) {
+          // Token expired, clear auth and show home screen
+          console.log('Token expired, clearing auth');
+          await authStorage.clearAuth();
+          setChecking(false);
+        }
+      } else {
+        // No auth, show home screen
+        setChecking(false);
+      }
+    } catch (error) {
+      console.error('Error checking auth:', error);
+      setChecking(false);
+    }
+  };
+
+  if (checking) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.content}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={[styles.subtitle, { marginTop: 20 }]}>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>

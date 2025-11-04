@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   SafeAreaView,
   TextInput,
+  Platform,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
@@ -18,9 +19,11 @@ import { Oyster } from '../types/Oyster';
 import { RatingDisplay } from '../components/RatingDisplay';
 import { EmptyState } from '../components/EmptyState';
 import { OysterCardSkeleton } from '../components/OysterCardSkeleton';
+import { useTheme } from '../context/ThemeContext';
 
 export default function OysterListScreen() {
   const navigation = useNavigation<OysterListScreenNavigationProp>();
+  const { theme, isDark } = useTheme();
   const [oysters, setOysters] = useState<Oyster[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -105,6 +108,8 @@ export default function OysterListScreen() {
     return oysters.filter(oyster => favorites.has(oyster.id));
   };
 
+  const styles = createStyles(theme.colors, isDark);
+
   const renderOysterItem = ({ item }: { item: Oyster }) => (
     <TouchableOpacity
       style={styles.card}
@@ -183,12 +188,6 @@ export default function OysterListScreen() {
         <View style={styles.header}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>Oyster Collection</Text>
-            <TouchableOpacity
-              style={styles.settingsButton}
-              onPress={() => navigation.navigate('Settings')}
-            >
-              <Text style={styles.settingsIcon}>⚙️</Text>
-            </TouchableOpacity>
           </View>
 
           <View style={styles.filterTabs}>
@@ -231,12 +230,6 @@ export default function OysterListScreen() {
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <Text style={styles.title}>Oyster Collection</Text>
-          <TouchableOpacity
-            style={styles.settingsButton}
-            onPress={() => navigation.navigate('Settings')}
-          >
-            <Text style={styles.settingsIcon}>⚙️</Text>
-          </TouchableOpacity>
         </View>
 
         <View style={styles.filterTabs}>
@@ -321,39 +314,34 @@ export default function OysterListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-  },
-  settingsButton: {
-    padding: 8,
-  },
-  settingsIcon: {
-    fontSize: 24,
-  },
+const createStyles = (colors: any, isDark: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    centerContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    header: {
+      backgroundColor: colors.card,
+      padding: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 15,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: colors.text,
+    },
   filterTabs: {
     flexDirection: 'row',
     marginBottom: 15,
@@ -363,44 +351,51 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.inputBackground,
     borderRadius: 8,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
   },
   filterTabActive: {
-    backgroundColor: '#e8f4f8',
-    borderColor: '#3498db',
+    backgroundColor: isDark ? '#3a5a7a' : '#e8f4f8',
+    borderColor: colors.primary,
   },
   filterTabText: {
     fontSize: 14,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   filterTabTextActive: {
-    color: '#3498db',
+    color: colors.primary,
     fontWeight: '600',
   },
   searchInput: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.inputBackground,
     padding: 12,
     borderRadius: 8,
     fontSize: 16,
+    color: colors.text,
   },
   listContainer: {
     padding: 15,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.cardBackground,
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.shadowColor,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: isDark ? 0.3 : 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   cardHeader: {
     flexDirection: 'row',
@@ -411,7 +406,7 @@ const styles = StyleSheet.create({
   oysterName: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#2c3e50',
+    color: colors.text,
     flex: 1,
     marginRight: 10,
   },
@@ -427,14 +422,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   speciesContainer: {
-    backgroundColor: '#e8f4f8',
+    backgroundColor: isDark ? '#2c3e50' : '#e8f4f8',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   species: {
     fontSize: 12,
-    color: '#3498db',
+    color: colors.primary,
     fontWeight: '600',
     fontStyle: 'italic',
   },
@@ -443,7 +438,7 @@ const styles = StyleSheet.create({
   },
   origin: {
     fontSize: 14,
-    color: '#555',
+    color: colors.textSecondary,
   },
   ratingContainer: {
     marginBottom: 8,
@@ -451,7 +446,7 @@ const styles = StyleSheet.create({
   },
   notes: {
     fontSize: 13,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
     fontStyle: 'italic',
     marginBottom: 12,
     lineHeight: 18,
@@ -462,7 +457,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#ecf0f1',
+    borderTopColor: colors.border,
     flexWrap: 'wrap',
   },
   attributeItem: {
@@ -471,25 +466,25 @@ const styles = StyleSheet.create({
   },
   attributeLabel: {
     fontSize: 10,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
     marginBottom: 4,
     textAlign: 'center',
   },
   attributeValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#3498db',
+    color: colors.primary,
   },
   reviewCount: {
     fontSize: 12,
-    color: '#27ae60',
+    color: colors.success,
     marginTop: 8,
     fontWeight: '500',
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
   },
   emptyContainer: {
     padding: 40,
@@ -497,24 +492,24 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#7f8c8d',
+    color: colors.textSecondary,
     textAlign: 'center',
   },
   errorContainer: {
-    backgroundColor: '#ffe5e5',
+    backgroundColor: isDark ? '#4a2020' : '#ffe5e5',
     padding: 15,
     margin: 15,
     borderRadius: 8,
     alignItems: 'center',
   },
   errorText: {
-    color: '#e74c3c',
+    color: colors.error,
     fontSize: 14,
     marginBottom: 10,
     textAlign: 'center',
   },
   retryButton: {
-    backgroundColor: '#e74c3c',
+    backgroundColor: colors.error,
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 5,
@@ -530,18 +525,24 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#27ae60',
+    backgroundColor: colors.success,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.shadowColor,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: isDark ? 0.5 : 0.3,
+        shadowRadius: 5,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
   fabText: {
     fontSize: 32,
     color: '#fff',
     fontWeight: 'bold',
   },
-});
+  });

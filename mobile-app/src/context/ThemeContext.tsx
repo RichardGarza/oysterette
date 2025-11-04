@@ -1,6 +1,8 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { Appearance, ColorSchemeName } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { userApi } from '../services/api';
+import { authStorage } from '../services/auth';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -63,6 +65,7 @@ interface ThemeContextType {
   themeMode: ThemeMode;
   isDark: boolean;
   setThemeMode: (mode: ThemeMode) => void;
+  loadUserTheme: (user: any) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -102,10 +105,40 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setThemeMode = async (mode: ThemeMode) => {
     try {
+      // Save locally
       await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
       setThemeModeState(mode);
+
+      // Sync with backend if user is logged in
+      try {
+        const user = await authStorage.getUser();
+        if (user?.id) {
+          const preferences = { theme: mode };
+          await userApi.updatePreferences(preferences);
+          console.log('Theme preference synced to server');
+        }
+      } catch (syncError) {
+        // Silently fail - local preference is still saved
+        console.log('Could not sync theme to server (user may not be logged in)');
+      }
     } catch (error) {
       console.error('Failed to save theme preference:', error);
+    }
+  };
+
+  const loadUserTheme = (user: any) => {
+    try {
+      // Load theme from user preferences if available
+      if (user?.preferences && typeof user.preferences === 'object') {
+        const savedTheme = user.preferences.theme;
+        if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
+          setThemeModeState(savedTheme as ThemeMode);
+          AsyncStorage.setItem(THEME_STORAGE_KEY, savedTheme);
+          console.log('Loaded user theme preference:', savedTheme);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load user theme:', error);
     }
   };
 
@@ -119,6 +152,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     themeMode,
     isDark,
     setThemeMode,
+    loadUserTheme,
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

@@ -17,7 +17,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { authApi } from '../services/api';
 import { authStorage } from '../services/auth';
-import api from '../services/api';
+import { useTheme } from '../context/ThemeContext';
 
 type RegisterScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -26,12 +26,12 @@ type RegisterScreenNavigationProp = NativeStackNavigationProp<
 
 export default function RegisterScreen() {
   const navigation = useNavigation<RegisterScreenNavigationProp>();
+  const { loadUserTheme } = useTheme();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showDebug, setShowDebug] = useState(false);
 
   const validateForm = () => {
     if (!name.trim()) {
@@ -98,14 +98,10 @@ export default function RegisterScreen() {
     try {
       setLoading(true);
 
-      // Log what we're sending (for debugging)
       console.log('📤 Registration attempt:', {
         email: email.trim(),
         name: name.trim(),
         passwordLength: password.length,
-        hasUppercase: /[A-Z]/.test(password),
-        hasLowercase: /[a-z]/.test(password),
-        hasNumber: /[0-9]/.test(password),
       });
 
       const response = await authApi.register(email.trim(), name.trim(), password);
@@ -116,6 +112,9 @@ export default function RegisterScreen() {
       await authStorage.saveToken(response.token);
       await authStorage.saveUser(response.user);
 
+      // Load user's theme preference
+      loadUserTheme(response.user);
+
       Alert.alert('Success', 'Account created successfully!', [
         {
           text: 'OK',
@@ -123,11 +122,7 @@ export default function RegisterScreen() {
         },
       ]);
     } catch (error: any) {
-      console.log('❌ Registration error:', {
-        status: error?.response?.status,
-        data: error?.response?.data,
-        message: error?.message,
-      });
+      console.error('❌ Registration error:', error);
 
       // Parse validation errors from backend
       const errorData = error?.response?.data;
@@ -176,27 +171,6 @@ export default function RegisterScreen() {
             <View style={styles.header}>
               <Text style={styles.title}>Create Account</Text>
               <Text style={styles.subtitle}>Join Oysterette today</Text>
-              <TouchableOpacity
-                onPress={() => setShowDebug(!showDebug)}
-                style={{ marginTop: 10 }}
-              >
-                <Text style={{ fontSize: 12, color: '#999' }}>
-                  {showDebug ? '🔍 Hide Debug' : '🔍 Show Debug'}
-                </Text>
-              </TouchableOpacity>
-              {showDebug && (
-                <View style={styles.debugBox}>
-                  <Text style={styles.debugText}>
-                    API: {api.defaults.baseURL}
-                  </Text>
-                  <Text style={styles.debugText}>
-                    Platform: {Platform.OS}
-                  </Text>
-                  <Text style={styles.debugText}>
-                    Check console logs for details
-                  </Text>
-                </View>
-              )}
             </View>
 
             <View style={styles.form}>
@@ -366,16 +340,5 @@ const styles = StyleSheet.create({
     color: '#7f8c8d',
     marginTop: 4,
     marginLeft: 2,
-  },
-  debugBox: {
-    backgroundColor: '#f0f0f0',
-    padding: 8,
-    borderRadius: 4,
-    marginTop: 8,
-  },
-  debugText: {
-    fontSize: 10,
-    color: '#666',
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
 });

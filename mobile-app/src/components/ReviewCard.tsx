@@ -159,7 +159,6 @@ export function ReviewCard({ review, userVote, onVoteChange, currentUserId, onEd
 
       {/* Vote Buttons */}
       <View style={styles.voteContainer}>
-        <Text style={styles.voteLabel}>Was this review helpful?</Text>
         <View style={styles.voteButtons}>
           <TouchableOpacity
             style={[

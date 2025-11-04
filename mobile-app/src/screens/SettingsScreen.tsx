@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,16 +9,42 @@ import {
   Switch,
   Share,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme, ThemeMode } from '../context/ThemeContext';
+import { authStorage } from '../services/auth';
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
   const { theme, themeMode, setThemeMode, isDark } = useTheme();
-  const [userName, setUserName] = useState('Guest User');
-  const [userEmail, setUserEmail] = useState('guest@oysterette.com');
+  const [userName, setUserName] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const user = await authStorage.getUser();
+      if (user) {
+        setUserName(user.name);
+        setUserEmail(user.email);
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      setIsLoggedIn(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -34,8 +60,11 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await AsyncStorage.removeItem('@oysterette_token');
-              // Navigate to Home or Login screen
+              await authStorage.clearAuth();
+              setIsLoggedIn(false);
+              setUserName(null);
+              setUserEmail(null);
+              // Navigate to Home screen
               navigation.navigate('Home' as never);
             } catch (error) {
               console.error('Error logging out:', error);
@@ -96,21 +125,55 @@ export default function SettingsScreen() {
 
   const styles = createStyles(theme.colors, isDark);
 
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', flex: 1 }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
       {/* Profile Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Profile</Text>
         <View style={styles.card}>
-          <View style={styles.profileItem}>
-            <Text style={styles.label}>Name</Text>
-            <Text style={styles.value}>{userName}</Text>
-          </View>
-          <View style={styles.separator} />
-          <View style={styles.profileItem}>
-            <Text style={styles.label}>Email</Text>
-            <Text style={styles.value}>{userEmail}</Text>
-          </View>
+          {isLoggedIn ? (
+            <>
+              <View style={styles.profileItem}>
+                <Text style={styles.label}>Name</Text>
+                <Text style={styles.value}>{userName}</Text>
+              </View>
+              <View style={styles.separator} />
+              <View style={styles.profileItem}>
+                <Text style={styles.label}>Email</Text>
+                <Text style={styles.value}>{userEmail}</Text>
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={styles.profileItem}>
+                <Text style={styles.label}>Name</Text>
+                <Text style={styles.value}>User Not Logged In</Text>
+              </View>
+              <View style={styles.separator} />
+              <View style={styles.authButtonsContainer}>
+                <TouchableOpacity
+                  style={[styles.authButton, styles.loginButton]}
+                  onPress={() => navigation.navigate('Login' as never)}
+                >
+                  <Text style={styles.authButtonText}>Log In</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.authButton, styles.signUpButton]}
+                  onPress={() => navigation.navigate('Register' as never)}
+                >
+                  <Text style={[styles.authButtonText, styles.signUpButtonText]}>Sign Up</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </View>
       </View>
 
@@ -174,15 +237,17 @@ export default function SettingsScreen() {
       </View>
 
       {/* Account Actions */}
-      <View style={styles.section}>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Logout</Text>
-        </TouchableOpacity>
+      {isLoggedIn && (
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
-          <Text style={styles.deleteButtonText}>Delete Account</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
+            <Text style={styles.deleteButtonText}>Delete Account</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>Made with ❤️ for oyster lovers</Text>
@@ -336,5 +401,44 @@ const createStyles = (colors: any, isDark: boolean) =>
       fontSize: 14,
       color: colors.textSecondary,
       fontStyle: 'italic',
+    },
+    authButtonsContainer: {
+      flexDirection: 'row',
+      gap: 10,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    authButton: {
+      flex: 1,
+      paddingVertical: 12,
+      borderRadius: 8,
+      alignItems: 'center',
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadowColor,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isDark ? 0.3 : 0.1,
+          shadowRadius: 3,
+        },
+        android: {
+          elevation: 2,
+        },
+      }),
+    },
+    loginButton: {
+      backgroundColor: colors.primary,
+    },
+    signUpButton: {
+      backgroundColor: colors.card,
+      borderWidth: 2,
+      borderColor: colors.primary,
+    },
+    authButtonText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: '#fff',
+    },
+    signUpButtonText: {
+      color: colors.primary,
     },
   });
