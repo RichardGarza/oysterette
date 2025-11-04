@@ -49,8 +49,36 @@ export default function RegisterScreen() {
       return false;
     }
 
-    if (password.length < 6) {
-      Alert.alert('Validation Error', 'Password must be at least 6 characters');
+    // Password validation matching backend requirements
+    if (password.length < 8) {
+      Alert.alert(
+        'Password Too Short',
+        'Password must be at least 8 characters long'
+      );
+      return false;
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      Alert.alert(
+        'Password Missing Uppercase',
+        'Password must contain at least one uppercase letter (A-Z)'
+      );
+      return false;
+    }
+
+    if (!/[a-z]/.test(password)) {
+      Alert.alert(
+        'Password Missing Lowercase',
+        'Password must contain at least one lowercase letter (a-z)'
+      );
+      return false;
+    }
+
+    if (!/[0-9]/.test(password)) {
+      Alert.alert(
+        'Password Missing Number',
+        'Password must contain at least one number (0-9)'
+      );
       return false;
     }
 
@@ -80,10 +108,26 @@ export default function RegisterScreen() {
         },
       ]);
     } catch (error: any) {
-      Alert.alert(
-        'Registration Failed',
-        error?.response?.data?.error || 'Failed to create account. Please try again.'
-      );
+      // Parse validation errors from backend
+      const errorData = error?.response?.data;
+
+      if (errorData?.details && Array.isArray(errorData.details)) {
+        // Show specific validation errors
+        const errorMessages = errorData.details
+          .map((detail: any) => `• ${detail.message}`)
+          .join('\n');
+
+        Alert.alert(
+          'Validation Error',
+          errorMessages
+        );
+      } else {
+        // Show generic error
+        Alert.alert(
+          'Registration Failed',
+          errorData?.error || 'Failed to create account. Please try again.'
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -128,13 +172,16 @@ export default function RegisterScreen() {
               <Text style={styles.label}>Password</Text>
               <TextInput
                 style={styles.input}
-                placeholder="At least 6 characters"
+                placeholder="Enter your password"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
                 autoCapitalize="none"
                 editable={!loading}
               />
+              <Text style={styles.passwordHint}>
+                Must be 8+ characters with uppercase, lowercase, and a number
+              </Text>
 
               <Text style={styles.label}>Confirm Password</Text>
               <TextInput
@@ -260,5 +307,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#3498db',
     fontWeight: '600',
+  },
+  passwordHint: {
+    fontSize: 12,
+    color: '#7f8c8d',
+    marginTop: 4,
+    marginLeft: 2,
   },
 });
