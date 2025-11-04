@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import logger from '../utils/logger';
 import prisma from '../lib/prisma';
+import Fuse from 'fuse.js';
 
 // Get all oysters
 export const getAllOysters = async (req: Request, res: Response): Promise<void> => {
@@ -184,7 +185,7 @@ export const deleteOyster = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-// Search oysters by name or origin
+// Search oysters by name or origin with fuzzy matching
 export const searchOysters = async (req: Request, res: Response): Promise<void> => {
   try {
     const { query } = req.query;
@@ -197,20 +198,36 @@ export const searchOysters = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    const oysters = await prisma.oyster.findMany({
-      where: {
-        OR: [
-          { name: { contains: query, mode: 'insensitive' } },
-          { origin: { contains: query, mode: 'insensitive' } },
-          { species: { contains: query, mode: 'insensitive' } },
-        ],
-      },
+    // Get all oysters from database
+    const allOysters = await prisma.oyster.findMany({
       include: {
         _count: {
           select: { reviews: true },
         },
       },
     });
+
+    // Configure Fuse.js for fuzzy search
+    const fuse = new Fuse(allOysters, {
+      keys: [
+        { name: 'name', weight: 0.5 },        // Name is most important
+        { name: 'origin', weight: 0.3 },      // Origin is second
+        { name: 'species', weight: 0.2 },     // Species is least important
+      ],
+      threshold: 0.4,           // 0 = exact match, 1 = match anything
+      distance: 100,            // How far to search for patterns
+      includeScore: true,       // Include match score
+      minMatchCharLength: 2,    // Minimum characters to match
+      ignoreLocation: true,     // Search anywhere in the string
+    });
+
+    // Perform fuzzy search
+    const searchResults = fuse.search(query);
+
+    // Extract the oyster data from results
+    const oysters = searchResults.map(result => result.item);
+
+    logger.info(`Fuzzy search for "${query}" returned ${oysters.length} results`);
 
     res.status(200).json({
       success: true,
