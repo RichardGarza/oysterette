@@ -1,6 +1,6 @@
 # Oysterette Production Deployment Progress
 
-## Session Date: October 28-29, 2025
+## Session Dates: October 28-29, 2025 | November 3, 2025
 
 ---
 
@@ -37,6 +37,7 @@ postgresql://neondb_owner:npg_m3KRgzMPSrw1@ep-falling-shadow-ahmk229r-pooler.c-3
   - JWT_SECRET
   - NODE_ENV=production
   - PORT=3000
+  - SENTRY_DSN (error tracking)
 - [x] Successfully deployed backend to Railway
 - [x] Verified API is working and serving data
 
@@ -63,34 +64,6 @@ https://oysterette-production.up.railway.app/api
 ```
 
 ---
-
-## 🔄 IN PROGRESS
-
-### Phase 5.1: User Rating System ✅ (JUST COMPLETED!)
-**Status:** Backend + Mobile UI Complete - Ready for Deployment
-
-**What We Built:**
-- ✅ Database schema with aggregated rating fields
-- ✅ Sophisticated rating calculation service
-- ✅ Auto-recalculation on review create/update/delete
-- ✅ Mobile UI components (RatingDisplay, RatingBreakdown)
-- ✅ Integrated ratings into oyster list cards
-
-**How It Works:**
-1. User submits review → Auto-calculates ratings
-2. Dynamic weighting: More reviews = more user influence
-3. Algorithm: 70% user ratings + 30% seed data (after 5+ reviews)
-4. Overall score (0-10): 40% rating + 60% attributes
-5. Real-time updates on all devices
-
-**Next Steps:**
-- Deploy backend to Railway (migration will auto-run)
-- Publish OTA update: `npm run deploy-update "Add rating system"`
-- Friends' apps will auto-update within minutes!
-
----
-
-## 📋 REMAINING TASKS
 
 ### Phase 4: Build Android APK for Distribution ✅
 **Status:** COMPLETE
@@ -121,227 +94,254 @@ npm run build:android:cloud
 
 ---
 
-### Phase 5: Feature Roadmap - Core Enhancements
+### Phase 5.1: User Rating & Voting System ✅ DEPLOYED!
+**Status:** Complete - Live in Production
 
-#### 5.1 User Rating & Review System (HIGH PRIORITY)
-**Goal:** Allow users to rate and review oysters, influencing the overall scores
+**What We Built:**
+- ✅ Database schema with aggregated rating fields
+- ✅ Sophisticated rating calculation service (40% rating + 60% attributes)
+- ✅ Auto-recalculation on review create/update/delete
+- ✅ Mobile UI components (RatingDisplay, RatingBreakdown)
+- ✅ Integrated ratings into oyster list cards
+- ✅ Voting system (agree/disagree on reviews)
+- ✅ User credibility tracking based on vote patterns
+- ✅ Credibility badges: Novice (0-0.9), Trusted (1.0-1.4), Expert (1.5+)
 
-**Features to Implement:**
-
-1. **Rating Submission Page**
-   - User profile integration
-   - Rating interface (1-5 stars or custom scale)
-   - Review text/notes
-   - Attribute ratings (size, body, sweet/brininess, flavorfulness, creaminess)
-   - Photo upload for oyster pictures (future enhancement)
-
-2. **Rating Weight Algorithm**
-   - Decide balance between seed data and user ratings
-   - Options:
-     - Simple average (seed + user ratings)
-     - Weighted by number of ratings (more ratings = more influence)
-     - Decay old ratings over time
-     - Trust score based on user history
-   - **Example:** 70% user ratings, 30% seed data initially
-
-3. **Overall Score Calculation**
-   - Aggregate all ratings into single score
-   - Display on oyster cards
-   - Sort/filter by score
-   - Show breakdown: "4.2/5 (based on 47 ratings + seed data)"
-
-4. **Database Schema Updates Needed:**
-   ```sql
-   - Extend User model with rating history
-   - Add weightedScore field to Oyster model
-   - Track rating_count and average_rating
-   - Store seed_rating separately from user_rating
-   ```
-
-**Technical Considerations:**
-- Backend: Add rating aggregation endpoints
-- Frontend: Create rating UI components
-- Database: Efficiently calculate and cache scores
-- Real-time updates vs batch processing
+**How It Works:**
+1. User submits review → Auto-calculates ratings
+2. Dynamic weighting: More reviews = more user influence
+3. Algorithm: 70% user ratings + 30% seed data (after 5+ reviews)
+4. Overall score (0-10): 40% rating + 60% attributes
+5. Other users can vote agree/disagree on reviews
+6. Credibility builds over time based on voting patterns
 
 ---
 
-#### 5.2 Predictive Recommendations System (MEDIUM PRIORITY)
-**Goal:** "Would you like this oyster based on what you rated similarly?"
+### Phase 5.2: Production Hardening & Security ✅ COMPLETE!
+**Status:** All Security & Quality Measures Deployed (Nov 3, 2025)
 
-**Features:**
+#### Security Enhancements Deployed:
 
-1. **Collaborative Filtering**
-   - Find users with similar taste profiles
-   - Recommend oysters they rated highly
-   - "Users who liked X also liked Y"
+**1. Input Validation with Zod:**
+- ✅ Comprehensive validation schemas for all API endpoints
+- ✅ Email validation and automatic lowercasing
+- ✅ Strong password requirements:
+  - Minimum 8 characters
+  - At least one uppercase letter
+  - At least one lowercase letter
+  - At least one number
+- ✅ UUID validation for all resource IDs
+- ✅ Attribute range validation (1-10 for ratings)
+- ✅ Review notes length limits (max 1000 characters)
+- ✅ Query parameter validation with transformations
 
-2. **Content-Based Filtering**
-   - Analyze attributes user rated highly
-   - Suggest oysters with similar characteristics
-   - Example: User likes creamy, sweet oysters → recommend similar profiles
+**2. Rate Limiting:**
+- ✅ Auth endpoints: 10 requests per 15 minutes
+- ✅ API endpoints: 100 requests per 15 minutes
+- ✅ IP-based tracking with standard headers
+- ✅ Prevents brute force attacks and API abuse
 
-3. **Recommendation Display**
-   - "You might like..." section on home screen
-   - "Similar oysters" on detail pages
-   - Personalized feed ordering
+**3. JWT Security:**
+- ✅ Removed insecure default secret (throws error if JWT_SECRET not set)
+- ✅ Added unique JWT ID (jti) for token uniqueness
+- ✅ Proper TypeScript type assertions
+- ✅ 7-day token expiration
 
-**Implementation Approach:**
-- **Simple (MVP):** Attribute similarity matching
-- **Advanced:** Machine learning model (TensorFlow.js)
-- **Hybrid:** Combine both approaches
+**4. Professional Logging (Winston):**
+- ✅ File-based logging (logs/error.log, logs/combined.log)
+- ✅ Log levels: error, warn, info, debug
+- ✅ Replaced all 47+ console.log statements
+- ✅ Structured logging with timestamps
 
-**Libraries to Consider:**
-- `ml-knn` for k-nearest neighbors
-- `natural` for text similarity (notes/descriptions)
-- Custom algorithm based on attribute weights
-
----
-
-#### 5.3 User Database Management (HIGH PRIORITY)
-**Goal:** Proper user data management and profiles
-
-**Features Needed:**
-
-1. **User Profile Page**
-   - Display name, email, join date
-   - Total ratings submitted
-   - Favorite oysters (top 3-5)
-   - Rating history
-
-2. **User Settings**
-   - Update profile information
-   - Preferences (notification settings, display options)
-   - Privacy controls
-
-3. **Database Schema:**
-   - Already have User model from Prisma
-   - Extend with:
-     - Profile picture URL
-     - Bio/description
-     - Location (optional)
-     - Taste preferences (auto-computed from ratings)
-     - Account stats (total_ratings, join_date, etc.)
-
-4. **Admin Features (Future)**
-   - Moderate reviews
-   - Ban/flag users
-   - View user analytics
+**5. Error Tracking (Sentry):**
+- ✅ Optional Sentry integration (requires SENTRY_DSN env var)
+- ✅ Automatic error capture and reporting
+- ✅ PII filtering (removes passwords, auth headers, cookies)
+- ✅ Performance monitoring (10% sample rate in production)
+- ✅ Transaction tracing for API requests
 
 ---
 
-#### 5.4 Oyster Photo Gallery (LOW PRIORITY - Future)
-**Goal:** Visual gallery of oyster photos
+### Phase 5.3: Comprehensive Test Suite ✅ COMPLETE!
+**Status:** 162/162 Tests Passing (Nov 3, 2025)
 
-**Features:**
-- Upload photos when submitting reviews
-- Display photo carousel on oyster detail page
-- User-contributed photos vs official photos
-- Photo moderation system
+#### Test Coverage Added:
 
-**Technical Requirements:**
-- Image storage: Cloudinary, AWS S3, or Supabase Storage
-- Image optimization/compression
-- Upload UI in mobile app
-- Backend API for photo management
+**New Test Suites:**
+1. **TypeScript Compilation Tests** (`src/__tests__/compilation/typescript.test.ts`)
+   - Runs full `npm run build` to catch compilation errors
+   - Verifies production config with `tsc --noEmit`
+   - **Prevents Railway deployment failures!**
 
-**Considerations:**
-- Storage costs (free tiers: Cloudinary 25GB, Supabase 1GB)
-- Moderation workflow
-- Image quality guidelines
-- Copyright/attribution
+2. **Validation Middleware Tests** (`src/__tests__/unit/validate.test.ts`)
+   - Tests Zod validation for body, params, query
+   - Verifies structured error messages
+   - Tests data sanitization (email lowercasing)
+   - Password requirement enforcement
+
+3. **Validation Schema Tests** (`src/__tests__/unit/schemas.test.ts`)
+   - Comprehensive tests for all Zod schemas
+   - Auth schemas (register, login)
+   - Review schemas (create, update)
+   - Oyster schemas (create, update)
+   - Vote schemas
+   - UUID parameter validation
+   - Query parameter validation
+   - Edge cases and boundary values
+
+4. **Rate Limiting Tests** (`src/__tests__/integration/rateLimit.test.ts`)
+   - Auth rate limiter (10 req/15min)
+   - API rate limiter (100 req/15min)
+   - IP-based tracking verification
+   - Rate limit headers validation
+   - Window reset behavior
+
+**Test Results:**
+- **Before:** 29 failing tests, 133 passing
+- **After:** 0 failing tests, **162 passing** ✅
+
+**Critical Fixes:**
+- ✅ Fixed `req.query` read-only property issue in validation middleware
+- ✅ Updated all test passwords to meet new requirements
+- ✅ Fixed review creation to include all required attributes
+- ✅ Changed invalid UUIDs to valid format for proper validation testing
+- ✅ Added trust proxy setting for rate limit IP tracking tests
+- ✅ Fixed TypeScript compilation test path resolution
 
 ---
 
-### Phase 6: Future Enhancements (Optional)
+## 📋 NEXT PRIORITIES
 
-#### 6.1 Improve Search Functionality (HIGH PRIORITY)
-**Goal:** Implement fuzzy search to handle misspellings and typos
+### Priority 1: Fuzzy Search Implementation (HIGH IMPACT - EASY WIN)
+**Status:** RECOMMENDED NEXT STEP 🎯
 
-**Current Issue:**
+**Why This First:**
+- Immediate UX improvement - users currently can't find oysters with typos
+- Quick to implement (1-2 hours)
+- High user satisfaction gain
+- No database changes needed
+
+**Problem:**
 - Search requires exact matches
-- Users can't find oysters if they misspell names
-- Example: "Kumaoto" won't find "Kumamoto"
+- "Kumaoto" won't find "Kumamoto"
+- "Pacfic" won't find "Pacific"
+- Users get frustrated with empty results
 
-**Recommended Solution:**
-Use fuzzy string matching library like:
-- **Fuse.js** (Most popular, easy to integrate)
-- **fuzzysort** (Faster, lightweight)
-- **PostgreSQL trigram similarity** (Backend solution)
+**Solution:** Implement fuzzy string matching
 
-**Implementation Steps:**
-1. **Frontend Fuzzy Search (Quick Win)**
-   ```bash
-   cd mobile-app
-   npm install fuse.js
-   ```
+**Recommended Approach:**
+Use **Fuse.js** (most popular, battle-tested)
+- 2M+ downloads per week
+- Zero dependencies
+- Works client-side and server-side
+- Highly configurable
 
-   Update `mobile-app/src/screens/HomeScreen.tsx`:
-   ```typescript
-   import Fuse from 'fuse.js';
+**Implementation:**
+```bash
+# In backend
+cd backend
+npm install fuse.js
 
-   const fuse = new Fuse(oysters, {
-     keys: ['name', 'origin', 'species'],
-     threshold: 0.3, // 0 = exact match, 1 = match anything
-     includeScore: true
-   });
+# Update search endpoint in oysterController.ts
+```
 
-   const results = fuse.search(searchQuery);
-   ```
+**Example Code:**
+```typescript
+import Fuse from 'fuse.js';
 
-2. **Backend Fuzzy Search (Better Performance)**
-   - Install pg_trgm extension in Neon
-   - Update search query to use PostgreSQL similarity
-   - Example: `SELECT * FROM oysters WHERE similarity(name, 'search') > 0.3`
+const fuse = new Fuse(oysters, {
+  keys: ['name', 'origin', 'species'],
+  threshold: 0.3, // 0 = exact, 1 = match anything
+  includeScore: true,
+  useExtendedSearch: true,
+});
+
+const results = fuse.search(searchQuery);
+```
 
 **Benefits:**
-- Better user experience
-- Finds results even with typos
-- Can show "Did you mean...?" suggestions
+- ✅ Handles typos and misspellings
+- ✅ Can show "Did you mean...?" suggestions
+- ✅ Weighted search across multiple fields
+- ✅ Still fast with 800+ oysters
+- ✅ No database migration needed
+
+**Estimated Time:** 1-2 hours
 
 ---
 
-#### 6.2 iOS Distribution Options
+### Priority 2: User Profile Page (HIGH PRIORITY - MEDIUM EFFORT)
+**Status:** Ready to Implement
 
-**Option A: Expo Go (Quick & Free - RECOMMENDED FOR INITIAL TESTING)**
-- Friends download free "Expo Go" app from App Store
-- Share QR code or link: `npx expo start --tunnel`
-- Instant testing without build process
-- Limited: Some native features won't work
-- Requires dev server running
+**Why:**
+- Users need to see their review history
+- Credibility badge display
+- Profile management
 
-**Option B: TestFlight (Full Native App - Production Ready)**
-- Requires Apple Developer account ($99/year)
-- Build iOS app with EAS
-- Submit to App Store Connect
-- Invite testers via TestFlight
+**Features to Build:**
 
-#### 6.3 Implement OAuth Authentication
-**Recommended:** Clerk (https://clerk.com)
-- Free tier: 10,000 monthly active users
-- Easy OAuth integration (Google, Apple, GitHub)
-- React Native SDK available
+1. **Profile Screen** (`mobile-app/src/screens/ProfileScreen.tsx`)
+   - User name and email
+   - Join date
+   - Credibility score and badge
+   - Total reviews count
+   - Total votes received (agrees/disagrees)
 
-**Steps:**
-1. Create Clerk account
-2. Install Clerk packages
-3. Add authentication screens
-4. Protect API routes with Clerk middleware
+2. **Review History Tab**
+   - List of user's reviews with oyster names
+   - Rating and date
+   - Vote counts per review
+   - Edit/delete options
 
-#### 6.4 Enhanced Styling
-**Consider:**
-- NativeWind (Tailwind for React Native)
-- React Native Paper (Material Design)
-- Custom color scheme/theme
-- Improved card designs
-- Loading animations
+3. **Stats Display**
+   - Reviews submitted: X
+   - Credibility: X.XX (Badge icon)
+   - Agrees received: X
+   - Disagrees received: X
 
-#### 6.5 Feedback Collection
-**Options:**
-- In-app feedback form
-- Instabug (free tier)
-- Google Forms link
-- Sentry for error tracking
+**Backend Changes:**
+- ✅ Already have `/api/users/:userId/credibility` endpoint
+- Need to add `/api/users/:userId/reviews` endpoint
+
+**Estimated Time:** 4-6 hours
+
+---
+
+### Priority 3: Enhanced Oyster Recommendations (MEDIUM PRIORITY)
+**Status:** Future Enhancement
+
+**Two Approaches:**
+
+**A. Simple Attribute-Based (Quick Win)**
+- Match user's highly-rated oysters
+- Find similar attributes (creamy, sweet, etc.)
+- Show "You might like..." section
+
+**B. Collaborative Filtering (Advanced)**
+- Find users with similar taste
+- Recommend their favorites
+- "Users who liked X also liked Y"
+
+**Implementation:**
+- Start with simple approach
+- Add collaborative filtering later
+
+**Estimated Time:** 6-8 hours (simple), 12-16 hours (advanced)
+
+---
+
+### Priority 4: Oyster Photo Gallery (LOW PRIORITY - FUTURE)
+**Status:** Backlog
+
+**Why Later:**
+- Requires image storage setup ($$$)
+- Need moderation workflow
+- More complex than other features
+
+**When to Consider:**
+- After user base grows
+- When you have budget for image storage
+- After core features are solid
 
 ---
 
@@ -356,26 +356,38 @@ claude-project/
 │   ├── src/
 │   │   ├── controllers/       # API controllers
 │   │   ├── routes/            # API routes
-│   │   ├── lib/              # Utilities (Prisma client)
-│   │   └── index.ts          # Server entry point
-│   ├── railway.json          # Railway deployment config
-│   ├── nixpacks.toml         # Build configuration
-│   ├── Procfile              # Start command
-│   ├── tsconfig.build.json   # Production TypeScript config
-│   └── .env                  # Environment variables (Neon DB)
+│   │   ├── middleware/        # Auth, validation, etc.
+│   │   ├── services/          # Business logic (rating, voting)
+│   │   ├── validators/        # Zod schemas
+│   │   ├── utils/             # Logger, Sentry, auth
+│   │   ├── lib/               # Prisma client
+│   │   ├── __tests__/         # Test suites (162 tests)
+│   │   │   ├── compilation/   # TypeScript build tests
+│   │   │   ├── integration/   # API integration tests
+│   │   │   └── unit/          # Unit tests
+│   │   └── index.ts           # Server entry point
+│   ├── railway.json           # Railway deployment config
+│   ├── nixpacks.toml          # Build configuration
+│   ├── Procfile               # Start command
+│   ├── tsconfig.build.json    # Production TypeScript config
+│   └── .env                   # Environment variables (Neon DB)
 │
-├── mobile-app/               # React Native Expo app
+├── mobile-app/                # React Native Expo app
 │   ├── src/
-│   │   ├── screens/         # App screens
-│   │   ├── services/        # API service (connects to Railway)
-│   │   ├── types/           # TypeScript types
-│   │   └── navigation/      # Navigation config
-│   ├── App.tsx              # App entry point
+│   │   ├── screens/          # App screens
+│   │   ├── components/       # Reusable components
+│   │   ├── services/         # API service (connects to Railway)
+│   │   ├── types/            # TypeScript types
+│   │   ├── navigation/       # Navigation config
+│   │   ├── context/          # Theme context
+│   │   └── themes/           # Dark/light themes
+│   ├── App.tsx               # App entry point
+│   ├── app.json              # Expo config
 │   └── package.json
 │
-├── PRODUCTION_ROADMAP.md    # Detailed deployment guide
-├── CLAUDE.md                # This file - session progress
-└── README.md                # Project documentation
+├── PRODUCTION_ROADMAP.md     # Detailed deployment guide
+├── CLAUDE.md                 # This file - session progress
+└── README.md                 # Project documentation
 ```
 
 ---
@@ -385,17 +397,26 @@ claude-project/
 ### Infrastructure
 - ✅ **Database:** Neon PostgreSQL (838 oysters)
 - ✅ **Backend:** Railway (https://oysterette-production.up.railway.app)
-- ✅ **Mobile App:** Configured for production, needs restart to test
+- ✅ **Mobile App:** Production-ready with OTA updates
+- ✅ **Error Tracking:** Sentry configured
+- ✅ **Logging:** Winston file-based logging
+- ✅ **Security:** Rate limiting, input validation, JWT hardening
 
-### Data
-- 129 oysters loaded in production database (Note: seeded 838 but showing 129)
-- PostgreSQL with Prisma ORM
-- Cloud-hosted and accessible
+### Features
+- ✅ User authentication (register, login)
+- ✅ Oyster browsing and search
+- ✅ Review creation with ratings
+- ✅ Voting system (agree/disagree)
+- ✅ Credibility tracking and badges
+- ✅ Dark mode support
+- ✅ Rating aggregation and display
 
-### Deployment
-- Backend fully deployed and operational
-- Mobile app ready for testing
-- Ready to build APK for distribution
+### Quality
+- ✅ **162/162 tests passing**
+- ✅ TypeScript compilation verified
+- ✅ Input validation on all endpoints
+- ✅ Rate limiting active
+- ✅ Professional error handling
 
 ---
 
@@ -408,6 +429,13 @@ npm run dev
 
 # Build production
 npm run build
+
+# Run all tests
+npm test
+
+# Run specific test types
+npm run test:unit
+npm run test:integration
 
 # Run migrations
 npx prisma migrate deploy
@@ -430,8 +458,14 @@ npx expo start --ios
 # Start with Android emulator
 npx expo start --android
 
-# Build Android APK
-eas build --platform android --profile preview
+# Deploy OTA update
+npm run deploy-update "Your update message"
+
+# Build Android APK (local)
+npm run build:android:local
+
+# Build Android APK (cloud)
+npm run build:android:cloud
 ```
 
 ### Git
@@ -443,7 +477,7 @@ git status
 git add .
 git commit -m "Your message"
 
-# Push to GitHub
+# Push to GitHub (triggers Railway auto-deploy)
 git push origin main
 ```
 
@@ -453,7 +487,8 @@ git push origin main
 
 1. **Environment Variables (Railway)**
    - DATABASE_URL is set to Neon connection
-   - JWT_SECRET is configured
+   - JWT_SECRET is configured (NEVER use default)
+   - SENTRY_DSN is optional (set for error tracking)
    - Never commit `.env` files to git
 
 2. **API URL Configuration**
@@ -471,39 +506,44 @@ git push origin main
    - Auto-sleeps after inactivity
    - Sufficient for testing
 
----
-
-## 📞 Next Session Checklist
-
-When resuming work:
-
-1. **Verify Services are Running**
-   - [ ] Check Railway deployment status
-   - [ ] Test production API endpoint
-   - [ ] Verify Neon database is accessible
-
-2. **Test Mobile App**
-   - [ ] Start Expo server
-   - [ ] Load app in simulator
-   - [ ] Verify data loads from production
-
-3. **Continue with APK Build**
-   - [ ] Install EAS CLI
-   - [ ] Configure build settings
-   - [ ] Build and test APK
+5. **Testing**
+   - Always run tests before pushing: `npm test`
+   - TypeScript compilation test will catch build errors
+   - All 162 tests must pass
 
 ---
 
-## 🎯 Final Goal
-**Share the app with friends for testing and feedback!**
+## 🎯 Recommended Next Action
 
-- Android users: Share APK file directly
-- iOS users: TestFlight (requires Apple Developer account)
-- Collect feedback via forms or in-app feedback system
+**⭐ IMPLEMENT FUZZY SEARCH ⭐**
+
+This is the highest-impact, lowest-effort improvement you can make right now:
+
+1. **Quick Win:** 1-2 hours of work
+2. **High Impact:** Immediate UX improvement
+3. **Low Risk:** No database changes
+4. **User Delight:** No more "no results found" frustration
+
+**Steps:**
+```bash
+cd backend
+npm install fuse.js
+
+# Update oysterController.ts search function
+# Test with: "Kumaoto" should find "Kumamoto"
+
+npm test
+git add .
+git commit -m "feat: add fuzzy search for oyster names"
+git push origin main
+```
+
+Railway will auto-deploy, and users will immediately benefit from better search!
 
 ---
 
-**Generated:** October 29, 2025
-**Backend:** Live on Railway
+**Generated:** November 3, 2025
+**Backend:** Live on Railway with security hardening
 **Database:** Live on Neon
-**Status:** Ready for mobile app testing and APK build
+**Tests:** 162/162 passing ✅
+**Status:** Production-ready with comprehensive security & testing
