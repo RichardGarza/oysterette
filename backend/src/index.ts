@@ -1,6 +1,13 @@
+// IMPORTANT: Load environment variables FIRST
+import dotenv from 'dotenv';
+dotenv.config();
+
+// IMPORTANT: Initialize Sentry BEFORE importing express
+import './utils/sentry-init';
+
+// Now import express and other modules
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/authRoutes';
 import oysterRoutes from './routes/oysterRoutes';
@@ -10,19 +17,13 @@ import voteRoutes from './routes/voteRoutes';
 import prisma from './lib/prisma';
 import logger from './utils/logger';
 import {
-  initSentry,
   getSentryRequestHandler,
   getSentryTracingHandler,
   setupSentryErrorHandler,
 } from './utils/sentry';
 
-dotenv.config();
-
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
-
-// Initialize Sentry (must be first)
-initSentry(app);
 
 // Rate limiting
 const authLimiter = rateLimit({
