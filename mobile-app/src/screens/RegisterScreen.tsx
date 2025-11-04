@@ -17,6 +17,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { authApi } from '../services/api';
 import { authStorage } from '../services/auth';
+import api from '../services/api';
 
 type RegisterScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -30,6 +31,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
 
   const validateForm = () => {
     if (!name.trim()) {
@@ -95,7 +97,20 @@ export default function RegisterScreen() {
 
     try {
       setLoading(true);
+
+      // Log what we're sending (for debugging)
+      console.log('📤 Registration attempt:', {
+        email: email.trim(),
+        name: name.trim(),
+        passwordLength: password.length,
+        hasUppercase: /[A-Z]/.test(password),
+        hasLowercase: /[a-z]/.test(password),
+        hasNumber: /[0-9]/.test(password),
+      });
+
       const response = await authApi.register(email.trim(), name.trim(), password);
+
+      console.log('✅ Registration successful');
 
       // Save token and user data
       await authStorage.saveToken(response.token);
@@ -108,24 +123,41 @@ export default function RegisterScreen() {
         },
       ]);
     } catch (error: any) {
+      console.log('❌ Registration error:', {
+        status: error?.response?.status,
+        data: error?.response?.data,
+        message: error?.message,
+      });
+
       // Parse validation errors from backend
       const errorData = error?.response?.data;
 
       if (errorData?.details && Array.isArray(errorData.details)) {
-        // Show specific validation errors
+        // Show specific validation errors from Zod
         const errorMessages = errorData.details
-          .map((detail: any) => `• ${detail.message}`)
+          .map((detail: any) => {
+            const field = detail.field || 'Unknown';
+            const message = detail.message || 'Invalid';
+            return `• ${field}: ${message}`;
+          })
           .join('\n');
 
         Alert.alert(
-          'Validation Error',
-          errorMessages
+          'Registration Error',
+          `Please fix the following:\n\n${errorMessages}`
         );
-      } else {
-        // Show generic error
+      } else if (errorData?.error) {
+        // Show specific error message from backend
         Alert.alert(
           'Registration Failed',
-          errorData?.error || 'Failed to create account. Please try again.'
+          errorData.error
+        );
+      } else {
+        // Show generic error with status code
+        const statusCode = error?.response?.status || 'Unknown';
+        Alert.alert(
+          'Registration Failed',
+          `Failed to create account.\n\nError code: ${statusCode}\n\nPlease check your internet connection and try again.`
         );
       }
     } finally {
@@ -144,6 +176,27 @@ export default function RegisterScreen() {
             <View style={styles.header}>
               <Text style={styles.title}>Create Account</Text>
               <Text style={styles.subtitle}>Join Oysterette today</Text>
+              <TouchableOpacity
+                onPress={() => setShowDebug(!showDebug)}
+                style={{ marginTop: 10 }}
+              >
+                <Text style={{ fontSize: 12, color: '#999' }}>
+                  {showDebug ? '🔍 Hide Debug' : '🔍 Show Debug'}
+                </Text>
+              </TouchableOpacity>
+              {showDebug && (
+                <View style={styles.debugBox}>
+                  <Text style={styles.debugText}>
+                    API: {api.defaults.baseURL}
+                  </Text>
+                  <Text style={styles.debugText}>
+                    Platform: {Platform.OS}
+                  </Text>
+                  <Text style={styles.debugText}>
+                    Check console logs for details
+                  </Text>
+                </View>
+              )}
             </View>
 
             <View style={styles.form}>
@@ -313,5 +366,16 @@ const styles = StyleSheet.create({
     color: '#7f8c8d',
     marginTop: 4,
     marginLeft: 2,
+  },
+  debugBox: {
+    backgroundColor: '#f0f0f0',
+    padding: 8,
+    borderRadius: 4,
+    marginTop: 8,
+  },
+  debugText: {
+    fontSize: 10,
+    color: '#666',
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
 });
