@@ -285,37 +285,42 @@ export default function RegisterScreen() {
                 )}
               </TouchableOpacity>
 
-              {/* Divider */}
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>OR</Text>
-                <View style={styles.dividerLine} />
-              </View>
+              {/* Google Sign-In - Only show if OAuth is configured */}
+              {request && promptAsync && (
+                <>
+                  {/* Divider */}
+                  <View style={styles.divider}>
+                    <View style={styles.dividerLine} />
+                    <Text style={styles.dividerText}>OR</Text>
+                    <View style={styles.dividerLine} />
+                  </View>
 
-              {/* Google Sign-In Button */}
-              <TouchableOpacity
-                style={[styles.googleButton, (googleLoading || loading) && styles.buttonDisabled]}
-                onPress={async () => {
-                  try {
-                    setGoogleLoading(true);
-                    await promptAsync();
-                  } catch (error) {
-                    console.error('Error launching Google OAuth:', error);
-                    setGoogleLoading(false);
-                    Alert.alert('Error', 'Failed to launch Google sign-in. Please try again.');
-                  }
-                }}
-                disabled={googleLoading || loading || !request}
-              >
-                {googleLoading ? (
-                  <ActivityIndicator color="#555" />
-                ) : (
-                  <>
-                    <Text style={styles.googleIcon}>G</Text>
-                    <Text style={styles.googleButtonText}>Continue with Google</Text>
-                  </>
-                )}
-              </TouchableOpacity>
+                  {/* Google Sign-In Button */}
+                  <TouchableOpacity
+                    style={[styles.googleButton, (googleLoading || loading) && styles.buttonDisabled]}
+                    onPress={async () => {
+                      try {
+                        setGoogleLoading(true);
+                        await promptAsync();
+                      } catch (error) {
+                        console.error('Error launching Google OAuth:', error);
+                        setGoogleLoading(false);
+                        Alert.alert('Error', 'Failed to launch Google sign-in. Please try again.');
+                      }
+                    }}
+                    disabled={googleLoading || loading}
+                  >
+                    {googleLoading ? (
+                      <ActivityIndicator color="#555" />
+                    ) : (
+                      <>
+                        <Text style={styles.googleIcon}>G</Text>
+                        <Text style={styles.googleButtonText}>Continue with Google</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </>
+              )}
 
               <View style={styles.loginContainer}>
                 <Text style={styles.loginText}>Already have an account? </Text>

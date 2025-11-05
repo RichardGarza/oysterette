@@ -36,6 +36,8 @@ export default function LoginScreen() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { theme, loadUserTheme } = useTheme();
 
+  const styles = createStyles(theme.colors);
+
   // Google OAuth configuration
   // Web client ID works with Expo Go for testing on both iOS and Android
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
@@ -43,8 +45,6 @@ export default function LoginScreen() {
     // iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com', // For production builds
     // androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com', // For production builds
   });
-
-  const styles = createStyles(theme.colors);
 
   // Handle Google OAuth response
   React.useEffect(() => {
@@ -167,37 +167,42 @@ export default function LoginScreen() {
               )}
             </TouchableOpacity>
 
-            {/* Divider */}
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>OR</Text>
-              <View style={styles.dividerLine} />
-            </View>
+            {/* Google Sign-In - Only show if OAuth is configured */}
+            {request && promptAsync && (
+              <>
+                {/* Divider */}
+                <View style={styles.divider}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>OR</Text>
+                  <View style={styles.dividerLine} />
+                </View>
 
-            {/* Google Sign-In Button */}
-            <TouchableOpacity
-              style={[styles.googleButton, (googleLoading || loading) && styles.buttonDisabled]}
-              onPress={async () => {
-                try {
-                  setGoogleLoading(true);
-                  await promptAsync();
-                } catch (error) {
-                  console.error('Error launching Google OAuth:', error);
-                  setGoogleLoading(false);
-                  Alert.alert('Error', 'Failed to launch Google sign-in. Please try again.');
-                }
-              }}
-              disabled={googleLoading || loading || !request}
-            >
-              {googleLoading ? (
-                <ActivityIndicator color="#555" />
-              ) : (
-                <>
-                  <Text style={styles.googleIcon}>G</Text>
-                  <Text style={styles.googleButtonText}>Continue with Google</Text>
-                </>
-              )}
-            </TouchableOpacity>
+                {/* Google Sign-In Button */}
+                <TouchableOpacity
+                  style={[styles.googleButton, (googleLoading || loading) && styles.buttonDisabled]}
+                  onPress={async () => {
+                    try {
+                      setGoogleLoading(true);
+                      await promptAsync();
+                    } catch (error) {
+                      console.error('Error launching Google OAuth:', error);
+                      setGoogleLoading(false);
+                      Alert.alert('Error', 'Failed to launch Google sign-in. Please try again.');
+                    }
+                  }}
+                  disabled={googleLoading || loading}
+                >
+                  {googleLoading ? (
+                    <ActivityIndicator color="#555" />
+                  ) : (
+                    <>
+                      <Text style={styles.googleIcon}>G</Text>
+                      <Text style={styles.googleButtonText}>Continue with Google</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
 
             <View style={styles.registerContainer}>
               <Text style={styles.registerText}>Don't have an account? </Text>
