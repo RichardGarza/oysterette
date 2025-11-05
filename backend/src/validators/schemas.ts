@@ -23,6 +23,10 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+export const googleAuthSchema = z.object({
+  idToken: z.string().min(1, 'Google ID token is required'),
+});
+
 // Review Schemas
 export const createReviewSchema = z.object({
   oysterId: z.string().uuid('Invalid oyster ID'),
