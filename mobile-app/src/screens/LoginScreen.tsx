@@ -51,6 +51,16 @@ export default function LoginScreen() {
     if (response?.type === 'success') {
       const { id_token } = response.params;
       handleGoogleSignIn(id_token);
+    } else if (response?.type === 'error') {
+      setGoogleLoading(false);
+      Alert.alert(
+        'Google Sign-In Error',
+        response.error?.message || 'Failed to sign in with Google. Please try again.'
+      );
+      console.error('Google OAuth error:', response.error);
+    } else if (response?.type === 'cancel' || response?.type === 'dismiss') {
+      setGoogleLoading(false);
+      // User cancelled, no alert needed
     }
   }, [response]);
 
@@ -167,7 +177,16 @@ export default function LoginScreen() {
             {/* Google Sign-In Button */}
             <TouchableOpacity
               style={[styles.googleButton, (googleLoading || loading) && styles.buttonDisabled]}
-              onPress={() => promptAsync()}
+              onPress={async () => {
+                try {
+                  setGoogleLoading(true);
+                  await promptAsync();
+                } catch (error) {
+                  console.error('Error launching Google OAuth:', error);
+                  setGoogleLoading(false);
+                  Alert.alert('Error', 'Failed to launch Google sign-in. Please try again.');
+                }
+              }}
               disabled={googleLoading || loading || !request}
             >
               {googleLoading ? (
