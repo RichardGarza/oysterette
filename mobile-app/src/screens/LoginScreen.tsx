@@ -49,10 +49,9 @@ export default function LoginScreen() {
   // Web client ID works with Expo Go for testing on both iOS and Android
   console.log('🔵 LoginScreen: About to initialize Google OAuth...');
 
-  // Use Expo auth proxy for development (required for Expo Go)
+  // Force use of Expo auth proxy (required for consistent OAuth in Expo Go)
   const redirectUri = makeRedirectUri({
-    scheme: 'oysterette',
-    path: 'redirect',
+    useProxy: true, // Always use https://auth.expo.io/@username/slug
   });
 
   console.log('🔵 LoginScreen: Redirect URI:', redirectUri);

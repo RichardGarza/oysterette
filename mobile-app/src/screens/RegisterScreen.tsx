@@ -43,10 +43,9 @@ export default function RegisterScreen() {
   // Google OAuth configuration
   // Web client ID works with Expo Go for testing on both iOS and Android
 
-  // Use Expo auth proxy for development (required for Expo Go)
+  // Force use of Expo auth proxy (required for consistent OAuth in Expo Go)
   const redirectUri = makeRedirectUri({
-    scheme: 'oysterette',
-    path: 'redirect',
+    useProxy: true, // Always use https://auth.expo.io/@username/slug
   });
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
