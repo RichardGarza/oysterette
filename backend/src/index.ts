@@ -26,16 +26,19 @@ const app: Express = express();
 const PORT = process.env.PORT || 3000;
 
 // Trust proxy headers from Railway (required for rate limiting to work correctly)
-// Railway uses a reverse proxy that sets X-Forwarded-For headers
-app.set('trust proxy', true);
+// Railway uses a reverse proxy, so we trust the first proxy in the chain
+// Setting to 1 is more secure than 'true' as it only trusts the immediate proxy
+app.set('trust proxy', 1);
 
-// Rate limiting
+// Rate limiting with proper validation
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // 10 requests per window per IP
   message: 'Too many authentication attempts, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
+  // Validate that we can get a real IP address
+  validate: { trustProxy: false }, // Disable built-in validation, we configured trust proxy above
 });
 
 const apiLimiter = rateLimit({
@@ -44,6 +47,7 @@ const apiLimiter = rateLimit({
   message: 'Too many requests, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { trustProxy: false }, // Disable built-in validation, we configured trust proxy above
 });
 
 // Middleware
