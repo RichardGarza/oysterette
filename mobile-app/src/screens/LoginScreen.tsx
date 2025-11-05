@@ -29,6 +29,8 @@ type LoginScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 export default function LoginScreen() {
+  console.log('🔵 LoginScreen: Component rendering START');
+
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,14 +38,25 @@ export default function LoginScreen() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { theme, loadUserTheme } = useTheme();
 
+  console.log('🔵 LoginScreen: State initialized');
+
   const styles = createStyles(theme.colors);
+
+  console.log('🔵 LoginScreen: Styles created');
 
   // Google OAuth configuration
   // Web client ID works with Expo Go for testing on both iOS and Android
+  console.log('🔵 LoginScreen: About to initialize Google OAuth...');
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId: '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com',
     // iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com', // For production builds
     // androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com', // For production builds
+  });
+
+  console.log('✅ LoginScreen: Google OAuth hook returned', {
+    hasRequest: !!request,
+    hasResponse: !!response,
+    hasPromptAsync: !!promptAsync,
   });
 
   // Handle Google OAuth response
@@ -87,6 +100,8 @@ export default function LoginScreen() {
       setGoogleLoading(false);
     }
   };
+
+  console.log('🟢 LoginScreen: About to render JSX');
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
