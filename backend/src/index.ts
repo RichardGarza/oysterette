@@ -25,6 +25,10 @@ import {
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy headers from Railway (required for rate limiting to work correctly)
+// Railway uses a reverse proxy that sets X-Forwarded-For headers
+app.set('trust proxy', true);
+
 // Rate limiting
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
