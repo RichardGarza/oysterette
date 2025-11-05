@@ -18,6 +18,11 @@ import { RootStackParamList } from '../navigation/types';
 import { authApi } from '../services/api';
 import { authStorage } from '../services/auth';
 import { useTheme } from '../context/ThemeContext';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
+
+// Enable dismissal of browser after OAuth
+WebBrowser.maybeCompleteAuthSession();
 
 type RegisterScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -26,12 +31,48 @@ type RegisterScreenNavigationProp = NativeStackNavigationProp<
 
 export default function RegisterScreen() {
   const navigation = useNavigation<RegisterScreenNavigationProp>();
-  const { loadUserTheme } = useTheme();
+  const { theme, loadUserTheme } = useTheme();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  // TODO: Add your Google OAuth client IDs from Google Cloud Console
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    clientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+    iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com',
+    androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
+  });
+
+  // Handle Google OAuth response
+  React.useEffect(() => {
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
+      handleGoogleSignIn(id_token);
+    }
+  }, [response]);
+
+  const handleGoogleSignIn = async (idToken: string) => {
+    try {
+      setGoogleLoading(true);
+      const authResponse = await authApi.googleAuth(idToken);
+
+      await authStorage.saveToken(authResponse.token);
+      await authStorage.saveUser(authResponse.user);
+      loadUserTheme(authResponse.user);
+
+      navigation.navigate('OysterList');
+    } catch (error: any) {
+      Alert.alert(
+        'Google Sign-In Failed',
+        error?.response?.data?.error || 'Failed to authenticate with Google'
+      );
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const validateForm = () => {
     if (!name.trim()) {
@@ -233,6 +274,29 @@ export default function RegisterScreen() {
                 )}
               </TouchableOpacity>
 
+              {/* Divider */}
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>OR</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              {/* Google Sign-In Button */}
+              <TouchableOpacity
+                style={[styles.googleButton, (googleLoading || loading) && styles.buttonDisabled]}
+                onPress={() => promptAsync()}
+                disabled={googleLoading || loading || !request}
+              >
+                {googleLoading ? (
+                  <ActivityIndicator color="#555" />
+                ) : (
+                  <>
+                    <Text style={styles.googleIcon}>G</Text>
+                    <Text style={styles.googleButtonText}>Continue with Google</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
               <View style={styles.loginContainer}>
                 <Text style={styles.loginText}>Already have an account? </Text>
                 <TouchableOpacity
@@ -340,5 +404,43 @@ const styles = StyleSheet.create({
     color: '#7f8c8d',
     marginTop: 4,
     marginLeft: 2,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e0e0e0',
+  },
+  dividerText: {
+    marginHorizontal: 10,
+    fontSize: 14,
+    color: '#7f8c8d',
+    fontWeight: '500',
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    paddingVertical: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  googleIcon: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginRight: 10,
+    color: '#4285F4',
+  },
+  googleButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#555',
   },
 });
