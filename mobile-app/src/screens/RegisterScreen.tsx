@@ -39,10 +39,10 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // TODO: Replace with your Web Client ID from Google Cloud Console
-  // For testing in Expo Go, only the Web clientId is needed
+  // Google OAuth configuration
+  // Web client ID works with Expo Go for testing on both iOS and Android
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com', // TODO: Replace this
+    clientId: '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com',
     // iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com', // For production builds
     // androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com', // For production builds
   });
