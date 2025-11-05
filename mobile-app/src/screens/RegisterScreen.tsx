@@ -40,17 +40,13 @@ export default function RegisterScreen() {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   // Google OAuth configuration
-  // Web client ID works with Expo Go for testing on both iOS and Android
-
-  // Explicitly set redirect URI to Expo auth proxy
-  // This prevents using the OTA update URL which changes with each deployment
-  const redirectUri = 'https://auth.expo.io/@rgactr/oysterette';
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    // Web client ID for Expo Go testing
     clientId: '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com',
-    redirectUri,
-    // iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com', // For production builds
-    // androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com', // For production builds
+    // Android client ID for standalone APK (required for production)
+    androidClientId: '578059352307-shtope2u9b6u47pb2mgq5ntml2d9jnul.apps.googleusercontent.com',
+    // iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com', // For iOS production builds
   });
 
   // Handle Google OAuth response
