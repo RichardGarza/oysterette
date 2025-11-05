@@ -19,7 +19,6 @@ import { authStorage } from '../services/auth';
 import { useTheme } from '../context/ThemeContext';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
-import { makeRedirectUri } from 'expo-auth-session';
 
 // Enable dismissal of browser after OAuth
 WebBrowser.maybeCompleteAuthSession();
@@ -49,10 +48,9 @@ export default function LoginScreen() {
   // Web client ID works with Expo Go for testing on both iOS and Android
   console.log('🔵 LoginScreen: About to initialize Google OAuth...');
 
-  // Force use of Expo auth proxy (required for consistent OAuth in Expo Go)
-  const redirectUri = makeRedirectUri({
-    useProxy: true, // Always use https://auth.expo.io/@username/slug
-  });
+  // Explicitly set redirect URI to Expo auth proxy
+  // This prevents using the OTA update URL which changes with each deployment
+  const redirectUri = 'https://auth.expo.io/@rgactr/oysterette';
 
   console.log('🔵 LoginScreen: Redirect URI:', redirectUri);
 
