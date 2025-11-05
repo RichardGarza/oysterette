@@ -17,11 +17,7 @@ import { RootStackParamList } from '../navigation/types';
 import { authApi } from '../services/api';
 import { authStorage } from '../services/auth';
 import { useTheme } from '../context/ThemeContext';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
-
-// Enable dismissal of browser after OAuth
-WebBrowser.maybeCompleteAuthSession();
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -44,45 +40,36 @@ export default function LoginScreen() {
 
   console.log('🔵 LoginScreen: Styles created');
 
-  // Google OAuth configuration
-  console.log('🔵 LoginScreen: About to initialize Google OAuth...');
-
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    // Web client ID for Expo Go testing
-    clientId: '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com',
-    // Android client ID for standalone APK (required for production)
-    androidClientId: '578059352307-shtope2u9b6u47pb2mgq5ntml2d9jnul.apps.googleusercontent.com',
-    // iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com', // For iOS production builds
-    // Note: redirectUri is NOT specified for Android - it's handled automatically via package name
-  });
-
-  console.log('✅ LoginScreen: Google OAuth hook returned', {
-    hasRequest: !!request,
-    hasResponse: !!response,
-    hasPromptAsync: !!promptAsync,
-  });
-
-  // Handle Google OAuth response
+  // Configure Google Sign-In
   React.useEffect(() => {
-    if (response?.type === 'success') {
-      const { id_token } = response.params;
-      handleGoogleSignIn(id_token);
-    } else if (response?.type === 'error') {
-      setGoogleLoading(false);
-      Alert.alert(
-        'Google Sign-In Error',
-        response.error?.message || 'Failed to sign in with Google. Please try again.'
-      );
-      console.error('Google OAuth error:', response.error);
-    } else if (response?.type === 'cancel' || response?.type === 'dismiss') {
-      setGoogleLoading(false);
-      // User cancelled, no alert needed
-    }
-  }, [response]);
+    GoogleSignin.configure({
+      webClientId: '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com', // Web client ID for backend verification
+      offlineAccess: false,
+    });
+    console.log('✅ Native Google Sign-In configured');
+  }, []);
 
-  const handleGoogleSignIn = async (idToken: string) => {
+  const handleGoogleSignIn = async () => {
     try {
       setGoogleLoading(true);
+      console.log('🔵 Starting native Google Sign-In...');
+
+      // Check if Google Play services are available
+      await GoogleSignin.hasPlayServices();
+
+      // Sign in and get user info with ID token
+      const userInfo = await GoogleSignin.signIn();
+      console.log('✅ Google Sign-In successful, user:', userInfo.data?.user?.email);
+
+      // Get the ID token
+      const idToken = userInfo.data?.idToken;
+      if (!idToken) {
+        throw new Error('No ID token received from Google');
+      }
+
+      console.log('🔵 Sending ID token to backend...');
+
+      // Send ID token to backend for verification
       const authResponse = await authApi.googleAuth(idToken);
 
       // Save token and user data
@@ -92,13 +79,29 @@ export default function LoginScreen() {
       // Load user's theme preference
       loadUserTheme(authResponse.user);
 
+      console.log('✅ Authentication complete, navigating to OysterList');
+
       // Navigate to main app
       navigation.navigate('OysterList');
     } catch (error: any) {
-      Alert.alert(
-        'Google Sign-In Failed',
-        error?.response?.data?.error || 'Failed to authenticate with Google'
-      );
+      console.error('❌ Google Sign-In error:', error);
+
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // User cancelled the sign-in, no alert needed
+        console.log('User cancelled Google Sign-In');
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        Alert.alert('Sign-In In Progress', 'Google Sign-In is already in progress');
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        Alert.alert(
+          'Google Play Services Not Available',
+          'Please install or update Google Play Services to use Google Sign-In'
+        );
+      } else {
+        Alert.alert(
+          'Google Sign-In Failed',
+          error?.response?.data?.error || error.message || 'Failed to authenticate with Google'
+        );
+      }
     } finally {
       setGoogleLoading(false);
     }
@@ -185,42 +188,31 @@ export default function LoginScreen() {
               )}
             </TouchableOpacity>
 
-            {/* Google Sign-In - Only show if OAuth is configured */}
-            {request && promptAsync && (
-              <>
-                {/* Divider */}
-                <View style={styles.divider}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>OR</Text>
-                  <View style={styles.dividerLine} />
-                </View>
+            {/* Google Sign-In - Native Implementation */}
+            <>
+              {/* Divider */}
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>OR</Text>
+                <View style={styles.dividerLine} />
+              </View>
 
-                {/* Google Sign-In Button */}
-                <TouchableOpacity
-                  style={[styles.googleButton, (googleLoading || loading) && styles.buttonDisabled]}
-                  onPress={async () => {
-                    try {
-                      setGoogleLoading(true);
-                      await promptAsync();
-                    } catch (error) {
-                      console.error('Error launching Google OAuth:', error);
-                      setGoogleLoading(false);
-                      Alert.alert('Error', 'Failed to launch Google sign-in. Please try again.');
-                    }
-                  }}
-                  disabled={googleLoading || loading}
-                >
-                  {googleLoading ? (
-                    <ActivityIndicator color="#555" />
-                  ) : (
-                    <>
-                      <Text style={styles.googleIcon}>G</Text>
-                      <Text style={styles.googleButtonText}>Continue with Google</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-              </>
-            )}
+              {/* Google Sign-In Button */}
+              <TouchableOpacity
+                style={[styles.googleButton, (googleLoading || loading) && styles.buttonDisabled]}
+                onPress={handleGoogleSignIn}
+                disabled={googleLoading || loading}
+              >
+                {googleLoading ? (
+                  <ActivityIndicator color="#555" />
+                ) : (
+                  <>
+                    <Text style={styles.googleIcon}>G</Text>
+                    <Text style={styles.googleButtonText}>Continue with Google</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </>
 
             <View style={styles.registerContainer}>
               <Text style={styles.registerText}>Don't have an account? </Text>
