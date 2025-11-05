@@ -19,6 +19,7 @@ import { authStorage } from '../services/auth';
 import { useTheme } from '../context/ThemeContext';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
+import { makeRedirectUri } from 'expo-auth-session';
 
 // Enable dismissal of browser after OAuth
 WebBrowser.maybeCompleteAuthSession();
@@ -47,8 +48,18 @@ export default function LoginScreen() {
   // Google OAuth configuration
   // Web client ID works with Expo Go for testing on both iOS and Android
   console.log('🔵 LoginScreen: About to initialize Google OAuth...');
+
+  // Use Expo auth proxy for development (required for Expo Go)
+  const redirectUri = makeRedirectUri({
+    scheme: 'oysterette',
+    path: 'redirect',
+  });
+
+  console.log('🔵 LoginScreen: Redirect URI:', redirectUri);
+
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId: '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com',
+    redirectUri,
     // iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com', // For production builds
     // androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com', // For production builds
   });
