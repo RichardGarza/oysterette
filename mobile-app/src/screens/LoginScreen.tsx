@@ -36,12 +36,13 @@ export default function LoginScreen() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { theme, loadUserTheme } = useTheme();
 
-  // TODO: Add your Google OAuth client IDs from Google Cloud Console
-  // See CLAUDE.md for setup instructions
+  // TODO: Replace with your Web Client ID from Google Cloud Console
+  // For testing in Expo Go, only the Web clientId is needed
+  // Add iOS/Android client IDs later when building standalone apps
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com', // TODO: Replace with your Web client ID
-    iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com', // TODO: Replace
-    androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com', // TODO: Replace
+    clientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com', // TODO: Replace this
+    // iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com', // For production builds
+    // androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com', // For production builds
   });
 
   const styles = createStyles(theme.colors);
