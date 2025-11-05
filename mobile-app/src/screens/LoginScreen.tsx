@@ -53,6 +53,7 @@ export default function LoginScreen() {
     // Android client ID for standalone APK (required for production)
     androidClientId: '578059352307-shtope2u9b6u47pb2mgq5ntml2d9jnul.apps.googleusercontent.com',
     // iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com', // For iOS production builds
+    // Note: redirectUri is NOT specified for Android - it's handled automatically via package name
   });
 
   console.log('✅ LoginScreen: Google OAuth hook returned', {
