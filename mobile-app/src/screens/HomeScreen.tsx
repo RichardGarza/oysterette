@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ActivityIndicator,
+  Image,
+  Animated,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from '../navigation/types';
@@ -17,6 +19,8 @@ export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { theme, loadUserTheme } = useTheme();
   const [checking, setChecking] = useState(true);
+  const [showLoading, setShowLoading] = useState(false);
+  const fadeAnim = useState(new Animated.Value(0))[0];
 
   const styles = createStyles(theme.colors);
 
@@ -54,6 +58,29 @@ export default function HomeScreen() {
     }
   };
 
+  const handleBrowseOysters = () => {
+    setShowLoading(true);
+
+    // Fade in animation
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+
+    // Navigate after 1.5 seconds with fade out
+    setTimeout(() => {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        navigation.navigate('OysterList');
+        setShowLoading(false);
+      });
+    }, 1500);
+  };
+
   if (checking) {
     return (
       <SafeAreaView style={styles.container}>
@@ -67,7 +94,22 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {showLoading && (
+        <Animated.View style={[styles.loadingOverlay, { opacity: fadeAnim }]}>
+          <Image
+            source={require('../../assets/logo.png')}
+            style={styles.loadingLogo}
+            resizeMode="contain"
+          />
+        </Animated.View>
+      )}
+
       <View style={styles.content}>
+        <Image
+          source={require('../../assets/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.title}>Oysterette</Text>
         <Text style={styles.subtitle}>
           Discover, review, and track your favorite oysters
@@ -75,7 +117,7 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate('OysterList')}
+          onPress={handleBrowseOysters}
         >
           <Text style={styles.buttonText}>Browse Oysters</Text>
         </TouchableOpacity>
@@ -119,6 +161,26 @@ const createStyles = (colors: any) =>
       justifyContent: 'center',
       alignItems: 'center',
       padding: 20,
+    },
+    logo: {
+      width: 120,
+      height: 120,
+      marginBottom: 20,
+    },
+    loadingOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: colors.background,
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000,
+    },
+    loadingLogo: {
+      width: 160,
+      height: 160,
     },
     title: {
       fontSize: 36,

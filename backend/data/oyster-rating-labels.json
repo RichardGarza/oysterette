@@ -1,0 +1,113 @@
+
+{
+  "overallVerdict": [
+    {
+      "range": [8.0, 10.0],
+      "verdict": "Love It",
+      "emoji": "❤️",
+      "meaning": "This is perfection. My new favorite."
+    },
+    {
+      "range": [6.0, 7.9],
+      "verdict": "Like It",
+      "emoji": "👍",
+      "meaning": "Really good. Would order again."
+    },
+    {
+      "range": [4.0, 5.9],
+      "verdict": "Meh",
+      "emoji": "😐",
+      "meaning": "Fine. Nothing special."
+    },
+    {
+      "range": [1.0, 3.9],
+      "verdict": "Whatever",
+      "emoji": "🤷",
+      "meaning": "Not for me. Skip."
+    }
+  ],
+
+  "attributeLabels": {
+    "size": "Size",
+    "body": "Body",
+    "sweet_brininess": "Sweet vs Brininess",
+    "flavorfulness": "Flavorfulness",
+    "creaminess": "Creaminess"
+  },
+
+  "descriptors": {
+    "size": {
+      "1": "Teeny Weenie",
+      "2": "Tiny",
+      "3": "Very Small",
+      "4": "Small",
+      "5": "Medium-Small",
+      "6": "Medium",
+      "7": "Medium-Large",
+      "8": "Large",
+      "9": "Huge",
+      "10": "Big As Texas"
+    },
+    "body": {
+      "1": "Empty",
+      "2": "Watery",
+      "3": "Thin",
+      "4": "Light",
+      "5": "Average",
+      "6": "Plump",
+      "7": "Full",
+      "8": "Dense",
+      "9": "Shuckin' Fat",
+      "10": "Baddy McFatty"
+    },
+    "sweet_brininess": {
+      "1": "The Sweetest",
+      "2": "Very Sweet",
+      "3": "Sweet",
+      "4": "Mildly Sweet",
+      "5": "Balanced",
+      "6": "Mildly Salty",
+      "7": "Salty",
+      "8": "Briny",
+      "9": "Very Briny",
+      "10": "Seawater"
+    },
+    "flavorfulness": {
+      "1": "Boring",
+      "2": "Dull",
+      "3": "Bland",
+      "4": "Mild",
+      "5": "Average",
+      "6": "Good Flavor",
+      "7": "Flavorful",
+      "8": "Complex",
+      "9": "Stand Out",
+      "10": "BOLD"
+    },
+    "creaminess": {
+      "1": "None",
+      "2": "Just a Drop",
+      "3": "Barely Creamy",
+      "4": "Hint of Cream",
+      "5": "Minimal Cream",
+      "6": "Noticeably Creamy",
+      "7": "Halfway to Cream",
+      "8": "Creamy",
+      "9": "Very Creamy",
+      "10": "Nothing But Cream"
+    }
+  },
+
+  "scoreToVerdict": {
+    "1.0-3.9": "Whatever",
+    "4.0-5.9": "Meh",
+    "6.0-7.9": "Like It",
+    "8.0-10.0": "Love It"
+  },
+
+  "calculation": {
+    "method": "average",
+    "formula": "(size + body + sweet_brininess + flavorfulness + creaminess) / 5",
+    "round": "nearest 0.1"
+  }
+}

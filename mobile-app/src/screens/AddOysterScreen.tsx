@@ -9,7 +9,10 @@ import {
   SafeAreaView,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
@@ -104,26 +107,32 @@ export default function AddOysterScreen() {
         <Text style={styles.sliderValue}>{formData[field]}/10</Text>
       </View>
       <Text style={styles.sliderDescription}>{description}</Text>
-      <View style={styles.inputRow}>
-        <TextInput
-          style={styles.sliderInput}
-          keyboardType="number-pad"
-          maxLength={2}
-          value={formData[field]}
-          onChangeText={(value) => updateField(field, value)}
-        />
-        <View style={styles.scaleIndicator}>
-          <Text style={styles.scaleText}>1</Text>
-          <Text style={styles.scaleText}>5</Text>
-          <Text style={styles.scaleText}>10</Text>
-        </View>
+      <Slider
+        style={styles.slider}
+        minimumValue={1}
+        maximumValue={10}
+        step={1}
+        value={parseInt(formData[field])}
+        onValueChange={(value) => updateField(field, Math.round(value).toString())}
+        minimumTrackTintColor="#3498db"
+        maximumTrackTintColor="#e0e0e0"
+        thumbTintColor="#3498db"
+      />
+      <View style={styles.scaleIndicator}>
+        <Text style={styles.scaleText}>1</Text>
+        <Text style={styles.scaleText}>5</Text>
+        <Text style={styles.scaleText}>10</Text>
       </View>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
           <Text style={styles.title}>Add New Oyster</Text>
           <Text style={styles.subtitle}>
@@ -201,6 +210,7 @@ export default function AddOysterScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -285,28 +295,15 @@ const styles = StyleSheet.create({
     color: '#7f8c8d',
     marginBottom: 10,
   },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 15,
-  },
-  sliderInput: {
-    backgroundColor: '#f8f9fa',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#2c3e50',
-    width: 60,
-    textAlign: 'center',
-    fontWeight: '600',
+  slider: {
+    width: '100%',
+    height: 40,
   },
   scaleIndicator: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
+    marginTop: -5,
   },
   scaleText: {
     fontSize: 12,

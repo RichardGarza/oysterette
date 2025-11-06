@@ -1,6 +1,7 @@
 import prisma from '../lib/prisma';
 import { ReviewRating } from '@prisma/client';
 import logger from '../utils/logger';
+import { ratingToScore } from '../utils/ratingLabels';
 
 /**
  * Rating Service
@@ -15,45 +16,19 @@ const RATING_CONFIG = {
 
   // Minimum reviews before user ratings start having significant weight
   minReviewsForWeight: 5,
-
-  // Rating value mappings (4-point scale to numeric)
-  ratingValues: {
-    LOVED_IT: 4,
-    LIKED_IT: 3,
-    MEH: 2,
-    HATED_IT: 1,
-  },
 };
 
 /**
- * Convert ReviewRating enum to numeric value
+ * Convert ReviewRating enum to numeric value (0-10 scale)
+ * LOVE_IT → 9.0 (range 8.0-10.0)
+ * LIKE_IT → 7.0 (range 6.0-7.9)
+ * MEH → 4.95 (range 4.0-5.9)
+ * WHATEVER → 2.5 (range 1.0-3.9)
  */
 function ratingToNumber(rating: ReviewRating): number {
-  return RATING_CONFIG.ratingValues[rating];
+  return ratingToScore(rating);
 }
 
-/**
- * Calculate flavor modifier for overall score
- * Flavorfulness slightly influences the overall rating
- */
-function calculateFlavorModifier(flavorfulness: number): number {
-  // 5 = neutral (no change)
-  // Higher values add to score, lower values subtract
-  const modifierMap: { [key: number]: number } = {
-    10: 0.5,
-    9: 0.4,
-    8: 0.3,
-    7: 0.15,
-    6: 0.05,
-    5: 0,
-    4: -0.1,
-    3: -0.2,
-    2: -0.3,
-    1: -0.4,
-  };
-
-  return modifierMap[flavorfulness] || 0;
-}
 
 /**
  * Calculate dynamic weight for user ratings based on review count
@@ -212,17 +187,11 @@ export async function recalculateOysterRatings(oysterId: string): Promise<void> 
     );
 
     // Calculate overall score (0-10 scale)
-    // Formula: 40% rating + 60% attributes average
-    let overallScore = 0;
+    // Overall score is based ONLY on user ratings, independent of attributes
+    let overallScore = 5.0; // Default score when no reviews
     if (reviewCount > 0) {
-      // Normalize avgRating (1-4) to 10-point scale
-      const normalizedRating = (avgRating / 4) * 10;
-
-      // Calculate average of all attributes
-      const attributesAverage = (avgSize + avgBody + avgSweetBrininess + avgFlavorfulness + avgCreaminess) / 5;
-
-      // Overall score: 40% rating + 60% attributes
-      overallScore = (normalizedRating * 0.4) + (attributesAverage * 0.6);
+      // avgRating is already on 0-10 scale from ratingToNumber()
+      overallScore = Number(avgRating.toFixed(2));
       overallScore = Math.max(0, Math.min(10, overallScore));
     }
 
@@ -288,10 +257,10 @@ export async function getOysterRatingStats(oysterId: string) {
 
   // Count reviews by rating type
   const ratingBreakdown = {
-    lovedIt: oyster.reviews.filter((r) => r.rating === 'LOVED_IT').length,
-    likedIt: oyster.reviews.filter((r) => r.rating === 'LIKED_IT').length,
+    loveIt: oyster.reviews.filter((r) => r.rating === 'LOVE_IT').length,
+    likeIt: oyster.reviews.filter((r) => r.rating === 'LIKE_IT').length,
     meh: oyster.reviews.filter((r) => r.rating === 'MEH').length,
-    hatedIt: oyster.reviews.filter((r) => r.rating === 'HATED_IT').length,
+    whatever: oyster.reviews.filter((r) => r.rating === 'WHATEVER').length,
   };
 
   const userWeight = calculateUserRatingWeight(oyster.totalReviews);

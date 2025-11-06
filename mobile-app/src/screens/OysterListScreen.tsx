@@ -11,10 +11,11 @@ import {
   Platform,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { OysterListScreenNavigationProp } from '../navigation/types';
 import { oysterApi } from '../services/api';
 import { favoritesStorage } from '../services/favorites';
+import { authStorage } from '../services/auth';
 import { Oyster } from '../types/Oyster';
 import { RatingDisplay } from '../components/RatingDisplay';
 import { EmptyState } from '../components/EmptyState';
@@ -31,11 +32,24 @@ export default function OysterListScreen() {
   const [error, setError] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     fetchOysters();
     loadFavorites();
+    checkAuth();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      checkAuth();
+    }, [])
+  );
+
+  const checkAuth = async () => {
+    const token = await authStorage.getToken();
+    setIsLoggedIn(!!token);
+  };
 
   const loadFavorites = async () => {
     const favs = await favoritesStorage.getFavorites();
@@ -126,15 +140,19 @@ export default function OysterListScreen() {
               {favorites.has(item.id) ? '❤️' : '🤍'}
             </Text>
           </TouchableOpacity>
-          <View style={styles.speciesContainer}>
-            <Text style={styles.species}>{item.species}</Text>
-          </View>
+          {item.species && item.species !== 'Unknown' && (
+            <View style={styles.speciesContainer}>
+              <Text style={styles.species}>{item.species}</Text>
+            </View>
+          )}
         </View>
       </View>
 
-      <View style={styles.originContainer}>
-        <Text style={styles.origin}>{item.origin}</Text>
-      </View>
+      {item.origin && item.origin !== 'Unknown' && (
+        <View style={styles.originContainer}>
+          <Text style={styles.origin}>{item.origin}</Text>
+        </View>
+      )}
 
       <View style={styles.ratingContainer}>
         <RatingDisplay
@@ -187,7 +205,16 @@ export default function OysterListScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <View style={styles.titleRow}>
+            {!isLoggedIn && (
+              <TouchableOpacity
+                style={styles.loginButton}
+                onPress={() => navigation.navigate('Login')}
+              >
+                <Text style={styles.loginButtonText}>Login</Text>
+              </TouchableOpacity>
+            )}
             <Text style={styles.title}>Oyster Collection</Text>
+            <View style={styles.placeholderRight} />
           </View>
 
           <View style={styles.filterTabs}>
@@ -229,7 +256,16 @@ export default function OysterListScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.titleRow}>
+          {!isLoggedIn && (
+            <TouchableOpacity
+              style={styles.loginButton}
+              onPress={() => navigation.navigate('Login')}
+            >
+              <Text style={styles.loginButtonText}>Login</Text>
+            </TouchableOpacity>
+          )}
           <Text style={styles.title}>Oyster Collection</Text>
+          <View style={styles.placeholderRight} />
         </View>
 
         <View style={styles.filterTabs}>
@@ -341,6 +377,22 @@ const createStyles = (colors: any, isDark: boolean) =>
       fontSize: 28,
       fontWeight: 'bold',
       color: colors.text,
+      flex: 1,
+      textAlign: 'center',
+    },
+    loginButton: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+    },
+    loginButtonText: {
+      color: '#fff',
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    placeholderRight: {
+      width: 70,
     },
   filterTabs: {
     flexDirection: 'row',
