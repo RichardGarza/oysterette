@@ -145,10 +145,20 @@ export const authApi = {
 
 // Oyster API
 export const oysterApi = {
-  // Get all oysters
-  getAll: async (): Promise<Oyster[]> => {
-    const response = await api.get<ApiResponse<Oyster[]>>('/oysters');
+  // Get all oysters with optional filtering and sorting
+  getAll: async (params?: {
+    species?: string;
+    origin?: string;
+    sortBy?: string;
+  }): Promise<Oyster[]> => {
+    const response = await api.get<ApiResponse<Oyster[]>>('/oysters', { params });
     return response.data.data || [];
+  },
+
+  // Get filter options (species and origins)
+  getFilterOptions: async (): Promise<{ species: string[]; origins: string[] }> => {
+    const response = await api.get<ApiResponse<{ species: string[]; origins: string[] }>>('/oysters/filters');
+    return response.data.data || { species: [], origins: [] };
   },
 
   // Get single oyster by ID

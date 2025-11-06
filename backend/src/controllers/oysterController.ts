@@ -3,11 +3,53 @@ import logger from '../utils/logger';
 import prisma from '../lib/prisma';
 import Fuse from 'fuse.js';
 
-// Get all oysters
+// Get all oysters with optional filtering and sorting
 export const getAllOysters = async (req: Request, res: Response): Promise<void> => {
   try {
+    const { species, origin, sortBy } = req.query;
+
+    // Build where clause for filtering
+    const where: any = {};
+    if (species && typeof species === 'string') {
+      where.species = species;
+    }
+    if (origin && typeof origin === 'string') {
+      where.origin = origin;
+    }
+
+    // Determine order by clause
+    let orderBy: any = { name: 'asc' }; // Default sort
+    if (sortBy && typeof sortBy === 'string') {
+      switch (sortBy) {
+        case 'rating':
+          orderBy = { avgRating: 'desc' };
+          break;
+        case 'name':
+          orderBy = { name: 'asc' };
+          break;
+        case 'size':
+          orderBy = { avgSize: 'desc' };
+          break;
+        case 'sweetness':
+          orderBy = { avgSweetBrininess: 'desc' };
+          break;
+        case 'creaminess':
+          orderBy = { avgCreaminess: 'desc' };
+          break;
+        case 'flavorfulness':
+          orderBy = { avgFlavorfulness: 'desc' };
+          break;
+        case 'body':
+          orderBy = { avgBody: 'desc' };
+          break;
+        default:
+          orderBy = { name: 'asc' };
+      }
+    }
+
     const oysters = await prisma.oyster.findMany({
-      orderBy: { name: 'asc' },
+      where,
+      orderBy,
       include: {
         _count: {
           select: { reviews: true },
@@ -178,6 +220,36 @@ export const deleteOyster = async (req: Request, res: Response): Promise<void> =
     });
   } catch (error) {
     logger.error('Delete oyster error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server Error',
+    });
+  }
+};
+
+// Get unique species and origins for filter options
+export const getFilterOptions = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const oysters = await prisma.oyster.findMany({
+      select: {
+        species: true,
+        origin: true,
+      },
+    });
+
+    // Extract unique values
+    const species = [...new Set(oysters.map(o => o.species).filter(Boolean))].sort();
+    const origins = [...new Set(oysters.map(o => o.origin).filter(Boolean))].sort();
+
+    res.status(200).json({
+      success: true,
+      data: {
+        species,
+        origins,
+      },
+    });
+  } catch (error) {
+    logger.error('Get filter options error:', error);
     res.status(500).json({
       success: false,
       error: 'Server Error',
