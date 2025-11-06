@@ -44,6 +44,23 @@ export default function RegisterScreen() {
     console.log('✅ Native Google Sign-In configured in RegisterScreen');
   }, []);
 
+  // Redirect if already logged in
+  React.useEffect(() => {
+    const checkIfLoggedIn = async () => {
+      const token = await authStorage.getToken();
+      if (token) {
+        // User is already logged in, redirect to OysterList
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'OysterList' }],
+          })
+        );
+      }
+    };
+    checkIfLoggedIn();
+  }, []);
+
   const handleGoogleSignIn = async () => {
     try {
       setGoogleLoading(true);

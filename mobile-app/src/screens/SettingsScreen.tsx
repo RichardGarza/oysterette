@@ -370,7 +370,7 @@ const createStyles = (colors: any, isDark: boolean) =>
       paddingVertical: 16,
       borderRadius: 12,
       alignItems: 'center',
-      marginBottom: 24,
+      marginBottom: 48, // Increased spacing to prevent accidental delete clicks
       ...Platform.select({
         ios: {
           shadowColor: colors.shadowColor,
