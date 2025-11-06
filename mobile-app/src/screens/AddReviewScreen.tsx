@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -29,15 +29,16 @@ const RATING_OPTIONS: { label: string; value: ReviewRating; emoji: string; color
 export default function AddReviewScreen() {
   const route = useRoute<AddReviewScreenRouteProp>();
   const navigation = useNavigation<AddReviewScreenNavigationProp>();
-  const { oysterId, oysterName } = route.params;
+  const { oysterId, oysterName, existingReview } = route.params;
+  const isUpdateMode = !!existingReview;
 
-  const [rating, setRating] = useState<ReviewRating | null>(null);
-  const [size, setSize] = useState<number>(5);
-  const [body, setBody] = useState<number>(5);
-  const [sweetBrininess, setSweetBrininess] = useState<number>(5);
-  const [flavorfulness, setFlavorfulness] = useState<number>(5);
-  const [creaminess, setCreaminess] = useState<number>(5);
-  const [notes, setNotes] = useState('');
+  const [rating, setRating] = useState<ReviewRating | null>(existingReview?.rating || null);
+  const [size, setSize] = useState<number>(existingReview?.size || 5);
+  const [body, setBody] = useState<number>(existingReview?.body || 5);
+  const [sweetBrininess, setSweetBrininess] = useState<number>(existingReview?.sweetBrininess || 5);
+  const [flavorfulness, setFlavorfulness] = useState<number>(existingReview?.flavorfulness || 5);
+  const [creaminess, setCreaminess] = useState<number>(existingReview?.creaminess || 5);
+  const [notes, setNotes] = useState(existingReview?.notes || '');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
@@ -48,24 +49,40 @@ export default function AddReviewScreen() {
 
     try {
       setSubmitting(true);
-      console.log('📝 [AddReviewScreen] Submitting review for oyster:', oysterId);
+      console.log(`📝 [AddReviewScreen] ${isUpdateMode ? 'Updating' : 'Submitting'} review for oyster:`, oysterId);
 
-      await reviewApi.create({
-        oysterId,
-        rating,
-        size,
-        body,
-        sweetBrininess,
-        flavorfulness,
-        creaminess,
-        notes: notes.trim() || undefined,
-      });
-
-      console.log('✅ [AddReviewScreen] Review submitted successfully');
+      if (isUpdateMode && existingReview) {
+        // Update existing review
+        await reviewApi.update(existingReview.id, {
+          rating,
+          size,
+          body,
+          sweetBrininess,
+          flavorfulness,
+          creaminess,
+          notes: notes.trim() || undefined,
+        });
+        console.log('✅ [AddReviewScreen] Review updated successfully');
+      } else {
+        // Create new review
+        await reviewApi.create({
+          oysterId,
+          rating,
+          size,
+          body,
+          sweetBrininess,
+          flavorfulness,
+          creaminess,
+          notes: notes.trim() || undefined,
+        });
+        console.log('✅ [AddReviewScreen] Review submitted successfully');
+      }
 
       Alert.alert(
-        'Review Submitted!',
-        'Thank you for sharing your tasting experience.',
+        isUpdateMode ? 'Review Updated!' : 'Review Submitted!',
+        isUpdateMode
+          ? 'Your review has been updated successfully.'
+          : 'Thank you for sharing your tasting experience.',
         [
           {
             text: 'OK',
@@ -287,7 +304,9 @@ export default function AddReviewScreen() {
           {submitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.submitButtonText}>Submit Review</Text>
+            <Text style={styles.submitButtonText}>
+              {isUpdateMode ? 'Update Review' : 'Submit Review'}
+            </Text>
           )}
         </TouchableOpacity>
       </ScrollView>

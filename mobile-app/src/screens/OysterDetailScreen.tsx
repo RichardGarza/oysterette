@@ -9,11 +9,12 @@ import {
   RefreshControl,
   TouchableOpacity,
   Platform,
+  Alert,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { OysterDetailScreenRouteProp, OysterDetailScreenNavigationProp } from '../navigation/types';
-import { oysterApi, voteApi } from '../services/api';
+import { oysterApi, voteApi, reviewApi } from '../services/api';
 import { authStorage } from '../services/auth';
 import { favoritesStorage } from '../services/favorites';
 import { Oyster, Review } from '../types/Oyster';
@@ -113,6 +114,52 @@ export default function OysterDetailScreen() {
   const handleDeleteReview = () => {
     // Refresh oyster data after review is deleted
     fetchOyster(true);
+  };
+
+  const handleWriteReview = async () => {
+    if (!oyster) return;
+
+    try {
+      // Check if user already has a review for this oyster
+      const existingReview = await reviewApi.checkExisting(oyster.id);
+
+      if (existingReview) {
+        // User already has a review, ask if they want to update it
+        Alert.alert(
+          'Update Existing Review',
+          'You have already reviewed this oyster. Would you like to update your review?',
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+            {
+              text: 'Update Review',
+              onPress: () => {
+                navigation.navigate('AddReview', {
+                  oysterId: oyster.id,
+                  oysterName: oyster.name,
+                  existingReview: existingReview,
+                });
+              },
+            },
+          ]
+        );
+      } else {
+        // No existing review, navigate normally
+        navigation.navigate('AddReview', {
+          oysterId: oyster.id,
+          oysterName: oyster.name,
+        });
+      }
+    } catch (error) {
+      console.error('Error checking for existing review:', error);
+      // If check fails, just navigate to review screen
+      navigation.navigate('AddReview', {
+        oysterId: oyster.id,
+        oysterName: oyster.name,
+      });
+    }
   };
 
   const getSortedReviews = () => {
@@ -276,10 +323,7 @@ export default function OysterDetailScreen() {
             </Text>
             <TouchableOpacity
               style={styles.writeReviewButton}
-              onPress={() => navigation.navigate('AddReview', {
-                oysterId: oyster.id,
-                oysterName: oyster.name
-              })}
+              onPress={handleWriteReview}
             >
               <Text style={styles.writeReviewButtonText}>✍️ Write Review</Text>
             </TouchableOpacity>

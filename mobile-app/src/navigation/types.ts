@@ -9,7 +9,7 @@ export type RootStackParamList = {
   OysterList: undefined;
   OysterDetail: { oysterId: string };
   AddOyster: undefined;
-  AddReview: { oysterId: string; oysterName: string };
+  AddReview: { oysterId: string; oysterName: string; existingReview?: Review };
   EditReview: { review: Review };
   Settings: undefined;
   TopOysters: undefined;
