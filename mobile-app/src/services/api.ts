@@ -165,6 +165,14 @@ export const oysterApi = {
     return response.data.data || [];
   },
 
+  // Get personalized recommendations (requires auth)
+  getRecommendations: async (limit?: number): Promise<Oyster[]> => {
+    const response = await api.get<ApiResponse<Oyster[]>>('/recommendations', {
+      params: { limit: limit || 10 },
+    });
+    return response.data.data || [];
+  },
+
   // Create new oyster (requires auth)
   create: async (oyster: {
     name: string;

@@ -324,8 +324,8 @@ export const checkExistingReview = async (req: Request, res: Response): Promise<
     const existingReview = await prisma.review.findUnique({
       where: {
         userId_oysterId: {
-          userId: req.userId,
-          oysterId,
+          userId: req.userId!, // Non-null assertion: we checked above
+          oysterId: oysterId!, // Non-null assertion: validated by Zod middleware
         },
       },
       include: {

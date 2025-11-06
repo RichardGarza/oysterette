@@ -14,6 +14,7 @@ import oysterRoutes from './routes/oysterRoutes';
 import reviewRoutes from './routes/reviewRoutes';
 import userRoutes from './routes/userRoutes';
 import voteRoutes from './routes/voteRoutes';
+import recommendationRoutes from './routes/recommendationRoutes';
 import prisma from './lib/prisma';
 import logger from './utils/logger';
 import {
@@ -70,6 +71,7 @@ app.get('/', (req: Request, res: Response) => {
       reviews: '/api/reviews',
       users: '/api/users',
       votes: '/api/reviews/:reviewId/vote',
+      recommendations: '/api/recommendations',
     },
   });
 });
@@ -78,6 +80,7 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/oysters', apiLimiter, oysterRoutes);
 app.use('/api/reviews', apiLimiter, reviewRoutes);
 app.use('/api/users', apiLimiter, userRoutes);
+app.use('/api/recommendations', apiLimiter, recommendationRoutes);
 app.use('/api', apiLimiter, voteRoutes);
 
 // Health check endpoint
