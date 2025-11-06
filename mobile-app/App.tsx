@@ -54,6 +54,7 @@ function AppNavigator() {
           component={HomeScreen}
           options={({ navigation }) => ({
             title: 'Oysterette',
+            headerLeft: () => null,
             headerRight: () => <SettingsButton navigation={navigation} />,
           })}
         />

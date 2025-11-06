@@ -362,7 +362,7 @@ const createStyles = (colors: any, isDark: boolean) =>
       paddingVertical: 16,
       borderRadius: 12,
       alignItems: 'center',
-      marginBottom: 12,
+      marginBottom: 24,
       ...Platform.select({
         ios: {
           shadowColor: colors.shadowColor,

@@ -12,7 +12,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { authApi } from '../services/api';
@@ -76,8 +76,13 @@ export default function RegisterScreen() {
 
       console.log('✅ Authentication complete, navigating to OysterList');
 
-      // Navigate to main app
-      navigation.navigate('OysterList');
+      // Navigate to main app and reset navigation stack
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'OysterList' }],
+        })
+      );
     } catch (error: any) {
       console.error('❌ Google Sign-In error:', error);
 
@@ -187,7 +192,12 @@ export default function RegisterScreen() {
       Alert.alert('Success', 'Account created successfully!', [
         {
           text: 'OK',
-          onPress: () => navigation.navigate('OysterList'),
+          onPress: () => navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'OysterList' }],
+            })
+          ),
         },
       ]);
     } catch (error: any) {
