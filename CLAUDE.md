@@ -1,11 +1,13 @@
 # Oysterette Production Deployment Progress
 
 ---
+
 ## 📘 DOCUMENT PURPOSE
 
 **This file is for:** Detailed session-by-session progress and implementation journal
 
 **Use this file for:**
+
 - Daily session logs with specific work completed
 - Implementation details (code changes, file paths, line numbers)
 - Troubleshooting notes and bug fixes
@@ -14,11 +16,206 @@
 - Technical decisions and architecture notes
 
 **Do NOT use this file for:**
+
 - High-level feature roadmap (use ROADMAP.md)
 - Future feature planning (use ROADMAP.md)
 - Simple feature status tracking (use ROADMAP.md)
 
 **When to update:** At the end of each work session with what was accomplished
+
+---
+
+## ⚠️ MEMORY MANAGEMENT - CRITICAL
+
+**PROBLEM:** Previous sessions crashed the system with 90+ GB memory usage due to excessive context accumulation.
+
+**MANDATORY RULES FOR CLAUDE:**
+
+### 1. **File Reading Discipline**
+   - ✅ **ONLY** read files when absolutely necessary for the current task
+   - ❌ **NEVER** re-read files already seen in this conversation
+   - ✅ Use `limit` and `offset` parameters for files over 200 lines
+   - ✅ Read only relevant sections, not entire files
+   - ❌ **NEVER** read more than 3 files in parallel
+   - ✅ Before reading, ask: "Do I really need this file's contents?"
+
+### 2. **Background Process Management - CRITICAL**
+   - 🚨 **NEVER run tests in background** - Always run synchronously with timeout
+   - 🚨 **NEVER repeatedly poll BashOutput** without the `filter` parameter
+   - ✅ If dev server in background: Use `filter: "error|Error|ERROR"` on BashOutput
+   - ✅ Kill background processes IMMEDIATELY when done using KillShell
+   - ❌ **DO NOT** run `npm test` with `run_in_background: true`
+   - ❌ **DO NOT** call BashOutput in a loop or repeatedly without filtering
+
+### 3. **Command Output Truncation**
+   - ✅ Always use `head_limit: 20` on Grep operations
+   - ✅ Pipe test outputs through `tail -30` to show only summary
+   - ✅ For build commands, show only errors/warnings
+   - ✅ Use `timeout: 120000` (2 min) on all test commands
+   - ❌ **NEVER** show full test suite output (162 tests = massive logs)
+
+### 4. **Avoid Redundant Operations**
+   - ❌ **DO NOT** run `git status` multiple times per session
+   - ❌ **DO NOT** re-read package.json, tsconfig.json if already seen
+   - ✅ Cache information from earlier in conversation
+   - ✅ Reference previous findings instead of re-checking
+   - ✅ Ask user before reading 5+ files at once
+
+### 5. **Memory-Efficient Commands**
+
+**GOOD Examples (Testing):**
+```bash
+# ✅ CORRECT: Run tests synchronously with timeout and truncation
+npm test 2>&1 | tail -30
+# With timeout parameter: timeout: 120000 (2 minutes)
+
+# ✅ CORRECT: Build with errors only
+npm run build 2>&1 | grep -i "error\|warning" || echo "✅ Build successful"
+
+# ✅ CORRECT: Git status (once per session max)
+git status --short
+
+# ✅ CORRECT: Git diff summary (not full diff)
+git diff --stat
+```
+
+**GOOD Examples (Background Processes):**
+```bash
+# ✅ CORRECT: Dev server in background with filtered output checking
+# Start server
+npm start  # with run_in_background: true
+
+# Check output with filter (only errors)
+# Use BashOutput with filter: "error|Error|ERROR|FATAL"
+
+# Kill when done
+# Use KillShell immediately after task complete
+```
+
+**BAD Examples (MEMORY KILLERS - NEVER DO THIS):**
+```bash
+# 🚨 NEVER: Tests in background
+npm test  # with run_in_background: true
+
+# 🚨 NEVER: Repeatedly check BashOutput without filter
+# Calling BashOutput multiple times without filter parameter
+
+# 🚨 NEVER: Full test output
+npm test  # without tail -30
+
+# 🚨 NEVER: Full build logs
+npm run build  # without grep
+
+# 🚨 NEVER: Multiple git status calls
+git status && ... && git status
+
+# 🚨 NEVER: Leave background processes running
+# Start background process and never kill it
+```
+
+### 6. **Session Length Management**
+   - ⚠️ **< 30 messages:** Optimal - Single feature work
+   - ⚠️ **30-50 messages:** Medium - Multi-step implementations
+   - 🚨 **> 50 messages:** HIGH RISK - Warn user to start new session
+   - 🛑 **> 70 messages:** CRITICAL - Strongly recommend new session
+
+### 7. **Todo List Hygiene**
+   - ✅ Remove completed todos immediately (don't let them accumulate)
+   - ✅ Keep only active/pending items
+   - ❌ **NEVER** let todo list exceed 10 items
+
+### 8. **Context Cleanup Practices**
+   - ✅ After completing major task, summarize what was done
+   - ✅ Suggest new session after large features (OAuth, major refactors)
+   - ✅ Periodically summarize instead of keeping full history
+   - ❌ **NEVER** accumulate build logs, test outputs, or file dumps
+
+### 9. **Before Any Memory-Intensive Operation, Ask:**
+   1. Do I really need the full output?
+   2. Have I already read this file in this conversation?
+   3. Can I use grep/head/tail to limit output?
+   4. Is there a lighter-weight way to get this info?
+   5. Will this add more than 1000 tokens to context?
+
+**🚨 IF IN DOUBT, TRUNCATE OR SKIP 🚨**
+
+---
+
+## 🧪 TESTING POLICY - MANDATORY FOR ALL NEW FEATURES
+
+**CRITICAL: Every new feature MUST include comprehensive testing before commit.**
+
+### Testing Requirements for Every New Feature:
+
+1. **Before Implementation:**
+
+   - Identify what needs testing (endpoints, services, components)
+   - Plan test cases (happy path, edge cases, error handling)
+
+2. **During Implementation:**
+
+   - Write tests FIRST for backend endpoints
+   - Write tests for service layer logic
+   - Write integration tests for API flows
+
+3. **Before Committing:**
+
+   - Run ALL tests (backend: `npm test`, mobile: if applicable)
+   - Ensure 100% of new tests pass
+   - Ensure NO existing tests break
+   - Fix any failures before proceeding
+
+4. **What to Test:**
+
+   - **Backend APIs:** All new endpoints, request validation, response format
+   - **Services:** Business logic, calculations, edge cases
+   - **Database:** Queries, relationships, constraints
+   - **Mobile APIs:** API client methods, error handling
+   - **Integration:** End-to-end flows across backend and mobile
+
+5. **Test File Locations:**
+   - Backend unit tests: `backend/src/__tests__/unit/`
+   - Backend integration tests: `backend/src/__tests__/integration/`
+   - Backend service tests: alongside service files or in `__tests__/`
+
+### Testing Workflow:
+
+**CRITICAL RULES:**
+- ✅ Always run tests **synchronously** (NOT in background)
+- ✅ Always use `timeout: 120000` parameter (2 minutes)
+- ✅ Always pipe through `tail -30` to show only summary
+- ❌ **NEVER** use `run_in_background: true` for tests
+- ❌ **NEVER** call tests without output truncation
+
+**Correct Testing Commands:**
+
+```bash
+# ✅ CORRECT: Run all tests with timeout and summary
+npm test 2>&1 | tail -30
+# Bash tool parameters: timeout: 120000
+
+# ✅ CORRECT: Run specific test suites
+npm run test:unit 2>&1 | tail -20
+npm run test:integration 2>&1 | tail -20
+
+# ✅ CORRECT: Build with errors only
+npm run build 2>&1 | grep -i "error\|warning" || echo "✅ Build successful"
+
+# 🚨 WRONG: These will crash with 90 GB memory usage
+# npm test  (without tail)
+# npm test  (with run_in_background: true)
+```
+
+### Why Testing Matters:
+
+- ✅ Catches bugs before they reach production
+- ✅ Ensures new features don't break existing functionality
+- ✅ Documents expected behavior
+- ✅ Makes refactoring safer
+- ✅ Builds confidence in the codebase
+
+**🚨 DO NOT COMMIT WITHOUT PASSING TESTS 🚨**
+
 ---
 
 ## Session Dates: October 28-29, 2025 | November 3-6, 2025
@@ -821,15 +1018,15 @@ claude-project/
 # Local development
 npm run dev
 
-# Build production
-npm run build
+# Build production (MEMORY-EFFICIENT: errors only)
+npm run build 2>&1 | grep -i "error\|warning" || echo "✅ Build successful"
 
-# Run all tests
-npm test
+# Run all tests (MEMORY-EFFICIENT: summary only)
+npm test 2>&1 | tail -30
 
-# Run specific test types
-npm run test:unit
-npm run test:integration
+# Run specific test types (summary only)
+npm run test:unit 2>&1 | tail -20
+npm run test:integration 2>&1 | tail -20
 
 # Run migrations
 npx prisma migrate deploy
@@ -839,7 +1036,9 @@ npx prisma generate
 
 # Seed database
 npm run seed
-````
+```
+
+**⚠️ MEMORY WARNING:** Always pipe test and build commands through `tail` or `grep` to avoid massive log dumps!
 
 ### Mobile App (in `/mobile-app` directory)
 
@@ -866,8 +1065,11 @@ npm run build:android:cloud
 ### Git
 
 ```bash
-# Check status
-git status
+# Check status (MEMORY-EFFICIENT: short format, run ONCE per session max)
+git status --short
+
+# View changes (summary only, NOT full diff)
+git diff --stat
 
 # Commit changes
 git add .
@@ -876,6 +1078,11 @@ git commit -m "Your message"
 # Push to GitHub (triggers Railway auto-deploy)
 git push origin main
 ```
+
+**⚠️ MEMORY WARNING:**
+- Use `git status --short` instead of full `git status`
+- Use `git diff --stat` for summary instead of full `git diff`
+- Only run git commands ONCE per session unless absolutely necessary
 
 ---
 
@@ -1450,32 +1657,41 @@ function getRecommendations(userId: string) {
 
 ---
 
-**Generated:** November 4, 2025
+**Generated:** November 6, 2025
 **Backend:** Live on Railway with security hardening
 **Database:** Live on Neon
 **Tests:** 162/162 passing ✅
-**Status:** Production-ready, preparing for OAuth and App Store deployment
-
-## Universal Token-Saving Rules
-
-| Rule                             | Saves            | How to Apply                                           |
-| -------------------------------- | ---------------- | ------------------------------------------------------ |
-| **Only send changed files**      | 50–150 k → 1–5 k | `git diff --name-only HEAD~1` → paste only those paths |
-| **Never paste full files**       | 30 k+ per file   | Use `head -30` / `tail -30` or `...[truncated]`        |
-| **Paginate DB queries**          | 10 k rows → 3 k  | `LIMIT 100 OFFSET ?` in seed scripts                   |
-| **Truncate logs**                | 15 k log → 1 k   | `head -50`, `tail -50`, or `…[truncated]`              |
-| **Clear context between tasks**  | 80 k history → 0 | Type `/clear` or start new chat after each feature     |
-| **Ask for diffs, not full code** | 20 k → 2 k       | “Show fix as Git diff”                                 |
+**Status:** Production-ready with Google OAuth, UX improvements deployed
 
 ---
 
-# Claude Code Config
+## 📝 DOCUMENT CHANGE LOG
 
---model opusplan
---plan-mode auto
---auto-execute approved
---max-tokens 4096
---temperature 0.3
---context-window 200k
---prune-history 5
---summarize-on-idle 60
+**November 6, 2025 - Critical Fix for 90 GB Memory Crashes:**
+
+**ROOT CAUSE IDENTIFIED:**
+- Background bash processes (tests, dev servers) continuously outputting text
+- BashOutput tool being called repeatedly without `filter` parameter
+- Each BashOutput call accumulated ALL previous output in context
+- Memory ballooned to 90+ GB until system crash
+
+**FIXES APPLIED:**
+- ✅ Added **Background Process Management** section (CRITICAL)
+- ✅ Explicit rule: **NEVER run tests in background mode**
+- ✅ Mandatory `filter` parameter on all BashOutput calls
+- ✅ Mandatory timeout (120000ms) on all test commands
+- ✅ Kill background processes immediately after use (KillShell)
+- ✅ Updated all test workflows with proper synchronous execution
+- ✅ Clear examples of correct vs. memory-killing patterns
+
+**Previous Memory Management (Still Active):**
+- All test commands pipe through `tail -30` for summaries
+- Git commands use `--short` and `--stat` flags
+- Build commands filter to errors/warnings only
+- Max 3 parallel file reads, max 10 todos
+- Session length warnings (50+ messages = high risk)
+
+**The Fix:**
+- Tests now run **synchronously with timeout**, NOT in background
+- BashOutput requires `filter` parameter if used at all
+- No repeated polling of background processes
