@@ -7,6 +7,7 @@
 ## ✅ COMPLETED PHASES
 
 ### Phase 1: Neon Database Setup ✅
+
 - [x] Created Neon account and project
 - [x] Obtained Neon PostgreSQL connection string
 - [x] Updated backend `.env` with Neon DATABASE_URL
@@ -16,6 +17,7 @@
 - [x] Tested backend connection to Neon - SUCCESS
 
 **Database URL:**
+
 ```
 postgresql://neondb_owner:npg_m3KRgzMPSrw1@ep-falling-shadow-ahmk229r-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require
 ```
@@ -23,6 +25,7 @@ postgresql://neondb_owner:npg_m3KRgzMPSrw1@ep-falling-shadow-ahmk229r-pooler.c-3
 ---
 
 ### Phase 2: Railway Backend Deployment ✅
+
 - [x] Created Railway.app account
 - [x] Connected GitHub repo to Railway
 - [x] Fixed deployment configuration issues:
@@ -42,11 +45,13 @@ postgresql://neondb_owner:npg_m3KRgzMPSrw1@ep-falling-shadow-ahmk229r-pooler.c-3
 - [x] Verified API is working and serving data
 
 **Production Backend URL:**
+
 ```
 https://oysterette-production.up.railway.app
 ```
 
 **Test endpoint:**
+
 ```
 https://oysterette-production.up.railway.app/api/oysters
 ```
@@ -54,11 +59,13 @@ https://oysterette-production.up.railway.app/api/oysters
 ---
 
 ### Phase 3: Mobile App Production Configuration ✅
+
 - [x] Updated `mobile-app/src/services/api.ts` with production URL
 - [x] Configured app to use Railway backend by default
 - [x] Kept local development URLs for testing
 
 **Production API URL in App:**
+
 ```
 https://oysterette-production.up.railway.app/api
 ```
@@ -66,9 +73,11 @@ https://oysterette-production.up.railway.app/api
 ---
 
 ### Phase 4: Build Android APK for Distribution ✅
+
 **Status:** COMPLETE
 
 **Accomplishments:**
+
 - ✅ Installed EAS CLI and Expo Orbit
 - ✅ Configured EAS Update for OTA updates
 - ✅ Created deployment automation scripts
@@ -76,6 +85,7 @@ https://oysterette-production.up.railway.app/api
 - ✅ APK Link: https://expo.dev/accounts/rgactr/projects/oysterette/builds/45f05f60-fe6d-4fe3-bfbb-9da657b2c7e1
 
 **Deployment Workflow:**
+
 ```bash
 # Quick updates (no new APK needed):
 npm run deploy-update "Fix bug in search"
@@ -88,6 +98,7 @@ npm run build:android:cloud
 ```
 
 **Auto-Update System:**
+
 - Friends install APK once
 - Future updates push automatically via EAS Update
 - No need to rebuild/redistribute APK for code changes
@@ -95,9 +106,11 @@ npm run build:android:cloud
 ---
 
 ### Phase 5.1: User Rating & Voting System ✅ DEPLOYED!
+
 **Status:** Complete - Live in Production
 
 **What We Built:**
+
 - ✅ Database schema with aggregated rating fields
 - ✅ Sophisticated rating calculation service (40% rating + 60% attributes)
 - ✅ Auto-recalculation on review create/update/delete
@@ -108,6 +121,7 @@ npm run build:android:cloud
 - ✅ Credibility badges: Novice (0-0.9), Trusted (1.0-1.4), Expert (1.5+)
 
 **How It Works:**
+
 1. User submits review → Auto-calculates ratings
 2. Dynamic weighting: More reviews = more user influence
 3. Algorithm: 70% user ratings + 30% seed data (after 5+ reviews)
@@ -118,11 +132,13 @@ npm run build:android:cloud
 ---
 
 ### Phase 5.2: Production Hardening & Security ✅ COMPLETE!
+
 **Status:** All Security & Quality Measures Deployed (Nov 3, 2025)
 
 #### Security Enhancements Deployed:
 
 **1. Input Validation with Zod:**
+
 - ✅ Comprehensive validation schemas for all API endpoints
 - ✅ Email validation and automatic lowercasing
 - ✅ Strong password requirements:
@@ -136,24 +152,28 @@ npm run build:android:cloud
 - ✅ Query parameter validation with transformations
 
 **2. Rate Limiting:**
+
 - ✅ Auth endpoints: 10 requests per 15 minutes
 - ✅ API endpoints: 100 requests per 15 minutes
 - ✅ IP-based tracking with standard headers
 - ✅ Prevents brute force attacks and API abuse
 
 **3. JWT Security:**
+
 - ✅ Removed insecure default secret (throws error if JWT_SECRET not set)
 - ✅ Added unique JWT ID (jti) for token uniqueness
 - ✅ Proper TypeScript type assertions
 - ✅ 7-day token expiration
 
 **4. Professional Logging (Winston):**
+
 - ✅ File-based logging (logs/error.log, logs/combined.log)
 - ✅ Log levels: error, warn, info, debug
 - ✅ Replaced all 47+ console.log statements
 - ✅ Structured logging with timestamps
 
 **5. Error Tracking (Sentry):**
+
 - ✅ Optional Sentry integration (requires SENTRY_DSN env var)
 - ✅ Automatic error capture and reporting
 - ✅ PII filtering (removes passwords, auth headers, cookies)
@@ -163,23 +183,28 @@ npm run build:android:cloud
 ---
 
 ### Phase 5.3: Comprehensive Test Suite ✅ COMPLETE!
+
 **Status:** 162/162 Tests Passing (Nov 3, 2025)
 
 #### Test Coverage Added:
 
 **New Test Suites:**
+
 1. **TypeScript Compilation Tests** (`src/__tests__/compilation/typescript.test.ts`)
+
    - Runs full `npm run build` to catch compilation errors
    - Verifies production config with `tsc --noEmit`
    - **Prevents Railway deployment failures!**
 
 2. **Validation Middleware Tests** (`src/__tests__/unit/validate.test.ts`)
+
    - Tests Zod validation for body, params, query
    - Verifies structured error messages
    - Tests data sanitization (email lowercasing)
    - Password requirement enforcement
 
 3. **Validation Schema Tests** (`src/__tests__/unit/schemas.test.ts`)
+
    - Comprehensive tests for all Zod schemas
    - Auth schemas (register, login)
    - Review schemas (create, update)
@@ -197,10 +222,12 @@ npm run build:android:cloud
    - Window reset behavior
 
 **Test Results:**
+
 - **Before:** 29 failing tests, 133 passing
 - **After:** 0 failing tests, **162 passing** ✅
 
 **Critical Fixes:**
+
 - ✅ Fixed `req.query` read-only property issue in validation middleware
 - ✅ Updated all test passwords to meet new requirements
 - ✅ Fixed review creation to include all required attributes
@@ -211,9 +238,11 @@ npm run build:android:cloud
 ---
 
 ### Phase 5.3: Fuzzy Search Implementation ✅ DEPLOYED!
+
 **Status:** Complete - Live in Production (Jan 3, 2025)
 
 **What We Built:**
+
 - ✅ Implemented Fuse.js for fuzzy string matching on backend
 - ✅ Weighted search: name (50%), origin (30%), species (20%)
 - ✅ Threshold 0.4 for balanced typo tolerance
@@ -225,17 +254,20 @@ npm run build:android:cloud
 ---
 
 ### Phase 5.4: Theme Persistence & User Preferences ✅ DEPLOYED!
+
 **Status:** Complete - Live in Production (Jan 3, 2025)
 
 **What We Built:**
 
 **Backend:**
+
 - ✅ User preferences JSON field already in schema
 - ✅ `/users/preferences` endpoint for saving settings
 - ✅ Auth responses include preferences for theme sync
 - ✅ Theme preference syncs across devices
 
 **Mobile App:**
+
 - ✅ Global settings gear icon on ALL screen headers
 - ✅ Theme syncs to backend when changed (if logged in)
 - ✅ Theme loads from user account on login/register
@@ -243,12 +275,14 @@ npm run build:android:cloud
 - ✅ Falls back to local AsyncStorage if not logged in
 
 **User Experience:**
+
 - Settings accessible from any screen (including Home)
 - Change theme → saves locally + syncs to server
 - Login on different device → theme applies automatically
 - Close app → stays logged in, skips home screen
 
 **Locations:**
+
 - App.tsx:24-31 (global settings button)
 - ThemeContext.tsx:105-143 (sync logic)
 - HomeScreen.tsx:27-55 (auto-login)
@@ -256,21 +290,25 @@ npm run build:android:cloud
 ---
 
 ### Phase 5.5: UX Polish & Bug Fixes ✅ DEPLOYED!
+
 **Status:** Complete - Live in Production (Jan 3, 2025)
 
 **Fixes Deployed:**
 
 1. **Removed Color Coding from Attribute Sliders**
+
    - Issue: Red/orange/green implied good/bad
    - Fix: All bars use primary blue (scores are descriptive, not qualitative)
    - Location: OysterDetailScreen.tsx:167-170
 
 2. **Fixed Keyboard Covering Input**
+
    - Issue: Keyboard hid text input when writing reviews
    - Fix: Added KeyboardAvoidingView wrapper
    - Location: AddReviewScreen.tsx:85-89, 271
 
 3. **Removed Redundant "Was this review helpful?" Text**
+
    - Issue: Unnecessary label above Agree/Disagree buttons
    - Fix: Kept voting buttons, removed question text
    - Location: ReviewCard.tsx:161-162
@@ -286,9 +324,11 @@ npm run build:android:cloud
 ## 📋 NEXT PRIORITIES
 
 ### Priority 1: Google OAuth Login ✅ COMPLETE!
+
 **Status:** Deployed - Live in Production (Nov 5, 2025)
 
 **What We Built:**
+
 - ✅ Native Google Sign-In SDK (`@react-native-google-signin/google-signin`)
 - ✅ Backend `/auth/google` endpoint with ID token verification
 - ✅ Google Cloud Console OAuth credentials configured
@@ -299,6 +339,7 @@ npm run build:android:cloud
 - ✅ Comprehensive error handling for all OAuth states
 
 **Why Native Implementation:**
+
 - Deprecated expo-auth-session approach had redirect URI issues
 - Native SDK uses package name + SHA-1 on Android (more secure)
 - No browser redirects needed
@@ -306,11 +347,13 @@ npm run build:android:cloud
 - Works with Google Play Services natively
 
 **Testing:**
+
 - ✅ Tested successfully on Android device
 - ✅ One-tap Google sign-in working
 - ✅ User creation and JWT token generation confirmed
 
 **Locations:**
+
 - Backend: `src/controllers/authController.ts:226-294`
 - Mobile: `src/screens/LoginScreen.tsx`, `src/screens/RegisterScreen.tsx`
 - Config: `mobile-app/app.json` (plugins)
@@ -320,9 +363,11 @@ npm run build:android:cloud
 ---
 
 ### Priority 2: Enhanced Search Features (FUTURE)
+
 **Status:** Backlog
 
 **Potential Enhancements:**
+
 - Search filters (species, origin, rating)
 - Sort by various attributes
 - Advanced fuzzy matching with phonetic algorithms
@@ -331,16 +376,18 @@ npm run build:android:cloud
 ---
 
 ### Priority 3: User Profile Enhancements (FUTURE)
+
 import Fuse from 'fuse.js';
 
 const fuse = new Fuse(oysters, {
-  keys: ['name', 'origin', 'species'],
-  threshold: 0.3, // 0 = exact, 1 = match anything
-  includeScore: true,
-  useExtendedSearch: true,
+keys: ['name', 'origin', 'species'],
+threshold: 0.3, // 0 = exact, 1 = match anything
+includeScore: true,
+useExtendedSearch: true,
 });
 
 const results = fuse.search(searchQuery);
+
 ```
 
 **Benefits:**
@@ -432,47 +479,49 @@ const results = fuse.search(searchQuery);
 ## 🗂️ Project Structure
 
 ```
+
 claude-project/
-├── backend/                    # Node.js Express API
-│   ├── prisma/
-│   │   ├── schema.prisma      # Database schema
-│   │   └── migrations/        # Migration files
-│   ├── src/
-│   │   ├── controllers/       # API controllers
-│   │   ├── routes/            # API routes
-│   │   ├── middleware/        # Auth, validation, etc.
-│   │   ├── services/          # Business logic (rating, voting)
-│   │   ├── validators/        # Zod schemas
-│   │   ├── utils/             # Logger, Sentry, auth
-│   │   ├── lib/               # Prisma client
-│   │   ├── __tests__/         # Test suites (162 tests)
-│   │   │   ├── compilation/   # TypeScript build tests
-│   │   │   ├── integration/   # API integration tests
-│   │   │   └── unit/          # Unit tests
-│   │   └── index.ts           # Server entry point
-│   ├── railway.json           # Railway deployment config
-│   ├── nixpacks.toml          # Build configuration
-│   ├── Procfile               # Start command
-│   ├── tsconfig.build.json    # Production TypeScript config
-│   └── .env                   # Environment variables (Neon DB)
+├── backend/ # Node.js Express API
+│ ├── prisma/
+│ │ ├── schema.prisma # Database schema
+│ │ └── migrations/ # Migration files
+│ ├── src/
+│ │ ├── controllers/ # API controllers
+│ │ ├── routes/ # API routes
+│ │ ├── middleware/ # Auth, validation, etc.
+│ │ ├── services/ # Business logic (rating, voting)
+│ │ ├── validators/ # Zod schemas
+│ │ ├── utils/ # Logger, Sentry, auth
+│ │ ├── lib/ # Prisma client
+│ │ ├── **tests**/ # Test suites (162 tests)
+│ │ │ ├── compilation/ # TypeScript build tests
+│ │ │ ├── integration/ # API integration tests
+│ │ │ └── unit/ # Unit tests
+│ │ └── index.ts # Server entry point
+│ ├── railway.json # Railway deployment config
+│ ├── nixpacks.toml # Build configuration
+│ ├── Procfile # Start command
+│ ├── tsconfig.build.json # Production TypeScript config
+│ └── .env # Environment variables (Neon DB)
 │
-├── mobile-app/                # React Native Expo app
-│   ├── src/
-│   │   ├── screens/          # App screens
-│   │   ├── components/       # Reusable components
-│   │   ├── services/         # API service (connects to Railway)
-│   │   ├── types/            # TypeScript types
-│   │   ├── navigation/       # Navigation config
-│   │   ├── context/          # Theme context
-│   │   └── themes/           # Dark/light themes
-│   ├── App.tsx               # App entry point
-│   ├── app.json              # Expo config
-│   └── package.json
+├── mobile-app/ # React Native Expo app
+│ ├── src/
+│ │ ├── screens/ # App screens
+│ │ ├── components/ # Reusable components
+│ │ ├── services/ # API service (connects to Railway)
+│ │ ├── types/ # TypeScript types
+│ │ ├── navigation/ # Navigation config
+│ │ ├── context/ # Theme context
+│ │ └── themes/ # Dark/light themes
+│ ├── App.tsx # App entry point
+│ ├── app.json # Expo config
+│ └── package.json
 │
-├── PRODUCTION_ROADMAP.md     # Detailed deployment guide
-├── CLAUDE.md                 # This file - session progress
-└── README.md                 # Project documentation
-```
+├── PRODUCTION_ROADMAP.md # Detailed deployment guide
+├── CLAUDE.md # This file - session progress
+└── README.md # Project documentation
+
+````
 
 ---
 
@@ -529,9 +578,10 @@ npx prisma generate
 
 # Seed database
 npm run seed
-```
+````
 
 ### Mobile App (in `/mobile-app` directory)
+
 ```bash
 # Start Expo dev server
 npm start
@@ -553,6 +603,7 @@ npm run build:android:cloud
 ```
 
 ### Git
+
 ```bash
 # Check status
 git status
@@ -570,22 +621,26 @@ git push origin main
 ## 🚨 Important Notes
 
 1. **Environment Variables (Railway)**
+
    - DATABASE_URL is set to Neon connection
    - JWT_SECRET is configured (NEVER use default)
    - SENTRY_DSN is optional (set for error tracking)
    - Never commit `.env` files to git
 
 2. **API URL Configuration**
+
    - Production: `https://oysterette-production.up.railway.app/api`
    - Local backend: `http://localhost:3000/api`
    - Can switch by editing `mobile-app/src/services/api.ts`
 
 3. **Railway Free Tier**
+
    - $5/month credit
    - Auto-sleeps after inactivity
    - First request may be slow (cold start)
 
 4. **Neon Free Tier**
+
    - 3GB storage
    - Auto-sleeps after inactivity
    - Sufficient for testing
@@ -609,6 +664,7 @@ This is the highest-impact, lowest-effort improvement you can make right now:
 4. **User Delight:** No more "no results found" frustration
 
 **Steps:**
+
 ```bash
 cd backend
 npm install fuse.js
@@ -629,15 +685,18 @@ Railway will auto-deploy, and users will immediately benefit from better search!
 ## 🚀 FUTURE ROADMAP - V2 Features
 
 ### Priority 2: Code Quality & Documentation
+
 **Status:** Backlog
 **Estimated Time:** 8-12 hours
 
 **Goals:**
+
 - Add comprehensive comments to all major files
 - Document function purposes and complex logic
 - Improve code maintainability
 
 **Target Areas:**
+
 - All controllers (auth, oyster, review, vote, user)
 - Business logic services (ratingService, voteService)
 - Complex middleware (validation, rate limiting)
@@ -645,6 +704,7 @@ Railway will auto-deploy, and users will immediately benefit from better search!
 - API routes and endpoints
 
 **Template:**
+
 ```typescript
 /**
  * Calculates weighted oyster rating based on user reviews and seed data
@@ -661,10 +721,12 @@ Railway will auto-deploy, and users will immediately benefit from better search!
 ---
 
 ### Priority 3: App Store Deployment Preparation
+
 **Status:** Backlog - Target: End of Month
 **Estimated Time:** 16-24 hours
 
 **Apple App Store Requirements:**
+
 - [ ] Review Apple App Store guidelines
 - [ ] Ensure COPPA compliance (if applicable)
 - [ ] Add privacy policy (required for both stores)
@@ -677,6 +739,7 @@ Railway will auto-deploy, and users will immediately benefit from better search!
 - [ ] Submit for review
 
 **Google Play Store Requirements:**
+
 - [ ] Review Google Play policies
 - [ ] Create privacy policy URL
 - [ ] Add data safety section disclosures
@@ -687,6 +750,7 @@ Railway will auto-deploy, and users will immediately benefit from better search!
 - [ ] Submit for review
 
 **Security Checklist:**
+
 - [ ] No hardcoded secrets or API keys
 - [ ] HTTPS for all API calls ✅ (Already done)
 - [ ] Proper input validation ✅ (Already done)
@@ -700,17 +764,20 @@ Railway will auto-deploy, and users will immediately benefit from better search!
 ---
 
 ### Priority 4: Photo Upload System
+
 **Status:** Backlog
 **Estimated Time:** 20-30 hours
 
 **Features:**
 
 1. **User Profile Photos**
+
    - Upload profile picture during registration or from settings
    - Crop and resize functionality
    - Display on user profile and reviews
 
 2. **Oyster Photos**
+
    - Official oyster photos (admin-uploaded)
    - Photo gallery on oyster detail page
    - Multiple photos per oyster
@@ -723,6 +790,7 @@ Railway will auto-deploy, and users will immediately benefit from better search!
 **Technical Implementation:**
 
 **Storage Options:**
+
 - **Cloudinary** (Recommended)
   - Free tier: 25GB storage, 25GB bandwidth/month
   - Automatic image optimization
@@ -730,6 +798,7 @@ Railway will auto-deploy, and users will immediately benefit from better search!
   - Built-in transformations (resize, crop)
 
 **Backend Changes:**
+
 ```prisma
 model User {
   profilePhotoUrl String?
@@ -761,6 +830,7 @@ model ReviewPhoto {
 ```
 
 **Mobile Changes:**
+
 - Install `expo-image-picker`
 - Add image upload component
 - Compress images before upload
@@ -771,21 +841,25 @@ model ReviewPhoto {
 ---
 
 ### Priority 5: Web Application
+
 **Status:** Backlog
 **Estimated Time:** 60-80 hours
 
 **Goals:**
+
 - Full-featured web version of Oysterette
 - Shared authentication with mobile app
 - Responsive design (desktop, tablet, mobile web)
 
 **Tech Stack:**
+
 - **Next.js 14** (React framework with App Router)
 - **TailwindCSS** (styling)
 - **Same backend API** (already deployed on Railway)
 - **Shared auth system** (JWT tokens work across platforms)
 
 **Features to Port:**
+
 1. User authentication (login, register, OAuth)
 2. Oyster browsing and search
 3. Oyster detail pages
@@ -796,17 +870,20 @@ model ReviewPhoto {
 8. Dark mode (syncs with mobile)
 
 **Deployment:**
+
 - **Vercel** (free tier, optimized for Next.js)
 - Custom domain: oysterette.app or oysterette.com
 - SSL/HTTPS automatic
 
 **Benefits:**
+
 - Reach desktop users
 - SEO for oyster listings (Google search visibility)
 - Easier sharing of oyster pages
 - Better for data entry (admin functions)
 
 **Domain Setup:**
+
 - Purchase domain (~$12/year for .app, ~$15/year for .com)
 - Configure DNS on Vercel
 - Set up SSL certificate (automatic)
@@ -814,12 +891,14 @@ model ReviewPhoto {
 ---
 
 ### Priority 6: Admin Dashboard & Management System
+
 **Status:** Backlog
 **Estimated Time:** 40-50 hours
 
 **Features:**
 
 **1. Admin Portal (Web-based)**
+
 - Separate admin login (admin role in database)
 - Dashboard with statistics:
   - Total users, oysters, reviews
@@ -827,6 +906,7 @@ model ReviewPhoto {
   - Flagged content count
 
 **2. Oyster Management**
+
 - View all oysters in sortable table
 - Edit oyster details (name, origin, species, attributes)
 - Add new oysters with full details
@@ -836,6 +916,7 @@ model ReviewPhoto {
 - View review history per oyster
 
 **3. Review Moderation**
+
 - Queue for flagged reviews (profanity, spam)
 - Approve or reject reviews
 - Edit review text if needed
@@ -843,6 +924,7 @@ model ReviewPhoto {
 - Ban users for violations
 
 **4. User Management**
+
 - View all users
 - See user stats (reviews, credibility, votes)
 - Ban/suspend users
@@ -850,6 +932,7 @@ model ReviewPhoto {
 - View user review history
 
 **5. Oyster Submission Queue**
+
 - User-submitted oyster suggestions
 - Review submitted data (name, origin, species)
 - Approve to add to database
@@ -857,6 +940,7 @@ model ReviewPhoto {
 - Edit before approving
 
 **Database Schema Changes:**
+
 ```prisma
 model User {
   role String @default("user") // "user" | "admin"
@@ -887,11 +971,13 @@ model FlaggedReview {
 ```
 
 **Profanity Detection:**
+
 - Use library like `bad-words` or `profanity-check`
 - Auto-flag reviews for manual review
 - Configurable word list
 
 **Implementation:**
+
 - Build as Next.js web app (admin.oysterette.app)
 - Protect all routes with admin role check
 - Use same Railway backend API with admin endpoints
@@ -899,25 +985,30 @@ model FlaggedReview {
 ---
 
 ### Priority 7: Enhanced UX & Bug Fixes
+
 **Status:** Backlog
 **Estimated Time:** 12-16 hours
 
 **Issues to Fix:**
 
 1. **Add Oyster Screen - Attribute Input**
+
    - Replace number input boxes with sliders
    - Add emoji buttons (LOVED IT, LIKED IT, MEH, HATED IT)
    - Make UI consistent with review submission
 
 2. **Keyboard Handling**
+
    - Fix keyboard covering "standout notes" field
    - Apply same KeyboardAvoidingView fix from AddReviewScreen
 
 3. **Missing Fields on Review Screen**
+
    - When oyster lacks Origin or Species, show fields to add them
    - Submit updates to oyster submission queue for admin approval
 
 4. **New Oyster Validation**
+
    - Require origin and species when adding oyster
    - If user doesn't know, send to approval queue
    - Admin can fill in missing details before approval
@@ -928,6 +1019,7 @@ model FlaggedReview {
    - Update all screen headers with conditional login button
 
 **File Changes Needed:**
+
 - `AddOysterScreen.tsx` - Replace inputs with sliders/emoji buttons
 - `OysterDetailScreen.tsx` - Add edit fields for missing origin/species
 - `App.tsx` - Add conditional login button to header
@@ -936,6 +1028,7 @@ model FlaggedReview {
 ---
 
 ### Priority 8: Personalized Recommendations
+
 **Status:** Backlog
 **Estimated Time:** 16-24 hours
 
@@ -944,23 +1037,27 @@ model FlaggedReview {
 **Features:**
 
 **1. Recommendation Algorithm**
+
 - Analyze user's review history
 - Find attribute patterns (e.g., user likes creamy, sweet oysters)
 - Suggest oysters matching those attributes
 - Weight by overall rating
 
 **Example:**
+
 - User rates highly: Kusshi (creamy 8, sweet 7)
 - User rates highly: Kumamoto (creamy 9, sweet 8)
 - System detects: User likes creamy, sweet oysters
 - Recommends: Shigoku (creamy 8, sweet 7)
 
 **2. Collaborative Filtering**
+
 - Find users with similar taste profiles
 - Recommend oysters they rated highly
 - "Users who liked X also liked Y"
 
 **3. Homepage Updates**
+
 - Replace current list with personalized feed
 - "Recommended for You" section at top
 - "Top Rated" section below
@@ -968,12 +1065,14 @@ model FlaggedReview {
 - Easy navigation to full oyster list
 
 **Implementation:**
+
 - New backend endpoint: `/api/users/:userId/recommendations`
 - Calculate similarity scores for all oysters
 - Return top 10 matches
 - Cache results for performance
 
 **Algorithm Pseudocode:**
+
 ```typescript
 function getRecommendations(userId: string) {
   // Get user's reviews
@@ -986,9 +1085,9 @@ function getRecommendations(userId: string) {
   const unreviewed = await getUnreviewedOysters(userId);
 
   // Calculate similarity scores
-  const scored = unreviewed.map(oyster => ({
+  const scored = unreviewed.map((oyster) => ({
     oyster,
-    similarity: calculateSimilarity(avgPreferences, oyster.attributes)
+    similarity: calculateSimilarity(avgPreferences, oyster.attributes),
   }));
 
   // Sort by similarity
@@ -999,10 +1098,12 @@ function getRecommendations(userId: string) {
 ---
 
 ### Priority 9: Homepage Redesign
+
 **Status:** Backlog
 **Estimated Time:** 8-12 hours
 
 **Current Issues:**
+
 - Home screen is just a welcome message
 - Users must navigate to "Browse" to see oysters
 - Wasted screen space
@@ -1010,25 +1111,31 @@ function getRecommendations(userId: string) {
 **New Design:**
 
 **Option A: Direct to Oyster List (Simplest)**
+
 - Remove home screen entirely
 - Default screen is Browse with search
 - Bottom tabs: Browse, Profile, Settings
 
 **Option B: Enhanced Home with Quick Actions (Recommended)**
+
 - **Hero Section:**
+
   - Welcome message
   - Search bar (immediate oyster search)
   - Quick stats: "838 Oysters • 1,234 Reviews"
 
 - **Recommended for You** (if logged in)
+
   - Horizontal scroll of 5-10 personalized oysters
   - "See All" button
 
 - **Top Rated This Week**
+
   - Horizontal scroll of highest-rated oysters
   - Drives engagement
 
 - **Recently Added**
+
   - Newest oysters in database
   - Keeps content fresh
 
@@ -1038,6 +1145,7 @@ function getRecommendations(userId: string) {
   - "Submit New Oyster" button
 
 **Implementation:**
+
 - Update `HomeScreen.tsx` with new layout
 - Add horizontal ScrollView components
 - Use existing API endpoints
@@ -1048,27 +1156,32 @@ function getRecommendations(userId: string) {
 ## 📋 COMPREHENSIVE PRIORITY ORDER
 
 ### Phase 1: Core Improvements ✅ COMPLETE!
+
 1. ✅ OAuth Implementation (Nov 5, 2025)
 2. ⭐ Code Documentation (RECOMMENDED NEXT)
 3. ⭐ App Store Compliance & Security Audit (HIGH PRIORITY)
 
 ### Phase 2: User Experience (Next Up)
+
 4. UX Bug Fixes (sliders, keyboard, missing fields)
 5. Navigation Updates (login button, etc.)
 6. Homepage Redesign
 
 ### Phase 3: Growth Features
+
 7. Photo Upload System
 8. Personalized Recommendations
 9. Enhanced Search & Filters
 
 ### Phase 4: Platform Expansion
+
 10. Web Application (Next.js)
 11. Admin Dashboard & Management
 12. Oyster Submission Queue
 13. Review Moderation System
 
 ### Phase 5: Long-term Enhancements
+
 14. iOS App Store Launch
 15. Advanced Analytics
 16. Social Features (following users, sharing reviews)
@@ -1081,3 +1194,16 @@ function getRecommendations(userId: string) {
 **Database:** Live on Neon
 **Tests:** 162/162 passing ✅
 **Status:** Production-ready, preparing for OAuth and App Store deployment
+
+## Universal Token-Saving Rules
+
+| Rule                             | Saves            | How to Apply                                           |
+| -------------------------------- | ---------------- | ------------------------------------------------------ |
+| **Only send changed files**      | 50–150 k → 1–5 k | `git diff --name-only HEAD~1` → paste only those paths |
+| **Never paste full files**       | 30 k+ per file   | Use `head -30` / `tail -30` or `...[truncated]`        |
+| **Paginate DB queries**          | 10 k rows → 3 k  | `LIMIT 100 OFFSET ?` in seed scripts                   |
+| **Truncate logs**                | 15 k log → 1 k   | `head -50`, `tail -50`, or `…[truncated]`              |
+| **Clear context between tasks**  | 80 k history → 0 | Type `/clear` or start new chat after each feature     |
+| **Ask for diffs, not full code** | 20 k → 2 k       | “Show fix as Git diff”                                 |
+
+---
