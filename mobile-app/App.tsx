@@ -17,6 +17,25 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import TopOystersScreen from './src/screens/TopOystersScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 
+/**
+ * TO REPLACE "Oysterette" TEXT WITH LOGO:
+ *
+ * 1. Add your logo image to assets/ (e.g., assets/header-logo.png)
+ *    - Use transparent background PNG
+ *    - Recommended size: ~150px wide x 40px tall
+ *
+ * 2. Import Image component: import { Image } from 'react-native';
+ *
+ * 3. Replace title with headerTitle for OysterList:
+ *    headerTitle: () => (
+ *      <Image
+ *        source={require('./assets/header-logo.png')}
+ *        style={{ width: 150, height: 40 }}
+ *        resizeMode="contain"
+ *      />
+ *    ),
+ */
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppNavigator() {
@@ -79,7 +98,7 @@ function AppNavigator() {
           name="OysterList"
           component={OysterListScreen}
           options={({ navigation }) => ({
-            title: '',
+            title: 'Oysterette',
             headerRight: () => <SettingsButton navigation={navigation} />,
           })}
         />
