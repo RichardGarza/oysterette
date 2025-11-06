@@ -321,7 +321,7 @@ const createStyles = (colors: any, isDark: boolean) =>
       paddingVertical: 8,
       paddingHorizontal: 12,
       borderRadius: 6,
-      backgroundColor: isDark ? colors.inputBackground : '#fff',
+      backgroundColor: colors.inputBackground,
       borderWidth: 1,
       borderColor: colors.border,
     },

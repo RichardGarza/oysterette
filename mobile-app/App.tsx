@@ -79,7 +79,7 @@ function AppNavigator() {
           name="OysterList"
           component={OysterListScreen}
           options={({ navigation }) => ({
-            title: 'Browse Oysters',
+            title: '',
             headerRight: () => <SettingsButton navigation={navigation} />,
           })}
         />

@@ -371,7 +371,7 @@ const createStyles = (colors: any, isDark: boolean) =>
     loginButton: {
       paddingHorizontal: 20,
       paddingVertical: 10,
-      backgroundColor: colors.success,
+      backgroundColor: '#FF6B35', // Bright orange to stand out
       borderRadius: 8,
     },
     loginButtonText: {
