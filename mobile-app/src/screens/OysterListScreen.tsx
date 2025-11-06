@@ -204,17 +204,6 @@ export default function OysterListScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          {!isLoggedIn && (
-            <View style={styles.loginRow}>
-              <TouchableOpacity
-                style={styles.loginButton}
-                onPress={() => navigation.navigate('Login')}
-              >
-                <Text style={styles.loginButtonText}>Login</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
           <View style={styles.filterTabs}>
             <TouchableOpacity
               style={[styles.filterTab, !showFavoritesOnly && styles.filterTabActive]}
@@ -253,17 +242,6 @@ export default function OysterListScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        {!isLoggedIn && (
-          <View style={styles.loginRow}>
-            <TouchableOpacity
-              style={styles.loginButton}
-              onPress={() => navigation.navigate('Login')}
-            >
-              <Text style={styles.loginButtonText}>Login</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
         <View style={styles.filterTabs}>
           <TouchableOpacity
             style={[styles.filterTab, !showFavoritesOnly && styles.filterTabActive]}
@@ -363,23 +341,7 @@ const createStyles = (colors: any, isDark: boolean) =>
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
-    loginRow: {
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      marginBottom: 15,
-    },
-    loginButton: {
-      paddingHorizontal: 20,
-      paddingVertical: 10,
-      backgroundColor: '#FF6B35', // Bright orange to stand out
-      borderRadius: 8,
-    },
-    loginButtonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: '700',
-    },
-  filterTabs: {
+    filterTabs: {
     flexDirection: 'row',
     marginBottom: 15,
     gap: 10,
