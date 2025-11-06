@@ -224,19 +224,42 @@
 
 ---
 
-## 🔮 Future Phases (Post-MVP)
+## 🚧 Current Work - Phase 9: Enhanced Search & Filters (IN PROGRESS)
 
-### Phase 9: Enhanced Search & Filters 📋
+### Phase 9: Enhanced Search & Filters 🚧 70% COMPLETE
 
-**Estimated Time:** 3-4 hours
+**Started:** November 6, 2025 (PM)
+**Estimated Time:** 3-4 hours total (2-3 hours remaining)
 **Priority:** HIGH (Quick Win)
 
-- [ ] Filter by species (Pacific, Kumamoto, European, etc.)
-- [ ] Filter by origin (Washington, California, Canada, etc.)
-- [ ] Sort by: Rating, Name, Date Added, Size, Saltiness, etc.
-- [ ] Save filter preferences
-- [ ] Filter combination logic
-- [ ] Clear filters button
+**Backend (COMPLETE):**
+- [x] Analyze oyster data (7 species, 74 origins)
+- [x] Update getAllOysters with species, origin, sortBy params
+- [x] Add getFilterOptions endpoint (GET /api/oysters/filters)
+- [x] Add sort options: rating, name, size, sweetness, creaminess, flavorfulness, body
+- [x] Deploy to Railway
+
+**Mobile Backend Integration (COMPLETE):**
+- [x] Update oysterApi.getAll() to accept filter params
+- [x] Add oysterApi.getFilterOptions() method
+- [x] Add filter state to OysterListScreen
+- [x] Wire up filter logic to auto-refetch on change
+- [x] Fetch filter options on screen load
+
+**Mobile UI (TODO - Next Session):**
+- [ ] Add "Filters" toggle button
+- [ ] Add species dropdown/selector UI
+- [ ] Add origin dropdown/selector UI
+- [ ] Add sort by dropdown/selector UI
+- [ ] Add "Clear Filters" button
+- [ ] Visual indication of active filters
+- [ ] Save filter preferences to AsyncStorage
+
+**Status:** Backend complete and deployed. Mobile needs UI components (dropdowns, buttons).
+
+---
+
+## 🔮 Future Phases (Post-MVP)
 
 ### Phase 10: User Profile Enhancements 📋
 
