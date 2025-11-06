@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from '../navigation/types';
 import { useTheme } from '../context/ThemeContext';
 import { authStorage } from '../services/auth';
+import { favoritesStorage } from '../services/favorites';
 import { authApi } from '../services/api';
 
 export default function HomeScreen() {
@@ -45,6 +46,8 @@ export default function HomeScreen() {
       if (token && user) {
         // User is logged in, load their theme
         loadUserTheme(user);
+        // Sync favorites on app start
+        favoritesStorage.syncWithBackend();
         setIsLoggedIn(true);
         setChecking(false);
       } else {

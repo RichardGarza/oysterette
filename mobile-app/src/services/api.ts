@@ -323,4 +323,28 @@ export const userApi = {
   },
 };
 
+// Favorites API
+export const favoritesApi = {
+  // Get user's favorite oyster IDs
+  getFavorites: async (): Promise<string[]> => {
+    const response = await api.get<{ favorites: string[] }>('/favorites');
+    return response.data.favorites || [];
+  },
+
+  // Add oyster to favorites
+  addFavorite: async (oysterId: string): Promise<void> => {
+    await api.post(`/favorites/${oysterId}`);
+  },
+
+  // Remove oyster from favorites
+  removeFavorite: async (oysterId: string): Promise<void> => {
+    await api.delete(`/favorites/${oysterId}`);
+  },
+
+  // Sync favorites (send local favorites to server, get back merged list)
+  syncFavorites: async (favorites: string[]): Promise<void> => {
+    await api.post('/favorites/sync', { favorites });
+  },
+};
+
 export default api;

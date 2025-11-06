@@ -28,6 +28,7 @@ model User {
   reviews        Review[]
   topOysters     UserTopOyster[]
   votesGiven     ReviewVote[]   @relation("VoterVotes")
+  favorites      Favorite[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -67,6 +68,7 @@ model Oyster {
   // Relations
   reviews        Review[]
   topOysterUsers UserTopOyster[]
+  favorites      Favorite[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -129,6 +131,22 @@ model UserTopOyster {
 
   @@unique([userId, oysterId])
   @@map("user_top_oysters")
+}
+
+// Favorite Model (User's favorited oysters)
+model Favorite {
+  id       String @id @default(uuid())
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  oysterId String
+  oyster   Oyster @relation(fields: [oysterId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, oysterId])  // One favorite per user per oyster
+  @@map("favorites")
 }
 
 // Review Vote Model (Agree/Disagree on reviews)

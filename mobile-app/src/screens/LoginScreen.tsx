@@ -16,6 +16,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { authApi } from '../services/api';
 import { authStorage } from '../services/auth';
+import { favoritesStorage } from '../services/favorites';
 import { useTheme } from '../context/ThemeContext';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
@@ -113,6 +114,9 @@ export default function LoginScreen() {
       // Load user's theme preference
       loadUserTheme(authResponse.user);
 
+      // Sync favorites with backend
+      await favoritesStorage.syncWithBackend();
+
       console.log('✅ Authentication complete, navigating to OysterList');
 
       // Navigate to main app and reset navigation stack
@@ -164,6 +168,9 @@ export default function LoginScreen() {
 
       // Load user's theme preference
       loadUserTheme(response.user);
+
+      // Sync favorites with backend
+      await favoritesStorage.syncWithBackend();
 
       // Navigate to main app and reset navigation stack
       navigation.dispatch(
