@@ -21,9 +21,10 @@ import { useTheme } from '../context/ThemeContext';
 import { EmptyState } from '../components/EmptyState';
 import { RatingDisplay } from '../components/RatingDisplay';
 import { ReviewCard } from '../components/ReviewCard';
+import { getAttributeDescriptor } from '../utils/ratingUtils';
 
 type SortOption = 'helpful' | 'recent' | 'highest' | 'lowest';
-type RatingFilter = 'ALL' | 'LOVED_IT' | 'LIKED_IT' | 'MEH' | 'HATED_IT';
+type RatingFilter = 'ALL' | 'LOVE_IT' | 'LIKE_IT' | 'MEH' | 'WHATEVER';
 
 export default function OysterDetailScreen() {
   const route = useRoute<OysterDetailScreenRouteProp>();
@@ -131,23 +132,31 @@ export default function OysterDetailScreen() {
       case 'recent':
         return reviews.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       case 'highest':
-        const ratingOrder = { LOVED_IT: 4, LIKED_IT: 3, MEH: 2, HATED_IT: 1 };
+        const ratingOrder = { LOVE_IT: 4, LIKE_IT: 3, MEH: 2, WHATEVER: 1 };
         return reviews.sort((a, b) => ratingOrder[b.rating] - ratingOrder[a.rating]);
       case 'lowest':
-        const ratingOrderLow = { LOVED_IT: 4, LIKED_IT: 3, MEH: 2, HATED_IT: 1 };
+        const ratingOrderLow = { LOVE_IT: 4, LIKE_IT: 3, MEH: 2, WHATEVER: 1 };
         return reviews.sort((a, b) => ratingOrderLow[a.rating] - ratingOrderLow[b.rating]);
       default:
         return reviews;
     }
   };
 
-  const renderAttributeBar = (value: number, label: string) => {
+  const renderAttributeBar = (
+    value: number,
+    label: string,
+    attribute: 'size' | 'body' | 'sweet_brininess' | 'flavorfulness' | 'creaminess'
+  ) => {
     const percentage = (value / 10) * 100;
+    const descriptor = getAttributeDescriptor(attribute, value);
     return (
       <View style={styles.attributeBarContainer}>
         <View style={styles.attributeBarHeader}>
           <Text style={styles.attributeBarLabel}>{label}</Text>
-          <Text style={styles.attributeBarValue}>{value}/10</Text>
+          <View style={styles.attributeBarValueContainer}>
+            <Text style={styles.attributeBarDescriptor}>{descriptor}</Text>
+            <Text style={styles.attributeBarValue}> ({value}/10)</Text>
+          </View>
         </View>
         <View style={styles.attributeBarTrack}>
           <View
@@ -253,11 +262,11 @@ export default function OysterDetailScreen() {
           <Text style={styles.sectionTitle}>Attribute Profile</Text>
           <Text style={styles.sectionSubtitle}>10-point scale ratings</Text>
 
-          {renderAttributeBar(oyster.size, 'Size (1=Tiny → 10=Huge)')}
-          {renderAttributeBar(oyster.body, 'Body (1=Thin → 10=Fat)')}
-          {renderAttributeBar(oyster.sweetBrininess, 'Sweet/Brininess (1=Sweet → 10=Salty)')}
-          {renderAttributeBar(oyster.flavorfulness, 'Flavorfulness (1=Boring → 10=Bold)')}
-          {renderAttributeBar(oyster.creaminess, 'Creaminess (1=None → 10=Creamy)')}
+          {renderAttributeBar(oyster.size, 'Size', 'size')}
+          {renderAttributeBar(oyster.body, 'Body', 'body')}
+          {renderAttributeBar(oyster.sweetBrininess, 'Sweet/Brininess', 'sweet_brininess')}
+          {renderAttributeBar(oyster.flavorfulness, 'Flavorfulness', 'flavorfulness')}
+          {renderAttributeBar(oyster.creaminess, 'Creaminess', 'creaminess')}
         </View>
 
         <View style={styles.section}>
@@ -288,19 +297,19 @@ export default function OysterDetailScreen() {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.filterChip, ratingFilter === 'LOVED_IT' && styles.filterChipActive]}
-                  onPress={() => setRatingFilter('LOVED_IT')}
+                  style={[styles.filterChip, ratingFilter === 'LOVE_IT' && styles.filterChipActive]}
+                  onPress={() => setRatingFilter('LOVE_IT')}
                 >
-                  <Text style={[styles.filterChipText, ratingFilter === 'LOVED_IT' && styles.filterChipTextActive]}>
-                    😍 Loved
+                  <Text style={[styles.filterChipText, ratingFilter === 'LOVE_IT' && styles.filterChipTextActive]}>
+                    ❤️ Love
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.filterChip, ratingFilter === 'LIKED_IT' && styles.filterChipActive]}
-                  onPress={() => setRatingFilter('LIKED_IT')}
+                  style={[styles.filterChip, ratingFilter === 'LIKE_IT' && styles.filterChipActive]}
+                  onPress={() => setRatingFilter('LIKE_IT')}
                 >
-                  <Text style={[styles.filterChipText, ratingFilter === 'LIKED_IT' && styles.filterChipTextActive]}>
-                    😊 Liked
+                  <Text style={[styles.filterChipText, ratingFilter === 'LIKE_IT' && styles.filterChipTextActive]}>
+                    👍 Like
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -312,11 +321,11 @@ export default function OysterDetailScreen() {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.filterChip, ratingFilter === 'HATED_IT' && styles.filterChipActive]}
-                  onPress={() => setRatingFilter('HATED_IT')}
+                  style={[styles.filterChip, ratingFilter === 'WHATEVER' && styles.filterChipActive]}
+                  onPress={() => setRatingFilter('WHATEVER')}
                 >
-                  <Text style={[styles.filterChipText, ratingFilter === 'HATED_IT' && styles.filterChipTextActive]}>
-                    🤢 Hated
+                  <Text style={[styles.filterChipText, ratingFilter === 'WHATEVER' && styles.filterChipTextActive]}>
+                    🤷 Whatever
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -485,10 +494,19 @@ const createStyles = (colors: any, isDark: boolean) =>
       color: colors.textSecondary,
       flex: 1,
     },
-    attributeBarValue: {
+    attributeBarValueContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    attributeBarDescriptor: {
       fontSize: 14,
-      fontWeight: '600',
+      fontWeight: '700',
       color: colors.text,
+    },
+    attributeBarValue: {
+      fontSize: 12,
+      fontWeight: '400',
+      color: colors.textSecondary,
     },
     attributeBarTrack: {
       height: 8,

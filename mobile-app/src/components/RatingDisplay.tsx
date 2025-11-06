@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { scoreToVerdict, scoreToStars } from '../utils/ratingUtils';
 
 interface RatingDisplayProps {
   overallScore: number;
@@ -15,23 +16,18 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
   showDetails = true,
 }) => {
   // Convert 0-10 score to 0-5 stars for display
-  const stars = (overallScore / 10) * 5;
+  const stars = scoreToStars(overallScore);
   const fullStars = Math.floor(stars);
   const hasHalfStar = stars % 1 >= 0.5;
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
-  // Get color based on score
-  const getScoreColor = (score: number): string => {
-    if (score >= 8) return '#10b981'; // green
-    if (score >= 6) return '#f59e0b'; // yellow/orange
-    if (score >= 4) return '#ef4444'; // red
-    return '#9ca3af'; // gray
-  };
+  // Get verdict (emoji + word) based on score
+  const verdict = scoreToVerdict(overallScore);
 
   const sizeStyles = {
-    small: { fontSize: 14, starSize: 12 },
-    medium: { fontSize: 16, starSize: 14 },
-    large: { fontSize: 20, starSize: 18 },
+    small: { fontSize: 14, starSize: 14, emojiSize: 16 },
+    medium: { fontSize: 18, starSize: 16, emojiSize: 24 },
+    large: { fontSize: 22, starSize: 18, emojiSize: 32 },
   };
 
   const currentSize = sizeStyles[size];
@@ -47,21 +43,10 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
     );
   }
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.scoreContainer}>
-        <Text
-          style={[
-            styles.score,
-            { fontSize: currentSize.fontSize, color: getScoreColor(overallScore) },
-          ]}
-        >
-          {overallScore.toFixed(1)}
-        </Text>
-        <Text style={[styles.outOf, { fontSize: currentSize.fontSize - 4 }]}>/10</Text>
-      </View>
-
-      {showDetails && (
+  // Small size: Show only stars (list view)
+  if (size === 'small') {
+    return (
+      <View style={styles.container}>
         <View style={styles.starsContainer}>
           {[...Array(fullStars)].map((_, i) => (
             <Text key={`full-${i}`} style={[styles.star, { fontSize: currentSize.starSize }]}>
@@ -77,8 +62,29 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
             </Text>
           ))}
         </View>
-      )}
+        {showDetails && (
+          <Text style={[styles.reviewCount, { fontSize: currentSize.fontSize - 2 }]}>
+            ({totalReviews})
+          </Text>
+        )}
+      </View>
+    );
+  }
 
+  // Medium/Large size: Show emoji + verdict word (detail view)
+  return (
+    <View style={styles.container}>
+      <Text style={[styles.emoji, { fontSize: currentSize.emojiSize }]}>
+        {verdict.emoji}
+      </Text>
+      <View style={styles.verdictContainer}>
+        <Text style={[styles.verdictText, { fontSize: currentSize.fontSize }]}>
+          {verdict.verdict}
+        </Text>
+        <Text style={[styles.scoreText, { fontSize: currentSize.fontSize - 4 }]}>
+          {overallScore.toFixed(1)}/10
+        </Text>
+      </View>
       {showDetails && (
         <Text style={[styles.reviewCount, { fontSize: currentSize.fontSize - 4 }]}>
           ({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})
@@ -92,10 +98,10 @@ interface RatingBreakdownProps {
   avgRating: number;
   totalReviews: number;
   ratingBreakdown?: {
-    lovedIt: number;
-    likedIt: number;
+    loveIt: number;
+    likeIt: number;
     meh: number;
-    hatedIt: number;
+    whatever: number;
   };
 }
 
@@ -105,10 +111,10 @@ export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({
   ratingBreakdown,
 }) => {
   const getRatingLabel = (value: number): string => {
-    if (value >= 3.5) return 'Loved It';
-    if (value >= 2.5) return 'Liked It';
+    if (value >= 3.5) return 'Love It';
+    if (value >= 2.5) return 'Like It';
     if (value >= 1.5) return 'Meh';
-    return 'Hated It';
+    return 'Whatever';
   };
 
   const getRatingColor = (value: number): string => {
@@ -140,10 +146,10 @@ export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({
 
       {ratingBreakdown && (
         <View style={styles.barsContainer}>
-          <RatingBar label="Loved It" count={ratingBreakdown.lovedIt} total={totalReviews} color="#10b981" />
-          <RatingBar label="Liked It" count={ratingBreakdown.likedIt} total={totalReviews} color="#3b82f6" />
+          <RatingBar label="Love It" count={ratingBreakdown.loveIt} total={totalReviews} color="#10b981" />
+          <RatingBar label="Like It" count={ratingBreakdown.likeIt} total={totalReviews} color="#3b82f6" />
           <RatingBar label="Meh" count={ratingBreakdown.meh} total={totalReviews} color="#f59e0b" />
-          <RatingBar label="Hated It" count={ratingBreakdown.hatedIt} total={totalReviews} color="#ef4444" />
+          <RatingBar label="Whatever" count={ratingBreakdown.whatever} total={totalReviews} color="#ef4444" />
         </View>
       )}
     </View>
@@ -189,13 +195,26 @@ const styles = StyleSheet.create({
   },
   starsContainer: {
     flexDirection: 'row',
-    marginLeft: 8,
   },
   star: {
     color: '#fbbf24',
   },
   starEmpty: {
     color: '#d1d5db',
+  },
+  emoji: {
+    marginRight: 8,
+  },
+  verdictContainer: {
+    marginRight: 8,
+  },
+  verdictText: {
+    fontWeight: '700',
+    color: '#2c3e50',
+  },
+  scoreText: {
+    color: '#6b7280',
+    marginTop: 2,
   },
   reviewCount: {
     color: '#6b7280',

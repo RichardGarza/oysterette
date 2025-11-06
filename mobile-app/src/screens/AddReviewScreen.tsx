@@ -19,10 +19,10 @@ import { reviewApi } from '../services/api';
 import { ReviewRating } from '../types/Oyster';
 
 const RATING_OPTIONS: { label: string; value: ReviewRating; emoji: string; color: string }[] = [
-  { label: 'Loved It!', value: 'LOVED_IT', emoji: '😍', color: '#27ae60' },
-  { label: 'Liked It', value: 'LIKED_IT', emoji: '😊', color: '#3498db' },
+  { label: 'Love It', value: 'LOVE_IT', emoji: '❤️', color: '#e74c3c' },
+  { label: 'Like It', value: 'LIKE_IT', emoji: '👍', color: '#27ae60' },
   { label: 'Meh', value: 'MEH', emoji: '😐', color: '#f39c12' },
-  { label: 'Hated It', value: 'HATED_IT', emoji: '🤢', color: '#e74c3c' },
+  { label: 'Whatever', value: 'WHATEVER', emoji: '🤷', color: '#95a5a6' },
 ];
 
 export default function AddReviewScreen() {

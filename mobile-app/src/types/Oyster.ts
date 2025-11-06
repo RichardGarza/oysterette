@@ -38,7 +38,7 @@ export interface Oyster {
 }
 
 // Review rating enum
-export type ReviewRating = 'LOVED_IT' | 'LIKED_IT' | 'MEH' | 'HATED_IT';
+export type ReviewRating = 'LOVE_IT' | 'LIKE_IT' | 'MEH' | 'WHATEVER';
 
 // Review type
 export interface Review {
