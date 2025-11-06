@@ -34,11 +34,27 @@ export default function OysterListScreen() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // Filter states
+  const [selectedSpecies, setSelectedSpecies] = useState<string>('');
+  const [selectedOrigin, setSelectedOrigin] = useState<string>('');
+  const [selectedSortBy, setSelectedSortBy] = useState<string>('name');
+  const [availableSpecies, setAvailableSpecies] = useState<string[]>([]);
+  const [availableOrigins, setAvailableOrigins] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+
   useEffect(() => {
     fetchOysters();
     loadFavorites();
     checkAuth();
+    fetchFilterOptions();
   }, []);
+
+  useEffect(() => {
+    // Refetch when filters change
+    if (!loading) {
+      fetchOysters();
+    }
+  }, [selectedSpecies, selectedOrigin, selectedSortBy]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -56,6 +72,16 @@ export default function OysterListScreen() {
     setFavorites(new Set(favs));
   };
 
+  const fetchFilterOptions = async () => {
+    try {
+      const options = await oysterApi.getFilterOptions();
+      setAvailableSpecies(options.species);
+      setAvailableOrigins(options.origins);
+    } catch (err) {
+      console.error('Failed to load filter options:', err);
+    }
+  };
+
   const fetchOysters = async (isRefreshing = false) => {
     try {
       if (isRefreshing) {
@@ -64,7 +90,14 @@ export default function OysterListScreen() {
         setLoading(true);
       }
       setError(null);
-      const data = await oysterApi.getAll();
+
+      // Build filter params
+      const params: any = {};
+      if (selectedSpecies) params.species = selectedSpecies;
+      if (selectedOrigin) params.origin = selectedOrigin;
+      if (selectedSortBy) params.sortBy = selectedSortBy;
+
+      const data = await oysterApi.getAll(params);
       setOysters(data);
     } catch (err) {
       setError('Failed to load oysters. Please check your backend connection.');
