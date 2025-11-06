@@ -72,9 +72,26 @@ export default function LoginScreen() {
       // Send ID token to backend for verification
       const authResponse = await authApi.googleAuth(idToken);
 
+      console.log('📦 [LoginScreen] Auth response received:', {
+        hasToken: !!authResponse.token,
+        tokenLength: authResponse.token?.length,
+        tokenPreview: authResponse.token?.substring(0, 20) + '...',
+        hasUser: !!authResponse.user,
+        userId: authResponse.user?.id
+      });
+
+      // Validate token before saving
+      if (!authResponse.token || typeof authResponse.token !== 'string' || authResponse.token.length === 0) {
+        throw new Error('Invalid token received from backend');
+      }
+
       // Save token and user data
       await authStorage.saveToken(authResponse.token);
       await authStorage.saveUser(authResponse.user);
+
+      // Verify token was saved
+      const savedToken = await authStorage.getToken();
+      console.log('✅ [LoginScreen] Token saved and verified:', savedToken ? savedToken.substring(0, 20) + '...' : 'NULL');
 
       // Load user's theme preference
       loadUserTheme(authResponse.user);

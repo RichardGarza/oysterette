@@ -82,7 +82,7 @@ describe('Review API Integration Tests', () => {
       .set('Authorization', `Bearer ${authToken}`)
       .send({
         oysterId,
-        rating: 'LOVED_IT',
+        rating: 'LOVE_IT',
         size: 7,
         body: 8,
         sweetBrininess: 6,
@@ -90,6 +90,11 @@ describe('Review API Integration Tests', () => {
         creaminess: 7,
         notes: 'Original test review',
       });
+
+    if (!reviewResponse.body.data) {
+      console.error('Failed to create review in beforeAll:', reviewResponse.body);
+      throw new Error('Review creation failed in test setup');
+    }
 
     reviewId = reviewResponse.body.data.id;
   });
@@ -107,7 +112,7 @@ describe('Review API Integration Tests', () => {
   describe('PUT /api/reviews/:reviewId', () => {
     it('should update own review successfully', async () => {
       const updateData = {
-        rating: 'LIKED_IT',
+        rating: 'LIKE_IT',
         size: 8,
         body: 7,
         notes: 'Updated test review',
@@ -138,7 +143,7 @@ describe('Review API Integration Tests', () => {
       const response = await request(app)
         .put(`/api/reviews/${reviewId}`)
         .set('Authorization', `Bearer ${otherUserToken}`)
-        .send({ rating: 'HATED_IT' })
+        .send({ rating: 'WHATEVER' })
         .expect(403);
 
       expect(response.body.success).toBe(false);
@@ -149,7 +154,7 @@ describe('Review API Integration Tests', () => {
       const response = await request(app)
         .put('/api/reviews/123e4567-e89b-12d3-a456-426614174000') // Valid UUID that doesn't exist
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ rating: 'LIKED_IT' })
+        .send({ rating: 'LIKE_IT' })
         .expect(404);
 
       expect(response.body.success).toBe(false);
@@ -178,7 +183,7 @@ describe('Review API Integration Tests', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           oysterId: deleteOysterId,
-          rating: 'LIKED_IT',
+          rating: 'LIKE_IT',
           size: 5,
           body: 6,
           sweetBrininess: 7,
@@ -322,6 +327,61 @@ describe('Review API Integration Tests', () => {
         .expect(401);
 
       expect(response.body.success).toBe(false);
+    });
+  });
+
+  describe('GET /api/reviews/check/:oysterId', () => {
+    it('should return existing review if user has reviewed oyster', async () => {
+      const response = await request(app)
+        .get(`/api/reviews/check/${oysterId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).not.toBeNull();
+      expect(response.body.data.oysterId).toBe(oysterId);
+      expect(response.body.data.userId).toBe(userId);
+      expect(response.body.data.id).toBe(reviewId);
+    });
+
+    it('should return null if user has not reviewed oyster', async () => {
+      // Create a new oyster that the user hasn't reviewed
+      const newOyster = await prisma.oyster.create({
+        data: {
+          name: 'Unreviewed Oyster',
+          species: 'Crassostrea virginica',
+          origin: 'Test Location',
+        },
+      });
+
+      const response = await request(app)
+        .get(`/api/reviews/check/${newOyster.id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toBeNull();
+
+      // Cleanup
+      await prisma.oyster.delete({ where: { id: newOyster.id } });
+    });
+
+    it('should fail without authentication', async () => {
+      const response = await request(app)
+        .get(`/api/reviews/check/${oysterId}`)
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should fail with invalid oyster ID', async () => {
+      const response = await request(app)
+        .get('/api/reviews/check/123e4567-e89b-12d3-a456-426614174000') // Valid UUID that doesn't exist
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toContain('not found');
     });
   });
 });

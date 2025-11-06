@@ -8,17 +8,20 @@ export const authStorage = {
   async saveToken(token: string): Promise<void> {
     try {
       await AsyncStorage.setItem(TOKEN_KEY, token);
+      console.log('💾 [AuthStorage] Token saved successfully:', token.substring(0, 20) + '...');
     } catch (error) {
-      console.error('Error saving token:', error);
+      console.error('❌ [AuthStorage] Error saving token:', error);
     }
   },
 
   // Get auth token
   async getToken(): Promise<string | null> {
     try {
-      return await AsyncStorage.getItem(TOKEN_KEY);
+      const token = await AsyncStorage.getItem(TOKEN_KEY);
+      console.log('🔍 [AuthStorage] Token retrieved:', token ? token.substring(0, 20) + '...' : 'NULL');
+      return token;
     } catch (error) {
-      console.error('Error getting token:', error);
+      console.error('❌ [AuthStorage] Error getting token:', error);
       return null;
     }
   },

@@ -204,18 +204,16 @@ export default function OysterListScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <View style={styles.titleRow}>
-            {!isLoggedIn && (
+          {!isLoggedIn && (
+            <View style={styles.loginRow}>
               <TouchableOpacity
                 style={styles.loginButton}
                 onPress={() => navigation.navigate('Login')}
               >
                 <Text style={styles.loginButtonText}>Login</Text>
               </TouchableOpacity>
-            )}
-            <Text style={styles.title}>Oyster Collection</Text>
-            <View style={styles.placeholderRight} />
-          </View>
+            </View>
+          )}
 
           <View style={styles.filterTabs}>
             <TouchableOpacity
@@ -255,18 +253,16 @@ export default function OysterListScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.titleRow}>
-          {!isLoggedIn && (
+        {!isLoggedIn && (
+          <View style={styles.loginRow}>
             <TouchableOpacity
               style={styles.loginButton}
               onPress={() => navigation.navigate('Login')}
             >
               <Text style={styles.loginButtonText}>Login</Text>
             </TouchableOpacity>
-          )}
-          <Text style={styles.title}>Oyster Collection</Text>
-          <View style={styles.placeholderRight} />
-        </View>
+          </View>
+        )}
 
         <View style={styles.filterTabs}>
           <TouchableOpacity
@@ -367,32 +363,21 @@ const createStyles = (colors: any, isDark: boolean) =>
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
-    titleRow: {
+    loginRow: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      justifyContent: 'flex-end',
       marginBottom: 15,
     },
-    title: {
-      fontSize: 28,
-      fontWeight: 'bold',
-      color: colors.text,
-      flex: 1,
-      textAlign: 'center',
-    },
     loginButton: {
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      backgroundColor: colors.primary,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      backgroundColor: colors.success,
       borderRadius: 8,
     },
     loginButtonText: {
       color: '#fff',
-      fontSize: 14,
-      fontWeight: '600',
-    },
-    placeholderRight: {
-      width: 70,
+      fontSize: 16,
+      fontWeight: '700',
     },
   filterTabs: {
     flexDirection: 'row',

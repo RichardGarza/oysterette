@@ -10,6 +10,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import { Review } from '../types/Oyster';
 import { voteApi, reviewApi } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
 
 interface ReviewCardProps {
   review: Review;
@@ -27,12 +28,14 @@ interface CredibilityBadge {
 }
 
 export function ReviewCard({ review, userVote, onVoteChange, currentUserId, onEdit, onDelete }: ReviewCardProps) {
+  const { theme, isDark } = useTheme();
   const [currentVote, setCurrentVote] = useState<boolean | null>(userVote);
   const [voting, setVoting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [credibilityBadge, setCredibilityBadge] = useState<CredibilityBadge | null>(null);
 
   const isOwnReview = currentUserId && review.userId === currentUserId;
+  const styles = createStyles(theme.colors, isDark);
 
   // Fetch reviewer credibility on mount
   React.useEffect(() => {
@@ -223,133 +226,134 @@ export function ReviewCard({ review, userVote, onVoteChange, currentUserId, onEd
   );
 }
 
-const styles = StyleSheet.create({
-  reviewCard: {
-    backgroundColor: '#f8f9fa',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  reviewHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flex: 1,
-  },
-  reviewRating: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#3498db',
-    textTransform: 'capitalize',
-  },
-  credibilityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-  },
-  credibilityText: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  reviewHeaderRight: {
-    alignItems: 'flex-end',
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: '#7f8c8d',
-    marginBottom: 4,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  actionButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-    backgroundColor: '#3498db',
-  },
-  deleteButton: {
-    backgroundColor: '#e74c3c',
-    minWidth: 60,
-    alignItems: 'center',
-  },
-  actionButtonText: {
-    fontSize: 11,
-    color: '#fff',
-    fontWeight: '600',
-  },
-  deleteButtonText: {
-    color: '#fff',
-  },
-  reviewNotes: {
-    fontSize: 14,
-    color: '#555',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  voteContainer: {
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    paddingTop: 12,
-    marginTop: 4,
-  },
-  voteLabel: {
-    fontSize: 12,
-    color: '#7f8c8d',
-    marginBottom: 8,
-  },
-  voteButtons: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  voteButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  voteButtonActive: {
-    backgroundColor: '#27ae6010',
-    borderColor: '#27ae60',
-  },
-  voteButtonActiveDisagree: {
-    backgroundColor: '#e74c3c10',
-    borderColor: '#e74c3c',
-  },
-  voteButtonDisabled: {
-    opacity: 0.6,
-  },
-  voteButtonIcon: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  voteButtonIconActive: {
-    transform: [{ scale: 1.2 }],
-  },
-  voteButtonText: {
-    fontSize: 12,
-    color: '#555',
-    fontWeight: '500',
-  },
-  voteButtonTextActive: {
-    color: '#27ae60',
-    fontWeight: '600',
-  },
-  voteButtonTextActiveDisagree: {
-    color: '#e74c3c',
-    fontWeight: '600',
-  },
-});
+const createStyles = (colors: any, isDark: boolean) =>
+  StyleSheet.create({
+    reviewCard: {
+      backgroundColor: colors.cardBackground,
+      padding: 15,
+      borderRadius: 8,
+      marginBottom: 10,
+    },
+    reviewHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 8,
+    },
+    reviewHeaderLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      flex: 1,
+    },
+    reviewRating: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.primary,
+      textTransform: 'capitalize',
+    },
+    credibilityBadge: {
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 10,
+    },
+    credibilityText: {
+      fontSize: 11,
+      fontWeight: '600',
+    },
+    reviewHeaderRight: {
+      alignItems: 'flex-end',
+    },
+    reviewDate: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginBottom: 4,
+    },
+    actionButtons: {
+      flexDirection: 'row',
+      gap: 6,
+    },
+    actionButton: {
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 4,
+      backgroundColor: colors.primary,
+    },
+    deleteButton: {
+      backgroundColor: colors.error,
+      minWidth: 60,
+      alignItems: 'center',
+    },
+    actionButtonText: {
+      fontSize: 11,
+      color: '#fff',
+      fontWeight: '600',
+    },
+    deleteButtonText: {
+      color: '#fff',
+    },
+    reviewNotes: {
+      fontSize: 14,
+      color: colors.text,
+      lineHeight: 20,
+      marginBottom: 12,
+    },
+    voteContainer: {
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      paddingTop: 12,
+      marginTop: 4,
+    },
+    voteLabel: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginBottom: 8,
+    },
+    voteButtons: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    voteButton: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderRadius: 6,
+      backgroundColor: isDark ? colors.inputBackground : '#fff',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    voteButtonActive: {
+      backgroundColor: isDark ? '#27ae6020' : '#27ae6010',
+      borderColor: colors.success,
+    },
+    voteButtonActiveDisagree: {
+      backgroundColor: isDark ? '#e74c3c20' : '#e74c3c10',
+      borderColor: colors.error,
+    },
+    voteButtonDisabled: {
+      opacity: 0.6,
+    },
+    voteButtonIcon: {
+      fontSize: 14,
+      marginRight: 6,
+    },
+    voteButtonIconActive: {
+      transform: [{ scale: 1.2 }],
+    },
+    voteButtonText: {
+      fontSize: 12,
+      color: colors.text,
+      fontWeight: '500',
+    },
+    voteButtonTextActive: {
+      color: colors.success,
+      fontWeight: '600',
+    },
+    voteButtonTextActiveDisagree: {
+      color: colors.error,
+      fontWeight: '600',
+    },
+  });

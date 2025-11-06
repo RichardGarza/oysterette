@@ -1,6 +1,212 @@
 # Oysterette Production Deployment Progress
 
-## Session Dates: October 28-29, 2025 | November 3-5, 2025
+---
+## 📘 DOCUMENT PURPOSE
+
+**This file is for:** Detailed session-by-session progress and implementation journal
+
+**Use this file for:**
+- Daily session logs with specific work completed
+- Implementation details (code changes, file paths, line numbers)
+- Troubleshooting notes and bug fixes
+- Configuration details (API URLs, environment setup)
+- Deployment history and build information
+- Technical decisions and architecture notes
+
+**Do NOT use this file for:**
+- High-level feature roadmap (use ROADMAP.md)
+- Future feature planning (use ROADMAP.md)
+- Simple feature status tracking (use ROADMAP.md)
+
+**When to update:** At the end of each work session with what was accomplished
+---
+
+## Session Dates: October 28-29, 2025 | November 3-6, 2025
+
+---
+
+## 🆕 SESSION: November 6, 2025 - UX Improvements & Critical Fixes
+
+### ✅ COMPLETED THIS SESSION
+
+#### 1. **Critical Auth Token Bug Fix** 🐛
+
+**Problem:** Users getting "no token provided submission failed" when submitting reviews after Google OAuth login.
+
+**Root Cause:** Axios interceptor not ensuring `config.headers` object existed before setting Authorization header.
+
+**Fix Applied:**
+
+- Updated `mobile-app/src/services/api.ts` interceptor (lines 47-72)
+- Now checks if headers exist and creates object if needed
+- Added comprehensive logging for debugging
+
+**Files Modified:**
+
+- ✅ `mobile-app/src/services/api.ts` - Fixed interceptor + logging
+- ✅ `mobile-app/src/services/auth.ts` - Added token save/retrieve logging
+- ✅ `mobile-app/src/screens/LoginScreen.tsx` - Added validation
+- ✅ `mobile-app/src/screens/AddReviewScreen.tsx` - Enhanced error logging
+
+**Documentation:** See `AUTH_TOKEN_FIX.md` for complete troubleshooting guide.
+
+#### 2. **HomeScreen Auth State Management** ✅
+
+**Changes:**
+
+- Added `isLoggedIn` state tracking
+- Added focus listener to re-check auth when returning to screen
+- Button text changes: "Browse Oysters" → "All Oysters" when logged in
+- Shows "Log Out" instead of "Log In" when authenticated
+- Loads user theme on auth check
+
+**File:** `mobile-app/src/screens/HomeScreen.tsx` (lines 18-65)
+
+#### 3. **Logo & Transition Improvements** ✅
+
+**Changes:**
+
+- Main homepage logo: 120px → 192px (60% bigger)
+- Loading transition logo: 160px → 256px (60% bigger)
+- Transition duration: 1500ms → 900ms (faster)
+
+**File:** `mobile-app/src/screens/HomeScreen.tsx` (lines 181-200, 78-87)
+
+#### 4. **Build Optimization Workflow** 🚀
+
+**Implemented:**
+
+- Installed `depcheck` in both backend and mobile-app
+- Created npm scripts for dependency checking
+- Built automated pre-build script: `./pre-build.sh`
+- Created comprehensive documentation
+
+**New Scripts:**
+
+```bash
+# Backend
+npm run depcheck           # Check for unused deps
+npm run prebuild          # Run depcheck + tests
+npm run build:prod        # Full workflow
+
+# Mobile App
+npm run depcheck          # Check for unused deps
+npm run prebuild:android  # Run depcheck
+npm run build:android:prod # Full workflow
+
+# Root
+./pre-build.sh [mobile|backend|all]  # Complete pre-build checks
+```
+
+**Files Created:**
+
+- ✅ `pre-build.sh` - Automated workflow script
+- ✅ `BUILD_OPTIMIZATION.md` - Complete optimization guide
+- ✅ `AUTH_TOKEN_FIX.md` - Auth debugging guide
+
+**Unused Dependencies Found:**
+
+- Mobile: `expo-auth-session`, `expo-crypto`, `expo-web-browser`, `react-dom`, `react-native-web` (can remove for 5-10MB savings)
+
+#### 5. **Enhanced Debug Logging** 📊
+
+**Added logging throughout the app:**
+
+- 💾 Token save operations
+- 🔍 Token retrieval operations
+- 🔑 API interceptor token handling
+- 📦 Auth response validation
+- ✅/❌ Success/failure markers
+
+**Purpose:** Complete visibility into auth token flow for debugging.
+
+#### 6. **Review Submission Testing** ✅
+
+**Status:** Verified working in production
+
+**Testing Results:**
+
+- ✅ Auth token properly attached to API requests
+- ✅ Review submission successful after Google OAuth login
+- ✅ No "no token provided" errors
+
+**Verified:** November 6, 2025
+
+#### 7. **Slider UX Enhancements** ✅
+
+**Improvements Made:**
+
+- Added dynamic word labels above each slider (e.g., "Huge", "Baddy McFatty", "Seawater")
+- Labels use `getAttributeDescriptor()` from `ratingUtils.ts`
+- Centered display with bold, larger font (18px, #3498db color)
+- Increased slider height: 40px → 50px for better touch targets
+- Added `thumbTintColor` for more visible slider thumb
+
+**Files Modified:**
+
+- ✅ `mobile-app/src/screens/AddReviewScreen.tsx` - All 5 sliders updated
+
+**User Experience:**
+
+- Users see descriptive words change in real-time as they adjust sliders
+- Labels stay centered (don't follow thumb)
+- Easier to grab and move sliders
+- More intuitive rating process
+
+#### 8. **App Icon Guidance** 📝
+
+**Issue:** App icon appears zoomed in on Android devices
+
+**Root Cause:** Android adaptive icon needs transparent padding around edges
+
+**Solution Provided:**
+
+- Explained adaptive icon requirements (66% content, 17% padding on each side)
+- Alternative: Use regular icon.png for adaptive icon (quick fix)
+- User will adjust `mobile-app/assets/adaptive-icon.png` with proper padding
+
+---
+
+### 📋 PENDING TASKS (From User Feedback)
+
+#### High Priority:
+
+1. **Redesign OysterList top bar** - Remove "Browse Oysters" title, add Login button with different color
+2. **Fix ReviewCard dark mode** - Review cards showing light in dark mode
+
+#### Medium Priority:
+
+3. **Add spacing between logout/delete buttons** - Prevent accidental delete account clicks
+4. **Fix navigation flow** - No back to login when logged in
+5. **Check favorites sync** - Verify favorites persist with user account
+
+#### Low Priority:
+
+6. **Remove back button from HomeScreen**
+7. **Fix app icon zoom** - Edit adaptive-icon.png to add proper padding
+
+---
+
+### 🔧 NEXT SESSION PRIORITIES
+
+1. **Deploy OTA update with slider improvements**
+
+   - Run build process
+   - Deploy via EAS Update
+   - Test on device
+
+2. **Complete remaining UI improvements**
+
+   - Fix ReviewCard dark mode issue
+   - Redesign OysterList top bar (remove title, add login button)
+   - Add spacing between logout/delete buttons
+   - Fix navigation flow (no back to login when logged in)
+
+3. **Build optimization**
+   - Remove unused dependencies (expo-auth-session, expo-crypto, etc.)
+   - Test depcheck workflow
+   - Document APK size reduction
+   - Consider new APK build with optimizations
 
 ---
 
@@ -359,6 +565,61 @@ npm run build:android:cloud
 - Config: `mobile-app/app.json` (plugins)
 
 **Build:** Version 5 - APK with native Google OAuth
+
+---
+
+### Priority 1.5: Duplicate Review Detection (FUTURE - HIGH PRIORITY)
+
+**Status:** Backlog - Requested by user
+
+**Problem:**
+Currently, users can submit multiple reviews for the same oyster without warning.
+
+**Solution:**
+Implement duplicate review detection with update flow:
+
+**Features to Build:**
+
+1. **Backend Check**
+
+   - Check if user already reviewed this oyster before creating new review
+   - Return existing review data if found
+   - Add endpoint: `GET /api/reviews/check/:oysterId` (returns existing review or null)
+
+2. **Mobile UI Flow**
+
+   - When user taps "Add Review" on an oyster they've already reviewed:
+     - Show modal popup: "You already reviewed this oyster. Do you want to update your review?"
+     - Button: "Update Review" (opens review screen with pre-filled data)
+     - Button: "Cancel" (closes modal)
+   - Pre-populate AddReviewScreen with existing review data
+   - Change submit button text to "Update Review" instead of "Submit Review"
+
+3. **Update Logic**
+   - Modify `reviewApi.create()` to accept optional `reviewId` parameter
+   - If `reviewId` exists, use PUT endpoint to update instead of POST
+   - Backend endpoint: `PUT /api/reviews/:reviewId`
+
+**Implementation Files:**
+
+- Backend: `src/controllers/reviewController.ts` (add check & update endpoints)
+- Mobile: `src/screens/OysterDetailScreen.tsx` (add duplicate check before navigation)
+- Mobile: `src/screens/AddReviewScreen.tsx` (handle update mode)
+- Mobile: `src/services/api.ts` (add check & update methods)
+
+**Database:**
+
+- ✅ Already have unique constraint on `(userId, oysterId)` in reviews table
+- No schema changes needed
+
+**Estimated Time:** 3-4 hours
+
+**Benefits:**
+
+- Prevents duplicate reviews
+- Better user experience
+- Maintains data integrity
+- Allows users to easily update their reviews
 
 ---
 
@@ -1207,3 +1468,14 @@ function getRecommendations(userId: string) {
 | **Ask for diffs, not full code** | 20 k → 2 k       | “Show fix as Git diff”                                 |
 
 ---
+
+# Claude Code Config
+
+--model opusplan
+--plan-mode auto
+--auto-execute approved
+--max-tokens 4096
+--temperature 0.3
+--context-window 200k
+--prune-history 5
+--summarize-on-idle 60

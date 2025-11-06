@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosHeaders } from 'axios';
 import { Platform } from 'react-native';
 import {
   Oyster,
@@ -48,12 +48,27 @@ const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   async (config) => {
     const token = await authStorage.getToken();
-    if (token && config.headers) {
+    console.log('🔑 [API Interceptor] Token from storage:', token ? `${token.substring(0, 20)}...` : 'NULL');
+    console.log('🔑 [API Interceptor] Request URL:', config.url);
+    console.log('🔑 [API Interceptor] Headers before:', JSON.stringify(config.headers));
+
+    if (token) {
+      // Ensure headers object exists (critical fix!)
+      if (!config.headers) {
+        config.headers = new AxiosHeaders();
+      }
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('✅ [API Interceptor] Authorization header set');
+      console.log('🔑 [API Interceptor] Headers after:', JSON.stringify(config.headers));
+    } else {
+      console.log('❌ [API Interceptor] No token available');
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('❌ [API Interceptor] Request error:', error);
+    return Promise.reject(error);
+  }
 );
 
 // Handle auth errors
@@ -218,6 +233,12 @@ export const reviewApi = {
   delete: async (reviewId: string): Promise<boolean> => {
     const response = await api.delete<ApiResponse<{}>>(`/reviews/${reviewId}`);
     return response.data.success;
+  },
+
+  // Check if user has already reviewed an oyster
+  checkExisting: async (oysterId: string): Promise<Review | null> => {
+    const response = await api.get<ApiResponse<Review | null>>(`/reviews/check/${oysterId}`);
+    return response.data.data || null;
   },
 };
 

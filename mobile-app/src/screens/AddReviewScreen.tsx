@@ -17,6 +17,7 @@ import Slider from '@react-native-community/slider';
 import { AddReviewScreenRouteProp, AddReviewScreenNavigationProp } from '../navigation/types';
 import { reviewApi } from '../services/api';
 import { ReviewRating } from '../types/Oyster';
+import { getAttributeDescriptor } from '../utils/ratingUtils';
 
 const RATING_OPTIONS: { label: string; value: ReviewRating; emoji: string; color: string }[] = [
   { label: 'Love It', value: 'LOVE_IT', emoji: '❤️', color: '#e74c3c' },
@@ -47,6 +48,7 @@ export default function AddReviewScreen() {
 
     try {
       setSubmitting(true);
+      console.log('📝 [AddReviewScreen] Submitting review for oyster:', oysterId);
 
       await reviewApi.create({
         oysterId,
@@ -59,6 +61,8 @@ export default function AddReviewScreen() {
         notes: notes.trim() || undefined,
       });
 
+      console.log('✅ [AddReviewScreen] Review submitted successfully');
+
       Alert.alert(
         'Review Submitted!',
         'Thank you for sharing your tasting experience.',
@@ -70,10 +74,19 @@ export default function AddReviewScreen() {
         ]
       );
     } catch (error: any) {
-      console.error('Error submitting review:', error);
+      console.error('❌ [AddReviewScreen] Error submitting review:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        errorData: error.response?.data,
+        headers: error.response?.headers,
+      });
+
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to submit review. Please try again.';
+
       Alert.alert(
         'Submission Failed',
-        error.response?.data?.error || 'Failed to submit review. Please try again.'
+        errorMessage
       );
     } finally {
       setSubmitting(false);
@@ -140,6 +153,7 @@ export default function AddReviewScreen() {
               <Text style={styles.sliderMin}>Tiny</Text>
               <Text style={styles.sliderMax}>Huge</Text>
             </View>
+            <Text style={styles.sliderDescriptor}>{getAttributeDescriptor('size', size)}</Text>
             <Slider
               style={styles.slider}
               minimumValue={1}
@@ -149,6 +163,7 @@ export default function AddReviewScreen() {
               onValueChange={setSize}
               minimumTrackTintColor="#3498db"
               maximumTrackTintColor="#e0e0e0"
+              thumbTintColor="#3498db"
             />
           </View>
 
@@ -162,6 +177,7 @@ export default function AddReviewScreen() {
               <Text style={styles.sliderMin}>Thin</Text>
               <Text style={styles.sliderMax}>Fat</Text>
             </View>
+            <Text style={styles.sliderDescriptor}>{getAttributeDescriptor('body', body)}</Text>
             <Slider
               style={styles.slider}
               minimumValue={1}
@@ -171,6 +187,7 @@ export default function AddReviewScreen() {
               onValueChange={setBody}
               minimumTrackTintColor="#3498db"
               maximumTrackTintColor="#e0e0e0"
+              thumbTintColor="#3498db"
             />
           </View>
 
@@ -184,6 +201,7 @@ export default function AddReviewScreen() {
               <Text style={styles.sliderMin}>Sweet</Text>
               <Text style={styles.sliderMax}>Salty</Text>
             </View>
+            <Text style={styles.sliderDescriptor}>{getAttributeDescriptor('sweet_brininess', sweetBrininess)}</Text>
             <Slider
               style={styles.slider}
               minimumValue={1}
@@ -193,6 +211,7 @@ export default function AddReviewScreen() {
               onValueChange={setSweetBrininess}
               minimumTrackTintColor="#3498db"
               maximumTrackTintColor="#e0e0e0"
+              thumbTintColor="#3498db"
             />
           </View>
 
@@ -206,6 +225,7 @@ export default function AddReviewScreen() {
               <Text style={styles.sliderMin}>Boring</Text>
               <Text style={styles.sliderMax}>Bold</Text>
             </View>
+            <Text style={styles.sliderDescriptor}>{getAttributeDescriptor('flavorfulness', flavorfulness)}</Text>
             <Slider
               style={styles.slider}
               minimumValue={1}
@@ -215,6 +235,7 @@ export default function AddReviewScreen() {
               onValueChange={setFlavorfulness}
               minimumTrackTintColor="#3498db"
               maximumTrackTintColor="#e0e0e0"
+              thumbTintColor="#3498db"
             />
           </View>
 
@@ -228,6 +249,7 @@ export default function AddReviewScreen() {
               <Text style={styles.sliderMin}>None</Text>
               <Text style={styles.sliderMax}>Creamy</Text>
             </View>
+            <Text style={styles.sliderDescriptor}>{getAttributeDescriptor('creaminess', creaminess)}</Text>
             <Slider
               style={styles.slider}
               minimumValue={1}
@@ -237,6 +259,7 @@ export default function AddReviewScreen() {
               onValueChange={setCreaminess}
               minimumTrackTintColor="#3498db"
               maximumTrackTintColor="#e0e0e0"
+              thumbTintColor="#3498db"
             />
           </View>
         </View>
@@ -375,9 +398,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#7f8c8d',
   },
+  sliderDescriptor: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#3498db',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 4,
+    letterSpacing: 0.5,
+  },
   slider: {
     width: '100%',
-    height: 40,
+    height: 50,
   },
   notesInput: {
     borderWidth: 1,

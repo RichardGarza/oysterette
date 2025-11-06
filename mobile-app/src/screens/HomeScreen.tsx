@@ -19,6 +19,7 @@ export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { theme, loadUserTheme } = useTheme();
   const [checking, setChecking] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
 
@@ -28,34 +29,39 @@ export default function HomeScreen() {
     checkAuth();
   }, []);
 
+  // Re-check auth when screen comes into focus
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      checkAuth();
+    });
+    return unsubscribe;
+  }, [navigation]);
+
   const checkAuth = async () => {
     try {
       const token = await authStorage.getToken();
       const user = await authStorage.getUser();
 
       if (token && user) {
-        // User is logged in, load their theme and navigate to main app
-        console.log('User already logged in, navigating to OysterList');
+        // User is logged in, load their theme
         loadUserTheme(user);
-
-        // Optional: Verify token is still valid by fetching profile
-        try {
-          await authApi.getProfile();
-          navigation.replace('OysterList');
-        } catch (error) {
-          // Token expired, clear auth and show home screen
-          console.log('Token expired, clearing auth');
-          await authStorage.clearAuth();
-          setChecking(false);
-        }
+        setIsLoggedIn(true);
+        setChecking(false);
       } else {
         // No auth, show home screen
+        setIsLoggedIn(false);
         setChecking(false);
       }
     } catch (error) {
       console.error('Error checking auth:', error);
+      setIsLoggedIn(false);
       setChecking(false);
     }
+  };
+
+  const handleLogout = async () => {
+    await authStorage.clearAuth();
+    setIsLoggedIn(false);
   };
 
   const handleBrowseOysters = () => {
@@ -68,7 +74,7 @@ export default function HomeScreen() {
       useNativeDriver: true,
     }).start();
 
-    // Navigate after 1.5 seconds with fade out
+    // Navigate after 0.9 seconds with fade out
     setTimeout(() => {
       Animated.timing(fadeAnim, {
         toValue: 0,
@@ -78,7 +84,7 @@ export default function HomeScreen() {
         navigation.navigate('OysterList');
         setShowLoading(false);
       });
-    }, 1500);
+    }, 900);
   };
 
   if (checking) {
@@ -110,7 +116,6 @@ export default function HomeScreen() {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.title}>Oysterette</Text>
         <Text style={styles.subtitle}>
           Discover, review, and track your favorite oysters
         </Text>
@@ -119,7 +124,7 @@ export default function HomeScreen() {
           style={styles.button}
           onPress={handleBrowseOysters}
         >
-          <Text style={styles.buttonText}>Browse Oysters</Text>
+          <Text style={styles.buttonText}>{isLoggedIn ? 'All Oysters' : 'Browse Oysters'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -129,14 +134,25 @@ export default function HomeScreen() {
           <Text style={styles.buttonText}>🏆 Top Oysters</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, styles.secondaryButton]}
-          onPress={() => navigation.navigate('Login')}
-        >
-          <Text style={[styles.buttonText, styles.secondaryButtonText]}>
-            Log In
-          </Text>
-        </TouchableOpacity>
+        {isLoggedIn ? (
+          <TouchableOpacity
+            style={[styles.button, styles.secondaryButton]}
+            onPress={handleLogout}
+          >
+            <Text style={[styles.buttonText, styles.secondaryButtonText]}>
+              Log Out
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[styles.button, styles.secondaryButton]}
+            onPress={() => navigation.navigate('Login')}
+          >
+            <Text style={[styles.buttonText, styles.secondaryButtonText]}>
+              Log In
+            </Text>
+          </TouchableOpacity>
+        )}
 
         <View style={styles.infoContainer}>
           <Text style={styles.infoText}>
@@ -163,8 +179,8 @@ const createStyles = (colors: any) =>
       padding: 20,
     },
     logo: {
-      width: 120,
-      height: 120,
+      width: 192,
+      height: 192,
       marginBottom: 20,
     },
     loadingOverlay: {
@@ -179,8 +195,8 @@ const createStyles = (colors: any) =>
       zIndex: 1000,
     },
     loadingLogo: {
-      width: 160,
-      height: 160,
+      width: 256,
+      height: 256,
     },
     title: {
       fontSize: 36,

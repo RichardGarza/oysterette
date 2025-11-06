@@ -1,15 +1,36 @@
 # Oysterette v2.0 - Development Roadmap
 
-## Project Status: Phase 6 In Progress ✅
+---
+## 📘 DOCUMENT PURPOSE
 
-**Last Updated:** October 31, 2025
-**Current Commit:** Review Sorting & Submission Features Complete
+**This file is for:** High-level feature planning and status tracking
+
+**Use this file for:**
+- Overview of completed and planned features
+- Feature status at a glance (✅ Done, 🚧 In Progress, 📋 Planned)
+- Phase-based project organization
+- Quick reference for what exists and what's next
+
+**Do NOT use this file for:**
+- Detailed implementation notes (use CLAUDE.md)
+- Session-by-session progress (use CLAUDE.md)
+- Troubleshooting documentation (use CLAUDE.md)
+- Specific file paths and code changes (use CLAUDE.md)
+
+**When to update:** When a feature/phase is completed or status changes
+---
+
+## Project Status: Production Ready ✅
+
+**Last Updated:** November 6, 2025
+**Current Phase:** Bug Fixes & Feature Enhancements
 
 ---
 
 ## ✅ Completed Phases
 
 ### Phase 1: Initial Setup & Core Infrastructure ✅
+
 **Status:** Complete
 **Completion Date:** Initial commit
 
@@ -23,21 +44,78 @@
 - [x] Neon database integration
 
 ### Phase 2: Data Seeding & Base Features ✅
+
 **Status:** Complete
 **Completion Date:** Commit 6a52364
 
-- [x] Comprehensive oyster database (500+ varieties)
+- [x] Comprehensive oyster database (838 oysters)
 - [x] Oyster list screen with search
 - [x] Oyster detail screen with full information
 - [x] Review display functionality
 - [x] User authentication (login/register)
 - [x] Review submission system
 
-### Phase 5.3: Advanced Rating & Voting System ✅
+### Phase 3: Production Hardening & Security ✅
+
+**Status:** Complete
+**Completion Date:** November 3, 2025
+
+- [x] Input validation with Zod schemas
+- [x] Rate limiting (auth & API endpoints)
+- [x] JWT security enhancements
+- [x] Professional logging with Winston
+- [x] Error tracking with Sentry
+- [x] Comprehensive test suite (162 tests passing)
+- [x] TypeScript compilation tests
+- [x] Validation middleware tests
+- [x] Rate limiting tests
+
+### Phase 4: Enhanced Features ✅
+
+**Status:** Complete
+**Completion Date:** November 3-5, 2025
+
+- [x] Fuzzy search with Fuse.js (handles typos)
+- [x] Theme persistence and user preferences
+- [x] Global settings access from all screens
+- [x] Auto-login on app start
+- [x] Theme sync across devices
+- [x] Dark mode support
+
+### Phase 5: Google OAuth & Authentication ✅
+
+**Status:** Complete
+**Completion Date:** November 5, 2025
+
+- [x] Native Google Sign-In SDK integration
+- [x] Backend OAuth verification endpoint
+- [x] Android OAuth client configuration
+- [x] iOS URL scheme setup
+- [x] Google Cloud Console credentials
+- [x] One-tap Google sign-in
+
+### Phase 6: UX Polish & Bug Fixes ✅
+
+**Status:** Complete
+**Completion Date:** November 6, 2025
+
+- [x] Dynamic slider labels with descriptive words
+- [x] Auth token bug fix (interceptor)
+- [x] HomeScreen auth state management
+- [x] Larger logos (60% increase)
+- [x] Faster transition animations (900ms)
+- [x] Enhanced debug logging
+- [x] Settings screen with actual user data
+- [x] Keyboard handling improvements
+- [x] Color coding fixes for sliders
+
+### Phase 7: Advanced Rating & Voting System ✅
+
 **Status:** Complete
 **Completion Date:** Commit d0563bb
 
 #### Backend Implementation ✅
+
 - [x] Database schema for voting system
   - Vote table (user + review + agree/disagree)
   - User credibility fields (score, agrees, disagrees)
@@ -55,6 +133,7 @@
 - [x] TypeScript compilation fixes with @ts-ignore for middleware properties
 
 #### Mobile App Implementation ✅
+
 - [x] ReviewCard component with voting UI
   - Vote buttons (Agree 👍 / Disagree 👎)
   - Real-time vote count display
@@ -77,57 +156,45 @@
 
 ---
 
-## 🚧 Next Steps - Phase 6: Testing & Refinement
+## 🚧 Current Work - Phase 8: Feature Enhancements
 
-### Phase 6.1: Manual Testing & Bug Fixes (START HERE) 🎯
-**Estimated Duration:** 1-2 days
+### Phase 8.1: Duplicate Review Detection 🎯 (IN PROGRESS)
+
+**Estimated Duration:** 3-4 hours
+**Priority:** HIGH
+**Status:** Starting Now
+
+- [ ] Backend check endpoint for existing reviews
+- [ ] Backend update review endpoint (PUT)
+- [ ] Mobile duplicate detection flow
+- [ ] Modal prompt for review updates
+- [ ] Pre-populate AddReviewScreen with existing data
+- [ ] Tests for duplicate detection logic
+- [ ] Tests for review update functionality
+
+### Phase 8.2: UI/UX Improvements 📋 (HIGH PRIORITY)
+
+**Estimated Duration:** 2-3 hours
 **Priority:** HIGH
 
-#### Testing Checklist:
-- [ ] **Scrolling Fix Verification**
-  - Restart app with newArchEnabled=false
-  - Test scrolling in all screens (Home, Detail, Profile)
-  - Verify smooth scroll performance
+- [ ] Redesign OysterList top bar (remove title, add login button)
+- [ ] Fix ReviewCard dark mode display
+- [ ] Add spacing between logout/delete account buttons
+- [ ] Fix navigation flow (no back to login when logged in)
+- [ ] Remove back button from HomeScreen
+- [ ] Verify favorites sync with user account
 
-- [ ] **Voting System E2E Testing**
-  - Test vote button functionality (agree/disagree)
-  - Verify vote counts update correctly
-  - Test vote removal (tap same button)
-  - Test vote switching (agree → disagree)
-  - Verify vote persistence across navigation
-  - Check credibility badges display correctly
-  - Test with multiple users/reviews
+### Phase 8.3: App Icon & Distribution 📱
 
-- [ ] **Error Handling**
-  - Test voting when not logged in
-  - Test API errors and network failures
-  - Verify error messages are user-friendly
-
-- [ ] **Performance Testing**
-  - Test with many reviews on a single oyster
-  - Verify vote API batch fetching works efficiently
-  - Check for any memory leaks or crashes
-
-#### Bug Fixes & Improvements:
-- [ ] Fix any discovered bugs from testing
-- [ ] Improve error handling and user feedback
-- [ ] Optimize vote state management if needed
-- [ ] Add loading states where missing
-
-### Phase 6.2: UI/UX Refinement ✅
-**Estimated Duration:** 2-3 days
 **Priority:** MEDIUM
-**Status:** Mostly Complete
 
-- [ ] Review and improve overall app styling
-- [x] Add haptic feedback for vote buttons
-- [x] Improve loading states and animations
-- [x] Add pull-to-refresh on oyster details
-- [ ] Enhance credibility badge design
-- [x] Add empty states for screens with no data
-- [ ] Improve error message presentation
+- [ ] Fix app icon zoom (edit adaptive-icon.png with padding)
+- [ ] Remove unused dependencies for smaller APK
+- [ ] Test depcheck workflow
+- [ ] Build optimized APK
 
-### Phase 6.3: Additional Features (Optional) 🚧
+### Phase 8.4: Additional Features (Optional) 🚧
+
 **Priority:** LOW
 **Status:** Partial Progress
 
@@ -161,6 +228,7 @@
 ## 🔮 Future Phases (Post-MVP)
 
 ### Phase 7: Social Features
+
 - [ ] User profiles with review history
 - [ ] Follow/unfollow other users
 - [ ] Activity feed
@@ -168,6 +236,7 @@
 - [ ] Share reviews externally
 
 ### Phase 8: Advanced Search & Discovery
+
 - [ ] Advanced oyster filters (region, size, taste profile)
 - [ ] Personalized recommendations
 - [ ] "Similar oysters" suggestions
@@ -175,6 +244,7 @@
 - [ ] Taste profile quiz
 
 ### Phase 9: Gamification
+
 - [ ] User badges and achievements
 - [ ] Oyster tasting challenges
 - [ ] Leaderboards (most reviews, most helpful, etc.)
@@ -182,6 +252,7 @@
 - [ ] Expert reviewer certification
 
 ### Phase 10: Production Readiness
+
 - [ ] Comprehensive testing (unit, integration, E2E)
 - [ ] Performance optimization
 - [ ] Security audit
@@ -197,11 +268,13 @@
 ## 🏗️ Technical Debt & Maintenance
 
 ### Known Issues:
+
 - [ ] TypeScript @ts-ignore usage for req.userId (need proper type augmentation fix)
 - [ ] SafeAreaView deprecation warning (migrate to react-native-safe-area-context)
 - [ ] Consider implementing proper vote optimistic updates
 
 ### Code Quality:
+
 - [ ] Add backend unit tests
 - [ ] Add mobile component tests
 - [ ] Set up CI/CD pipeline
@@ -209,6 +282,7 @@
 - [ ] Add API documentation (Swagger/OpenAPI)
 
 ### Performance:
+
 - [ ] Database query optimization and indexing
 - [ ] Implement caching strategy (Redis)
 - [ ] Optimize mobile bundle size
@@ -219,7 +293,9 @@
 ## 📋 Development Notes
 
 ### User Preferences:
+
 - **Token Reporting:** Display token usage and remaining tokens after each request/response
+
   - Format: "Current: X / 200,000 (Y% used) | Remaining: Z tokens (W%)"
   - Include time until next 50k tokens regenerate (hours and minutes)
   - Token regeneration rate: ~8,333 tokens/hour (200k over 24 hours)
@@ -235,17 +311,20 @@
   - This maintains code quality and catches regressions early
 
 ### Environment Setup:
+
 - **Backend:** Node.js, TypeScript, Express, Prisma, PostgreSQL
 - **Database:** Neon (production), PostgreSQL (local)
 - **Mobile:** React Native, Expo SDK 54, TypeScript
 - **Deployment:** Railway (backend), EAS (mobile builds)
 
 ### Current Servers:
+
 - Backend: `http://localhost:3000` (development)
 - Production: `https://oysterette-production.up.railway.app`
 - Mobile: Expo Dev Server on port 8081
 
 ### Important Commands:
+
 ```bash
 # Backend
 cd backend
@@ -273,6 +352,7 @@ git push
 **Resume at:** Phase 6.1 - Manual Testing & Bug Fixes
 
 **First Tasks:**
+
 1. Restart the mobile app to test scrolling fix (newArchEnabled=false)
 2. Thoroughly test the voting system:
    - Navigate to an oyster with reviews
@@ -289,6 +369,7 @@ git push
 ---
 
 **Last Session Summary:**
+
 - Completed Phase 5.3 backend and mobile voting system implementation
 - Fixed TypeScript compilation errors with @ts-ignore
 - Created ReviewCard component with full voting functionality
