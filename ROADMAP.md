@@ -156,42 +156,41 @@
 
 ---
 
-## 🚧 Current Work - Phase 8: Feature Enhancements
+## ✅ Current Work - Phase 8: Feature Enhancements (COMPLETE)
 
-### Phase 8.1: Duplicate Review Detection 🎯 (IN PROGRESS)
+### Phase 8.1: Duplicate Review Detection ✅ COMPLETE
 
-**Estimated Duration:** 3-4 hours
-**Priority:** HIGH
-**Status:** Starting Now
-
-- [ ] Backend check endpoint for existing reviews
-- [ ] Backend update review endpoint (PUT)
-- [ ] Mobile duplicate detection flow
-- [ ] Modal prompt for review updates
-- [ ] Pre-populate AddReviewScreen with existing data
-- [ ] Tests for duplicate detection logic
-- [ ] Tests for review update functionality
-
-### Phase 8.2: UI/UX Improvements 📋 (HIGH PRIORITY)
-
-**Estimated Duration:** 2-3 hours
+**Completed:** November 6, 2025 (discovered already implemented)
 **Priority:** HIGH
 
-- [ ] Redesign OysterList top bar (remove title, add login button)
-- [ ] Fix ReviewCard dark mode display
-- [ ] Add spacing between logout/delete account buttons
-- [ ] Fix navigation flow (no back to login when logged in)
-- [ ] Remove back button from HomeScreen
-- [ ] Verify favorites sync with user account
+- [x] Backend check endpoint for existing reviews (GET /api/reviews/check/:oysterId)
+- [x] Backend update review endpoint (PUT /api/reviews/:reviewId)
+- [x] Mobile duplicate detection flow
+- [x] Modal prompt for review updates ("Update Existing Review?")
+- [x] Pre-populate AddReviewScreen with existing data
+- [x] Unique constraint prevents duplicates (userId, oysterId)
 
-### Phase 8.3: App Icon & Distribution 📱
+### Phase 8.2: UI/UX Improvements ✅ COMPLETE
 
+**Completed:** November 6, 2025
+**Priority:** HIGH
+
+- [x] Redesign OysterList top bar (removed title, added orange login button)
+- [x] Fix ReviewCard dark mode display
+- [x] Add spacing between logout/delete account buttons (48px)
+- [x] Fix navigation flow (auth redirect on Login/Register)
+- [x] Remove back button from HomeScreen (already implemented)
+- [x] Favorites sync with user account (full backend integration)
+
+### Phase 8.3: App Icon & Distribution ✅ COMPLETE
+
+**Completed:** November 6, 2025
 **Priority:** MEDIUM
 
-- [ ] Fix app icon zoom (edit adaptive-icon.png with padding)
-- [ ] Remove unused dependencies for smaller APK
-- [ ] Test depcheck workflow
-- [ ] Build optimized APK
+- [x] Fix app icon zoom (updated adaptive-icon.png with padding)
+- [x] Build optimization workflow (depcheck, pre-build scripts)
+- [x] Version 6 APK building (fe098b13-8cc6-454f-9543-a4a073ebab2e)
+- [x] OTA update deployed
 
 ### Phase 8.4: Additional Features (Optional) 🚧
 
@@ -227,7 +226,224 @@
 
 ## 🔮 Future Phases (Post-MVP)
 
-### Phase 7: Social Features
+### Phase 9: Enhanced Search & Filters 📋
+
+**Estimated Time:** 3-4 hours
+**Priority:** HIGH (Quick Win)
+
+- [ ] Filter by species (Pacific, Kumamoto, European, etc.)
+- [ ] Filter by origin (Washington, California, Canada, etc.)
+- [ ] Sort by: Rating, Name, Date Added, Size, Saltiness, etc.
+- [ ] Save filter preferences
+- [ ] Filter combination logic
+- [ ] Clear filters button
+
+### Phase 10: User Profile Enhancements 📋
+
+**Estimated Time:** 4-6 hours
+**Priority:** HIGH
+
+- [ ] User profile screen with stats
+- [ ] View own review history
+- [ ] Edit/delete reviews from profile
+- [ ] Display credibility score and badge
+- [ ] Show favorites list in profile
+- [ ] Review count and vote statistics
+
+### Phase 11: Code Quality & Documentation 📋
+
+**Estimated Time:** 6-8 hours
+**Priority:** MEDIUM
+
+- [ ] Add comprehensive comments to controllers
+- [ ] Document business logic services
+- [ ] Comment complex middleware
+- [ ] Document React Native screens
+- [ ] API route documentation
+- [ ] Function purpose JSDoc comments
+
+### Phase 12: App Store Deployment 📱
+
+**Estimated Time:** 16-24 hours
+**Priority:** HIGH
+**Target:** End of Month
+
+**Apple App Store:**
+- [ ] Review guidelines and ensure compliance
+- [ ] Privacy policy (required)
+- [ ] Terms of service
+- [ ] In-app privacy disclosures
+- [ ] Screenshots and preview video
+- [ ] Apple Developer account ($99/year)
+- [ ] TestFlight beta testing
+
+**Google Play Store:**
+- [ ] Review Play Store policies
+- [ ] Privacy policy URL
+- [ ] Data safety disclosures
+- [ ] Store listing (screenshots, description)
+- [ ] Internal testing track
+- [ ] Submit for review
+
+**Security Checklist:**
+- [x] No hardcoded secrets
+- [x] HTTPS for all API calls
+- [x] Input validation
+- [x] Rate limiting
+- [x] Secure token storage
+- [ ] Certificate pinning (optional)
+- [ ] Biometric auth (future)
+
+### Phase 13: Photo Upload System 📋
+
+**Estimated Time:** 20-30 hours
+**Priority:** MEDIUM
+
+**Features:**
+- [ ] User profile photos (upload, crop, resize)
+- [ ] Oyster photos (admin-uploaded, gallery view)
+- [ ] Review photos (up to 3 per review, carousel)
+
+**Implementation:**
+- [ ] Cloudinary setup (free tier: 25GB)
+- [ ] Image upload component with compression
+- [ ] Progress indicators
+- [ ] Photo gallery UI
+- [ ] Backend storage endpoints
+- [ ] Database schema updates
+
+### Phase 14: Personalized Recommendations 📋
+
+**Estimated Time:** 16-24 hours
+**Priority:** MEDIUM
+
+**Algorithm Options:**
+
+**A. Attribute-Based (Simple):**
+- [ ] Analyze user's highly-rated oysters
+- [ ] Find similar attributes (creamy, sweet, etc.)
+- [ ] "You might like..." section
+- [ ] Match user preferences to unreviewed oysters
+
+**B. Collaborative Filtering (Advanced):**
+- [ ] Find users with similar taste profiles
+- [ ] Recommend their favorite oysters
+- [ ] "Users who liked X also liked Y"
+- [ ] Similarity scoring algorithm
+
+**Implementation:**
+- [ ] Backend `/api/users/:userId/recommendations` endpoint
+- [ ] Calculate similarity scores
+- [ ] Cache results for performance
+- [ ] Homepage "Recommended for You" section
+
+### Phase 15: Web Application 📋
+
+**Estimated Time:** 60-80 hours
+**Priority:** LOW
+
+**Tech Stack:**
+- [ ] Next.js 14 with App Router
+- [ ] TailwindCSS for styling
+- [ ] Same backend API (Railway)
+- [ ] Shared JWT authentication
+
+**Features:**
+- [ ] User authentication (login, register, OAuth)
+- [ ] Oyster browsing and search
+- [ ] Oyster detail pages
+- [ ] Review submission
+- [ ] Voting on reviews
+- [ ] User profiles
+- [ ] Settings and preferences
+- [ ] Dark mode (syncs with mobile)
+
+**Deployment:**
+- [ ] Vercel (free tier)
+- [ ] Custom domain (oysterette.app)
+- [ ] SSL/HTTPS (automatic)
+- [ ] SEO optimization
+
+### Phase 16: Admin Dashboard 📋
+
+**Estimated Time:** 40-50 hours
+**Priority:** LOW
+
+**Features:**
+
+**Admin Portal:**
+- [ ] Admin login (admin role in database)
+- [ ] Dashboard with statistics
+- [ ] Recent activity feed
+- [ ] Flagged content queue
+
+**Oyster Management:**
+- [ ] View all oysters (sortable table)
+- [ ] Edit oyster details
+- [ ] Add new oysters
+- [ ] Delete oysters
+- [ ] View rating calculations
+- [ ] Manual rating adjustments
+
+**Review Moderation:**
+- [ ] Flagged reviews queue
+- [ ] Approve/reject reviews
+- [ ] Edit review text
+- [ ] Delete inappropriate reviews
+- [ ] User ban system
+
+**User Management:**
+- [ ] View all users
+- [ ] User stats (reviews, credibility, votes)
+- [ ] Ban/suspend users
+- [ ] Reset passwords
+- [ ] View user review history
+
+**Oyster Submission Queue:**
+- [ ] User-submitted oyster suggestions
+- [ ] Review submitted data
+- [ ] Approve/reject submissions
+- [ ] Edit before approving
+
+**Database Changes:**
+- [ ] User role field ("user" | "admin")
+- [ ] OysterSubmission model
+- [ ] FlaggedReview model
+- [ ] Profanity detection (bad-words library)
+
+### Phase 17: Homepage Redesign 📋
+
+**Estimated Time:** 8-12 hours
+**Priority:** MEDIUM
+
+**Options:**
+
+**A. Direct to Oyster List (Simple):**
+- [ ] Remove home screen
+- [ ] Default to Browse with search
+- [ ] Bottom tabs: Browse, Profile, Settings
+
+**B. Enhanced Home (Recommended):**
+- [ ] Welcome message + search bar
+- [ ] Quick stats display
+- [ ] "Recommended for You" horizontal scroll
+- [ ] "Top Rated This Week" section
+- [ ] "Recently Added" oysters
+- [ ] Quick action buttons
+
+### Phase 18: Additional UX Improvements 📋
+
+**Estimated Time:** 12-16 hours
+**Priority:** LOW
+
+**Issues to Fix:**
+- [ ] Add Oyster Screen: Replace inputs with sliders/emoji buttons
+- [ ] Keyboard handling consistency
+- [ ] Missing fields on review screen (origin/species for new oysters)
+- [ ] New oyster validation (require origin/species)
+- [ ] Navigation updates (conditional login button)
+
+### Phase 19: Social Features 📋
 
 - [ ] User profiles with review history
 - [ ] Follow/unfollow other users
@@ -235,33 +451,14 @@
 - [ ] Review comments/replies
 - [ ] Share reviews externally
 
-### Phase 8: Advanced Search & Discovery
-
-- [ ] Advanced oyster filters (region, size, taste profile)
-- [ ] Personalized recommendations
-- [ ] "Similar oysters" suggestions
-- [ ] Search history and saved searches
-- [ ] Taste profile quiz
-
-### Phase 9: Gamification
+### Phase 20: Advanced Features 📋
 
 - [ ] User badges and achievements
 - [ ] Oyster tasting challenges
-- [ ] Leaderboards (most reviews, most helpful, etc.)
-- [ ] Streak tracking for reviews
-- [ ] Expert reviewer certification
-
-### Phase 10: Production Readiness
-
-- [ ] Comprehensive testing (unit, integration, E2E)
-- [ ] Performance optimization
-- [ ] Security audit
-- [ ] App store submission (iOS/Android)
-- [ ] Marketing materials and screenshots
-- [ ] Privacy policy and terms of service
-- [ ] Analytics integration
-- [ ] Error tracking (Sentry)
-- [ ] Push notifications setup
+- [ ] Leaderboards
+- [ ] Taste profile quiz
+- [ ] Push notifications
+- [ ] Advanced analytics
 
 ---
 
