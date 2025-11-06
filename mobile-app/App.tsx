@@ -15,6 +15,7 @@ import AddReviewScreen from './src/screens/AddReviewScreen';
 import EditReviewScreen from './src/screens/EditReviewScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import TopOystersScreen from './src/screens/TopOystersScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -124,6 +125,14 @@ function AppNavigator() {
           component={TopOystersScreen}
           options={({ navigation }) => ({
             title: 'Top Oysters',
+            headerRight: () => <SettingsButton navigation={navigation} />,
+          })}
+        />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={({ navigation }) => ({
+            title: 'My Profile',
             headerRight: () => <SettingsButton navigation={navigation} />,
           })}
         />

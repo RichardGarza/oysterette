@@ -13,6 +13,7 @@ export type RootStackParamList = {
   EditReview: { review: Review };
   Settings: undefined;
   TopOysters: undefined;
+  Profile: undefined;
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<

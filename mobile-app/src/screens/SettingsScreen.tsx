@@ -150,6 +150,14 @@ export default function SettingsScreen() {
                 <Text style={styles.label}>Email</Text>
                 <Text style={styles.value}>{userEmail}</Text>
               </View>
+              <View style={styles.separator} />
+              <TouchableOpacity
+                style={styles.settingItem}
+                onPress={() => navigation.navigate('Profile' as never)}
+              >
+                <Text style={styles.settingLabel}>View Full Profile</Text>
+                <Text style={styles.settingValue}>→</Text>
+              </TouchableOpacity>
             </>
           ) : (
             <>
