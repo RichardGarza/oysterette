@@ -176,6 +176,58 @@ export const getUserReviews = async (req: Request, res: Response): Promise<void>
   }
 };
 
+// Check if user has existing review for an oyster
+export const checkExistingReview = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Not authenticated',
+      });
+      return;
+    }
+
+    const { oysterId } = req.params;
+
+    const existingReview = await prisma.review.findUnique({
+      where: {
+        userId_oysterId: {
+          userId: req.userId,
+          oysterId,
+        },
+      },
+      include: {
+        oyster: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (existingReview) {
+      res.status(200).json({
+        success: true,
+        hasReview: true,
+        data: existingReview,
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        hasReview: false,
+        data: null,
+      });
+    }
+  } catch (error) {
+    logger.error('Check existing review error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error',
+    });
+  }
+};
+
 // Update a review
 export const updateReview = async (req: Request, res: Response): Promise<void> => {
   try {

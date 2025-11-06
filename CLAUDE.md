@@ -222,7 +222,53 @@ npm run build 2>&1 | grep -i "error\|warning" || echo "✅ Build successful"
 
 ---
 
-## 🆕 SESSION: November 6, 2025 - UX Improvements & Critical Fixes
+## 🆕 SESSION: November 6, 2025 (PM) - Duplicate Review Detection Discovery
+
+### ✅ COMPLETED THIS SESSION
+
+#### **Duplicate Review Detection & Update Flow** ✅ FULLY IMPLEMENTED
+
+**Discovery:** This feature was already fully implemented in a previous session but not documented!
+
+**Backend Implementation:**
+- ✅ `GET /api/reviews/check/:oysterId` - Check for existing user review (reviewController.ts:179-229)
+- ✅ `PUT /api/reviews/:reviewId` - Update existing review (reviewController.ts:231-287)
+- ✅ Route configured in reviewRoutes.ts:27
+
+**Mobile Implementation:**
+- ✅ `reviewApi.checkExisting(oysterId)` - API method (api.ts:247-250)
+- ✅ `reviewApi.update(reviewId, data)` - API method (api.ts:235-238)
+- ✅ OysterDetailScreen duplicate check - Shows modal before navigation (OysterDetailScreen.tsx:119-163)
+- ✅ AddReviewScreen update mode - Pre-fills data, changes button text (AddReviewScreen.tsx:32-79, 308)
+- ✅ Navigation types include `existingReview?: Review` param (types.ts:12)
+
+**User Flow:**
+1. User taps "Add Review" on oyster detail screen
+2. App checks if user already reviewed this oyster
+3. If existing review found:
+   - Alert modal: "Update Existing Review - You have already reviewed this oyster. Would you like to update your review?"
+   - Options: "Cancel" or "Update Review"
+   - Selecting "Update Review" opens AddReviewScreen with pre-filled data
+4. If no existing review:
+   - Opens AddReviewScreen normally
+5. Submit button text changes:
+   - "Submit Review" for new reviews
+   - "Update Review" for updates
+6. Backend prevents duplicate reviews via unique constraint on (userId, oysterId)
+
+**Testing Status:** Feature is production-ready and already deployed
+
+#### **Build & Deployment** ✅
+
+- ✅ Updated app.json version to 6 (iOS buildNumber: 6, Android versionCode: 6)
+- ✅ New Android APK building on EAS (Build: fe098b13-8cc6-454f-9543-a4a073ebab2e)
+- ✅ OTA Update deployed: Version 6 with all UI improvements and favorites sync
+- ✅ New icons configured (fixed zoom issue with proper padding)
+- ✅ Back button already disabled on HomeScreen (App.tsx:58)
+
+---
+
+## 🆕 SESSION: November 6, 2025 (AM) - UX Improvements & Critical Fixes
 
 ### ✅ COMPLETED THIS SESSION
 
