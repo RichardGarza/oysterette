@@ -14,6 +14,7 @@ import logger from '../utils/logger';
 import prisma from '../lib/prisma';
 import { ReviewRating } from '@prisma/client';
 import { recalculateOysterRatings } from '../services/ratingService';
+import { invalidateCache, updateBaselineWithReview } from '../services/recommendationService';
 
 /**
  * Create a new review for an oyster
@@ -152,6 +153,18 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
 
     // Recalculate oyster ratings after creating review
     await recalculateOysterRatings(oysterId);
+
+    // Update user's baseline profile if this is a positive review
+    await updateBaselineWithReview(req.userId, rating, {
+      size,
+      body,
+      sweetBrininess,
+      flavorfulness,
+      creaminess,
+    });
+
+    // Invalidate recommendation cache since user's preferences changed
+    invalidateCache(req.userId);
 
     res.status(201).json({
       success: true,
@@ -375,6 +388,18 @@ export const updateReview = async (req: Request, res: Response): Promise<void> =
 
     // Recalculate oyster ratings after updating review
     await recalculateOysterRatings(existingReview.oysterId);
+
+    // Update user's baseline profile if this is a positive review
+    await updateBaselineWithReview(req.userId, review.rating, {
+      size: review.size,
+      body: review.body,
+      sweetBrininess: review.sweetBrininess,
+      flavorfulness: review.flavorfulness,
+      creaminess: review.creaminess,
+    });
+
+    // Invalidate recommendation cache since user's preferences changed
+    invalidateCache(req.userId);
 
     res.status(200).json({
       success: true,

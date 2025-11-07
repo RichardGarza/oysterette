@@ -47,7 +47,7 @@
  * - id, email, name: Basic account info
  * - preferences: JSON field for theme and other settings
  * - Credibility metrics: credibilityScore, totalAgrees, totalDisagrees, reviewCount
- * - Privacy settings: profileVisibility, showReviewHistory, showFavorites, showStatistics, allowMessages
+ * - Privacy settings: profileVisibility, showReviewHistory, showFavorites, showStatistics
  * - createdAt, updatedAt: Timestamps
  *
  * User Credibility Badges:

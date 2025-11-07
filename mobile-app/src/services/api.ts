@@ -459,14 +459,12 @@ export const userApi = {
     showReviewHistory?: boolean;
     showFavorites?: boolean;
     showStatistics?: boolean;
-    allowMessages?: boolean;
   }): Promise<{
     id: string;
     profileVisibility: string;
     showReviewHistory: boolean;
     showFavorites: boolean;
     showStatistics: boolean;
-    allowMessages: boolean;
   }> => {
     const response = await api.put<ApiResponse<any>>('/users/privacy', settings);
     return response.data.data;
@@ -494,6 +492,15 @@ export const favoritesApi = {
   // Sync favorites (send local favorites to server, get back merged list)
   syncFavorites: async (favorites: string[]): Promise<void> => {
     await api.post('/favorites/sync', { favorites });
+  },
+};
+
+// Recommendation API
+export const recommendationApi = {
+  // Get personalized recommendations
+  getRecommendations: async (limit: number = 10): Promise<Oyster[]> => {
+    const response = await api.get<ApiResponse<Oyster[]>>(`/recommendations?limit=${limit}`);
+    return response.data.data || [];
   },
 };
 

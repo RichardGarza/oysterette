@@ -37,6 +37,14 @@ model User {
   showFavorites      Boolean @default(true)      // Show favorites on public profile
   showStatistics     Boolean @default(true)      // Show stats on public profile
 
+  // Baseline flavor profile (for recommendations)
+  // User can set this before reviewing, updated with each positive review
+  baselineSize           Float?  // Preferred size (1-10)
+  baselineBody           Float?  // Preferred body (1-10)
+  baselineSweetBrininess Float?  // Preferred sweet/brininess (1-10)
+  baselineFlavorfulness  Float?  // Preferred flavorfulness (1-10)
+  baselineCreaminess     Float?  // Preferred creaminess (1-10)
+
   // Relations
   reviews        Review[]
   topOysters     UserTopOyster[]

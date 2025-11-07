@@ -16,6 +16,7 @@ import { Request, Response } from 'express';
 import logger from '../utils/logger';
 import prisma from '../lib/prisma';
 import { hashPassword, comparePassword } from '../utils/auth';
+import { setBaselineProfile } from '../services/recommendationService';
 
 /**
  * Get user's top oysters list
@@ -731,6 +732,87 @@ export const updatePrivacySettings = async (req: Request, res: Response): Promis
     });
   } catch (error) {
     logger.error('Update privacy settings error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error',
+    });
+  }
+};
+
+/**
+ * Set user's baseline flavor profile
+ *
+ * Allows users to set their ideal oyster attributes before reviewing.
+ * Used for personalized recommendations.
+ *
+ * @route PUT /api/users/flavor-profile
+ * @requires Authentication
+ * @param req.body.size - Preferred size (1-10)
+ * @param req.body.body - Preferred body (1-10)
+ * @param req.body.sweetBrininess - Preferred sweetness/brininess (1-10)
+ * @param req.body.flavorfulness - Preferred flavorfulness (1-10)
+ * @param req.body.creaminess - Preferred creaminess (1-10)
+ * @returns 200 - Success message
+ * @returns 400 - Invalid attributes
+ * @returns 401 - Not authenticated
+ * @returns 500 - Server error
+ */
+export const setFlavorProfile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Not authenticated',
+      });
+      return;
+    }
+
+    const { size, body, sweetBrininess, flavorfulness, creaminess } = req.body;
+
+    // Validate all attributes are provided and in range 1-10
+    if (
+      size === undefined ||
+      body === undefined ||
+      sweetBrininess === undefined ||
+      flavorfulness === undefined ||
+      creaminess === undefined
+    ) {
+      res.status(400).json({
+        success: false,
+        error: 'All flavor attributes are required',
+      });
+      return;
+    }
+
+    // Validate range
+    const attributes = [size, body, sweetBrininess, flavorfulness, creaminess];
+    const allValid = attributes.every(
+      (attr) => typeof attr === 'number' && attr >= 1 && attr <= 10
+    );
+
+    if (!allValid) {
+      res.status(400).json({
+        success: false,
+        error: 'All attributes must be numbers between 1 and 10',
+      });
+      return;
+    }
+
+    // Set baseline profile
+    await setBaselineProfile(req.userId, {
+      size,
+      body,
+      sweetBrininess,
+      flavorfulness,
+      creaminess,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: { message: 'Flavor profile set successfully' },
+    });
+  } catch (error) {
+    logger.error('Set flavor profile error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error',
