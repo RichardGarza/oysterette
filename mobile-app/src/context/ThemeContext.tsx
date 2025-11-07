@@ -1,3 +1,100 @@
+/**
+ * ThemeContext
+ *
+ * Global theme management with light/dark mode support and backend synchronization.
+ *
+ * Features:
+ * - Three theme modes: light, dark, system
+ * - System mode follows device appearance settings
+ * - Persistent theme preference (AsyncStorage)
+ * - Backend sync for logged-in users
+ * - React Context API for global access
+ * - Automatic system theme change detection
+ * - Pre-defined color palettes for both modes
+ *
+ * Theme Modes:
+ * - light: Always light theme
+ * - dark: Always dark theme
+ * - system: Follows device setting (respects user's system preference)
+ *
+ * Color Definitions:
+ * Light Theme:
+ * - primary: #3498db (blue)
+ * - background: #f5f5f5 (light gray)
+ * - card: #ffffff (white)
+ * - text: #2c3e50 (dark gray)
+ * - textSecondary: #7f8c8d (medium gray)
+ * - border: #e0e0e0 (light gray)
+ * - error: #e74c3c (red)
+ * - success: #27ae60 (green)
+ * - warning: #f59e0b (orange)
+ *
+ * Dark Theme:
+ * - primary: #5dade2 (lighter blue for contrast)
+ * - background: #1a1a1a (near black)
+ * - card: #2c2c2c (dark gray)
+ * - text: #ecf0f1 (light gray)
+ * - textSecondary: #95a5a6 (medium gray)
+ * - border: #3a3a3a (dark gray)
+ * - error: #e74c3c (red, same as light)
+ * - success: #2ecc71 (green)
+ * - warning: #f39c12 (orange)
+ *
+ * Context Values:
+ * - theme: Current theme object with colors
+ * - themeMode: Current mode ('light' | 'dark' | 'system')
+ * - isDark: Boolean indicating if dark theme is active
+ * - setThemeMode: Function to change theme mode
+ * - loadUserTheme: Function to load theme from user object
+ *
+ * Storage & Sync:
+ * - Local: AsyncStorage key @oysterette_theme_mode
+ * - Backend: user.preferences.theme field
+ * - On setThemeMode: Saves locally AND syncs to backend (if logged in)
+ * - On login: loadUserTheme() loads preference from user object
+ * - On app start: Loads from AsyncStorage
+ *
+ * Theme Change Flow:
+ * 1. User selects mode in SettingsScreen
+ * 2. setThemeMode() called with new mode
+ * 3. Saved to AsyncStorage immediately
+ * 4. State updated (triggers UI re-render)
+ * 5. Backend API call to save preference (if logged in)
+ * 6. If sync fails, local preference persists
+ *
+ * System Mode Detection:
+ * - Uses Appearance.getColorScheme() for initial value
+ * - Subscribes to Appearance.addChangeListener() for live updates
+ * - isDark computed based on mode and system setting
+ * - Example: mode='system' + systemColorScheme='dark' → isDark=true
+ *
+ * Usage:
+ * ```tsx
+ * // Wrap app in provider (App.tsx):
+ * <ThemeProvider>
+ *   <NavigationContainer>
+ *     {screens}
+ *   </NavigationContainer>
+ * </ThemeProvider>
+ *
+ * // Use in component:
+ * const { theme, themeMode, isDark, setThemeMode } = useTheme();
+ * const styles = StyleSheet.create({
+ *   container: { backgroundColor: theme.colors.background }
+ * });
+ * ```
+ *
+ * Hook Safety:
+ * - useTheme() throws error if used outside ThemeProvider
+ * - Ensures proper context usage throughout app
+ *
+ * Used By:
+ * - All screens and components that need theme-aware styling
+ * - SettingsScreen: Theme switcher UI
+ * - HomeScreen, LoginScreen: Loads user theme on login
+ * - App.tsx: Wraps entire app
+ */
+
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { Appearance, ColorSchemeName } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';

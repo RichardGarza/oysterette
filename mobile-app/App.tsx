@@ -1,3 +1,90 @@
+/**
+ * App.tsx - Root Application Component
+ *
+ * Oysterette Mobile App Entry Point
+ *
+ * Purpose:
+ * - Configures navigation structure (React Navigation)
+ * - Wraps app in ThemeProvider for global theming
+ * - Defines all screen routes and parameters
+ * - Sets up navigation header styling
+ * - Manages status bar appearance
+ *
+ * Architecture:
+ * - ThemeProvider: Outermost wrapper for light/dark mode
+ * - NavigationContainer: React Navigation root
+ * - Stack.Navigator: Native stack navigation
+ * - 12 screens registered with type-safe params
+ *
+ * Screens:
+ * 1. Home: Landing page with auth check
+ * 2. Login: Email/password + Google OAuth
+ * 3. Register: Account creation
+ * 4. OysterList: Main browsing with search/filters
+ * 5. OysterDetail: Full oyster view with reviews
+ * 6. AddOyster: Community contributions
+ * 7. AddReview: Review creation/update
+ * 8. EditReview: Standalone review edit
+ * 9. Settings: App configuration hub
+ * 10. TopOysters: Leaderboard
+ * 11. Profile: User stats and history
+ * 12. PrivacySettings: Profile visibility config
+ *
+ * Navigation Configuration:
+ * - initialRouteName: "Home" (always starts here)
+ * - headerStyle: Theme-aware primary color
+ * - headerTintColor: White text
+ * - contentStyle: Theme-aware background
+ * - StatusBar: Dark/light based on theme
+ *
+ * Header Components:
+ * - SettingsButton: Gear icon (⚙️) in top-right
+ *   - Available on: Home, OysterList, OysterDetail, Profile
+ *   - Navigates to Settings screen
+ * - Back button: Custom "←" text (58px)
+ *   - Available on: All non-Home screens
+ *   - OysterList back button goes to Home (not Login)
+ * - Clickable title: "Oysterette" navigates to Home
+ *   - Available on: OysterList (makes logo/title act as home button)
+ *
+ * Special Navigation Behaviors:
+ * - Home screen: headerLeft: null (no back button)
+ * - OysterList: Custom back button to Home (prevents going to Login)
+ * - OysterList: Clickable "Oysterette" title (home navigation)
+ * - Settings: Available from multiple screens via gear icon
+ *
+ * Theme Integration:
+ * - useTheme() hook accesses current theme
+ * - theme.colors.primary: Header background
+ * - theme.colors.background: Screen backgrounds
+ * - isDark: Controls StatusBar style
+ * - Entire app re-renders on theme change
+ *
+ * Type Safety:
+ * - RootStackParamList defines all routes and params
+ * - TypeScript ensures correct navigation calls
+ * - Compile-time validation of screen params
+ *
+ * Logo Replacement Instructions (Currently Text):
+ * - Currently shows "Oysterette" text in header
+ * - See comments in file (lines 21-38) for logo image replacement
+ * - Recommended size: 150px x 40px PNG with transparency
+ * - Would replace text on OysterList screen header
+ *
+ * Development Notes:
+ * - Uses Expo for managed workflow
+ * - Native stack navigator for iOS/Android feel
+ * - StatusBar managed via expo-status-bar
+ * - ThemeProvider must wrap NavigationContainer
+ * - All screens lazy-loaded
+ *
+ * Deployment:
+ * - Expo Go: Development testing
+ * - EAS Build: Production APK/IPA
+ * - OTA Updates: EAS Update for quick fixes
+ * - Version in app.json
+ */
+
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
