@@ -288,6 +288,19 @@ export const checkExistingReview = async (req: Request, res: Response): Promise<
 
     const { oysterId } = req.params;
 
+    // Check if oyster exists
+    const oyster = await prisma.oyster.findUnique({
+      where: { id: oysterId! },
+    });
+
+    if (!oyster) {
+      res.status(404).json({
+        success: false,
+        error: 'Oyster not found',
+      });
+      return;
+    }
+
     const existingReview = await prisma.review.findUnique({
       where: {
         userId_oysterId: {

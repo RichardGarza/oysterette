@@ -9,12 +9,15 @@ Oysterette allows users to explore a comprehensive database of oyster varieties,
 ## 🦪 What is Oysterette?
 
 Oysterette is a React Native mobile app that helps oyster lovers:
-- **Discover** oysters from around the world with detailed attribute profiles
-- **Rate & Review** oysters using a 4-tier rating system and 10-point attribute scales
+- **Discover** 850+ oysters from around the world with detailed attribute profiles
+- **Rate & Review** oysters using a 4-tier emotional rating system and 10-point attribute scales
 - **Track** favorites and build personalized top oyster lists
-- **Get Recommendations** based on personal taste preferences (coming soon)
+- **Get Recommendations** based on your personal flavor profile
+- **Vote** on reviews to build community credibility
+- **Earn Badges** for reliable reviewing (Novice 🌟, Trusted ⭐, Expert 🏆)
+- **Search & Filter** with fuzzy search, species/origin filters, and multiple sort options
 
-The app uses a dynamic rating algorithm that weights user reviews against curated seed data, ensuring new oysters have baseline scores while heavily-reviewed oysters reflect community consensus.
+The app uses a sophisticated rating algorithm that weights user reviews against curated seed data, ensuring new oysters have baseline scores while heavily-reviewed oysters reflect community consensus.
 
 ---
 
@@ -81,31 +84,174 @@ The app uses a dynamic rating algorithm that weights user reviews against curate
 
 ---
 
-## 🎯 Rating System
+## 🎯 Core Algorithms
 
-### Algorithm Overview
+### 1. Rating System
+
+#### Dynamic Weighting Algorithm
 The rating system uses **dynamic weighting** to balance expert seed data with user reviews:
 
+```typescript
+function calculateUserRatingWeight(reviewCount: number): number {
+  if (reviewCount === 0) return 0;
+  if (reviewCount >= 5) return 0.7;
+  // Gradual increase: (reviewCount / 5) * 0.7
+  return (reviewCount / 5) * 0.7;
+}
+
+// Examples:
+// 0 reviews → 0% user weight (100% seed data)
+// 1 review  → 14% user weight (86% seed data)
+// 3 reviews → 42% user weight (58% seed data)
+// 5+ reviews → 70% user weight (30% seed data)
 ```
-User Rating Weight Calculation:
-- 0 reviews: 0% user influence (100% seed data)
-- 1-4 reviews: Gradual increase (0% → 70%)
-- 5+ reviews: 70% user influence, 30% seed data
+
+#### Rating Scale
+Reviews use a **4-tier emotional rating system** mapped to 0-10 scale:
+- **LOVE_IT** → 9.0 (range 8.0-10.0) - Outstanding oyster
+- **LIKE_IT** → 7.0 (range 6.0-7.9) - Good oyster
+- **MEH** → 4.95 (range 4.0-5.9) - Unremarkable
+- **WHATEVER** → 2.5 (range 1.0-3.9) - Poor experience
+
+#### Overall Score Calculation
+Overall score is based **solely on avgRating** (0-10 scale), independent of attribute scores. This ensures the score directly reflects user sentiment.
+
+```typescript
+overallScore = avgRating; // Simple and direct
 ```
 
-### Score Components
-**Overall Score (0-10 scale):**
-- 40% from Rating (LOVED_IT/LIKED_IT/MEH/HATED_IT)
-- 60% from Attributes (size, body, sweetness, flavor, creaminess)
+#### Attribute Scores
+Each attribute (size, body, sweetBrininess, flavorfulness, creaminess) is calculated as a weighted average:
 
-**Attribute Scores:**
-- Weighted average of seed data + user ratings
-- Accounts for null values (users can skip attributes)
+```typescript
+avgAttribute = (1 - userWeight) * seedAttribute + userWeight * userAttributeAvg;
+```
 
-### Real-Time Updates
-- Ratings recalculate automatically on review create/update/delete
-- All users see updated scores immediately
-- No manual refresh needed
+### 2. Voting & Credibility System
+
+#### Review Voting
+Users can vote "agree" or "disagree" on other users' reviews:
+- **Agree vote** (+1): Review aligns with your experience
+- **Disagree vote** (-1): Review doesn't match your experience
+- **Cannot vote on own reviews**
+- **One vote per review** (can change vote)
+
+#### Asymmetric Vote Weighting
+Voting uses asymmetric weighting to prevent abuse:
+- **Agree votes**: +1.0 weight per vote
+- **Disagree votes**: -0.6 weight per vote
+- **Net score**: `agreeCount * 1.0 + disagreeCount * (-0.6)`
+
+This design prevents malicious downvoting from having equal power to genuine agreement.
+
+#### Credibility Score Calculation
+User credibility is based on votes received on their reviews:
+
+```typescript
+function calculateCredibilityScore(
+  totalAgrees: number,
+  totalDisagrees: number
+): number {
+  const agreeWeight = 1.0;
+  const disagreeWeight = -0.6;
+  const netScore = totalAgrees * agreeWeight + totalDisagrees * disagreeWeight;
+
+  // Scale to 0.5 - 1.5 range (50% to 150% influence)
+  const scalingFactor = 0.1;
+  const baseCredibility = 1.0;
+  const credibility = baseCredibility + (netScore * scalingFactor);
+
+  return Math.max(0.5, Math.min(1.5, credibility));
+}
+
+// Examples:
+// +10 agrees, -0 disagrees → 1.0 + (10 * 0.1) = 2.0 → capped at 1.5
+// +5 agrees, -5 disagrees → 1.0 + (2 * 0.1) = 1.2 (Trusted)
+// +0 agrees, -10 disagrees → 1.0 + (-6 * 0.1) = 0.4 → floor at 0.5
+```
+
+#### Badge System
+Users receive badges based on credibility:
+- **Novice** 🌟: 0.5 - 0.99 (less reliable reviews)
+- **Trusted** ⭐: 1.0 - 1.49 (reliable reviews)
+- **Expert** 🏆: 1.5+ (highly reliable reviews)
+
+### 3. Recommendation System
+
+#### Baseline Flavor Profile
+Users develop a **baseline flavor profile** from their positive reviews (LOVE_IT ratings):
+
+```typescript
+async function updateBaselineWithReview(review: Review): Promise<void> {
+  // Only update from LOVE_IT reviews
+  if (review.rating !== 'LOVE_IT') return;
+
+  // Exponential moving average (α = 0.3)
+  newBaseline = currentBaseline * 0.7 + reviewAttribute * 0.3;
+}
+```
+
+This creates a personalized "ideal oyster" profile that evolves over time.
+
+#### Similarity Scoring
+Recommendations use **Euclidean distance** to find oysters similar to user's baseline:
+
+```typescript
+function calculateSimilarityScore(
+  oyster: Oyster,
+  userBaseline: FlavorProfile
+): number {
+  const attributes = ['size', 'body', 'sweetBrininess', 'flavorfulness', 'creaminess'];
+
+  let sumSquaredDiffs = 0;
+  attributes.forEach(attr => {
+    const diff = oyster[attr] - userBaseline[attr];
+    sumSquaredDiffs += diff * diff;
+  });
+
+  const euclideanDistance = Math.sqrt(sumSquaredDiffs);
+  const maxDistance = Math.sqrt(5 * 81); // 5 attributes, max diff of 9 each
+
+  // Convert to 0-100 similarity score (higher = more similar)
+  return ((maxDistance - euclideanDistance) / maxDistance) * 100;
+}
+```
+
+#### Recommendation Ranking
+Oysters are ranked by similarity score (highest first) and **exclude already reviewed oysters**. Results are cached for 15 minutes per user.
+
+### 4. Search & Filtering
+
+#### Fuzzy Search
+Search uses **Fuse.js** with weighted fields:
+- **Name**: 50% weight (primary search target)
+- **Origin**: 30% weight (location matters)
+- **Species**: 20% weight (scientific classification)
+- **Threshold**: 0.4 (balance precision vs recall)
+
+```typescript
+const fuseOptions = {
+  keys: [
+    { name: 'name', weight: 0.5 },
+    { name: 'origin', weight: 0.3 },
+    { name: 'species', weight: 0.2 }
+  ],
+  threshold: 0.4, // 0 = exact match, 1 = match anything
+  includeScore: true
+};
+```
+
+#### Advanced Filtering
+Users can filter by:
+- **Species**: 7 species + "All Species" (Crassostrea gigas, virginica, sikamea, etc.)
+- **Origin**: 74 origins + "All Origins" (Washington, France, Japan, etc.)
+- **Sort By**: name, rating, size, sweetness, creaminess, flavorfulness, body
+
+### 5. Real-Time Updates
+- **Ratings recalculate** automatically on review create/update/delete
+- **Credibility updates** immediately when votes are cast
+- **Baselines update** after each LOVE_IT review
+- **Recommendation cache** invalidates on profile changes
 
 ---
 
@@ -226,11 +372,13 @@ npm test -- --coverage
 npm test ratingService.test.ts
 ```
 
-### Test Coverage
-- Rating calculation algorithms
-- User weight formulas
-- Score aggregation logic
-- Error handling
+### Test Coverage (229 tests)
+- **Rating System**: Dynamic weighting, attribute scores, overall score
+- **Voting & Credibility**: Vote creation, updates, credibility calculation
+- **Recommendations**: Flavor profile, baseline updates, similarity scoring
+- **Authentication**: JWT, Google OAuth, rate limiting
+- **API Integration**: All endpoints, error handling, validation
+- **Schema Validation**: Zod schemas for all request/response types
 
 ---
 
@@ -294,87 +442,92 @@ Set in Railway dashboard (same as above):
 
 ---
 
+## ✅ Completed Features
+
+### Phase 1-4: Core Infrastructure (October 2024)
+- ✅ **Production Database**: Neon PostgreSQL with 850+ oysters
+- ✅ **Backend API**: Railway deployment with auto-deploy
+- ✅ **Mobile App**: React Native with Expo, EAS Build & Updates
+- ✅ **Android Distribution**: APK builds via EAS
+
+### Phase 5.1: Advanced Rating & Voting System (November 2024)
+- ✅ **Dynamic Rating Algorithm**: Gradual weight shift from seed data to user reviews
+- ✅ **Review Voting**: Agree/disagree votes on reviews
+- ✅ **Credibility System**: User reputation based on vote history
+- ✅ **Badge System**: Novice, Trusted, Expert badges
+- ✅ **Asymmetric Weighting**: Prevents malicious downvoting
+
+### Phase 5.2: Security & Quality (November 2024)
+- ✅ **Input Validation**: Zod schemas for all endpoints
+- ✅ **Rate Limiting**: 10 req/15min for auth, 100 req/15min for API
+- ✅ **Error Tracking**: Sentry integration
+- ✅ **Logging**: Winston structured logging
+- ✅ **JWT Hardening**: Secure token handling
+- ✅ **Test Coverage**: 229 tests passing (100% coverage on core logic)
+
+### Phase 5.3: Search & Discovery (November 2024)
+- ✅ **Fuzzy Search**: Fuse.js with weighted name/origin/species matching
+- ✅ **Advanced Filtering**: Species, origin, and attribute-based filters
+- ✅ **Multi-Sort Options**: Sort by rating, name, size, attributes
+
+### Phase 5.4: User Experience (November 2024)
+- ✅ **Theme System**: Light/dark mode with persistence
+- ✅ **Settings Screen**: Profile management, preferences, privacy settings
+- ✅ **Auto-Login**: Seamless authentication persistence
+- ✅ **Pull-to-Refresh**: Sync data across all screens
+- ✅ **Google OAuth**: Native Google Sign-In integration
+
+### Phase 5.5: UX Polish (November 2024)
+- ✅ **Dynamic Slider Labels**: Context-aware attribute descriptions
+- ✅ **KeyboardAvoidingView**: Better form interaction
+- ✅ **Duplicate Review Detection**: Auto-populate for updates
+- ✅ **Favorites Sync**: Cross-device synchronization
+
+### Phase 5.6: Personalization & Recommendations (November 2024)
+- ✅ **Baseline Flavor Profile**: Automatic learning from LOVE_IT reviews
+- ✅ **Personalized Recommendations**: Euclidean distance similarity matching
+- ✅ **Profile Display**: Visual flavor profile on user profile
+- ✅ **Auto-Update**: Baseline evolves with user preferences
+- ✅ **Smart Caching**: 15-minute recommendation cache
+
+---
+
 ## 📈 Future Roadmap
 
-### Phase 5.2: User Experience Enhancements
-- **Dark Mode / Light Mode / System Setting**
-  - Theme switching with persistent preferences
-  - System-level theme detection
-  - Smooth transitions between themes
-
-- **Settings Page**
-  - Profile information management
-  - App preferences (theme, notifications)
-  - Connected accounts (Google, X/Twitter OAuth)
-  - Log out functionality
-  - Account deletion option
-
-- **Social Features**
-  - Share oyster profiles (text, social media)
+### Phase 6: Social Features
+- **Share Oysters**
+  - Share oyster profiles to social media
   - Send oysters to friends via messaging
-  - Social media integration (X, Instagram, Facebook)
   - "Share Your Top 5" feature
+  - Export reviews as PDF/image
 
-### Phase 5.3: Advanced Rating & Voting System
-- **Review Voting System**
-  - "Agree" and "Don't Agree" buttons on reviews
-  - Weighted review influence based on community feedback
-  - Asymmetric weighting: agrees (+1.0 weight), disagrees (-0.6 weight)
-  - Net voting score affects individual review's contribution to overall rating
+- **Additional OAuth Providers**
+  - Sign in with Apple (required for iOS App Store)
+  - Sign in with X/Twitter
+  - Sign in with Facebook
 
-- **Reviewer Credibility System**
-  - User credibility score based on review history
-  - More "agrees" = higher reviewer weight (up to 1.5x multiplier)
-  - Credibility affects how much their reviews influence oyster scores
-  - Neutral bias at 1:1 agree/disagree ratio
-  - Progressive scaling: +4 agrees, -2 disagrees = +2 bias score
-
-- **Enhanced Score Precision**
-  - Store ratings with 2 decimal places (e.g., 6.75)
-  - Display ratings with 1 decimal place, rounded (e.g., 6.8)
-  - Maintain integer display for attribute sliders
-  - More granular scoring for competitive rankings
-
-### Phase 5.4: Rating Contributions
-- **Community Data Enrichment**
+### Phase 7: Community Data Enrichment
+- **Collaborative Editing**
   - Edit oyster details when rating
   - Contribute species for "Unknown" entries
   - Add origin information for incomplete listings
   - Update standout notes collaboratively
   - Version history for edits
 
-- **Review Button & Interface**
-  - Prominent "Rate This Oyster" button on detail pages
-  - Quick-rate from list view
-  - Review editing and deletion
-  - Photo uploads with reviews (future)
-
-### Phase 5.5: Predictive Recommendations
-- Collaborative filtering
-- Content-based filtering based on attribute preferences
-- "You might like..." suggestions
-- Similar oysters recommendations
-
-### Phase 5.6: User Profiles & History
-- Profile pages with statistics
-- Rating history timeline
-- Review analytics (most helpful, total agrees)
-- Reviewer badges and achievements
-- Following other users
-
-### Phase 5.7: Photo Gallery
+### Phase 8: Photo Gallery
 - User-uploaded oyster photos
 - Image storage (Cloudinary/Supabase)
 - Photo moderation system
 - Gallery view on oyster detail pages
 
-### Phase 6: Polish & Distribution
-- Fuzzy search (handle typos, phonetic matching)
-- OAuth authentication (Google, Apple, X/Twitter)
-- iOS TestFlight distribution
+### Phase 9: App Store Distribution
+- ✅ Legal documentation (Privacy Policy, Terms of Service)
+- ✅ GitHub Pages hosting for legal docs
+- Sign in with Apple implementation (required)
+- Screenshot capture for both stores
+- iOS TestFlight beta testing
+- Apple App Store submission
 - Google Play Store submission
-- Enhanced UI/UX styling
-- Performance optimizations
 - Push notifications for review responses
 
 ---
@@ -403,6 +556,9 @@ MIT License - See LICENSE file for details
 
 ---
 
-**Version:** 1.0.0
-**Last Updated:** October 29, 2025
+**Version:** 1.6.0
+**Last Updated:** November 7, 2024
 **Status:** Production - Active Development
+**Tests:** 229/229 passing ✅
+**Backend:** Live on Railway ✅
+**Database:** Live on Neon (850+ oysters) ✅

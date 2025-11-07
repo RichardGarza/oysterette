@@ -573,6 +573,63 @@ export default function ProfileScreen() {
           </View>
         )}
 
+        {/* Flavor Profile */}
+        {(user.baselineSize || user.baselineBody || user.baselineSweetBrininess || user.baselineFlavorfulness || user.baselineCreaminess) && (
+          <View style={styles.flavorProfileCard}>
+            <Text style={styles.sectionTitle}>Your Flavor Profile</Text>
+            <Text style={styles.flavorDescription}>
+              Your preferred oyster characteristics based on your reviews
+            </Text>
+            <View style={styles.flavorAttributesGrid}>
+              {user.baselineSize && (
+                <View style={styles.flavorAttribute}>
+                  <Text style={styles.flavorAttributeLabel}>Size</Text>
+                  <View style={styles.flavorBar}>
+                    <View style={[styles.flavorBarFill, { width: `${(user.baselineSize / 10) * 100}%` }]} />
+                  </View>
+                  <Text style={styles.flavorAttributeValue}>{user.baselineSize.toFixed(1)}/10</Text>
+                </View>
+              )}
+              {user.baselineBody && (
+                <View style={styles.flavorAttribute}>
+                  <Text style={styles.flavorAttributeLabel}>Body</Text>
+                  <View style={styles.flavorBar}>
+                    <View style={[styles.flavorBarFill, { width: `${(user.baselineBody / 10) * 100}%` }]} />
+                  </View>
+                  <Text style={styles.flavorAttributeValue}>{user.baselineBody.toFixed(1)}/10</Text>
+                </View>
+              )}
+              {user.baselineSweetBrininess && (
+                <View style={styles.flavorAttribute}>
+                  <Text style={styles.flavorAttributeLabel}>Sweet/Brininess</Text>
+                  <View style={styles.flavorBar}>
+                    <View style={[styles.flavorBarFill, { width: `${(user.baselineSweetBrininess / 10) * 100}%` }]} />
+                  </View>
+                  <Text style={styles.flavorAttributeValue}>{user.baselineSweetBrininess.toFixed(1)}/10</Text>
+                </View>
+              )}
+              {user.baselineFlavorfulness && (
+                <View style={styles.flavorAttribute}>
+                  <Text style={styles.flavorAttributeLabel}>Flavorfulness</Text>
+                  <View style={styles.flavorBar}>
+                    <View style={[styles.flavorBarFill, { width: `${(user.baselineFlavorfulness / 10) * 100}%` }]} />
+                  </View>
+                  <Text style={styles.flavorAttributeValue}>{user.baselineFlavorfulness.toFixed(1)}/10</Text>
+                </View>
+              )}
+              {user.baselineCreaminess && (
+                <View style={styles.flavorAttribute}>
+                  <Text style={styles.flavorAttributeLabel}>Creaminess</Text>
+                  <View style={styles.flavorBar}>
+                    <View style={[styles.flavorBarFill, { width: `${(user.baselineCreaminess / 10) * 100}%` }]} />
+                  </View>
+                  <Text style={styles.flavorAttributeValue}>{user.baselineCreaminess.toFixed(1)}/10</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
         {/* Review History */}
         <View style={styles.reviewSection}>
           <Text style={styles.sectionTitle}>Recent Reviews</Text>
@@ -942,6 +999,59 @@ const createStyles = (colors: any, isDark: boolean) =>
       fontSize: 14,
       fontWeight: '600',
       color: colors.text,
+    },
+    flavorProfileCard: {
+      marginHorizontal: 16,
+      marginBottom: 16,
+      backgroundColor: colors.cardBackground,
+      borderRadius: 12,
+      padding: 16,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadowColor,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isDark ? 0.3 : 0.1,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 2,
+        },
+      }),
+    },
+    flavorDescription: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      marginBottom: 16,
+      fontStyle: 'italic',
+    },
+    flavorAttributesGrid: {
+      gap: 16,
+    },
+    flavorAttribute: {
+      marginBottom: 4,
+    },
+    flavorAttributeLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 8,
+    },
+    flavorBar: {
+      height: 8,
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+      borderRadius: 4,
+      overflow: 'hidden',
+      marginBottom: 4,
+    },
+    flavorBarFill: {
+      height: '100%',
+      backgroundColor: colors.primary,
+      borderRadius: 4,
+    },
+    flavorAttributeValue: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      textAlign: 'right',
     },
     reviewSection: {
       padding: 16,

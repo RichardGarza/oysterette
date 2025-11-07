@@ -62,11 +62,11 @@ describe('Rating Service', () => {
         flavorfulness: 5,
         creaminess: 5,
         reviews: [
-          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
-          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
-          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
-          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
-          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVE_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVE_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVE_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVE_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVE_IT' as ReviewRating, size: 9, body: 9, sweetBrininess: 9, flavorfulness: 9, creaminess: 9, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
         ],
       };
 
@@ -80,7 +80,7 @@ describe('Rating Service', () => {
       // With 5 reviews, user weight should be 0.7
       // Expected: (1 - 0.7) * 5 + 0.7 * 9 = 1.5 + 6.3 = 7.8
       expect(updateCall.data.avgSize).toBeCloseTo(7.8, 1);
-      expect(updateCall.data.avgRating).toBe(4); // LOVED_IT = 4
+      expect(updateCall.data.avgRating).toBe(9); // LOVE_IT = 9.0
       expect(updateCall.data.totalReviews).toBe(5);
     });
 
@@ -94,8 +94,8 @@ describe('Rating Service', () => {
         flavorfulness: 5,
         creaminess: 5,
         reviews: [
-          { rating: 'LOVED_IT' as ReviewRating, size: 9, body: null, sweetBrininess: null, flavorfulness: null, creaminess: null, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
-          { rating: 'LIKED_IT' as ReviewRating, size: 7, body: null, sweetBrininess: null, flavorfulness: null, creaminess: null, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVE_IT' as ReviewRating, size: 9, body: null, sweetBrininess: null, flavorfulness: null, creaminess: null, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LIKE_IT' as ReviewRating, size: 7, body: null, sweetBrininess: null, flavorfulness: null, creaminess: null, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
           { rating: 'MEH' as ReviewRating, size: 5, body: null, sweetBrininess: null, flavorfulness: null, creaminess: null, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
         ],
       };
@@ -107,8 +107,8 @@ describe('Rating Service', () => {
 
       const updateCall = (prisma.oyster.update as jest.Mock).mock.calls[0][0];
 
-      // Average rating: (4 + 3 + 2) / 3 = 3
-      expect(updateCall.data.avgRating).toBe(3);
+      // Average rating: (9.0 + 7.0 + 4.95) / 3 = 6.983...
+      expect(updateCall.data.avgRating).toBeCloseTo(6.98, 1);
       expect(updateCall.data.totalReviews).toBe(3);
     });
 
@@ -130,16 +130,16 @@ describe('Rating Service', () => {
         avgRating: 3.2,
         overallScore: 7.5,
         reviews: [
-          { rating: 'LOVED_IT' as ReviewRating },
-          { rating: 'LOVED_IT' as ReviewRating },
-          { rating: 'LOVED_IT' as ReviewRating },
-          { rating: 'LIKED_IT' as ReviewRating },
-          { rating: 'LIKED_IT' as ReviewRating },
-          { rating: 'LIKED_IT' as ReviewRating },
-          { rating: 'LIKED_IT' as ReviewRating },
+          { rating: 'LOVE_IT' as ReviewRating },
+          { rating: 'LOVE_IT' as ReviewRating },
+          { rating: 'LOVE_IT' as ReviewRating },
+          { rating: 'LIKE_IT' as ReviewRating },
+          { rating: 'LIKE_IT' as ReviewRating },
+          { rating: 'LIKE_IT' as ReviewRating },
+          { rating: 'LIKE_IT' as ReviewRating },
           { rating: 'MEH' as ReviewRating },
           { rating: 'MEH' as ReviewRating },
-          { rating: 'HATED_IT' as ReviewRating },
+          { rating: 'WHATEVER' as ReviewRating },
         ],
       };
 
@@ -152,10 +152,10 @@ describe('Rating Service', () => {
         avgRating: 3.2,
         overallScore: 7.5,
         ratingBreakdown: {
-          lovedIt: 3,
-          likedIt: 4,
+          loveIt: 3,
+          likeIt: 4,
           meh: 2,
-          hatedIt: 1,
+          whatever: 1,
         },
       });
       expect(stats.userRatingWeight).toBeCloseTo(0.7, 1);
@@ -177,10 +177,10 @@ describe('Rating Service', () => {
       const stats = await getOysterRatingStats('oyster-1');
 
       expect(stats.ratingBreakdown).toEqual({
-        lovedIt: 0,
-        likedIt: 0,
+        loveIt: 0,
+        likeIt: 0,
         meh: 0,
-        hatedIt: 0,
+        whatever: 0,
       });
       expect(stats.userRatingWeight).toBe(0);
       expect(stats.seedDataWeight).toBe(1);
@@ -222,8 +222,8 @@ describe('Rating Service', () => {
         flavorfulness: 5,
         creaminess: 5,
         reviews: [
-          { rating: 'LOVED_IT' as ReviewRating, size: 10, body: 10, sweetBrininess: 10, flavorfulness: 10, creaminess: 10, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
-          { rating: 'LOVED_IT' as ReviewRating, size: 10, body: 10, sweetBrininess: 10, flavorfulness: 10, creaminess: 10, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVE_IT' as ReviewRating, size: 10, body: 10, sweetBrininess: 10, flavorfulness: 10, creaminess: 10, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVE_IT' as ReviewRating, size: 10, body: 10, sweetBrininess: 10, flavorfulness: 10, creaminess: 10, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
         ],
       };
 
@@ -251,11 +251,11 @@ describe('Rating Service', () => {
         flavorfulness: 8,
         creaminess: 8,
         reviews: [
-          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
-          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
-          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
-          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
-          { rating: 'LOVED_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVE_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVE_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVE_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVE_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
+          { rating: 'LOVE_IT' as ReviewRating, size: 8, body: 8, sweetBrininess: 8, flavorfulness: 8, creaminess: 8, weightedScore: 1.0, user: { credibilityScore: 1.0 } },
         ],
       };
 
@@ -266,10 +266,10 @@ describe('Rating Service', () => {
 
       const updateCall = (prisma.oyster.update as jest.Mock).mock.calls[0][0];
 
-      // avgRating = 4, normalized to 10-point: 4/4 * 10 = 10
-      // attributes average = 8
-      // overall = 10 * 0.4 + 8 * 0.6 = 4 + 4.8 = 8.8
-      expect(updateCall.data.overallScore).toBeCloseTo(8.8, 1);
+      // overallScore is based ONLY on avgRating (not weighted with attributes)
+      // avgRating = 9.0 (LOVE_IT), already on 10-point scale
+      // overallScore = 9.0
+      expect(updateCall.data.overallScore).toBe(9);
     });
   });
 });

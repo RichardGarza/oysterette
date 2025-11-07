@@ -188,7 +188,7 @@ describe('Review Schemas', () => {
     it('should accept valid review data', () => {
       const validData = {
         oysterId: '123e4567-e89b-12d3-a456-426614174000',
-        rating: ReviewRating.LIKED_IT,
+        rating: ReviewRating.LIKE_IT,
         notes: 'Great oyster!',
         size: 5,
         body: 6,
@@ -204,7 +204,7 @@ describe('Review Schemas', () => {
     it('should accept valid review without optional notes', () => {
       const validData = {
         oysterId: '123e4567-e89b-12d3-a456-426614174000',
-        rating: ReviewRating.LOVED_IT,
+        rating: ReviewRating.LOVE_IT,
         size: 5,
         body: 6,
         sweetBrininess: 7,
@@ -265,7 +265,7 @@ describe('Review Schemas', () => {
     it('should reject size below 1', () => {
       const invalidData = {
         oysterId: '123e4567-e89b-12d3-a456-426614174000',
-        rating: ReviewRating.LIKED_IT,
+        rating: ReviewRating.LIKE_IT,
         size: 0,
         body: 6,
         sweetBrininess: 7,
@@ -280,7 +280,7 @@ describe('Review Schemas', () => {
     it('should reject size above 10', () => {
       const invalidData = {
         oysterId: '123e4567-e89b-12d3-a456-426614174000',
-        rating: ReviewRating.LIKED_IT,
+        rating: ReviewRating.LIKE_IT,
         size: 11,
         body: 6,
         sweetBrininess: 7,
@@ -295,7 +295,7 @@ describe('Review Schemas', () => {
     it('should reject non-integer attribute values', () => {
       const invalidData = {
         oysterId: '123e4567-e89b-12d3-a456-426614174000',
-        rating: ReviewRating.LIKED_IT,
+        rating: ReviewRating.LIKE_IT,
         size: 5.5,
         body: 6,
         sweetBrininess: 7,
@@ -308,7 +308,7 @@ describe('Review Schemas', () => {
     });
 
     it('should accept all valid ReviewRating enums', () => {
-      const ratings = [ReviewRating.LOVED_IT, ReviewRating.LIKED_IT, ReviewRating.MEH, ReviewRating.HATED_IT];
+      const ratings = [ReviewRating.LOVE_IT, ReviewRating.LIKE_IT, ReviewRating.MEH, ReviewRating.WHATEVER];
 
       ratings.forEach((rating) => {
         const data = {
@@ -330,7 +330,7 @@ describe('Review Schemas', () => {
   describe('updateReviewSchema', () => {
     it('should accept partial updates', () => {
       const validData = {
-        rating: ReviewRating.LOVED_IT,
+        rating: ReviewRating.LOVE_IT,
       };
 
       const result = updateReviewSchema.safeParse(validData);
@@ -339,7 +339,7 @@ describe('Review Schemas', () => {
 
     it('should accept multiple optional fields', () => {
       const validData = {
-        rating: ReviewRating.LIKED_IT,
+        rating: ReviewRating.LIKE_IT,
         notes: 'Updated notes',
         size: 8,
       };

@@ -90,7 +90,7 @@ describe('Vote API Integration Tests', () => {
       .set('Authorization', `Bearer ${authToken}`)
       .send({
         oysterId,
-        rating: 'LOVED_IT',
+        rating: 'LOVE_IT',
         size: 7,
         body: 8,
         sweetBrininess: 6,
@@ -106,7 +106,7 @@ describe('Vote API Integration Tests', () => {
       .set('Authorization', `Bearer ${otherUserToken}`)
       .send({
         oysterId,
-        rating: 'LIKED_IT',
+        rating: 'LIKE_IT',
         size: 6,
         body: 7,
         sweetBrininess: 5,
