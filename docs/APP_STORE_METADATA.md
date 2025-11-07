@@ -155,8 +155,8 @@ No ads. No subscriptions. Just pure oyster love. 🦪
 
 Have feedback or suggestions? Contact us at support@oysterette.app
 
-Privacy Policy: https://richardgarza.github.io/oysterette/docs/privacy-policy.html
-Terms of Service: https://richardgarza.github.io/oysterette/docs/terms-of-service.html
+Privacy Policy: https://richardgarza.github.io/oysterette/privacy-policy.html
+Terms of Service: https://richardgarza.github.io/oysterette/terms-of-service.html
 ```
 
 **Character count:** ~3,950 / 4,000 ✅
@@ -274,7 +274,7 @@ Happy shucking! 🦪
 ## Support Information
 
 ### Support URL
-**https://richardgarza.github.io/oysterette/docs/**
+**https://richardgarza.github.io/oysterette/**
 
 This links to legal documentation page with:
 - Privacy Policy
@@ -288,7 +288,7 @@ This links to legal documentation page with:
 Landing page for legal documents (can be expanded later with marketing content).
 
 ### Privacy Policy URL (Required)
-**https://richardgarza.github.io/oysterette/docs/privacy-policy.html**
+**https://richardgarza.github.io/oysterette/privacy-policy.html**
 
 Publicly accessible and GDPR/CCPA compliant.
 

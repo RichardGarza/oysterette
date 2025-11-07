@@ -303,7 +303,7 @@ export default function SettingsScreen() {
         <View style={styles.card}>
           <TouchableOpacity
             style={styles.settingItem}
-            onPress={() => Linking.openURL('https://richardgarza.github.io/oysterette/docs/privacy-policy.html')}
+            onPress={() => Linking.openURL('https://richardgarza.github.io/oysterette/privacy-policy.html')}
           >
             <Text style={styles.settingLabel}>Privacy Policy</Text>
             <Text style={styles.settingValue}>→</Text>
@@ -311,7 +311,7 @@ export default function SettingsScreen() {
           <View style={styles.separator} />
           <TouchableOpacity
             style={styles.settingItem}
-            onPress={() => Linking.openURL('https://richardgarza.github.io/oysterette/docs/terms-of-service.html')}
+            onPress={() => Linking.openURL('https://richardgarza.github.io/oysterette/terms-of-service.html')}
           >
             <Text style={styles.settingLabel}>Terms of Service</Text>
             <Text style={styles.settingValue}>→</Text>

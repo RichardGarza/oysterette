@@ -307,7 +307,7 @@ Use this checklist when filling out the form:
 - [ ] Mark device IDs as COLLECTED, OPTIONAL
 - [ ] Ensure all "Purpose" fields are filled
 - [ ] Ensure all "Shared" fields are set to NO
-- [ ] Link to Privacy Policy: https://richardgarza.github.io/oysterette/docs/privacy-policy.html
+- [ ] Link to Privacy Policy: https://richardgarza.github.io/oysterette/privacy-policy.html
 
 ---
 
@@ -337,8 +337,8 @@ Use this checklist when filling out the form:
 
 For questions about data practices:
 - **Email:** support@oysterette.app
-- **Privacy Policy:** https://richardgarza.github.io/oysterette/docs/privacy-policy.html
-- **Website:** https://richardgarza.github.io/oysterette/docs/
+- **Privacy Policy:** https://richardgarza.github.io/oysterette/privacy-policy.html
+- **Website:** https://richardgarza.github.io/oysterette/
 
 ---
 

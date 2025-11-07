@@ -312,7 +312,7 @@ We may provide notices via email, in-app notification, or posting on our website
 **For questions about these Terms:**
 
 **Email:** support@oysterette.app
-**Website:** https://richardgarza.github.io/oysterette/docs/
+**Website:** https://richardgarza.github.io/oysterette/
 **Address:** c/o Richard Garza (business address to be updated)
 
 **For legal inquiries or DMCA notices:**
@@ -350,7 +350,7 @@ By using Oysterette, you acknowledge that:
 
 **Last Updated:** November 7, 2025
 
-For the most current version, visit: https://richardgarza.github.io/oysterette/docs/terms-of-service.html
+For the most current version, visit: https://richardgarza.github.io/oysterette/terms-of-service.html
 
 ---
 

@@ -218,7 +218,7 @@ Continued use of Oysterette after changes constitutes acceptance of the updated 
 If you have questions, concerns, or requests regarding this Privacy Policy:
 
 **Email:** support@oysterette.app
-**Website:** https://richardgarza.github.io/oysterette/docs/
+**Website:** https://richardgarza.github.io/oysterette/
 **Address:** c/o Richard Garza (business address to be updated)
 
 **Response Time:** We aim to respond within 48 hours for privacy-related inquiries.
@@ -273,4 +273,4 @@ We do not track users across third-party websites. The app does not respond to D
 
 **This Privacy Policy was last updated on November 7, 2025.**
 
-For the most current version, visit: https://richardgarza.github.io/oysterette/docs/privacy-policy.html
+For the most current version, visit: https://richardgarza.github.io/oysterette/privacy-policy.html
