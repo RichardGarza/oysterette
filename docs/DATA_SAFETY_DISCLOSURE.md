@@ -260,7 +260,7 @@ for purposes
 ### How to Exercise Rights:
 - **In-App:** Settings → Privacy Settings
 - **In-App Deletion:** Settings → Delete Account
-- **Email Requests:** [YOUR SUPPORT EMAIL]
+- **Email Requests:** support@oysterette.app
 
 ---
 
@@ -307,7 +307,7 @@ Use this checklist when filling out the form:
 - [ ] Mark device IDs as COLLECTED, OPTIONAL
 - [ ] Ensure all "Purpose" fields are filled
 - [ ] Ensure all "Shared" fields are set to NO
-- [ ] Link to Privacy Policy: [YOUR PRIVACY POLICY URL]
+- [ ] Link to Privacy Policy: https://richardgarza.github.io/oysterette/docs/privacy-policy.html
 
 ---
 
@@ -336,9 +336,9 @@ Use this checklist when filling out the form:
 ## Support Contact
 
 For questions about data practices:
-- **Email:** [YOUR SUPPORT EMAIL]
-- **Privacy Policy:** [YOUR PRIVACY POLICY URL]
-- **Website:** [YOUR WEBSITE URL]
+- **Email:** support@oysterette.app
+- **Privacy Policy:** https://richardgarza.github.io/oysterette/docs/privacy-policy.html
+- **Website:** https://richardgarza.github.io/oysterette/docs/
 
 ---
 

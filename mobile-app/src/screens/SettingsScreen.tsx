@@ -9,6 +9,7 @@
  * - Theme switcher (Light / Dark / System) with live preview
  * - Share app functionality (native share sheet)
  * - App version display
+ * - Legal links (Privacy Policy, Terms of Service) - opens in browser
  * - Logout button (logged-in users only)
  * - Delete account button (logged-in users only, placeholder)
  * - Theme-aware styling
@@ -61,6 +62,7 @@ import {
   Share,
   Platform,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -292,6 +294,28 @@ export default function SettingsScreen() {
             <Text style={styles.settingLabel}>Version</Text>
             <Text style={styles.settingValue}>1.0.0</Text>
           </View>
+        </View>
+      </View>
+
+      {/* Legal Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Legal</Text>
+        <View style={styles.card}>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => Linking.openURL('https://richardgarza.github.io/oysterette/docs/privacy-policy.html')}
+          >
+            <Text style={styles.settingLabel}>Privacy Policy</Text>
+            <Text style={styles.settingValue}>→</Text>
+          </TouchableOpacity>
+          <View style={styles.separator} />
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => Linking.openURL('https://richardgarza.github.io/oysterette/docs/terms-of-service.html')}
+          >
+            <Text style={styles.settingLabel}>Terms of Service</Text>
+            <Text style={styles.settingValue}>→</Text>
+          </TouchableOpacity>
         </View>
       </View>
 

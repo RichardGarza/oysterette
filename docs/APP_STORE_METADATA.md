@@ -153,10 +153,10 @@ No ads. No subscriptions. Just pure oyster love. 🦪
 
 ---
 
-Have feedback or suggestions? Contact us at [YOUR SUPPORT EMAIL]
+Have feedback or suggestions? Contact us at support@oysterette.app
 
-Privacy Policy: [YOUR PRIVACY POLICY URL]
-Terms of Service: [YOUR TERMS URL]
+Privacy Policy: https://richardgarza.github.io/oysterette/docs/privacy-policy.html
+Terms of Service: https://richardgarza.github.io/oysterette/docs/terms-of-service.html
 ```
 
 **Character count:** ~3,950 / 4,000 ✅
@@ -274,31 +274,26 @@ Happy shucking! 🦪
 ## Support Information
 
 ### Support URL
-**[YOUR WEBSITE URL/support]**
+**https://richardgarza.github.io/oysterette/docs/**
 
-This should link to a page with:
-- FAQ
-- How to use the app
+This links to legal documentation page with:
+- Privacy Policy
+- Terms of Service
+- Data Safety Disclosure
 - Contact information
-- Privacy policy link
-- Terms of service link
 
 ### Marketing URL (Optional)
-**[YOUR WEBSITE URL]**
+**https://richardgarza.github.io/oysterette/**
 
-Main landing page for the app with:
-- Feature highlights
-- Screenshots
-- Download links
-- Press kit (optional)
+Landing page for legal documents (can be expanded later with marketing content).
 
 ### Privacy Policy URL (Required)
-**[YOUR PRIVACY POLICY URL]**
+**https://richardgarza.github.io/oysterette/docs/privacy-policy.html**
 
-Must be publicly accessible before submission.
+Publicly accessible and GDPR/CCPA compliant.
 
 ### Support Email
-**[YOUR SUPPORT EMAIL]**
+**support@oysterette.app**
 
 Monitored email for user support. Response time: 24-48 hours.
 

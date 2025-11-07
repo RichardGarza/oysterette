@@ -142,7 +142,7 @@ We implement industry-standard security measures:
 ### Data Deletion
 You have the right to request deletion of your data:
 1. **In-App:** Settings → Delete Account
-2. **Email Request:** Send request to [YOUR SUPPORT EMAIL]
+2. **Email Request:** Send request to support@oysterette.app
 
 Upon deletion request, we will:
 - Immediately deactivate your account
@@ -150,7 +150,7 @@ Upon deletion request, we will:
 - Optionally anonymize reviews to preserve community data
 
 ### Data Export
-Request a copy of your data by emailing [YOUR SUPPORT EMAIL]. We will provide:
+Request a copy of your data by emailing support@oysterette.app. We will provide:
 - Account information
 - All reviews and ratings
 - Favorites list
@@ -198,7 +198,7 @@ Under GDPR, you have additional rights including:
 - Right to data portability
 - Right to object to processing
 
-To exercise these rights, contact [YOUR SUPPORT EMAIL].
+To exercise these rights, contact support@oysterette.app.
 
 ---
 
@@ -217,9 +217,9 @@ Continued use of Oysterette after changes constitutes acceptance of the updated 
 
 If you have questions, concerns, or requests regarding this Privacy Policy:
 
-**Email:** [YOUR SUPPORT EMAIL]
-**Website:** [YOUR WEBSITE URL]
-**Address:** [YOUR BUSINESS ADDRESS]
+**Email:** support@oysterette.app
+**Website:** https://richardgarza.github.io/oysterette/docs/
+**Address:** c/o Richard Garza (business address to be updated)
 
 **Response Time:** We aim to respond within 48 hours for privacy-related inquiries.
 
@@ -273,4 +273,4 @@ We do not track users across third-party websites. The app does not respond to D
 
 **This Privacy Policy was last updated on November 7, 2025.**
 
-For the most current version, visit: [YOUR PRIVACY POLICY URL]
+For the most current version, visit: https://richardgarza.github.io/oysterette/docs/privacy-policy.html

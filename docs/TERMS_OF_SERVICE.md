@@ -250,7 +250,7 @@ Upon termination:
 
 ### 12.1 Governing Law
 
-These Terms are governed by the laws of [YOUR STATE], United States, without regard to conflict of law principles.
+These Terms are governed by the laws of California, United States, without regard to conflict of law principles.
 
 ### 12.2 Arbitration Agreement
 
@@ -271,7 +271,7 @@ The following disputes are NOT subject to arbitration:
 
 ### 12.5 Opt-Out
 
-You may opt out of arbitration within 30 days of accepting these Terms by emailing [YOUR SUPPORT EMAIL] with "Arbitration Opt-Out" in the subject line.
+You may opt out of arbitration within 30 days of accepting these Terms by emailing support@oysterette.app with "Arbitration Opt-Out" in the subject line.
 
 ---
 
@@ -303,7 +303,7 @@ These Terms do not create a partnership, employment, or agency relationship betw
 
 ### 13.7 Notice
 
-We may provide notices via email, in-app notification, or posting on our website. Notices to us should be sent to [YOUR SUPPORT EMAIL].
+We may provide notices via email, in-app notification, or posting on our website. Notices to us should be sent to support@oysterette.app.
 
 ---
 
@@ -311,12 +311,12 @@ We may provide notices via email, in-app notification, or posting on our website
 
 **For questions about these Terms:**
 
-**Email:** [YOUR SUPPORT EMAIL]
-**Website:** [YOUR WEBSITE URL]
-**Address:** [YOUR BUSINESS ADDRESS]
+**Email:** support@oysterette.app
+**Website:** https://richardgarza.github.io/oysterette/docs/
+**Address:** c/o Richard Garza (business address to be updated)
 
 **For legal inquiries or DMCA notices:**
-[YOUR LEGAL CONTACT]
+Richard Garza, support@oysterette.app
 
 ---
 
@@ -350,7 +350,7 @@ By using Oysterette, you acknowledge that:
 
 **Last Updated:** November 7, 2025
 
-For the most current version, visit: [YOUR TERMS OF SERVICE URL]
+For the most current version, visit: https://richardgarza.github.io/oysterette/docs/terms-of-service.html
 
 ---
 
