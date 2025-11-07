@@ -195,7 +195,13 @@ export interface User {
   showReviewHistory: boolean;
   showFavorites: boolean;
   showStatistics: boolean;
-  allowMessages: boolean;
+
+  // Baseline flavor profile (for recommendations)
+  baselineSize?: number | null;
+  baselineBody?: number | null;
+  baselineSweetBrininess?: number | null;
+  baselineFlavorfulness?: number | null;
+  baselineCreaminess?: number | null;
 
   createdAt: string;
   updatedAt: string;

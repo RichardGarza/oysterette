@@ -96,6 +96,7 @@ export type RootStackParamList = {
   TopOysters: undefined;
   Profile: undefined;
   PrivacySettings: undefined;
+  SetFlavorProfile: undefined;
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -105,6 +106,7 @@ export type HomeScreenNavigationProp = NativeStackNavigationProp<
   navigate(screen: 'TopOysters'): void;
   navigate(screen: 'OysterList'): void;
   navigate(screen: 'Login'): void;
+  navigate(screen: 'SetFlavorProfile'): void;
 };
 
 export type OysterListScreenNavigationProp = NativeStackNavigationProp<

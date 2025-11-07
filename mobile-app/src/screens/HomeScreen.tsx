@@ -38,13 +38,17 @@ import {
   ActivityIndicator,
   Image,
   Animated,
+  FlatList,
+  ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from '../navigation/types';
 import { useTheme } from '../context/ThemeContext';
 import { authStorage } from '../services/auth';
 import { favoritesStorage } from '../services/favorites';
-import { authApi } from '../services/api';
+import { recommendationApi } from '../services/api';
+import { Oyster } from '../types/Oyster';
+import RecommendedOysterCard from '../components/RecommendedOysterCard';
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -52,6 +56,8 @@ export default function HomeScreen() {
   const [checking, setChecking] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
+  const [recommendations, setRecommendations] = useState<Oyster[]>([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
 
   const styles = createStyles(theme.colors);
@@ -80,6 +86,8 @@ export default function HomeScreen() {
         favoritesStorage.syncWithBackend();
         setIsLoggedIn(true);
         setChecking(false);
+        // Load recommendations
+        loadRecommendations();
       } else {
         // No auth, show home screen
         setIsLoggedIn(false);
@@ -89,6 +97,19 @@ export default function HomeScreen() {
       console.error('Error checking auth:', error);
       setIsLoggedIn(false);
       setChecking(false);
+    }
+  };
+
+  const loadRecommendations = async () => {
+    try {
+      setLoadingRecommendations(true);
+      const recs = await recommendationApi.getRecommendations(5);
+      setRecommendations(recs);
+    } catch (error) {
+      console.error('Error loading recommendations:', error);
+      // Silent fail - recommendations are optional
+    } finally {
+      setLoadingRecommendations(false);
     }
   };
 
@@ -143,7 +164,7 @@ export default function HomeScreen() {
         </Animated.View>
       )}
 
-      <View style={styles.content}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <Image
           source={require('../../assets/logo.png')}
           style={styles.logo}
@@ -152,6 +173,50 @@ export default function HomeScreen() {
         <Text style={styles.subtitle}>
           Discover, review, and track your favorite oysters
         </Text>
+
+        {/* Recommendations Section - Only show if logged in */}
+        {isLoggedIn && (
+          <View style={styles.recommendationsSection}>
+            {loadingRecommendations ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+                <Text style={styles.loadingText}>Loading recommendations...</Text>
+              </View>
+            ) : recommendations.length === 0 ? (
+              // Empty State - No baseline profile set
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateTitle}>Get Personalized Recommendations!</Text>
+                <Text style={styles.emptyStateText}>
+                  You haven't set your flavor profile yet! Tell us your ideal oyster attributes to get personalized recommendations.
+                </Text>
+                <TouchableOpacity
+                  style={styles.setProfileButton}
+                  onPress={() => navigation.navigate('SetFlavorProfile')}
+                >
+                  <Text style={styles.setProfileButtonText}>Set Flavor Profile</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              // Show Recommendations
+              <View>
+                <Text style={styles.sectionTitle}>Recommended for You</Text>
+                <FlatList
+                  data={recommendations}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => (
+                    <RecommendedOysterCard
+                      oyster={item}
+                      onPress={() => navigation.navigate('OysterDetail', { oysterId: item.id })}
+                    />
+                  )}
+                  contentContainerStyle={styles.recommendationsList}
+                />
+              </View>
+            )}
+          </View>
+        )}
 
         <TouchableOpacity
           style={styles.button}
@@ -194,7 +259,7 @@ export default function HomeScreen() {
             favorite oysters.
           </Text>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -205,11 +270,12 @@ const createStyles = (colors: any) =>
       flex: 1,
       backgroundColor: colors.background,
     },
-    content: {
+    scrollView: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+    },
+    scrollContent: {
       padding: 20,
+      alignItems: 'center',
     },
     logo: {
       width: 192,
@@ -278,5 +344,60 @@ const createStyles = (colors: any) =>
       color: colors.textSecondary,
       textAlign: 'center',
       lineHeight: 24,
+    },
+    recommendationsSection: {
+      width: '100%',
+      marginBottom: 24,
+    },
+    loadingContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 20,
+    },
+    loadingText: {
+      marginLeft: 10,
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
+    emptyState: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 24,
+      alignItems: 'center',
+    },
+    emptyStateTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: 12,
+      textAlign: 'center',
+    },
+    emptyStateText: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+      marginBottom: 20,
+    },
+    setProfileButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 24,
+      paddingVertical: 12,
+      borderRadius: 20,
+    },
+    setProfileButtonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    sectionTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: 16,
+    },
+    recommendationsList: {
+      paddingRight: 12,
     },
   });

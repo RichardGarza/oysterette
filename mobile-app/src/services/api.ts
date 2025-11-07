@@ -469,6 +469,18 @@ export const userApi = {
     const response = await api.put<ApiResponse<any>>('/users/privacy', settings);
     return response.data.data;
   },
+
+  // Set baseline flavor profile
+  setFlavorProfile: async (profile: {
+    size: number;
+    body: number;
+    sweetBrininess: number;
+    flavorfulness: number;
+    creaminess: number;
+  }): Promise<{ message: string }> => {
+    const response = await api.put<ApiResponse<{ message: string }>>('/users/flavor-profile', profile);
+    return response.data.data!;
+  },
 };
 
 // Favorites API
