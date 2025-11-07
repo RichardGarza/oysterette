@@ -390,17 +390,28 @@
 - [ ] Certificate pinning (optional, future)
 - [ ] Biometric auth (future)
 
+**GitHub Pages Hosting (Completed Nov 7, 2025 Night):**
+- [x] Host Privacy Policy & Terms (GitHub Pages)
+- [x] HTML versions of all legal documents
+- [x] Mobile app integration (Settings → Legal)
+- [x] Update all documentation with live URLs
+- **Live Site:** https://richardgarza.github.io/oysterette/docs/
+
+**Compliance Status:**
+- **Apple App Store:** 95% (was 90%)
+- **Google Play Store:** 100% documentation-ready! 🎉
+
 **Next Steps (Actual Submission):**
-- [ ] Host Privacy Policy & Terms (GitHub Pages recommended)
-- [ ] Add Sign in with Apple (2-4 hours, CRITICAL)
+- [ ] Add Sign in with Apple (2-4 hours, CRITICAL for Apple)
 - [ ] Capture screenshots (1-2 hours)
 - [ ] Generate production builds via EAS
-- [ ] TestFlight beta testing (Apple)
+- [ ] TestFlight beta testing (Apple, optional)
 - [ ] Submit to App Store Connect (Apple)
 - [ ] Submit to Play Console (Google)
 
 **Total Documentation:** 8 comprehensive documents (3,325+ lines)
 **Files Location:** `docs/` directory + `DEPLOYMENT_PLAN.md`
+**Live Documentation:** https://richardgarza.github.io/oysterette/docs/
 
 ### Phase 13: Photo Upload System 📋
 
@@ -652,32 +663,61 @@ git push
 
 ---
 
-## 🎯 Tomorrow's Starting Point
+## 🎯 Next Session Starting Point
 
-**Resume at:** Phase 6.1 - Manual Testing & Bug Fixes
+**Resume at:** Phase 12 - App Store Submission Preparation
+
+**Session Goal:** Implement Sign in with Apple (CRITICAL blocker for Apple App Store)
 
 **First Tasks:**
+1. **Backend Setup (1-1.5 hours):**
+   - Install `apple-signin-auth` npm package
+   - Create `POST /api/auth/apple` endpoint
+   - Implement Apple ID token verification
+   - Add `appleId` field to User schema (Prisma migration)
+   - Test with mock/test Apple tokens
 
-1. Restart the mobile app to test scrolling fix (newArchEnabled=false)
-2. Thoroughly test the voting system:
-   - Navigate to an oyster with reviews
-   - Test all vote button functionality
-   - Verify vote persistence and counts
-   - Test credibility badges display
-3. Document any bugs found
-4. Fix critical issues before moving to Phase 6.2
+2. **Mobile Setup (1-1.5 hours):**
+   - Install `expo-apple-authentication` package
+   - Add Apple Sign-In button to LoginScreen
+   - Implement authentication flow
+   - Test on iOS device (requires physical device)
 
-**Backend Status:** ✅ Running and stable
-**Mobile App Status:** ⚠️ Needs scrolling verification
-**Database:** ✅ Schema up to date with voting system
+3. **Configuration (30 min):**
+   - Apple Developer Console configuration
+   - Enable Sign in with Apple capability
+   - Update app.json with Apple credentials
+
+**Why This Is Critical:**
+- Apple REQUIRES Sign in with Apple if offering other social logins
+- App will be REJECTED without it
+- After this: Only screenshots remain before submission!
+
+**Alternative (if Apple Developer account not ready):**
+- Skip to screenshot capture (1-2 hours)
+- Can add Sign in with Apple later before final submission
 
 ---
 
-**Last Session Summary:**
+**Current Status:**
+- **Backend:** ✅ Production-ready on Railway
+- **Database:** ✅ Neon PostgreSQL with 838 oysters
+- **Mobile App:** ✅ Version 1.1.0 with enhanced filters
+- **Legal Docs:** ✅ Hosted on GitHub Pages
+- **Compliance:** Apple 95%, Google 100% (documentation)
 
-- Completed Phase 5.3 backend and mobile voting system implementation
-- Fixed TypeScript compilation errors with @ts-ignore
-- Created ReviewCard component with full voting functionality
-- Integrated voting into OysterDetailScreen
-- Fixed scrolling issue by disabling React Native New Architecture
-- All changes committed (7 files changed, 350 insertions)
+**What's Left Before Submission:**
+1. Sign in with Apple (Apple requirement)
+2. Screenshots (both platforms)
+3. Production builds (EAS)
+4. Store submission forms
+
+---
+
+**Last Session Summary (Nov 7, 2025 Night):**
+- Set up GitHub Pages for legal document hosting
+- Created HTML versions of Privacy Policy, Terms, Data Safety
+- Added Legal section to mobile app Settings screen
+- Updated all documentation with live URLs
+- Compliance improved: Apple 90%→95%, Google 95%→100%
+- Total: 13 files modified, 2 commits pushed
