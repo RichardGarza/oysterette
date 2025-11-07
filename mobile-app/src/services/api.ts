@@ -395,8 +395,8 @@ export const userApi = {
   },
 
   // Update user profile
-  updateProfile: async (name?: string, email?: string): Promise<User | null> => {
-    const response = await api.put<ApiResponse<User>>('/users/profile', { name, email });
+  updateProfile: async (name?: string, email?: string, profilePhotoUrl?: string): Promise<User | null> => {
+    const response = await api.put<ApiResponse<User>>('/users/profile', { name, email, profilePhotoUrl });
     return response.data.data || null;
   },
 

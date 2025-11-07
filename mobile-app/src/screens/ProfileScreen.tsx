@@ -74,8 +74,10 @@ import {
   Modal,
   TextInput,
   Alert,
+  Image,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 import { authStorage } from '../services/auth';
 import { userApi, reviewApi } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
@@ -122,8 +124,24 @@ export default function ProfileScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
 
+  // Profile Photo Upload
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
   useEffect(() => {
     loadProfile();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Camera permission not granted');
+      }
+      const mediaStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (mediaStatus.status !== 'granted') {
+        console.log('Media library permission not granted');
+      }
+    })();
   }, []);
 
   useFocusEffect(
@@ -165,6 +183,115 @@ export default function ProfileScreen() {
         setLoading(false);
       }
     }
+  };
+
+  const pickImageFromCamera = async () => {
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        await uploadProfilePhoto(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image from camera:', error);
+      Alert.alert('Error', 'Failed to take photo. Please try again.');
+    }
+  };
+
+  const pickImageFromLibrary = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        await uploadProfilePhoto(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image from library:', error);
+      Alert.alert('Error', 'Failed to select photo. Please try again.');
+    }
+  };
+
+  const uploadProfilePhoto = async (uri: string) => {
+    try {
+      setUploadingPhoto(true);
+      const token = await authStorage.getToken();
+
+      if (!token) {
+        Alert.alert('Authentication Required', 'Please log in to upload a profile photo.');
+        return;
+      }
+
+      // Create form data
+      const formData = new FormData();
+      const filename = uri.split('/').pop() || 'photo.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+      formData.append('image', {
+        uri,
+        name: filename,
+        type,
+      } as any);
+
+      // Upload to backend
+      const response = await fetch('https://oysterette-production.up.railway.app/api/upload/image?folder=profiles', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.data.url) {
+        // Update profile with new photo URL
+        await userApi.updateProfile(profileData?.user.name, profileData?.user.email, data.data.url);
+
+        // Reload profile to show new photo
+        await loadProfile();
+
+        Alert.alert('Success', 'Profile photo updated successfully!');
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      console.error('Error uploading profile photo:', error);
+      Alert.alert('Upload Failed', 'Failed to upload profile photo. Please try again.');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const showPhotoOptions = () => {
+    Alert.alert(
+      'Change Profile Photo',
+      'Choose a photo source',
+      [
+        {
+          text: 'Take Photo',
+          onPress: pickImageFromCamera,
+        },
+        {
+          text: 'Choose from Library',
+          onPress: pickImageFromLibrary,
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ]
+    );
   };
 
   const handleEditProfile = async () => {
@@ -338,9 +465,30 @@ export default function ProfileScreen() {
       >
         {/* Profile Header */}
         <View style={styles.header}>
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{user.name.charAt(0).toUpperCase()}</Text>
-          </View>
+          <TouchableOpacity
+            style={styles.avatarContainer}
+            onPress={showPhotoOptions}
+            disabled={uploadingPhoto}
+          >
+            {user.profilePhotoUrl ? (
+              <Image
+                source={{ uri: user.profilePhotoUrl }}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <Text style={styles.avatarText}>{user.name.charAt(0).toUpperCase()}</Text>
+            )}
+            {uploadingPhoto && (
+              <View style={styles.avatarOverlay}>
+                <ActivityIndicator size="large" color="#fff" />
+              </View>
+            )}
+            {!uploadingPhoto && (
+              <View style={styles.cameraIconContainer}>
+                <Text style={styles.cameraIcon}>📷</Text>
+              </View>
+            )}
+          </TouchableOpacity>
           <Text style={styles.userName}>{user.name}</Text>
           <Text style={styles.userEmail}>{user.email}</Text>
           <Text style={styles.joinDate}>Member since {formatDate(stats.memberSince)}</Text>
@@ -650,6 +798,38 @@ const createStyles = (colors: any, isDark: boolean) =>
       fontSize: 36,
       fontWeight: 'bold',
       color: '#fff',
+    },
+    avatarImage: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+    },
+    avatarOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      borderRadius: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    cameraIconContainer: {
+      position: 'absolute',
+      bottom: 0,
+      right: 0,
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: colors.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: colors.card,
+    },
+    cameraIcon: {
+      fontSize: 14,
     },
     userName: {
       fontSize: 24,

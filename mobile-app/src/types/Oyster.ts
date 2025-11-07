@@ -181,6 +181,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  profilePhotoUrl?: string;
   preferences?: any; // JSON field
 
   // Reviewer credibility metrics

@@ -64,6 +64,7 @@ import {
   TextInput,
   Platform,
   ScrollView,
+  Image,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -341,6 +342,11 @@ export default function OysterListScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
+          <Image
+            source={require('../../assets/top-bar-logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <View style={styles.topRow}>
             <View style={styles.filterTabs}>
               <TouchableOpacity
@@ -393,6 +399,11 @@ export default function OysterListScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
+        <Image
+          source={require('../../assets/top-bar-logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <View style={styles.topRow}>
           <View style={styles.filterTabs}>
             <TouchableOpacity
@@ -583,6 +594,12 @@ const createStyles = (colors: any, isDark: boolean) =>
       padding: 20,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
+    },
+    logo: {
+      width: 150,
+      height: 40,
+      alignSelf: 'center',
+      marginBottom: 15,
     },
     topRow: {
       flexDirection: 'row',
