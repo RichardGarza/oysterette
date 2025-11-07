@@ -2,7 +2,7 @@
   "expo": {
     "name": "Oysterette",
     "slug": "oysterette",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -21,7 +21,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "buildNumber": "7"
+      "buildNumber": "8"
     },
     "android": {
       "package": "com.oysterette.app",
@@ -31,7 +31,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "versionCode": 7
+      "versionCode": 8
     },
     "web": {
       "favicon": "./assets/favicon.png"

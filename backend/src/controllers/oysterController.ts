@@ -17,57 +17,105 @@ import Fuse from 'fuse.js';
 /**
  * Get all oysters with optional filtering and sorting
  *
- * Supports dynamic filtering by species and origin, with multiple sort options
- * for flexible oyster discovery and browsing.
+ * Supports attribute-based filtering and bidirectional sorting for flexible
+ * oyster discovery and browsing.
  *
  * @route GET /api/oysters
- * @param req.query.species - Filter by oyster species (e.g., "Crassostrea gigas")
- * @param req.query.origin - Filter by oyster origin (e.g., "Washington")
  * @param req.query.sortBy - Sort by: rating | name | size | sweetness | creaminess | flavorfulness | body
+ * @param req.query.sortDirection - Sort direction: asc | desc (default: desc for attributes, asc for name)
+ * @param req.query.sweetness - Filter by sweetness: low (<4) | high (>6)
+ * @param req.query.size - Filter by size: low (<4) | high (>6)
+ * @param req.query.body - Filter by body: low (<4) | high (>6)
+ * @param req.query.flavorfulness - Filter by flavorfulness: low (<4) | high (>6)
+ * @param req.query.creaminess - Filter by creaminess: low (<4) | high (>6)
  * @returns 200 - Array of oysters with review counts
  * @returns 500 - Server error
  *
  * @example
- * GET /api/oysters?species=Crassostrea+gigas&sortBy=rating
- * GET /api/oysters?origin=Washington&sortBy=size
+ * GET /api/oysters?sweetness=low&sortBy=rating&sortDirection=desc
+ * GET /api/oysters?size=high&body=high&sortBy=name&sortDirection=asc
  */
 export const getAllOysters = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { species, origin, sortBy } = req.query;
+    const { sortBy, sortDirection, sweetness, size, body, flavorfulness, creaminess } = req.query;
 
-    // Build where clause for filtering
+    // Build where clause for attribute filtering
     const where: any = {};
-    if (species && typeof species === 'string') {
-      where.species = species;
+
+    // Sweetness filter (<4 is sweet/low, >6 is briny/high)
+    if (sweetness && typeof sweetness === 'string') {
+      if (sweetness === 'low') {
+        where.avgSweetBrininess = { lt: 4 };
+      } else if (sweetness === 'high') {
+        where.avgSweetBrininess = { gt: 6 };
+      }
     }
-    if (origin && typeof origin === 'string') {
-      where.origin = origin;
+
+    // Size filter
+    if (size && typeof size === 'string') {
+      if (size === 'low') {
+        where.avgSize = { lt: 4 };
+      } else if (size === 'high') {
+        where.avgSize = { gt: 6 };
+      }
     }
+
+    // Body filter
+    if (body && typeof body === 'string') {
+      if (body === 'low') {
+        where.avgBody = { lt: 4 };
+      } else if (body === 'high') {
+        where.avgBody = { gt: 6 };
+      }
+    }
+
+    // Flavorfulness filter
+    if (flavorfulness && typeof flavorfulness === 'string') {
+      if (flavorfulness === 'low') {
+        where.avgFlavorfulness = { lt: 4 };
+      } else if (flavorfulness === 'high') {
+        where.avgFlavorfulness = { gt: 6 };
+      }
+    }
+
+    // Creaminess filter
+    if (creaminess && typeof creaminess === 'string') {
+      if (creaminess === 'low') {
+        where.avgCreaminess = { lt: 4 };
+      } else if (creaminess === 'high') {
+        where.avgCreaminess = { gt: 6 };
+      }
+    }
+
+    // Determine sort direction (default based on sort type)
+    const direction = sortDirection === 'asc' || sortDirection === 'desc'
+      ? sortDirection
+      : (sortBy === 'name' ? 'asc' : 'desc');
 
     // Determine order by clause
     let orderBy: any = { name: 'asc' }; // Default sort
     if (sortBy && typeof sortBy === 'string') {
       switch (sortBy) {
         case 'rating':
-          orderBy = { avgRating: 'desc' };
+          orderBy = { avgRating: direction };
           break;
         case 'name':
-          orderBy = { name: 'asc' };
+          orderBy = { name: direction };
           break;
         case 'size':
-          orderBy = { avgSize: 'desc' };
+          orderBy = { avgSize: direction };
           break;
         case 'sweetness':
-          orderBy = { avgSweetBrininess: 'desc' };
+          orderBy = { avgSweetBrininess: direction };
           break;
         case 'creaminess':
-          orderBy = { avgCreaminess: 'desc' };
+          orderBy = { avgCreaminess: direction };
           break;
         case 'flavorfulness':
-          orderBy = { avgFlavorfulness: 'desc' };
+          orderBy = { avgFlavorfulness: direction };
           break;
         case 'body':
-          orderBy = { avgBody: 'desc' };
+          orderBy = { avgBody: direction };
           break;
         default:
           orderBy = { name: 'asc' };
@@ -297,51 +345,6 @@ export const deleteOyster = async (req: Request, res: Response): Promise<void> =
     });
   } catch (error) {
     logger.error('Delete oyster error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Server Error',
-    });
-  }
-};
-
-/**
- * Get unique species and origins for filter UI
- *
- * Returns sorted arrays of unique species and origin values to populate
- * filter chips/dropdowns in the mobile app and web interface.
- *
- * @route GET /api/oysters/filters
- * @returns 200 - Object with species and origins arrays
- * @returns 500 - Server error
- *
- * @example
- * Response: {
- *   species: ["Crassostrea gigas", "Crassostrea virginica", ...],
- *   origins: ["California", "Washington", "Maine", ...]
- * }
- */
-export const getFilterOptions = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const oysters = await prisma.oyster.findMany({
-      select: {
-        species: true,
-        origin: true,
-      },
-    });
-
-    // Extract unique values
-    const species = [...new Set(oysters.map(o => o.species).filter(Boolean))].sort();
-    const origins = [...new Set(oysters.map(o => o.origin).filter(Boolean))].sort();
-
-    res.status(200).json({
-      success: true,
-      data: {
-        species,
-        origins,
-      },
-    });
-  } catch (error) {
-    logger.error('Get filter options error:', error);
     res.status(500).json({
       success: false,
       error: 'Server Error',

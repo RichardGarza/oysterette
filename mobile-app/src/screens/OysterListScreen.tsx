@@ -5,20 +5,25 @@
  *
  * Features:
  * - Real-time fuzzy search with backend integration
- * - Advanced filtering (species, origin, sort options)
- * - Expandable/collapsible filter section with chip selectors
+ * - Advanced attribute-based filtering with binary choices
+ * - Bidirectional sorting with visual indicators
+ * - Expandable/collapsible filter section
  * - All/Favorites view toggle
  * - Pull-to-refresh functionality
  * - Haptic feedback on favorite toggle
  * - Skeleton loading states
  * - Empty states for different scenarios (no favorites, no search results, etc.)
- * - FAB (Floating Action Button) to add new oysters
  * - Theme-aware styling (light/dark mode)
  *
  * Filters:
  * - Sort By: name, rating, size, sweetness, creaminess, flavorfulness, body
- * - Species: 7 available species + "All Species" option
- * - Origin: 74 unique origins + "All Origins" option
+ * - Sort Direction: asc/desc with visual arrow indicators (↑/↓)
+ * - Attribute Filters (binary low/high):
+ *   - Sweetness: Sweet (<4) vs Briny (>6)
+ *   - Size: Small (<4) vs Big (>6)
+ *   - Body: Thin (<4) vs Fat (>6)
+ *   - Flavorfulness: Mild (<4) vs Bold (>6)
+ *   - Creaminess: No Cream (<4) vs All the Cream (>6)
  * - Active filter count badge on filter button
  * - Clear All Filters button (appears when filters active)
  *
@@ -26,11 +31,12 @@
  * - oysters: Full list from backend (filtered by API params)
  * - favorites: Local set of favorited oyster IDs
  * - showFavoritesOnly: Client-side filter for favorites view
- * - selectedSpecies/selectedOrigin/selectedSortBy: Active filter values
+ * - selectedSortBy/sortDirection: Active sort values
+ * - sweetness/size/body/flavorfulness/creaminess: Attribute filter values
  * - showFilters: Toggle for expandable filter section
  *
  * Flow:
- * 1. Loads oysters and filter options on mount
+ * 1. Loads oysters on mount
  * 2. Re-fetches oysters when filters change (useEffect)
  * 3. Checks auth status on screen focus
  * 4. Syncs favorites with local storage
@@ -84,18 +90,19 @@ export default function OysterListScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Filter states
-  const [selectedSpecies, setSelectedSpecies] = useState<string>('');
-  const [selectedOrigin, setSelectedOrigin] = useState<string>('');
   const [selectedSortBy, setSelectedSortBy] = useState<string>('name');
-  const [availableSpecies, setAvailableSpecies] = useState<string[]>([]);
-  const [availableOrigins, setAvailableOrigins] = useState<string[]>([]);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sweetness, setSweetness] = useState<'low' | 'high' | ''>('');
+  const [size, setSize] = useState<'low' | 'high' | ''>('');
+  const [body, setBody] = useState<'low' | 'high' | ''>('');
+  const [flavorfulness, setFlavorfulness] = useState<'low' | 'high' | ''>('');
+  const [creaminess, setCreaminess] = useState<'low' | 'high' | ''>('');
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchOysters();
     loadFavorites();
     checkAuth();
-    fetchFilterOptions();
   }, []);
 
   useEffect(() => {
@@ -103,7 +110,7 @@ export default function OysterListScreen() {
     if (!loading) {
       fetchOysters();
     }
-  }, [selectedSpecies, selectedOrigin, selectedSortBy]);
+  }, [selectedSortBy, sortDirection, sweetness, size, body, flavorfulness, creaminess]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -121,16 +128,6 @@ export default function OysterListScreen() {
     setFavorites(new Set(favs));
   };
 
-  const fetchFilterOptions = async () => {
-    try {
-      const options = await oysterApi.getFilterOptions();
-      setAvailableSpecies(options.species);
-      setAvailableOrigins(options.origins);
-    } catch (err) {
-      console.error('Failed to load filter options:', err);
-    }
-  };
-
   const fetchOysters = async (isRefreshing = false) => {
     try {
       if (isRefreshing) {
@@ -142,9 +139,13 @@ export default function OysterListScreen() {
 
       // Build filter params
       const params: any = {};
-      if (selectedSpecies) params.species = selectedSpecies;
-      if (selectedOrigin) params.origin = selectedOrigin;
       if (selectedSortBy) params.sortBy = selectedSortBy;
+      if (sortDirection) params.sortDirection = sortDirection;
+      if (sweetness) params.sweetness = sweetness;
+      if (size) params.size = size;
+      if (body) params.body = body;
+      if (flavorfulness) params.flavorfulness = flavorfulness;
+      if (creaminess) params.creaminess = creaminess;
 
       const data = await oysterApi.getAll(params);
       setOysters(data);
@@ -206,16 +207,33 @@ export default function OysterListScreen() {
 
   const getActiveFilterCount = () => {
     let count = 0;
-    if (selectedSpecies) count++;
-    if (selectedOrigin) count++;
-    if (selectedSortBy && selectedSortBy !== 'name') count++;
+    if (sweetness) count++;
+    if (size) count++;
+    if (body) count++;
+    if (flavorfulness) count++;
+    if (creaminess) count++;
     return count;
   };
 
   const clearAllFilters = () => {
-    setSelectedSpecies('');
-    setSelectedOrigin('');
+    setSweetness('');
+    setSize('');
+    setBody('');
+    setFlavorfulness('');
+    setCreaminess('');
     setSelectedSortBy('name');
+    setSortDirection('asc');
+  };
+
+  const handleSortByClick = (sortValue: string) => {
+    if (selectedSortBy === sortValue) {
+      // Toggle direction if clicking same sort option
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      // New sort option - set default direction
+      setSelectedSortBy(sortValue);
+      setSortDirection(sortValue === 'name' ? 'asc' : 'desc');
+    }
   };
 
   const sortOptions = [
@@ -226,6 +244,14 @@ export default function OysterListScreen() {
     { value: 'creaminess', label: 'Creaminess' },
     { value: 'flavorfulness', label: 'Flavor' },
     { value: 'body', label: 'Body' },
+  ];
+
+  const attributeFilters = [
+    { key: 'sweetness', state: sweetness, setState: setSweetness, low: 'Sweet', high: 'Briny' },
+    { key: 'size', state: size, setState: setSize, low: 'Small', high: 'Big' },
+    { key: 'body', state: body, setState: setBody, low: 'Thin', high: 'Fat' },
+    { key: 'flavorfulness', state: flavorfulness, setState: setFlavorfulness, low: 'Mild', high: 'Bold' },
+    { key: 'creaminess', state: creaminess, setState: setCreaminess, low: 'No Cream', high: 'All the Cream' },
   ];
 
   const styles = createStyles(theme.colors, isDark);
@@ -413,7 +439,7 @@ export default function OysterListScreen() {
                     styles.filterChip,
                     selectedSortBy === option.value && styles.filterChipActive,
                   ]}
-                  onPress={() => setSelectedSortBy(option.value)}
+                  onPress={() => handleSortByClick(option.value)}
                 >
                   <Text
                     style={[
@@ -422,96 +448,54 @@ export default function OysterListScreen() {
                     ]}
                   >
                     {option.label}
+                    {selectedSortBy === option.value && (
+                      <Text style={styles.sortArrow}> {sortDirection === 'asc' ? '↑' : '↓'}</Text>
+                    )}
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
 
-            {availableSpecies.length > 0 && (
-              <>
-                <Text style={styles.filterSectionTitle}>Species</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScrollView}>
+            {attributeFilters.map((filter) => (
+              <View key={filter.key}>
+                <View style={styles.attributeFilterRow}>
                   <TouchableOpacity
                     style={[
-                      styles.filterChip,
-                      !selectedSpecies && styles.filterChipActive,
+                      styles.attributeFilterButton,
+                      styles.attributeFilterButtonLeft,
+                      filter.state === 'low' && styles.attributeFilterButtonActive,
                     ]}
-                    onPress={() => setSelectedSpecies('')}
+                    onPress={() => filter.setState(filter.state === 'low' ? '' : 'low')}
                   >
                     <Text
                       style={[
-                        styles.filterChipText,
-                        !selectedSpecies && styles.filterChipTextActive,
+                        styles.attributeFilterText,
+                        filter.state === 'low' && styles.attributeFilterTextActive,
                       ]}
                     >
-                      All Species
+                      {filter.low}
                     </Text>
                   </TouchableOpacity>
-                  {availableSpecies.map((species) => (
-                    <TouchableOpacity
-                      key={species}
-                      style={[
-                        styles.filterChip,
-                        selectedSpecies === species && styles.filterChipActive,
-                      ]}
-                      onPress={() => setSelectedSpecies(species)}
-                    >
-                      <Text
-                        style={[
-                          styles.filterChipText,
-                          selectedSpecies === species && styles.filterChipTextActive,
-                        ]}
-                      >
-                        {species}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </>
-            )}
-
-            {availableOrigins.length > 0 && (
-              <>
-                <Text style={styles.filterSectionTitle}>Origin</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScrollView}>
                   <TouchableOpacity
                     style={[
-                      styles.filterChip,
-                      !selectedOrigin && styles.filterChipActive,
+                      styles.attributeFilterButton,
+                      styles.attributeFilterButtonRight,
+                      filter.state === 'high' && styles.attributeFilterButtonActive,
                     ]}
-                    onPress={() => setSelectedOrigin('')}
+                    onPress={() => filter.setState(filter.state === 'high' ? '' : 'high')}
                   >
                     <Text
                       style={[
-                        styles.filterChipText,
-                        !selectedOrigin && styles.filterChipTextActive,
+                        styles.attributeFilterText,
+                        filter.state === 'high' && styles.attributeFilterTextActive,
                       ]}
                     >
-                      All Origins
+                      {filter.high}
                     </Text>
                   </TouchableOpacity>
-                  {availableOrigins.map((origin) => (
-                    <TouchableOpacity
-                      key={origin}
-                      style={[
-                        styles.filterChip,
-                        selectedOrigin === origin && styles.filterChipActive,
-                      ]}
-                      onPress={() => setSelectedOrigin(origin)}
-                    >
-                      <Text
-                        style={[
-                          styles.filterChipText,
-                          selectedOrigin === origin && styles.filterChipTextActive,
-                        ]}
-                      >
-                        {origin}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </>
-            )}
+                </View>
+              </View>
+            ))}
 
             {getActiveFilterCount() > 0 && (
               <TouchableOpacity style={styles.clearFiltersButton} onPress={clearAllFilters}>
@@ -704,6 +688,46 @@ const createStyles = (colors: any, isDark: boolean) =>
     clearFiltersText: {
       color: colors.error,
       fontSize: 14,
+      fontWeight: '600',
+    },
+    sortArrow: {
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    attributeFilterRow: {
+      flexDirection: 'row',
+      marginBottom: 12,
+      gap: 8,
+    },
+    attributeFilterButton: {
+      flex: 1,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      backgroundColor: colors.inputBackground,
+      borderWidth: 2,
+      borderColor: 'transparent',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    attributeFilterButtonLeft: {
+      borderTopLeftRadius: 8,
+      borderBottomLeftRadius: 8,
+    },
+    attributeFilterButtonRight: {
+      borderTopRightRadius: 8,
+      borderBottomRightRadius: 8,
+    },
+    attributeFilterButtonActive: {
+      backgroundColor: isDark ? '#3a5a7a' : '#e8f4f8',
+      borderColor: colors.primary,
+    },
+    attributeFilterText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    attributeFilterTextActive: {
+      color: colors.primary,
       fontWeight: '600',
     },
   searchInput: {
