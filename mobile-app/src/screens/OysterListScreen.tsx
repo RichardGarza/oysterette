@@ -1,3 +1,51 @@
+/**
+ * OysterListScreen
+ *
+ * Main oyster browsing screen with comprehensive filtering and search capabilities.
+ *
+ * Features:
+ * - Real-time fuzzy search with backend integration
+ * - Advanced filtering (species, origin, sort options)
+ * - Expandable/collapsible filter section with chip selectors
+ * - All/Favorites view toggle
+ * - Pull-to-refresh functionality
+ * - Haptic feedback on favorite toggle
+ * - Skeleton loading states
+ * - Empty states for different scenarios (no favorites, no search results, etc.)
+ * - FAB (Floating Action Button) to add new oysters
+ * - Theme-aware styling (light/dark mode)
+ *
+ * Filters:
+ * - Sort By: name, rating, size, sweetness, creaminess, flavorfulness, body
+ * - Species: 7 available species + "All Species" option
+ * - Origin: 74 unique origins + "All Origins" option
+ * - Active filter count badge on filter button
+ * - Clear All Filters button (appears when filters active)
+ *
+ * State Management:
+ * - oysters: Full list from backend (filtered by API params)
+ * - favorites: Local set of favorited oyster IDs
+ * - showFavoritesOnly: Client-side filter for favorites view
+ * - selectedSpecies/selectedOrigin/selectedSortBy: Active filter values
+ * - showFilters: Toggle for expandable filter section
+ *
+ * Flow:
+ * 1. Loads oysters and filter options on mount
+ * 2. Re-fetches oysters when filters change (useEffect)
+ * 3. Checks auth status on screen focus
+ * 4. Syncs favorites with local storage
+ * 5. Client-side filtering for favorites view
+ *
+ * Card Display:
+ * - Oyster name with favorite heart icon
+ * - Species badge (if not "Unknown")
+ * - Origin (if not "Unknown")
+ * - RatingDisplay component with overall score
+ * - Standout notes preview (2 lines max)
+ * - 5 attribute scores (Size, Body, Sweet/Briny, Flavor, Creamy)
+ * - Review count
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   View,

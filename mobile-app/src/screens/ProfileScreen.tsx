@@ -1,3 +1,65 @@
+/**
+ * ProfileScreen
+ *
+ * Comprehensive user profile display with stats, insights, and account management.
+ *
+ * Features:
+ * - User profile header with avatar (first letter of name)
+ * - Profile stats grid (Reviews, Favorites, Badge, Votes, Avg Rating, Streak)
+ * - Badge system with visual indicators (Novice 🌟, Trusted ⭐, Expert 🏆)
+ * - User taste insights (most reviewed species/origin)
+ * - Recent review history (5 most recent)
+ * - Edit profile modal (name, email)
+ * - Change password modal with validation
+ * - Pull-to-refresh functionality
+ * - Auto-load on focus (syncs after changes in other screens)
+ * - Theme-aware styling
+ *
+ * Profile Stats:
+ * - totalReviews: Count of user's reviews
+ * - totalFavorites: Count of favorited oysters
+ * - totalVotesGiven: Count of votes user has cast
+ * - totalVotesReceived: Votes received on user's reviews
+ * - avgRatingGiven: Average rating (1-4 scale mapped from WHATEVER to LOVE_IT)
+ * - credibilityScore: Reputation score based on voting patterns
+ * - badgeLevel: Novice (0-0.9), Trusted (1.0-1.4), Expert (1.5+)
+ * - reviewStreak: Days with consecutive reviews
+ * - mostReviewedSpecies: User's favorite oyster species
+ * - mostReviewedOrigin: User's favorite oyster origin
+ *
+ * Badge Colors:
+ * - Expert: Gold (#FFD700)
+ * - Trusted: Silver (#C0C0C0)
+ * - Novice: Bronze (#CD7F32)
+ *
+ * Edit Profile:
+ * - Modal with name/email inputs
+ * - Validates name not empty
+ * - Updates backend and local storage
+ * - Shows success confirmation
+ *
+ * Change Password:
+ * - Modal with current/new/confirm password inputs
+ * - Validates all fields filled
+ * - Validates passwords match
+ * - Validates new password meets requirements (8+ chars, uppercase, lowercase, number)
+ * - Updates backend and clears form
+ *
+ * Review History:
+ * - Shows 5 most recent reviews
+ * - Displays oyster name, rating (formatted), notes (2 lines)
+ * - Shows date and vote counts (agree/disagree)
+ * - Tappable cards navigate to oyster detail
+ * - Empty state if no reviews yet
+ *
+ * Flow:
+ * 1. Checks auth on mount
+ * 2. Loads profile data from userApi.getProfile()
+ * 3. Loads review history from userApi.getMyReviews()
+ * 4. Re-loads on screen focus (useFocusEffect)
+ * 5. Pull-to-refresh updates all data
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   View,

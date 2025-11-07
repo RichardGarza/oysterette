@@ -1,3 +1,68 @@
+/**
+ * AddReviewScreen
+ *
+ * Review creation and update form with 5 attribute sliders and rating selection.
+ *
+ * Features:
+ * - Overall rating selection (Love It, Like It, Meh, Whatever) with color-coded buttons
+ * - 5 attribute sliders with dynamic word labels:
+ *   - Size (Tiny → Huge)
+ *   - Body (Thin → Fat)
+ *   - Sweet/Brininess (Sweet → Salty)
+ *   - Flavorfulness (Boring → Bold)
+ *   - Creaminess (None → Creamy)
+ * - Descriptive labels above sliders (e.g., "Huge", "Baddy McFatty") from getAttributeDescriptor()
+ * - Optional tasting notes text area
+ * - Login prompt modal (if not authenticated)
+ * - KeyboardAvoidingView for iOS keyboard handling
+ * - Update mode support (pre-fills existing review data)
+ * - Theme-aware styling
+ *
+ * Modes:
+ * - Create: New review for oyster (requires auth)
+ * - Update: Edit existing review (existingReview param provided)
+ *
+ * Rating Options:
+ * - LOVE_IT: ❤️ (Red #e74c3c)
+ * - LIKE_IT: 👍 (Green #27ae60)
+ * - MEH: 😐 (Orange #f39c12)
+ * - WHATEVER: 🤷 (Gray #95a5a6)
+ *
+ * Sliders:
+ * - Range: 1-10 (integer steps)
+ * - Height: 50px for larger touch target
+ * - Dynamic word label shown above slider (18px bold)
+ * - Min/max labels below header (e.g., "Tiny" / "Huge")
+ * - Primary color track/thumb
+ *
+ * Validation:
+ * - Overall rating required (shows alert if missing)
+ * - Attribute ratings optional (defaults to 5)
+ * - Notes optional (max 1000 chars enforced by backend)
+ *
+ * Auth Flow:
+ * - Checks token on submit
+ * - If no token: Shows custom modal with X button
+ * - Modal offers Sign Up or Log In buttons
+ * - Redirects to appropriate auth screen
+ *
+ * Submit Flow:
+ * 1. Validates overall rating selected
+ * 2. Checks auth token
+ * 3. Calls reviewApi.create() or reviewApi.update()
+ * 4. Shows success alert
+ * 5. Navigates back to detail screen
+ * 6. Detail screen refreshes to show new/updated review
+ *
+ * State:
+ * - rating: Overall ReviewRating enum value
+ * - size, body, sweetBrininess, flavorfulness, creaminess: 1-10 integers
+ * - notes: Optional string
+ * - submitting: Boolean for loading state
+ * - showLoginPrompt: Modal visibility toggle
+ * - isUpdateMode: Determined by existingReview param presence
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   View,

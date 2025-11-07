@@ -1,3 +1,33 @@
+/**
+ * HomeScreen
+ *
+ * App entry point and landing screen with authentication check.
+ *
+ * Features:
+ * - Animated logo display with dual-logo transition (900ms fade)
+ * - Automatic authentication check on mount and focus
+ * - Auto-login via stored JWT token
+ * - Theme loading from user preferences
+ * - Favorites sync after successful login
+ * - Dynamic button text based on auth state
+ * - Loading screen with larger logo (384px)
+ * - Back navigation disabled (prevents going back to loading)
+ *
+ * Flow:
+ * 1. Shows loading screen with logo
+ * 2. Checks for stored auth token
+ * 3. Auto-logs in if valid token exists
+ * 4. Loads user theme preferences
+ * 5. Syncs favorites from server
+ * 6. Shows "Browse Oysters" or "All Oysters" button based on auth
+ *
+ * State:
+ * - checking: Initial auth check in progress
+ * - isLoggedIn: User authentication status
+ * - showLoading: Transition loading state
+ * - fadeAnim: Animated value for logo transitions
+ */
+
 import React, { useEffect, useState } from 'react';
 import {
   View,

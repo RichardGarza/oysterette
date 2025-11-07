@@ -1,3 +1,55 @@
+/**
+ * API Service
+ *
+ * Centralized HTTP client for all backend API communication.
+ *
+ * Features:
+ * - Axios instance with automatic JWT token injection
+ * - Environment-aware URL configuration (production/development)
+ * - Request/response interceptors for auth and error handling
+ * - Organized API namespaces: auth, oyster, review, vote, user, favorite
+ * - 10-second timeout for all requests
+ * - Auto-retry disabled (manual retry in UI)
+ * - Extensive console logging for debugging
+ *
+ * API URL Configuration:
+ * - Production (default): https://oysterette-production.up.railway.app/api
+ * - iOS Simulator: http://localhost:3000/api
+ * - Android Emulator: http://10.0.2.2:3000/api
+ * - Physical Device: http://192.168.0.120:3000/api
+ *
+ * Request Interceptor:
+ * - Loads JWT token from authStorage
+ * - Creates Authorization header if token exists
+ * - Critical fix: Ensures headers object exists before setting
+ * - Logs token presence and request details
+ *
+ * Response Interceptor:
+ * - Handles 401 Unauthorized responses
+ * - Auto-clears auth storage on 401
+ * - Forces user to re-login
+ * - Prevents stale token issues
+ *
+ * API Namespaces:
+ * 1. authApi: register, login, googleAuth
+ * 2. oysterApi: getAll, getById, create, update (admin)
+ * 3. reviewApi: getAll, create, update, delete, checkExisting
+ * 4. voteApi: vote, removeVote, getUserVotes, getUserCredibility
+ * 5. userApi: getProfile, getMyReviews, updateProfile, changePassword, deleteAccount, updatePrivacySettings
+ * 6. favoriteApi: getAll, add, remove, sync
+ *
+ * Error Handling:
+ * - All errors thrown with response data
+ * - UI screens parse error.response.data.error
+ * - Network errors (no response) shown as generic failures
+ * - Validation errors include field-specific details
+ *
+ * Used By:
+ * - All screens that interact with backend
+ * - authStorage for auto-login
+ * - favoritesStorage for sync
+ */
+
 import axios, { AxiosInstance, AxiosHeaders } from 'axios';
 import { Platform } from 'react-native';
 import {

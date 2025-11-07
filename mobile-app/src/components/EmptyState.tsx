@@ -1,3 +1,68 @@
+/**
+ * EmptyState Component
+ *
+ * Reusable empty state display with optional action button.
+ *
+ * Features:
+ * - Large emoji icon (64px)
+ * - Title and optional description
+ * - Optional call-to-action button
+ * - Theme-aware styling
+ * - Centered layout with padding
+ *
+ * Props:
+ * - icon?: string (default: '🔍') - Emoji to display
+ * - title: string - Main message
+ * - description?: string - Optional longer explanation
+ * - actionLabel?: string - Button text (if provided)
+ * - onAction?: () => void - Button callback (if provided)
+ *
+ * Usage Examples:
+ *
+ * 1. No Favorites:
+ *    <EmptyState
+ *      icon="❤️"
+ *      title="No Favorites Yet"
+ *      description="You haven't added any oysters to your favorites..."
+ *      actionLabel="View All Oysters"
+ *      onAction={() => setShowFavoritesOnly(false)}
+ *    />
+ *
+ * 2. No Search Results:
+ *    <EmptyState
+ *      icon="🔎"
+ *      title="No Oysters Found"
+ *      description={`No results for "${searchQuery}". Try a different search...`}
+ *      actionLabel="Clear Search"
+ *      onAction={() => handleSearch('')}
+ *    />
+ *
+ * 3. No Reviews:
+ *    <EmptyState
+ *      icon="📝"
+ *      title="No Reviews Yet"
+ *      description="Be the first to share your tasting experience..."
+ *    />
+ *
+ * Layout:
+ * - Centered vertically and horizontally
+ * - Icon at top
+ * - Title below icon (bold, 20px)
+ * - Description below title (16px, secondary color)
+ * - Action button at bottom (if provided)
+ *
+ * Button Styling:
+ * - Primary color background
+ * - White text
+ * - Rounded (20px border radius)
+ * - Padding: 24px horizontal, 12px vertical
+ *
+ * Used In:
+ * - OysterListScreen (no favorites, no search results)
+ * - OysterDetailScreen (no reviews)
+ * - ProfileScreen (no reviews yet)
+ */
+
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../context/ThemeContext';

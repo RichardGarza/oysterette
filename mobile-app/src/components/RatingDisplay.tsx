@@ -1,3 +1,62 @@
+/**
+ * RatingDisplay Component
+ *
+ * Reusable rating visualization component with multiple display modes.
+ *
+ * Features:
+ * - Three size variants: small, medium, large
+ * - Small mode: 5-star display with review count
+ * - Medium/Large mode: Emoji + verdict word + score + review count
+ * - Converts 0-10 backend score to 0-5 star display
+ * - Handles zero reviews gracefully
+ * - Uses utility functions from ratingUtils.ts
+ *
+ * Props:
+ * - overallScore: 0-10 score from backend (40% rating + 60% attributes)
+ * - totalReviews: Number of reviews for this oyster
+ * - size?: 'small' | 'medium' | 'large' (default: 'medium')
+ * - showDetails?: boolean (default: true) - Show review count
+ *
+ * Display Modes:
+ * 1. Small (List View):
+ *    - 5 stars (full/half/empty)
+ *    - Review count in parentheses (e.g., "(23)")
+ *    - Star sizes: 14px
+ * 2. Medium (Detail View):
+ *    - Emoji (24px) + Verdict word + Score/10
+ *    - Review count (e.g., "(23 reviews)")
+ *    - Font size: 18px
+ * 3. Large:
+ *    - Same as medium but larger
+ *    - Emoji: 32px, Font: 22px
+ *
+ * Star Conversion:
+ * - Backend score: 0-10
+ * - Display score: 0-5 stars (score / 2)
+ * - Half star: If decimal ≥ 0.5
+ * - Examples:
+ *   - 8.6 → 4.3 stars → ★★★★½
+ *   - 7.2 → 3.6 stars → ★★★☆
+ *
+ * Verdict Mapping (from ratingUtils):
+ * - 9-10: 🏆 "Outstanding"
+ * - 8-8.9: ⭐ "Excellent"
+ * - 7-7.9: 😊 "Very Good"
+ * - 6-6.9: 👍 "Good"
+ * - 5-5.9: 🆗 "Decent"
+ * - 4-4.9: 😐 "Mediocre"
+ * - 0-3.9: 👎 "Poor"
+ *
+ * Zero Reviews:
+ * - Shows "No reviews yet" instead of score
+ * - Styled as italic, secondary color
+ *
+ * Used In:
+ * - OysterListScreen cards (small mode)
+ * - OysterDetailScreen header (medium mode)
+ * - TopOystersScreen cards (small mode)
+ */
+
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { scoreToVerdict, scoreToStars } from '../utils/ratingUtils';

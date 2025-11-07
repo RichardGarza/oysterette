@@ -1,3 +1,53 @@
+/**
+ * EditReviewScreen
+ *
+ * Standalone review edit screen (accessed via ReviewCard edit action).
+ *
+ * Features:
+ * - Pre-fills all form fields with existing review data
+ * - Same UI as AddReviewScreen (rating buttons + 5 sliders + notes)
+ * - Updates existing review via reviewApi.update()
+ * - No duplicate detection (already editing existing review)
+ * - Shows success alert after update
+ * - Navigates back to detail screen
+ * - Static styling (not theme-aware)
+ *
+ * Form Fields:
+ * - Overall rating: LOVE_IT, LIKE_IT, MEH, WHATEVER (pre-selected)
+ * - Size slider: 1-10 (pre-filled)
+ * - Body slider: 1-10 (pre-filled)
+ * - Sweet/Brininess slider: 1-10 (pre-filled)
+ * - Flavorfulness slider: 1-10 (pre-filled)
+ * - Creaminess slider: 1-10 (pre-filled)
+ * - Notes textarea: Optional (pre-filled)
+ *
+ * Update Flow:
+ * 1. Receives review object from route params
+ * 2. Pre-populates all state with review data
+ * 3. User modifies fields
+ * 4. Validates overall rating selected
+ * 5. Calls reviewApi.update(reviewId, updatedData)
+ * 6. Shows success alert
+ * 7. Navigates back (goes to OysterDetailScreen)
+ * 8. OysterDetailScreen re-fetches data automatically
+ *
+ * Differences from AddReviewScreen:
+ * - No theme support (uses static colors)
+ * - No login prompt modal (assumes authenticated)
+ * - No existingReview/isUpdateMode logic (always update mode)
+ * - Button text: "Update Review" (not conditional)
+ * - No dynamic word labels above sliders (missing getAttributeDescriptor)
+ * - Smaller slider height (40px vs 50px)
+ *
+ * State:
+ * - rating, size, body, sweetBrininess, flavorfulness, creaminess, notes: Pre-filled from review object
+ * - submitting: Boolean for loading state
+ *
+ * Navigation:
+ * - Passed review object from ProfileScreen or OysterDetailScreen
+ * - Uses navigation.goBack() after successful update
+ */
+
 import React, { useState } from 'react';
 import {
   View,

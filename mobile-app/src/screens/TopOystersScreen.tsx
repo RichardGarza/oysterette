@@ -1,3 +1,69 @@
+/**
+ * TopOystersScreen
+ *
+ * Leaderboard display of highest-rated oysters by the community.
+ *
+ * Features:
+ * - Top 50 oysters sorted by overallScore (descending)
+ * - Rank badges (#1, #2, #3, etc.)
+ * - Filters out oysters with zero reviews
+ * - Pull-to-refresh functionality
+ * - Skeleton loading states
+ * - RatingDisplay component for scores
+ * - Tappable cards navigate to detail view
+ * - Static styling (not theme-aware)
+ * - Accessible via "🏆 Top Oysters" button on HomeScreen
+ *
+ * Ranking Algorithm:
+ * 1. Fetches all oysters from backend
+ * 2. Filters to only oysters with totalReviews > 0
+ * 3. Sorts by overallScore (highest first)
+ * 4. Takes top 50 results
+ * 5. Displays with rank badges (#1-#50)
+ *
+ * Card Layout:
+ * - Circular rank badge (50x50px) with blue background
+ * - Oyster name (bold)
+ * - Species badge (if not "Unknown")
+ * - Origin text
+ * - RatingDisplay component (small size)
+ * - Standout notes preview (2 lines max)
+ *
+ * Loading States:
+ * - Initial load: Shows 5 skeleton cards
+ * - Pull-to-refresh: Shows native refresh spinner
+ * - No "No oysters" state (always has reviewed oysters)
+ *
+ * Error Handling:
+ * - Shows error banner with retry button
+ * - Error message: "Failed to load top oysters"
+ * - Retry button re-fetches data
+ *
+ * Refresh Flow:
+ * 1. User pulls down on list
+ * 2. Sets refreshing state to true
+ * 3. Re-fetches all oysters
+ * 4. Re-sorts and updates state
+ * 5. Sets refreshing to false
+ *
+ * Navigation:
+ * - Card tap: Navigates to OysterDetail with oysterId
+ * - Same navigation as OysterListScreen cards
+ * - Back button returns to HomeScreen
+ *
+ * Performance:
+ * - Fetches all oysters (838 total)
+ * - Client-side filtering and sorting
+ * - Could be optimized with backend endpoint
+ * - FlatList handles efficient rendering
+ *
+ * State:
+ * - oysters: Top 50 oysters array
+ * - loading: Initial fetch in progress
+ * - refreshing: Pull-to-refresh in progress
+ * - error: Error message string or null
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   View,

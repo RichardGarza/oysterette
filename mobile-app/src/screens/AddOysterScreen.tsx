@@ -1,3 +1,72 @@
+/**
+ * AddOysterScreen
+ *
+ * Community oyster database contribution form with minimal required fields.
+ *
+ * Features:
+ * - Lightweight form requiring only name and attribute profile
+ * - Species and origin optional (defaults to "Unknown")
+ * - 5 attribute sliders with scale indicators
+ * - Validation for name and attribute ranges
+ * - KeyboardAvoidingView for iOS keyboard handling
+ * - Cancel and submit buttons
+ * - Static styling (not theme-aware)
+ * - Accessible via FAB on OysterListScreen
+ *
+ * Form Fields:
+ * - Name: Required text input
+ * - Species: Optional (defaults to "Unknown" if blank)
+ * - Origin: Optional (defaults to "Unknown" if blank)
+ * - Standout Notes: Optional multiline text area
+ * - Size slider: 1-10 (default 5)
+ * - Body slider: 1-10 (default 5)
+ * - Sweet/Brininess slider: 1-10 (default 5)
+ * - Flavorfulness slider: 1-10 (default 5)
+ * - Creaminess slider: 1-10 (default 5)
+ *
+ * Validation:
+ * - Name: Must not be empty (trimmed)
+ * - All attributes: Must be integers between 1-10
+ * - Shows alert for validation failures
+ *
+ * Submit Flow:
+ * 1. Validates form (name required, attributes 1-10)
+ * 2. Trims all text inputs
+ * 3. Converts empty species/origin to "Unknown"
+ * 4. Converts attribute strings to integers
+ * 5. Calls oysterApi.create() with oyster data
+ * 6. Shows success alert
+ * 7. Navigates back to OysterList
+ *
+ * Design Philosophy:
+ * - Encourages community contributions with minimal friction
+ * - Species and origin can be crowd-sourced later
+ * - Attribute profile required to enable recommendations
+ * - Standout notes optional for initial data entry
+ *
+ * Slider Component:
+ * - Custom renderSlider function for consistency
+ * - Shows value (e.g., "5/10") next to label
+ * - Description text below label (e.g., "1 = Tiny → 10 = Huge")
+ * - Scale indicators below slider (1, 5, 10)
+ * - Integer steps only
+ *
+ * Error Handling:
+ * - Validation errors: Shows specific field and requirement
+ * - API errors: Shows backend error message or generic failure
+ * - Loading state: Disables buttons and shows spinner
+ *
+ * Navigation:
+ * - Cancel button: Calls navigation.goBack()
+ * - Success: Alert with OK button navigates to OysterList
+ * - Usually accessed from FAB (+ button) on OysterListScreen
+ *
+ * State:
+ * - formData: Object with all form fields (strings for text, numbers for sliders)
+ * - loading: Boolean for submit in progress
+ * - updateField: Helper function to update formData immutably
+ */
+
 import React, { useState } from 'react';
 import {
   View,

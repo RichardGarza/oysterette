@@ -1,3 +1,53 @@
+/**
+ * OysterDetailScreen
+ *
+ * Comprehensive oyster detail view with reviews, voting, and attribute visualizations.
+ *
+ * Features:
+ * - Full oyster information (name, species, origin, standout notes)
+ * - Visual attribute bars with descriptive labels
+ * - Favorite toggle with haptic feedback
+ * - RatingDisplay with overall community score
+ * - Review list with filtering and sorting
+ * - Review voting (agree/disagree) with credibility tracking
+ * - Duplicate review detection (prompts to update existing review)
+ * - Pull-to-refresh functionality
+ * - Theme-aware styling (light/dark mode)
+ * - "Unknown" hints for incomplete data (encourages user contributions)
+ *
+ * Review Filtering:
+ * - Rating filter chips: All, Love, Like, Meh, Whatever
+ * - Sort tabs: Most Helpful (netVoteScore), Most Recent, Highest Rating, Lowest Rating
+ * - Real-time filtering and sorting
+ *
+ * Attribute Bars:
+ * - 5 visual progress bars (Size, Body, Sweet/Brininess, Flavorfulness, Creaminess)
+ * - Dynamic word labels from getAttributeDescriptor() (e.g., "Huge", "Baddy McFatty")
+ * - Primary color fill (non-judgmental, descriptive only)
+ * - Shows value out of 10
+ *
+ * Review Flow:
+ * 1. User taps "Write Review" button
+ * 2. Checks for existing review via reviewApi.checkExisting()
+ * 3. If exists: Alert with "Update Existing Review?" prompt
+ * 4. If not: Navigate to AddReview screen normally
+ * 5. After review created/updated: Refresh oyster data
+ *
+ * Voting:
+ * - Fetches user votes for all reviews on mount
+ * - ReviewCard handles voting UI and API calls
+ * - Refreshes data after vote change to show updated scores
+ * - Voting affects review credibility and "Most Helpful" sort
+ *
+ * State:
+ * - oyster: Full oyster details with nested reviews
+ * - userVotes: Record of user's votes by reviewId
+ * - sortBy: 'helpful' | 'recent' | 'highest' | 'lowest'
+ * - ratingFilter: 'ALL' | 'LOVE_IT' | 'LIKE_IT' | 'MEH' | 'WHATEVER'
+ * - isFavorite: Boolean for heart icon state
+ * - currentUserId: For showing edit/delete on user's own reviews
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   View,

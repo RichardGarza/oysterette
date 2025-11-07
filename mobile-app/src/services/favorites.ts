@@ -1,3 +1,80 @@
+/**
+ * Favorites Storage Service
+ *
+ * Local favorites management with backend synchronization.
+ *
+ * Features:
+ * - Stores favorite oyster IDs locally (AsyncStorage)
+ * - Works offline (immediate local updates)
+ * - Syncs with backend when logged in
+ * - Merges local and server favorites on login
+ * - Cross-device favorites synchronization
+ * - Graceful fallback if sync fails
+ *
+ * Storage Key:
+ * - @oysterette_favorites: JSON array of oyster UUID strings
+ *
+ * Core Functions:
+ * - getFavorites: Returns array of oyster IDs
+ * - addFavorite: Adds ID to local list
+ * - removeFavorite: Removes ID from local list
+ * - toggleFavorite: Adds or removes, syncs with backend if logged in
+ * - isFavorite: Checks if oyster is in favorites
+ * - clearFavorites: Removes all favorites
+ *
+ * Synchronization:
+ * - syncWithBackend: Two-way sync (called on login/register)
+ *   1. Sends local favorites to backend via POST /api/favorites/sync
+ *   2. Backend calculates diff and merges
+ *   3. Receives merged list from backend
+ *   4. Updates local storage with merged list
+ * - loadFromBackend: Fetches and merges (alternative to sync)
+ *   1. Gets backend favorites via GET /api/favorites
+ *   2. Merges with local favorites (union)
+ *   3. Saves merged list locally
+ *   4. Syncs merged list back if new ones added
+ *
+ * Toggle Flow (with sync):
+ * 1. Updates local storage immediately (optimistic)
+ * 2. Checks if user is logged in (authStorage.getToken())
+ * 3. If logged in: Calls favoritesApi.addFavorite() or removeFavorite()
+ * 4. If sync fails: Logs error but keeps local change
+ * 5. Returns new favorite state (boolean)
+ * 6. Triggers haptic feedback in UI
+ *
+ * Offline Support:
+ * - All operations work without network
+ * - Local changes persist in AsyncStorage
+ * - Sync happens automatically on next login
+ * - No data loss from offline favoriting
+ *
+ * Cross-Device Sync:
+ * - Device A: Favorites stored locally and synced to backend
+ * - Device B: Login triggers syncWithBackend()
+ * - Device B: Receives Device A's favorites
+ * - Device B: Merges with local favorites
+ * - Backend: Now has favorites from both devices
+ *
+ * Error Handling:
+ * - Sync errors logged but not thrown
+ * - Local storage errors return empty array
+ * - Backend sync failures don't break app
+ * - "Not logged in" silently skips sync
+ *
+ * Logging:
+ * - 📥 Syncing X local favorites with backend
+ * - 📤 Received X favorites from backend
+ * - ✅ Favorites synced successfully
+ * - ❌ Errors with details
+ *
+ * Used By:
+ * - OysterListScreen: Displays favorite hearts
+ * - OysterDetailScreen: Toggles favorite status
+ * - HomeScreen: Calls syncWithBackend on app start
+ * - LoginScreen: Calls syncWithBackend after successful login
+ * - RegisterScreen: Calls syncWithBackend after registration
+ */
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { favoritesApi } from './api';
 import { authStorage } from './auth';

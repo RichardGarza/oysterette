@@ -1,3 +1,73 @@
+/**
+ * ReviewCard Component
+ *
+ * Interactive review display with voting, editing, and credibility system.
+ *
+ * Features:
+ * - Overall rating display (LOVE_IT, LIKE_IT, MEH, WHATEVER)
+ * - Optional tasting notes text
+ * - Agree/Disagree voting buttons with counts
+ * - Credibility badge for reviewer (Novice, Trusted, Expert)
+ * - Edit/Delete buttons for own reviews
+ * - Haptic feedback on interactions
+ * - Loading states for vote and delete actions
+ * - Theme-aware styling
+ * - Date display (formatted)
+ *
+ * Props:
+ * - review: Review object with all data
+ * - userVote: true (agree) | false (disagree) | null (no vote)
+ * - onVoteChange: Callback to refresh parent after vote change
+ * - currentUserId?: Current logged-in user's ID
+ * - onEdit?: Callback to navigate to edit screen
+ * - onDelete?: Callback after successful deletion
+ *
+ * Voting System:
+ * - Agree button (👍): Green when active
+ * - Disagree button (👎): Red when active
+ * - Shows current vote counts (agreeCount, disagreeCount)
+ * - Clicking same button removes vote
+ * - Clicking opposite button changes vote
+ * - Haptic feedback on tap
+ * - API calls: voteApi.vote() and voteApi.removeVote()
+ * - Optimistic UI: Updates local state before server confirmation
+ *
+ * Credibility Badge:
+ * - Fetched from voteApi.getUserCredibility(userId)
+ * - Only shown if level !== 'Standard'
+ * - Colored background with matching text
+ * - Examples:
+ *   - 🌟 Novice (Bronze)
+ *   - ⭐ Trusted (Silver)
+ *   - 🏆 Expert (Gold)
+ *
+ * Edit/Delete Actions (Own Reviews Only):
+ * - Edit button: Calls onEdit callback with review object
+ * - Delete button: Shows confirmation alert
+ * - Delete flow:
+ *   1. Shows "Are you sure?" alert
+ *   2. Calls reviewApi.delete(reviewId)
+ *   3. Shows success haptic feedback
+ *   4. Calls onDelete callback
+ * - Loading spinner shown during delete
+ *
+ * Layout:
+ * - Header: Rating + Credibility badge | Date + Actions
+ * - Notes: Optional multiline text
+ * - Footer: Vote buttons (bordered, separated)
+ *
+ * State:
+ * - currentVote: Local copy of userVote prop
+ * - voting: Boolean for vote in progress
+ * - deleting: Boolean for delete in progress
+ * - credibilityBadge: Fetched badge data (level, color, icon)
+ *
+ * Theme Support:
+ * - Uses dynamic theme colors from ThemeContext
+ * - Vote button active states adapt to theme
+ * - Border and background colors theme-aware
+ */
+
 import React, { useState } from 'react';
 import {
   View,

@@ -1,3 +1,74 @@
+/**
+ * LoginScreen
+ *
+ * Authentication screen supporting email/password and Google OAuth sign-in.
+ *
+ * Features:
+ * - Email/password login form with validation
+ * - Native Google Sign-In integration (Android)
+ * - Auto-redirect if already logged in
+ * - Favorites sync after successful login
+ * - Theme preference loading from user account
+ * - KeyboardAvoidingView for iOS keyboard handling
+ * - "Continue as Guest" option
+ * - Link to Register screen
+ * - Theme-aware styling
+ *
+ * Login Flow (Email/Password):
+ * 1. Validates email and password not empty
+ * 2. Calls authApi.login() with credentials
+ * 3. Saves JWT token and user data to storage
+ * 4. Loads user's theme preference (light/dark/system)
+ * 5. Syncs favorites with backend
+ * 6. Resets navigation stack to OysterList
+ *
+ * Google Sign-In Flow:
+ * 1. Configures GoogleSignin with web client ID
+ * 2. Checks Google Play Services availability
+ * 3. Initiates native Google Sign-In UI
+ * 4. Extracts ID token from sign-in result
+ * 5. Sends ID token to backend for verification
+ * 6. Backend verifies token with Google API
+ * 7. Saves JWT token and user data to storage
+ * 8. Loads theme and syncs favorites
+ * 9. Resets navigation stack to OysterList
+ *
+ * Google Sign-In Configuration:
+ * - Web Client ID: 578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com
+ * - Used for backend verification (not OAuth redirect)
+ * - Native SDK handles Android authentication
+ * - offlineAccess: false (no refresh token needed)
+ *
+ * Error Handling:
+ * - Email/password: Shows "Invalid email or password" alert
+ * - Google: Handles specific status codes:
+ *   - SIGN_IN_CANCELLED: Silent (user cancelled)
+ *   - IN_PROGRESS: Alert "Sign-In In Progress"
+ *   - PLAY_SERVICES_NOT_AVAILABLE: Alert to install/update Play Services
+ *   - Other: Alert with backend error message
+ *
+ * Auto-Redirect:
+ * - useEffect checks for existing token on mount
+ * - If token exists, resets navigation to OysterList
+ * - Prevents showing login form to already-authenticated users
+ *
+ * Guest Mode:
+ * - "Continue as Guest" button navigates to OysterList
+ * - User can browse oysters without account
+ * - Cannot submit reviews or save favorites until logging in
+ *
+ * Navigation:
+ * - Uses CommonActions.reset() to clear navigation history
+ * - Prevents back button from returning to login after auth
+ * - Register link navigates to RegisterScreen
+ *
+ * State:
+ * - email, password: Form input values
+ * - loading: Email/password login in progress
+ * - googleLoading: Google Sign-In in progress
+ * - Both disabled during either loading state
+ */
+
 import React, { useState } from 'react';
 import {
   View,

@@ -1,3 +1,81 @@
+/**
+ * RegisterScreen
+ *
+ * User registration screen with email/password and Google OAuth options.
+ *
+ * Features:
+ * - Email/password registration form with comprehensive validation
+ * - Native Google Sign-In integration (Android)
+ * - Auto-redirect if already logged in
+ * - Favorites sync after successful registration
+ * - Theme preference loading from new account
+ * - KeyboardAvoidingView for iOS keyboard handling
+ * - ScrollView for long forms
+ * - Link to Login screen for existing users
+ * - Theme-aware styling
+ *
+ * Registration Flow (Email/Password):
+ * 1. Validates form fields:
+ *    - Name not empty
+ *    - Email valid format (regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/)
+ *    - Password min 8 chars
+ *    - Password contains uppercase letter
+ *    - Password contains lowercase letter
+ *    - Password contains number
+ *    - Passwords match (password === confirmPassword)
+ * 2. Calls authApi.register() with credentials
+ * 3. Saves JWT token and user data to storage
+ * 4. Loads user's theme preference (light/dark/system)
+ * 5. Syncs favorites with backend
+ * 6. Shows success alert
+ * 7. Resets navigation stack to OysterList
+ *
+ * Google Sign-In Flow:
+ * 1. Configures GoogleSignin with web client ID
+ * 2. Checks Google Play Services availability
+ * 3. Initiates native Google Sign-In UI
+ * 4. Extracts ID token from sign-in result
+ * 5. Sends ID token to backend for verification
+ * 6. Backend verifies token with Google API and creates/finds user
+ * 7. Saves JWT token and user data to storage
+ * 8. Loads theme and syncs favorites
+ * 9. Resets navigation stack to OysterList
+ *
+ * Password Requirements (enforced by backend, validated in frontend):
+ * - Minimum 8 characters
+ * - At least 1 uppercase letter (A-Z)
+ * - At least 1 lowercase letter (a-z)
+ * - At least 1 number (0-9)
+ *
+ * Validation Alerts:
+ * - Shows specific error message for each validation failure
+ * - Examples: "Password Too Short", "Password Missing Uppercase", etc.
+ * - Backend validation errors parsed from Zod and displayed
+ * - Handles duplicate email errors gracefully
+ *
+ * Error Handling:
+ * - Backend validation errors: Parses Zod details array and formats as bullets
+ * - Backend error message: Shows specific error (e.g., "Email already exists")
+ * - Generic errors: Shows status code and suggests checking connection
+ * - Google Sign-In: Same error handling as LoginScreen
+ *
+ * Auto-Redirect:
+ * - useEffect checks for existing token on mount
+ * - If token exists, resets navigation to OysterList
+ * - Prevents duplicate registration for authenticated users
+ *
+ * Navigation:
+ * - Uses CommonActions.reset() to clear navigation history
+ * - Prevents back button from returning to register after signup
+ * - Login link navigates to LoginScreen
+ *
+ * State:
+ * - name, email, password, confirmPassword: Form input values
+ * - loading: Email/password registration in progress
+ * - googleLoading: Google Sign-In in progress
+ * - Both disabled during either loading state
+ */
+
 import React, { useState } from 'react';
 import {
   View,

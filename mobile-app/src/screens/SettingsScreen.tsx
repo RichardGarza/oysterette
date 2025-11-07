@@ -1,3 +1,54 @@
+/**
+ * SettingsScreen
+ *
+ * App-wide settings and configuration hub accessible from global navigation gear icon.
+ *
+ * Features:
+ * - Profile quick view (name, email) with "View Full Profile" link
+ * - Auth buttons for non-logged-in users (Log In / Sign Up)
+ * - Theme switcher (Light / Dark / System) with live preview
+ * - Share app functionality (native share sheet)
+ * - App version display
+ * - Logout button (logged-in users only)
+ * - Delete account button (logged-in users only, placeholder)
+ * - Theme-aware styling
+ * - Redirects to auth after logout
+ *
+ * Profile Section:
+ * - Shows user name and email if logged in
+ * - Shows "User Not Logged In" if not authenticated
+ * - Auth buttons (Log In, Sign Up) for unauthenticated users
+ * - "View Full Profile" button navigates to ProfileScreen
+ *
+ * Theme Switcher:
+ * - Three options: Light, Dark, System
+ * - System mode follows device appearance settings
+ * - Shows current effective theme (e.g., "System (Dark)")
+ * - Live updates UI when theme changes
+ * - Persists preference to backend for logged-in users
+ *
+ * Share Functionality:
+ * - Uses native Share API
+ * - Message: "Check out Oysterette - The ultimate oyster discovery app! 🦪"
+ * - Works on both iOS and Android
+ *
+ * Account Actions:
+ * - Logout: Confirmation alert, clears auth, navigates to Home
+ * - Delete Account: Currently placeholder (shows "coming soon" message)
+ * - 48px spacing between logout and delete to prevent accidental clicks
+ *
+ * Auth State:
+ * - Loads user data from authStorage on mount
+ * - Updates isLoggedIn flag for conditional rendering
+ * - Shows loading spinner during initial load
+ *
+ * Layout:
+ * - Grouped sections with cards (Profile, Appearance, Share, About, Account Actions)
+ * - Section titles in uppercase with letterSpacing
+ * - Platform-specific shadows (iOS shadowOffset, Android elevation)
+ * - Footer text: "Made with ❤️ for oyster lovers"
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   View,

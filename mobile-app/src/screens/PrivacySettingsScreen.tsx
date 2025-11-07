@@ -1,3 +1,72 @@
+/**
+ * PrivacySettingsScreen
+ *
+ * User privacy and profile visibility configuration screen.
+ *
+ * Features:
+ * - Profile visibility level (Public, Friends Only, Private)
+ * - Display preferences for profile sections (toggles)
+ * - Saves settings to backend and local storage
+ * - Theme-aware styling
+ * - Loading state while fetching current settings
+ * - Success alert with auto-redirect after save
+ *
+ * Profile Visibility Levels:
+ * - Public: Anyone can view profile (default)
+ * - Friends Only: Coming soon (UI only, not implemented)
+ * - Private: Only user can view their own profile
+ *
+ * Display Preferences:
+ * - Show Review History: Display reviews on profile (default: true)
+ * - Show Favorites: Display favorite oysters on profile (default: true)
+ * - Show Statistics: Display stats and badge on profile (default: true)
+ *
+ * Privacy Notice:
+ * - Reviews and ratings always visible for community ratings integrity
+ * - Privacy settings only affect profile page display
+ * - Shown as info box above save button
+ *
+ * Settings Flow:
+ * 1. Loads current user from authStorage on mount
+ * 2. Pre-populates form with user's existing privacy settings
+ * 3. User modifies settings via radio buttons and switches
+ * 4. User taps "Save Privacy Settings" button
+ * 5. Calls userApi.updatePrivacySettings() with new values
+ * 6. Updates local authStorage with new user data
+ * 7. Shows success alert
+ * 8. Navigates back to ProfileScreen
+ *
+ * Radio Button Group (Profile Visibility):
+ * - Visual radio indicators with primary color
+ * - Selected option has colored border and background tint
+ * - Each option has title and description
+ * - Platform-specific shadows
+ *
+ * Switch Toggles (Display Preferences):
+ * - Native Switch component with theme colors
+ * - Each has title and description
+ * - Enclosed in styled cards
+ * - Platform-specific styling (iOS vs Android thumb colors)
+ *
+ * State:
+ * - profileVisibility: 'public' | 'friends' | 'private'
+ * - showReviewHistory: boolean
+ * - showFavorites: boolean
+ * - showStatistics: boolean
+ * - loading: Initial data fetch in progress
+ * - saving: Save operation in progress
+ *
+ * Error Handling:
+ * - Loading errors: Shows alert and stays on screen
+ * - Save errors: Shows backend error message in alert
+ * - No user found: Navigates back immediately
+ *
+ * Backend Integration:
+ * - Loads from user object in authStorage
+ * - Saves via userApi.updatePrivacySettings()
+ * - Updates local storage for offline consistency
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
