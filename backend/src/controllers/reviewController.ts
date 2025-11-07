@@ -193,7 +193,7 @@ export const checkExistingReview = async (req: Request, res: Response): Promise<
       where: {
         userId_oysterId: {
           userId: req.userId,
-          oysterId,
+          oysterId: oysterId!,
         },
       },
       include: {
