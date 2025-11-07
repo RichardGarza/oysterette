@@ -14,30 +14,38 @@
 
 ## ⚠️ MEMORY MANAGEMENT - CRITICAL
 
-**PROBLEM:** Previous sessions crashed with 90+ GB memory due to context accumulation.
+**PROBLEM:** Claude Code stores ALL bash output in memory. Previous sessions crashed with 90+ GB memory.
 
-### Critical Rules:
-1. **File Reading:** Only read when necessary, use `limit`/`offset` for large files, max 3 parallel reads
-2. **Background Processes:**
-   - 🚨 **NEVER run tests in background** - Always synchronous with `timeout: 120000`
-   - 🚨 **NEVER poll BashOutput** without `filter` parameter
-   - Kill processes immediately with KillShell when done
-3. **Output Truncation:** Pipe tests through `tail -30`, builds through `grep -i "error|warning"`
-4. **Avoid Redundancy:** Run git status once per session max, reference previous findings
-5. **Session Length:** <30 msgs optimal, 50+ high risk, 70+ critical
+### 🚨 MANDATORY: USE THESE EXACT COMMANDS 🚨
 
-**Memory-Safe Commands:**
+**NEVER run these raw commands:**
+❌ `npm test` - WILL CRASH WITH 90GB+ MEMORY
+❌ `npm run build` - WILL CRASH WITH 90GB+ MEMORY
+❌ `npm install` - Use with `--silent`
+❌ Running ANY test/build in background
+
+**ALWAYS use these safe versions:**
 ```bash
-# Tests: synchronous with timeout
-npm test 2>&1 | tail -30  # timeout: 120000
+# ✅ TESTS - ALWAYS WITH TRUNCATION (timeout: 120000)
+npm test 2>&1 | tail -30
 
-# Builds: errors only
+# ✅ BUILDS - ERRORS ONLY
 npm run build 2>&1 | grep -i "error\|warning" || echo "✅ Build successful"
 
-# Git: short format, once per session
+# ✅ INSTALLS - SILENT MODE
+npm install --silent
+
+# ✅ GIT - SHORT FORMAT (once per session max)
 git status --short
 git diff --stat
 ```
+
+### Critical Rules:
+1. **Output Truncation:** MANDATORY for all npm commands - no exceptions
+2. **Background Processes:** NEVER run tests/builds in background
+3. **File Reading:** Use `limit`/`offset` for large files
+4. **Session Length:** <30 msgs optimal, 50+ high risk, 70+ critical
+5. **If memory hits 90GB:** Only fix is restarting Claude Code
 
 ---
 
@@ -45,16 +53,20 @@ git diff --stat
 
 **CRITICAL: All new features require tests before commit.**
 
+**Test Command - ONLY USE THIS VERSION:**
+```bash
+npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
+```
+❌ **NEVER** use `npm test` without truncation - WILL CRASH WITH 90GB+ MEMORY
+
 **Test Before Committing:**
-- Backend: `npm test 2>&1 | tail -30` (all must pass)
+- Backend: All 162 tests must pass
 - Write tests FIRST for new endpoints/services
 - Test happy path, edge cases, error handling
 
 **Test Locations:**
 - Backend unit: `backend/src/__tests__/unit/`
 - Backend integration: `backend/src/__tests__/integration/`
-
-**Current Status:** 162/162 tests passing ✅
 
 🚨 **DO NOT COMMIT WITHOUT PASSING TESTS** 🚨
 
