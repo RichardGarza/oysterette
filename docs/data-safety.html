@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Safety Disclosure - Oysterette</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 60px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        h2 {
+            color: #764ba2;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #667eea;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #e9ecef;
+            margin: 40px 0;
+        }
+
+        .meta {
+            color: #999;
+            font-size: 0.9em;
+            margin-bottom: 40px;
+        }
+
+        .footer {
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        code {
+            font-family: "Monaco", "Courier New", monospace;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            h2 {
+                font-size: 1.5em;
+            }
+
+            h3 {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Legal Documents</a>
+        <h1>Google Play Data Safety Disclosure</h1><p><strong>For: Oysterette Mobile App</strong>
+<strong>Last Updated:</strong> November 7, 2025</p><hr></p><h2>Purpose</h2><p>This document provides the exact answers to fill in the Google Play Console Data Safety form. Copy these responses directly into the form when submitting the app.</p><p>Google Play requires detailed disclosure of:
+<li>What data is collected</li>
+<li>How data is used</li>
+<li>Whether data is shared with third parties</li>
+<li>Security practices</li></ul><hr></p><h2>Data Safety Form Responses</h2><h3>Section 1: Does your app collect or share any of the required user data types?</h3><p><strong>Answer:</strong> YES</p><hr></p><h3>Section 2: Is all of the user data collected by your app encrypted in transit?</h3><p><strong>Answer:</strong> YES</p><p><strong>Explanation:</strong> All data transmission uses HTTPS/TLS encryption.</p><hr></p><h3>Section 3: Do you provide a way for users to request that their data is deleted?</h3><p><strong>Answer:</strong> YES</p><p><strong>Explanation:</strong> Users can delete their account and all associated data through Settings → Delete Account. Additionally, users can email support to request data deletion.</p><hr></p><h2>Data Types Collected</h2><h3>Personal Info</h3><p>#### Email Address
+<li><strong>Collected:</strong> YES</li>
+<li><strong>Required/Optional:</strong> Required</li>
+<li><strong>Ephemeral:</strong> NO</li>
+<li><strong>Purpose:</strong></li>
+<li style="margin-left: 20px;">Account management</li>
+<li style="margin-left: 20px;">App functionality</li>
+<li><strong>Shared:</strong> NO</li></ul><p>#### Name
+<li><strong>Collected:</strong> YES</li>
+<li><strong>Required/Optional:</strong> Required</li>
+<li><strong>Ephemeral:</strong> NO</li>
+<li><strong>Purpose:</strong></li>
+<li style="margin-left: 20px;">Account management</li>
+<li style="margin-left: 20px;">App functionality (displayed with reviews)</li>
+<li><strong>Shared:</strong> NO</li></ul><p>#### User IDs
+<li><strong>Collected:</strong> YES</li>
+<li><strong>Required/Optional:</strong> Required</li>
+<li><strong>Ephemeral:</strong> NO</li>
+<li><strong>Purpose:</strong></li>
+<li style="margin-left: 20px;">Account management</li>
+<li style="margin-left: 20px;">App functionality</li>
+<li><strong>Shared:</strong> NO</li>
+<strong>Note:</strong> Internal UUID for identifying users, not publicly visible.</p><hr></p><h3>App Activity</h3><p>#### App Interactions
+<li><strong>Collected:</strong> YES</li>
+<li><strong>Required/Optional:</strong> Optional</li>
+<li><strong>Ephemeral:</strong> NO</li>
+<li><strong>Purpose:</strong></li>
+<li style="margin-left: 20px;">App functionality (reviews, ratings, votes)</li>
+<li style="margin-left: 20px;">Analytics</li>
+<li><strong>Shared:</strong> NO</li></ul><p><strong>Details:</strong>
+<li>Oyster reviews and ratings</li>
+<li>Favorite oysters list</li>
+<li>Review votes (agree/disagree)</li>
+<li>Oyster submissions</li></ul><p>#### In-app Search History
+<li><strong>Collected:</strong> NO</li>
+<li><strong>Explanation:</strong> Search queries are not stored; they're used ephemerally for filtering.</li></ul><hr></p><h3>App Info and Performance</h3><p>#### Crash Logs
+<li><strong>Collected:</strong> YES</li>
+<li><strong>Required/Optional:</strong> Optional</li>
+<li><strong>Ephemeral:</strong> YES</li>
+<li><strong>Purpose:</strong></li>
+<li style="margin-left: 20px;">App functionality (bug fixes)</li>
+<li><strong>Shared:</strong> NO</li></ul><p><strong>Note:</strong> Crash logs are automatically collected via Expo/React Native error reporting. They contain device info and stack traces but no personal data.</p><p>#### Diagnostics
+<li><strong>Collected:</strong> YES</li>
+<li><strong>Required/Optional:</strong> Optional</li>
+<li><strong>Ephemeral:</strong> YES</li>
+<li><strong>Purpose:</strong></li>
+<li style="margin-left: 20px;">App functionality</li>
+<li style="margin-left: 20px;">Analytics</li>
+<li><strong>Shared:</strong> NO</li></ul><p><strong>Details:</strong>
+<li>App version</li>
+<li>Device model</li>
+<li>OS version</li>
+<li>Performance metrics</li></ul><hr></p><h3>Device or Other IDs</h3><p>#### Device or Other IDs
+<li><strong>Collected:</strong> YES</li>
+<li><strong>Required/Optional:</strong> Optional</li>
+<li><strong>Ephemeral:</strong> NO</li>
+<li><strong>Purpose:</strong></li>
+<li style="margin-left: 20px;">App functionality (push notifications - future)</li>
+<li style="margin-left: 20px;">Analytics</li>
+<li><strong>Shared:</strong> NO</li></ul><p><strong>Note:</strong> Device identifiers are used for crash reporting and analytics only. No advertising IDs are collected.</p><hr></p><h2>Data NOT Collected</h2><p>The following data types are NOT collected:</p><h3>Location</h3>
+<li>Precise location: NO</li>
+<li>Approximate location: NO</li></ul><h3>Financial Info</h3>
+<li>Payment info: NO</li>
+<li>Purchase history: NO</li></ul><h3>Health and Fitness</h3>
+<li>NO data collected</li></ul><h3>Photos and Videos</h3>
+<li>NO (not yet implemented)</li></ul><h3>Audio Files</h3>
+<li>NO</li></ul><h3>Files and Docs</h3>
+<li>NO</li></ul><h3>Calendar</h3>
+<li>NO</li></ul><h3>Contacts</h3>
+<li>NO</li></ul><h3>Messages</h3>
+<li>NO (Direct messages feature removed)</li></ul><h3>Web Browsing</h3>
+<li>NO</li></ul><hr></p><h2>Data Sharing</h2><h3>Do you share any data with third parties?</h3><p><strong>Answer:</strong> NO</p><p><strong>Explanation:</strong> We do NOT share user data with third parties for advertising, analytics, or any other purpose.</p><p>#### Third-Party Services Used (No Data Sharing):</p><p><strong>Google Sign-In:</strong>
+<li>Purpose: Authentication only</li>
+<li>Data flow: One-way (Google to us)</li>
+<li>No data shared back to Google beyond initial auth</li></ul><p><strong>Railway (Hosting):</strong>
+<li>Purpose: Backend hosting</li>
+<li>Data Processing Agreement: YES</li>
+<li>User data stored on servers but not shared with Railway</li>
+for purposes</p><p><strong>Neon (Database):</strong>
+<li>Purpose: Database hosting</li>
+<li>Data Processing Agreement: YES</li>
+<li>User data stored but not accessed by Neon</li></ul><hr></p><h2>Data Security Practices</h2><h3>Encryption in Transit</h3>
+<li><strong>Status:</strong> YES</li>
+<li><strong>Method:</strong> HTTPS/TLS for all API calls</li></ul><h3>Encryption at Rest</h3>
+<li><strong>Status:</strong> YES</li>
+<li><strong>Method:</strong> Database encryption provided by Neon PostgreSQL</li></ul><h3>Authentication Security</h3>
+<li><strong>Password Storage:</strong> Bcrypt hashing (never stored in plain text)</li>
+<li><strong>Token-Based Auth:</strong> JWT with expiration</li>
+<li><strong>OAuth:</strong> Google Sign-In (industry standard)</li></ul><h3>Additional Security Measures</h3>
+<li>Rate limiting (prevents brute-force attacks)</li>
+<li>Input validation (prevents injection attacks)</li>
+<li>Secure local storage (AsyncStorage encrypted by OS)</li>
+<li>Regular security updates</li></ul><hr></p><h2>Data Retention and Deletion</h2><h3>Active Accounts</h3>
+<li>Data retained while account is active</li>
+<li>Users can delete their data at any time</li></ul><h3>Deleted Accounts</h3>
+<li>Personal data deleted within 30 days</li>
+<li>Reviews may be anonymized (author name removed) to preserve community ratings</li>
+<li>Complete deletion available upon request</li></ul><h3>Backup Retention</h3>
+<li>Database backups retained for 30 days for disaster recovery</li>
+<li>After 30 days, deleted data is permanently removed</li></ul><hr></p><h2>User Control</h2><h3>What Users Can Control:</h3>
+1. <strong>Profile Visibility:</strong> Public, Friends Only, or Private
+2. <strong>Display Preferences:</strong> Show/hide review history, favorites, statistics
+3. <strong>Data Access:</strong> View all their data in the app
+4. <strong>Data Export:</strong> Request JSON/CSV export via email
+5. <strong>Data Deletion:</strong> Delete account and all data via Settings</p><h3>How to Exercise Rights:</h3>
+<li><strong>In-App:</strong> Settings → Privacy Settings</li>
+<li><strong>In-App Deletion:</strong> Settings → Delete Account</li>
+<li><strong>Email Requests:</strong> [YOUR SUPPORT EMAIL]</li></ul><hr></p><h2>Target Audience</h2><h3>Age Rating</h3>
+<li><strong>Minimum Age:</strong> 4+ (Google Play)</li>
+<li><strong>Target Audience:</strong> Adults interested in food and dining</li>
+<li><strong>Not Directed at Children:</strong> No</li></ul><h3>Content Rating</h3>
+<li><strong>Violence:</strong> None</li>
+<li><strong>Sexual Content:</strong> None</li>
+<li><strong>Profanity:</strong> None</li>
+<li><strong>Alcohol/Drugs:</strong> Food and beverage content only</li>
+<li><strong>Gambling:</strong> None</li></ul><hr></p><h2>Data Collection Consent</h2><h3>How Users Consent:</h3>
+1. Privacy Policy link shown at registration
+2. Users must create account to use most features
+3. Browsing mode available without account (limited features)
+4. Explicit consent during Google OAuth flow</p><hr></p><h2>Google Play Data Safety Checklist</h2><p>Use this checklist when filling out the form:</p><ul><li>[ ] Select "YES" for data collection</li>
+<li>[ ] Select "YES" for encryption in transit</li>
+<li>[ ] Select "YES" for data deletion option</li>
+<li>[ ] Select "NO" for data sharing with third parties</li>
+<li>[ ] Mark email address as COLLECTED, REQUIRED</li>
+<li>[ ] Mark name as COLLECTED, REQUIRED</li>
+<li>[ ] Mark user IDs as COLLECTED, REQUIRED</li>
+<li>[ ] Mark app interactions as COLLECTED, OPTIONAL</li>
+<li>[ ] Mark crash logs as COLLECTED, OPTIONAL, EPHEMERAL</li>
+<li>[ ] Mark diagnostics as COLLECTED, OPTIONAL, EPHEMERAL</li>
+<li>[ ] Mark device IDs as COLLECTED, OPTIONAL</li>
+<li>[ ] Ensure all "Purpose" fields are filled</li>
+<li>[ ] Ensure all "Shared" fields are set to NO</li>
+<li>[ ] Link to Privacy Policy: [YOUR PRIVACY POLICY URL]</li></ul><hr></p><h2>Questions During Form Submission</h2><h3>"Does your app collect or share data for advertising purposes?"</h3>
+<strong>Answer:</strong> NO</p><h3>"Does your app collect data for analytics purposes?"</h3>
+<strong>Answer:</strong> YES (basic usage analytics for app improvement only)</p><h3>"Does your app use third-party analytics SDKs?"</h3>
+<strong>Answer:</strong> NO (We use our own backend analytics)</p><h3>"Is your app directed at children?"</h3>
+<strong>Answer:</strong> NO</p><h3>"Does your app contain ads?"</h3>
+<strong>Answer:</strong> NO</p><h3>"Does your app offer in-app purchases?"</h3>
+<strong>Answer:</strong> NO</p><hr></p><h2>Support Contact</h2><p>For questions about data practices:
+<li><strong>Email:</strong> [YOUR SUPPORT EMAIL]</li>
+<li><strong>Privacy Policy:</strong> [YOUR PRIVACY POLICY URL]</li>
+<li><strong>Website:</strong> [YOUR WEBSITE URL]</li></ul><hr></p><p><strong>This disclosure is accurate as of November 7, 2025.</strong></p><p>Update this document if app functionality changes to collect additional data types.
+</p>
+        <div class="footer">
+            <p>© 2025 Oysterette. All rights reserved.</p>
+            <p><a href="index.html">Legal Documents</a> | <a href="mailto:support@oysterette.app">Contact Us</a></p>
+        </div>
+    </div>
+</body>
+</html>
