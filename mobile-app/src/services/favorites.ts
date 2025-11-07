@@ -175,6 +175,8 @@ export const favoritesStorage = {
   },
 
   // Sync favorites with backend (call on login)
+  // IMPORTANT: On login, we LOAD from backend first (backend is source of truth)
+  // Then we MERGE with local favorites and sync back
   async syncWithBackend(): Promise<void> {
     try {
       const token = await authStorage.getToken();
@@ -183,19 +185,27 @@ export const favoritesStorage = {
         return;
       }
 
-      // Get local favorites
-      const localFavorites = await this.getFavorites();
-      console.log(`📥 Syncing ${localFavorites.length} local favorites with backend...`);
-
-      // Send local favorites to backend for syncing
-      await favoritesApi.syncFavorites(localFavorites);
-
-      // Get updated favorites from backend
+      // Get backend favorites FIRST (backend is source of truth after login)
       const backendFavorites = await favoritesApi.getFavorites();
       console.log(`📤 Received ${backendFavorites.length} favorites from backend`);
 
+      // Get local favorites
+      const localFavorites = await this.getFavorites();
+      console.log(`📱 Found ${localFavorites.length} local favorites`);
+
+      // Merge: Union of backend and local (never delete, only add)
+      const merged = Array.from(new Set([...backendFavorites, ...localFavorites]));
+      console.log(`🔄 Merged to ${merged.length} total favorites`);
+
       // Update local storage with merged favorites
-      await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(backendFavorites));
+      await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(merged));
+
+      // If we have new favorites from local, sync them back to backend
+      if (merged.length > backendFavorites.length) {
+        console.log(`📥 Syncing ${merged.length - backendFavorites.length} new favorites to backend...`);
+        await favoritesApi.syncFavorites(merged);
+      }
+
       console.log('✅ Favorites synced successfully');
     } catch (error) {
       console.error('Error syncing favorites with backend:', error);
