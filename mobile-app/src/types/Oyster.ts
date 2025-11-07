@@ -77,6 +77,20 @@ export interface User {
   email: string;
   name: string;
   preferences?: any; // JSON field
+
+  // Reviewer credibility metrics
+  credibilityScore: number;
+  totalAgrees: number;
+  totalDisagrees: number;
+  reviewCount: number;
+
+  // Privacy settings
+  profileVisibility: 'public' | 'friends' | 'private';
+  showReviewHistory: boolean;
+  showFavorites: boolean;
+  showStatistics: boolean;
+  allowMessages: boolean;
+
   createdAt: string;
   updatedAt: string;
 }

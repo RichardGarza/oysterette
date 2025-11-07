@@ -331,6 +331,78 @@ export const userApi = {
     const response = await api.put<ApiResponse<User>>('/users/profile', { name, email });
     return response.data.data || null;
   },
+
+  // Get user profile with statistics
+  getProfile: async (): Promise<{
+    user: User;
+    stats: {
+      totalReviews: number;
+      totalFavorites: number;
+      totalVotesGiven: number;
+      totalVotesReceived: number;
+      avgRatingGiven: number;
+      credibilityScore: number;
+      badgeLevel: 'Novice' | 'Trusted' | 'Expert';
+      memberSince: string;
+      reviewStreak: number;
+      mostReviewedSpecies?: string;
+      mostReviewedOrigin?: string;
+    };
+  }> => {
+    const response = await api.get<ApiResponse<any>>('/users/profile');
+    return response.data.data;
+  },
+
+  // Get user's review history with pagination
+  getMyReviews: async (params?: {
+    page?: number;
+    limit?: number;
+    sortBy?: 'createdAt' | 'rating';
+  }): Promise<{
+    reviews: Review[];
+    total: number;
+    page: number;
+    pages: number;
+  }> => {
+    const response = await api.get<ApiResponse<any>>('/users/me/reviews', { params });
+    return response.data.data;
+  },
+
+  // Change password
+  changePassword: async (currentPassword: string, newPassword: string): Promise<{ message: string }> => {
+    const response = await api.put<ApiResponse<{ message: string }>>('/users/password', {
+      currentPassword,
+      newPassword,
+    });
+    return response.data.data!;
+  },
+
+  // Delete account
+  deleteAccount: async (password?: string, confirmText?: string): Promise<{ message: string }> => {
+    const response = await api.delete<ApiResponse<{ message: string }>>('/users/account', {
+      data: { password, confirmText },
+    });
+    return response.data.data!;
+  },
+
+  // Update privacy settings
+  updatePrivacySettings: async (settings: {
+    profileVisibility?: 'public' | 'friends' | 'private';
+    showReviewHistory?: boolean;
+    showFavorites?: boolean;
+    showStatistics?: boolean;
+    allowMessages?: boolean;
+  }): Promise<{
+    id: string;
+    profileVisibility: string;
+    showReviewHistory: boolean;
+    showFavorites: boolean;
+    showStatistics: boolean;
+    allowMessages: boolean;
+  }> => {
+    const response = await api.put<ApiResponse<any>>('/users/privacy', settings);
+    return response.data.data;
+  },
 };
 
 // Favorites API

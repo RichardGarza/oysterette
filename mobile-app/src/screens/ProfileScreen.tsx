@@ -9,23 +9,34 @@ import {
   RefreshControl,
   TouchableOpacity,
   Platform,
+  Modal,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { authStorage } from '../services/auth';
-import { reviewApi, voteApi } from '../services/api';
+import { userApi } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
-import { Review } from '../types/Oyster';
+import { Review, User } from '../types/Oyster';
 import { EmptyState } from '../components/EmptyState';
 
-interface CredibilityData {
+interface ProfileStats {
+  totalReviews: number;
+  totalFavorites: number;
+  totalVotesGiven: number;
+  totalVotesReceived: number;
+  avgRatingGiven: number;
   credibilityScore: number;
-  badge: {
-    level: string;
-    color: string;
-    icon: string;
-  };
-  totalAgrees: number;
-  totalDisagrees: number;
+  badgeLevel: 'Novice' | 'Trusted' | 'Expert';
+  memberSince: string;
+  reviewStreak: number;
+  mostReviewedSpecies?: string;
+  mostReviewedOrigin?: string;
+}
+
+interface ProfileData {
+  user: User;
+  stats: ProfileStats;
 }
 
 export default function ProfileScreen() {
@@ -33,12 +44,21 @@ export default function ProfileScreen() {
   const { theme, isDark } = useTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [userName, setUserName] = useState<string>('');
-  const [userEmail, setUserEmail] = useState<string>('');
-  const [userId, setUserId] = useState<string>('');
-  const [joinDate, setJoinDate] = useState<Date | null>(null);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [credibility, setCredibility] = useState<CredibilityData | null>(null);
+
+  // Edit Profile Modal
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editLoading, setEditLoading] = useState(false);
+
+  // Change Password Modal
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -64,20 +84,18 @@ export default function ProfileScreen() {
         return;
       }
 
-      setUserName(user.name);
-      setUserEmail(user.email);
-      setUserId(user.id);
-      setJoinDate(new Date(user.createdAt));
+      // Fetch profile with stats using new API
+      const profile = await userApi.getProfile();
+      setProfileData(profile);
+      setEditName(profile.user.name);
+      setEditEmail(profile.user.email);
 
-      // Fetch user's reviews
-      const userReviews = await reviewApi.getUserReviews();
-      setReviews(userReviews);
-
-      // Fetch credibility data
-      const credData = await voteApi.getUserCredibility(user.id);
-      setCredibility(credData);
+      // Fetch user's reviews (paginated, showing first 20)
+      const reviewHistory = await userApi.getMyReviews({ page: 1, limit: 20, sortBy: 'createdAt' });
+      setReviews(reviewHistory.reviews);
     } catch (error) {
       console.error('Error loading profile:', error);
+      Alert.alert('Error', 'Failed to load profile. Please try again.');
     } finally {
       if (isRefreshing) {
         setRefreshing(false);
@@ -87,19 +105,103 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleEditProfile = async () => {
+    if (!editName.trim()) {
+      Alert.alert('Error', 'Name cannot be empty');
+      return;
+    }
+
+    try {
+      setEditLoading(true);
+      await userApi.updateProfile(editName, editEmail);
+
+      // Update local storage
+      if (profileData) {
+        const updatedUser = { ...profileData.user, name: editName, email: editEmail };
+        await authStorage.saveUser(updatedUser);
+        setProfileData({ ...profileData, user: updatedUser });
+      }
+
+      setShowEditProfile(false);
+      Alert.alert('Success', 'Profile updated successfully');
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', error.response?.data?.error || 'Failed to update profile');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      Alert.alert('Error', 'All fields are required');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Error', 'New passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      Alert.alert('Error', 'Password must be at least 8 characters');
+      return;
+    }
+
+    if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      Alert.alert('Error', 'Password must contain uppercase, lowercase, and number');
+      return;
+    }
+
+    try {
+      setPasswordLoading(true);
+      await userApi.changePassword(currentPassword, newPassword);
+
+      setShowChangePassword(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      Alert.alert('Success', 'Password changed successfully');
+    } catch (error: any) {
+      console.error('Error changing password:', error);
+      Alert.alert('Error', error.response?.data?.error || 'Failed to change password');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   const handleReviewPress = (review: Review) => {
     if (review.oyster?.id) {
       navigation.navigate('OysterDetail', { oysterId: review.oyster.id });
     }
   };
 
-  const getCredibilityColor = () => {
-    if (!credibility) return theme.colors.textSecondary;
-    return credibility.badge.color;
+  const getBadgeColor = (badgeLevel: string) => {
+    switch (badgeLevel) {
+      case 'Expert':
+        return '#FFD700'; // Gold
+      case 'Trusted':
+        return '#C0C0C0'; // Silver
+      case 'Novice':
+      default:
+        return '#CD7F32'; // Bronze
+    }
   };
 
-  const formatDate = (date: Date | null) => {
-    if (!date) return 'Unknown';
+  const getBadgeIcon = (badgeLevel: string) => {
+    switch (badgeLevel) {
+      case 'Expert':
+        return '🏆';
+      case 'Trusted':
+        return '⭐';
+      case 'Novice':
+      default:
+        return '🌟';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -117,6 +219,16 @@ export default function ProfileScreen() {
     );
   }
 
+  if (!profileData) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>Failed to load profile</Text>
+      </View>
+    );
+  }
+
+  const { user, stats } = profileData;
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -132,65 +244,97 @@ export default function ProfileScreen() {
         {/* Profile Header */}
         <View style={styles.header}>
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{userName.charAt(0).toUpperCase()}</Text>
+            <Text style={styles.avatarText}>{user.name.charAt(0).toUpperCase()}</Text>
           </View>
-          <Text style={styles.userName}>{userName}</Text>
-          <Text style={styles.userEmail}>{userEmail}</Text>
-          <Text style={styles.joinDate}>Member since {formatDate(joinDate)}</Text>
+          <Text style={styles.userName}>{user.name}</Text>
+          <Text style={styles.userEmail}>{user.email}</Text>
+          <Text style={styles.joinDate}>Member since {formatDate(stats.memberSince)}</Text>
+
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => setShowEditProfile(true)}
+            >
+              <Text style={styles.actionButtonText}>Edit Profile</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => setShowChangePassword(true)}
+            >
+              <Text style={styles.actionButtonText}>Change Password</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('PrivacySettings')}
+            >
+              <Text style={styles.actionButtonText}>Privacy Settings</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Stats Cards */}
-        <View style={styles.statsContainer}>
+        <View style={styles.statsGrid}>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{reviews.length}</Text>
+            <Text style={styles.statValue}>{stats.totalReviews}</Text>
             <Text style={styles.statLabel}>Reviews</Text>
           </View>
 
-          {credibility && (
-            <>
-              <View style={styles.statCard}>
-                <View style={styles.credibilityBadge}>
-                  <Text style={[styles.badgeText, { color: getCredibilityColor() }]}>
-                    {credibility.badge.icon} {credibility.badge.level}
-                  </Text>
-                </View>
-                <Text style={styles.statLabel}>Credibility</Text>
-              </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{stats.totalFavorites}</Text>
+            <Text style={styles.statLabel}>Favorites</Text>
+          </View>
 
-              <View style={styles.statCard}>
-                <Text style={styles.statValue}>
-                  {credibility.totalAgrees + credibility.totalDisagrees}
-                </Text>
-                <Text style={styles.statLabel}>Votes Received</Text>
-              </View>
-            </>
-          )}
+          <View style={styles.statCard}>
+            <View style={styles.badgeContainer}>
+              <Text style={styles.badgeIcon}>{getBadgeIcon(stats.badgeLevel)}</Text>
+              <Text style={[styles.badgeText, { color: getBadgeColor(stats.badgeLevel) }]}>
+                {stats.badgeLevel}
+              </Text>
+            </View>
+            <Text style={styles.statLabel}>Badge</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{stats.totalVotesReceived}</Text>
+            <Text style={styles.statLabel}>Votes Received</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{stats.avgRatingGiven.toFixed(1)}</Text>
+            <Text style={styles.statLabel}>Avg Rating</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{stats.reviewStreak}</Text>
+            <Text style={styles.statLabel}>Review Streak</Text>
+          </View>
         </View>
 
-        {/* Vote Breakdown */}
-        {credibility && (credibility.totalAgrees > 0 || credibility.totalDisagrees > 0) && (
-          <View style={styles.voteBreakdownCard}>
-            <Text style={styles.sectionTitle}>Vote Breakdown</Text>
-            <View style={styles.voteBreakdown}>
-              <View style={styles.voteItem}>
-                <Text style={styles.voteEmoji}>👍</Text>
-                <Text style={styles.voteCount}>{credibility.totalAgrees}</Text>
-                <Text style={styles.voteLabel}>Agrees</Text>
+        {/* Insights */}
+        {(stats.mostReviewedSpecies || stats.mostReviewedOrigin) && (
+          <View style={styles.insightsCard}>
+            <Text style={styles.sectionTitle}>Your Tastes</Text>
+            {stats.mostReviewedSpecies && (
+              <View style={styles.insightRow}>
+                <Text style={styles.insightLabel}>Favorite Species:</Text>
+                <Text style={styles.insightValue}>{stats.mostReviewedSpecies}</Text>
               </View>
-              <View style={styles.voteItem}>
-                <Text style={styles.voteEmoji}>👎</Text>
-                <Text style={styles.voteCount}>{credibility.totalDisagrees}</Text>
-                <Text style={styles.voteLabel}>Disagrees</Text>
+            )}
+            {stats.mostReviewedOrigin && (
+              <View style={styles.insightRow}>
+                <Text style={styles.insightLabel}>Favorite Origin:</Text>
+                <Text style={styles.insightValue}>{stats.mostReviewedOrigin}</Text>
               </View>
-            </View>
+            )}
           </View>
         )}
 
         {/* Review History */}
         <View style={styles.reviewSection}>
-          <Text style={styles.sectionTitle}>Review History</Text>
+          <Text style={styles.sectionTitle}>Recent Reviews</Text>
           {reviews.length > 0 ? (
-            reviews.map((review) => (
+            reviews.slice(0, 5).map((review) => (
               <TouchableOpacity
                 key={review.id}
                 style={styles.reviewCard}
@@ -230,6 +374,135 @@ export default function ProfileScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        visible={showEditProfile}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowEditProfile(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Profile</Text>
+
+            <Text style={styles.inputLabel}>Name</Text>
+            <TextInput
+              style={styles.input}
+              value={editName}
+              onChangeText={setEditName}
+              placeholder="Enter your name"
+              placeholderTextColor={theme.colors.textSecondary}
+            />
+
+            <Text style={styles.inputLabel}>Email</Text>
+            <TextInput
+              style={styles.input}
+              value={editEmail}
+              onChangeText={setEditEmail}
+              placeholder="Enter your email"
+              placeholderTextColor={theme.colors.textSecondary}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setShowEditProfile(false)}
+                disabled={editLoading}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={handleEditProfile}
+                disabled={editLoading}
+              >
+                {editLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Save</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Change Password Modal */}
+      <Modal
+        visible={showChangePassword}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowChangePassword(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Change Password</Text>
+
+            <Text style={styles.inputLabel}>Current Password</Text>
+            <TextInput
+              style={styles.input}
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+              placeholder="Enter current password"
+              placeholderTextColor={theme.colors.textSecondary}
+              secureTextEntry
+            />
+
+            <Text style={styles.inputLabel}>New Password</Text>
+            <TextInput
+              style={styles.input}
+              value={newPassword}
+              onChangeText={setNewPassword}
+              placeholder="Enter new password"
+              placeholderTextColor={theme.colors.textSecondary}
+              secureTextEntry
+            />
+
+            <Text style={styles.inputLabel}>Confirm New Password</Text>
+            <TextInput
+              style={styles.input}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="Confirm new password"
+              placeholderTextColor={theme.colors.textSecondary}
+              secureTextEntry
+            />
+
+            <Text style={styles.passwordHint}>
+              Password must be at least 8 characters and contain uppercase, lowercase, and numbers
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setShowChangePassword(false);
+                  setCurrentPassword('');
+                  setNewPassword('');
+                  setConfirmPassword('');
+                }}
+                disabled={passwordLoading}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={handleChangePassword}
+                disabled={passwordLoading}
+              >
+                {passwordLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Change</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -246,12 +519,16 @@ const createStyles = (colors: any, isDark: boolean) =>
       alignItems: 'center',
       backgroundColor: colors.background,
     },
+    errorText: {
+      fontSize: 16,
+      color: colors.textSecondary,
+    },
     scrollView: {
       flex: 1,
     },
     header: {
       alignItems: 'center',
-      paddingVertical: 32,
+      paddingVertical: 24,
       paddingHorizontal: 20,
       backgroundColor: colors.card,
       borderBottomWidth: 1,
@@ -264,7 +541,7 @@ const createStyles = (colors: any, isDark: boolean) =>
       backgroundColor: colors.primary,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 16,
+      marginBottom: 12,
     },
     avatarText: {
       fontSize: 36,
@@ -285,14 +562,34 @@ const createStyles = (colors: any, isDark: boolean) =>
     joinDate: {
       fontSize: 12,
       color: colors.textSecondary,
+      marginBottom: 16,
     },
-    statsContainer: {
+    actionButtons: {
       flexDirection: 'row',
-      padding: 16,
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      gap: 8,
+      marginTop: 8,
+    },
+    actionButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 8,
+    },
+    actionButtonText: {
+      color: '#fff',
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    statsGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      padding: 12,
       gap: 12,
     },
     statCard: {
-      flex: 1,
+      width: '30%',
       backgroundColor: colors.cardBackground,
       borderRadius: 12,
       padding: 16,
@@ -310,24 +607,28 @@ const createStyles = (colors: any, isDark: boolean) =>
       }),
     },
     statValue: {
-      fontSize: 28,
+      fontSize: 24,
       fontWeight: 'bold',
       color: colors.primary,
       marginBottom: 4,
     },
     statLabel: {
-      fontSize: 12,
+      fontSize: 11,
       color: colors.textSecondary,
       textAlign: 'center',
     },
-    credibilityBadge: {
+    badgeContainer: {
+      alignItems: 'center',
+    },
+    badgeIcon: {
+      fontSize: 24,
       marginBottom: 4,
     },
     badgeText: {
-      fontSize: 18,
+      fontSize: 14,
       fontWeight: '600',
     },
-    voteBreakdownCard: {
+    insightsCard: {
       marginHorizontal: 16,
       marginBottom: 16,
       backgroundColor: colors.cardBackground,
@@ -345,27 +646,19 @@ const createStyles = (colors: any, isDark: boolean) =>
         },
       }),
     },
-    voteBreakdown: {
+    insightRow: {
       flexDirection: 'row',
-      justifyContent: 'space-around',
-      marginTop: 12,
+      justifyContent: 'space-between',
+      marginTop: 8,
     },
-    voteItem: {
-      alignItems: 'center',
-    },
-    voteEmoji: {
-      fontSize: 32,
-      marginBottom: 8,
-    },
-    voteCount: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      color: colors.text,
-      marginBottom: 4,
-    },
-    voteLabel: {
-      fontSize: 12,
+    insightLabel: {
+      fontSize: 14,
       color: colors.textSecondary,
+    },
+    insightValue: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.text,
     },
     reviewSection: {
       padding: 16,
@@ -429,5 +722,78 @@ const createStyles = (colors: any, isDark: boolean) =>
     reviewVotes: {
       fontSize: 12,
       color: colors.textSecondary,
+    },
+
+    // Modal styles
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 24,
+      width: '85%',
+      maxWidth: 400,
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginBottom: 20,
+      textAlign: 'center',
+    },
+    inputLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 8,
+      marginTop: 8,
+    },
+    input: {
+      backgroundColor: colors.background,
+      borderRadius: 8,
+      padding: 12,
+      fontSize: 16,
+      color: colors.text,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    passwordHint: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: 8,
+      fontStyle: 'italic',
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 24,
+    },
+    modalButton: {
+      flex: 1,
+      paddingVertical: 12,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    cancelButton: {
+      backgroundColor: colors.background,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    cancelButtonText: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    saveButton: {
+      backgroundColor: colors.primary,
+    },
+    saveButtonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: '600',
     },
   });

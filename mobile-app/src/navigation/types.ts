@@ -14,6 +14,7 @@ export type RootStackParamList = {
   Settings: undefined;
   TopOysters: undefined;
   Profile: undefined;
+  PrivacySettings: undefined;
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<

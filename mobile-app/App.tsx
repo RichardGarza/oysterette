@@ -16,6 +16,7 @@ import EditReviewScreen from './src/screens/EditReviewScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import TopOystersScreen from './src/screens/TopOystersScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import PrivacySettingsScreen from './src/screens/PrivacySettingsScreen';
 
 /**
  * TO REPLACE "Oysterette" TEXT WITH LOGO:
@@ -152,6 +153,14 @@ function AppNavigator() {
           component={ProfileScreen}
           options={({ navigation }) => ({
             title: 'My Profile',
+            headerRight: () => <SettingsButton navigation={navigation} />,
+          })}
+        />
+        <Stack.Screen
+          name="PrivacySettings"
+          component={PrivacySettingsScreen}
+          options={({ navigation }) => ({
+            title: 'Privacy Settings',
             headerRight: () => <SettingsButton navigation={navigation} />,
           })}
         />
