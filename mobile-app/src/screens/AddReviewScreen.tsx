@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Alert,
+  Modal,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -16,6 +17,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import { AddReviewScreenRouteProp, AddReviewScreenNavigationProp } from '../navigation/types';
 import { reviewApi } from '../services/api';
+import { authStorage } from '../services/auth';
 import { ReviewRating } from '../types/Oyster';
 import { getAttributeDescriptor } from '../utils/ratingUtils';
 
@@ -40,8 +42,16 @@ export default function AddReviewScreen() {
   const [creaminess, setCreaminess] = useState<number>(existingReview?.creaminess || 5);
   const [notes, setNotes] = useState(existingReview?.notes || '');
   const [submitting, setSubmitting] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const handleSubmit = async () => {
+    // Check if user is logged in
+    const token = await authStorage.getToken();
+    if (!token) {
+      setShowLoginPrompt(true);
+      return;
+    }
+
     if (!rating) {
       Alert.alert('Rating Required', 'Please select an overall rating for this oyster.');
       return;
@@ -112,6 +122,52 @@ export default function AddReviewScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Login Prompt Modal */}
+      <Modal
+        visible={showLoginPrompt}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowLoginPrompt(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowLoginPrompt(false)}
+            >
+              <Text style={styles.modalCloseText}>✕</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.modalTitle}>Login Required</Text>
+            <Text style={styles.modalMessage}>
+              You need to be logged in to submit a review. Sign up or log in now to share your tasting experience!
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalSignUpButton]}
+                onPress={() => {
+                  setShowLoginPrompt(false);
+                  navigation.navigate('Register');
+                }}
+              >
+                <Text style={styles.modalButtonText}>Sign Up</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalLoginButton]}
+                onPress={() => {
+                  setShowLoginPrompt(false);
+                  navigation.navigate('Login');
+                }}
+              >
+                <Text style={styles.modalButtonText}>Log In</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
@@ -454,5 +510,73 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    position: 'relative',
+  },
+  modalCloseButton: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  modalCloseText: {
+    fontSize: 20,
+    color: '#666',
+    fontWeight: '600',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 12,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: '#7f8c8d',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalSignUpButton: {
+    backgroundColor: '#27ae60',
+  },
+  modalLoginButton: {
+    backgroundColor: '#3498db',
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

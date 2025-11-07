@@ -99,7 +99,21 @@ function AppNavigator() {
           name="OysterList"
           component={OysterListScreen}
           options={({ navigation }) => ({
-            title: 'Oysterette',
+            headerTitle: () => (
+              <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+                <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>
+                  Oysterette
+                </Text>
+              </TouchableOpacity>
+            ),
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Home')}
+                style={{ marginLeft: 15 }}
+              >
+                <Text style={{ color: '#fff', fontSize: 28 }}>←</Text>
+              </TouchableOpacity>
+            ),
             headerRight: () => <SettingsButton navigation={navigation} />,
           })}
         />

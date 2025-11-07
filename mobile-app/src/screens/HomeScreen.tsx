@@ -198,8 +198,8 @@ const createStyles = (colors: any) =>
       zIndex: 1000,
     },
     loadingLogo: {
-      width: 256,
-      height: 256,
+      width: 384,
+      height: 384,
     },
     title: {
       fontSize: 36,

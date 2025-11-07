@@ -27,7 +27,6 @@ export default function PrivacySettingsScreen() {
   const [showReviewHistory, setShowReviewHistory] = useState(true);
   const [showFavorites, setShowFavorites] = useState(true);
   const [showStatistics, setShowStatistics] = useState(true);
-  const [allowMessages, setAllowMessages] = useState(true);
 
   useEffect(() => {
     loadPrivacySettings();
@@ -47,7 +46,6 @@ export default function PrivacySettingsScreen() {
       setShowReviewHistory(user.showReviewHistory ?? true);
       setShowFavorites(user.showFavorites ?? true);
       setShowStatistics(user.showStatistics ?? true);
-      setAllowMessages(user.allowMessages ?? true);
     } catch (error) {
       console.error('Error loading privacy settings:', error);
       Alert.alert('Error', 'Failed to load privacy settings');
@@ -65,7 +63,6 @@ export default function PrivacySettingsScreen() {
         showReviewHistory,
         showFavorites,
         showStatistics,
-        allowMessages,
       };
 
       await userApi.updatePrivacySettings(settings);
@@ -222,29 +219,6 @@ export default function PrivacySettingsScreen() {
                 onValueChange={setShowStatistics}
                 trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
                 thumbColor={Platform.OS === 'ios' ? '#fff' : showStatistics ? '#fff' : '#f4f3f4'}
-              />
-            </View>
-          </View>
-
-          {/* Communication Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Communication</Text>
-            <Text style={styles.sectionDescription}>
-              Control how other users can interact with you
-            </Text>
-
-            <View style={styles.settingItem}>
-              <View style={styles.settingText}>
-                <Text style={styles.settingTitle}>Allow Direct Messages</Text>
-                <Text style={styles.settingDescription}>
-                  Let other users send you messages (coming soon)
-                </Text>
-              </View>
-              <Switch
-                value={allowMessages}
-                onValueChange={setAllowMessages}
-                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-                thumbColor={Platform.OS === 'ios' ? '#fff' : allowMessages ? '#fff' : '#f4f3f4'}
               />
             </View>
           </View>
