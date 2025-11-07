@@ -132,7 +132,6 @@ export const updatePrivacySettingsSchema = z.object({
   showReviewHistory: z.boolean().optional(),
   showFavorites: z.boolean().optional(),
   showStatistics: z.boolean().optional(),
-  allowMessages: z.boolean().optional(),
 });
 
 export const reviewQuerySchema = z.object({

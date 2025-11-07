@@ -29,7 +29,6 @@ model User {
   showReviewHistory  Boolean @default(true)      // Show reviews on public profile
   showFavorites      Boolean @default(true)      // Show favorites on public profile
   showStatistics     Boolean @default(true)      // Show stats on public profile
-  allowMessages      Boolean @default(true)      // Allow direct messages (future)
 
   // Relations
   reviews        Review[]

@@ -602,14 +602,13 @@ export const updatePrivacySettings = async (req: Request, res: Response): Promis
       return;
     }
 
-    const { profileVisibility, showReviewHistory, showFavorites, showStatistics, allowMessages } = req.body;
+    const { profileVisibility, showReviewHistory, showFavorites, showStatistics } = req.body;
 
     const updateData: any = {};
     if (profileVisibility !== undefined) updateData.profileVisibility = profileVisibility;
     if (showReviewHistory !== undefined) updateData.showReviewHistory = showReviewHistory;
     if (showFavorites !== undefined) updateData.showFavorites = showFavorites;
     if (showStatistics !== undefined) updateData.showStatistics = showStatistics;
-    if (allowMessages !== undefined) updateData.allowMessages = allowMessages;
 
     const user = await prisma.user.update({
       where: { id: req.userId },
@@ -620,7 +619,6 @@ export const updatePrivacySettings = async (req: Request, res: Response): Promis
         showReviewHistory: true,
         showFavorites: true,
         showStatistics: true,
-        allowMessages: true,
       },
     });
 
