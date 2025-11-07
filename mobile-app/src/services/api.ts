@@ -286,6 +286,8 @@ export const reviewApi = {
     flavorfulness?: number;
     creaminess?: number;
     notes?: string;
+    origin?: string;
+    species?: string;
   }): Promise<Review | null> => {
     const response = await api.post<ApiResponse<Review>>('/reviews', review);
     return response.data.data || null;
