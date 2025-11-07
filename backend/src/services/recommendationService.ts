@@ -1,3 +1,25 @@
+/**
+ * Recommendation Service
+ *
+ * Provides personalized oyster recommendations based on user review history.
+ *
+ * Algorithm:
+ * 1. Analyzes user's LOVE_IT and LIKE_IT reviews
+ * 2. Calculates average preferred attributes (size, body, etc.)
+ * 3. Finds oysters with similar attribute profiles
+ * 4. Excludes already-reviewed oysters
+ * 5. Ranks by similarity score (0-100)
+ *
+ * Similarity Calculation:
+ * - Uses Euclidean distance in 5-dimensional attribute space
+ * - Normalizes to 0-100 scale (100 = perfect match)
+ * - Provides match reason (e.g., "Similar size and flavor profile")
+ *
+ * Requirements:
+ * - User must have at least 1 positive review (LOVE_IT or LIKE_IT)
+ * - Returns top 10 matches by default
+ */
+
 import prisma from '../lib/prisma';
 import { ReviewRating } from '@prisma/client';
 

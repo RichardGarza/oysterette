@@ -1,9 +1,36 @@
+/**
+ * Oyster Controller
+ *
+ * Handles oyster data operations including:
+ * - Fetching all oysters with filtering and sorting
+ * - Getting individual oyster details with reviews
+ * - Creating, updating, and deleting oysters
+ * - Fuzzy search functionality
+ * - Filter options for UI dropdown/chips
+ */
+
 import { Request, Response } from 'express';
 import logger from '../utils/logger';
 import prisma from '../lib/prisma';
 import Fuse from 'fuse.js';
 
-// Get all oysters with optional filtering and sorting
+/**
+ * Get all oysters with optional filtering and sorting
+ *
+ * Supports dynamic filtering by species and origin, with multiple sort options
+ * for flexible oyster discovery and browsing.
+ *
+ * @route GET /api/oysters
+ * @param req.query.species - Filter by oyster species (e.g., "Crassostrea gigas")
+ * @param req.query.origin - Filter by oyster origin (e.g., "Washington")
+ * @param req.query.sortBy - Sort by: rating | name | size | sweetness | creaminess | flavorfulness | body
+ * @returns 200 - Array of oysters with review counts
+ * @returns 500 - Server error
+ *
+ * @example
+ * GET /api/oysters?species=Crassostrea+gigas&sortBy=rating
+ * GET /api/oysters?origin=Washington&sortBy=size
+ */
 export const getAllOysters = async (req: Request, res: Response): Promise<void> => {
   try {
     const { species, origin, sortBy } = req.query;
@@ -71,7 +98,18 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// Get single oyster by ID
+/**
+ * Get single oyster by ID with full details
+ *
+ * Includes all associated reviews with user information, ordered by most recent.
+ * Used for the oyster detail screen.
+ *
+ * @route GET /api/oysters/:id
+ * @param req.params.id - Oyster UUID
+ * @returns 200 - Oyster with reviews array and review count
+ * @returns 404 - Oyster not found
+ * @returns 500 - Server error
+ */
 export const getOysterById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -117,7 +155,27 @@ export const getOysterById = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// Create new oyster (requires authentication)
+/**
+ * Create a new oyster
+ *
+ * Creates a new oyster entry with base attribute ratings.
+ * Attributes default to 5 (neutral) if not provided.
+ * Names must be unique.
+ *
+ * @route POST /api/oysters
+ * @requires Authentication
+ * @param req.body.name - Unique oyster name (required)
+ * @param req.body.species - Species name (defaults to "Unknown")
+ * @param req.body.origin - Geographic origin (defaults to "Unknown")
+ * @param req.body.standoutNotes - Notable characteristics (optional)
+ * @param req.body.size - Base size rating 1-10 (defaults to 5)
+ * @param req.body.body - Base body rating 1-10 (defaults to 5)
+ * @param req.body.sweetBrininess - Base sweet/briny rating 1-10 (defaults to 5)
+ * @param req.body.flavorfulness - Base flavor rating 1-10 (defaults to 5)
+ * @param req.body.creaminess - Base creaminess rating 1-10 (defaults to 5)
+ * @returns 201 - Created oyster object
+ * @returns 400 - Validation error or duplicate name
+ */
 export const createOyster = async (req: Request, res: Response): Promise<void> => {
   try {
     const {
@@ -181,7 +239,16 @@ export const createOyster = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-// Update oyster
+/**
+ * Update an existing oyster
+ *
+ * @route PUT /api/oysters/:id
+ * @requires Authentication
+ * @param req.params.id - Oyster UUID
+ * @param req.body - Fields to update (partial oyster object)
+ * @returns 200 - Updated oyster object
+ * @returns 400 - Invalid data or oyster not found
+ */
 export const updateOyster = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -205,7 +272,17 @@ export const updateOyster = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-// Delete oyster
+/**
+ * Delete an oyster
+ *
+ * Cascade deletes all associated reviews due to Prisma schema configuration.
+ *
+ * @route DELETE /api/oysters/:id
+ * @requires Authentication
+ * @param req.params.id - Oyster UUID
+ * @returns 200 - Success confirmation
+ * @returns 500 - Server error or oyster not found
+ */
 export const deleteOyster = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -227,7 +304,22 @@ export const deleteOyster = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-// Get unique species and origins for filter options
+/**
+ * Get unique species and origins for filter UI
+ *
+ * Returns sorted arrays of unique species and origin values to populate
+ * filter chips/dropdowns in the mobile app and web interface.
+ *
+ * @route GET /api/oysters/filters
+ * @returns 200 - Object with species and origins arrays
+ * @returns 500 - Server error
+ *
+ * @example
+ * Response: {
+ *   species: ["Crassostrea gigas", "Crassostrea virginica", ...],
+ *   origins: ["California", "Washington", "Maine", ...]
+ * }
+ */
 export const getFilterOptions = async (req: Request, res: Response): Promise<void> => {
   try {
     const oysters = await prisma.oyster.findMany({
@@ -257,7 +349,29 @@ export const getFilterOptions = async (req: Request, res: Response): Promise<voi
   }
 };
 
-// Search oysters by name or origin with fuzzy matching
+/**
+ * Search oysters with fuzzy matching (powered by Fuse.js)
+ *
+ * Performs intelligent fuzzy search across oyster names, origins, and species.
+ * Handles typos and partial matches. Weighted to prioritize name matches.
+ *
+ * Search Configuration:
+ * - Name: 50% weight (most important)
+ * - Origin: 30% weight
+ * - Species: 20% weight
+ * - Threshold: 0.4 (balance between precision and recall)
+ * - Minimum match: 2 characters
+ *
+ * @route GET /api/oysters/search
+ * @param req.query.query - Search term (minimum 2 characters)
+ * @returns 200 - Array of matching oysters sorted by relevance
+ * @returns 400 - Missing or invalid search query
+ * @returns 500 - Server error
+ *
+ * @example
+ * GET /api/oysters/search?query=kushi
+ * // Returns: Kusshi, Kumamoto (fuzzy matched despite typo)
+ */
 export const searchOysters = async (req: Request, res: Response): Promise<void> => {
   try {
     const { query } = req.query;

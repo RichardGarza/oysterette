@@ -1,10 +1,30 @@
+/**
+ * Favorite Controller
+ *
+ * Handles user favorites operations including:
+ * - Fetching user's favorited oysters
+ * - Adding oysters to favorites
+ * - Removing oysters from favorites
+ * - Syncing favorites between mobile and backend
+ *
+ * Favorites are stored server-side for cross-device synchronization.
+ * Mobile app syncs local favorites on app start and after login.
+ */
+
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import logger from '../utils/logger';
 
 /**
  * Get all favorite oyster IDs for the authenticated user
- * GET /api/favorites
+ *
+ * Returns array of oyster IDs ordered by most recently favorited.
+ *
+ * @route GET /api/favorites
+ * @requires Authentication
+ * @returns 200 - { favorites: [oysterIds] }
+ * @returns 401 - Not authenticated
+ * @returns 500 - Server error
  */
 export const getUserFavorites = async (req: Request, res: Response) => {
   try {

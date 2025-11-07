@@ -1,10 +1,30 @@
+/**
+ * Authentication Controller
+ *
+ * Handles user authentication operations including:
+ * - User registration with email/password
+ * - User login with credential verification
+ * - Google OAuth authentication
+ * - Profile retrieval for authenticated users
+ */
+
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { hashPassword, comparePassword, generateToken } from '../utils/auth';
 import logger from '../utils/logger';
 import { OAuth2Client } from 'google-auth-library';
 
-// Register new user
+/**
+ * Register a new user with email and password
+ *
+ * @route POST /api/auth/register
+ * @param req.body.email - User's email address (validated by Zod)
+ * @param req.body.name - User's display name
+ * @param req.body.password - Plain text password (will be hashed)
+ * @returns 201 - User object and JWT token
+ * @returns 400 - Email already exists
+ * @returns 500 - Server error
+ */
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, name, password } = req.body;
@@ -61,7 +81,16 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// Login user
+/**
+ * Authenticate user with email and password
+ *
+ * @route POST /api/auth/login
+ * @param req.body.email - User's email address
+ * @param req.body.password - Plain text password
+ * @returns 200 - User object and JWT token
+ * @returns 401 - Invalid credentials (email not found or password mismatch)
+ * @returns 500 - Server error
+ */
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
@@ -116,7 +145,16 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// Get current user profile
+/**
+ * Get authenticated user's profile
+ *
+ * @route GET /api/auth/profile
+ * @requires Authentication - JWT token in Authorization header
+ * @returns 200 - User profile (id, email, name, preferences, timestamps)
+ * @returns 401 - Not authenticated
+ * @returns 404 - User not found
+ * @returns 500 - Server error
+ */
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {
@@ -161,11 +199,21 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
 };
 
 /**
- * Google OAuth Authentication
- * Verifies Google ID token and creates or logs in user
+ * Authenticate user with Google OAuth
  *
- * @param req.body.idToken - Google ID token from mobile app
- * @returns JWT token and user data
+ * Verifies Google ID token from mobile app (Google Sign-In SDK) and either:
+ * - Creates a new user if email doesn't exist
+ * - Logs in existing user if email is found
+ *
+ * OAuth users have empty password field and cannot use password login.
+ * Profile photo from Google is stored in preferences.profilePhoto.
+ *
+ * @route POST /api/auth/google
+ * @param req.body.idToken - Google ID token from native Google Sign-In SDK
+ * @returns 200 - User object and JWT token
+ * @returns 400 - Missing or invalid token
+ * @returns 401 - Token verification failed
+ * @returns 500 - Server error
  */
 export const googleAuth = async (req: Request, res: Response): Promise<void> => {
   try {

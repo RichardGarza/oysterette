@@ -1,13 +1,36 @@
+/**
+ * Vote Controller
+ *
+ * Handles review voting operations including:
+ * - Casting agree/disagree votes on reviews
+ * - Removing votes
+ * - Fetching user vote status for multiple reviews
+ * - Retrieving user credibility scores
+ *
+ * All voting operations automatically trigger:
+ * - Review weighted score recalculation
+ * - Reviewer credibility score updates
+ */
+
 import { Request, Response } from 'express';
 import logger from '../utils/logger';
 import * as votingService from '../services/votingService';
 
 /**
- * Vote Controller
- * Handles API endpoints for review voting
+ * Cast a vote on a review
+ *
+ * Users can vote "agree" or "disagree" on reviews. Voting affects:
+ * - Review's weighted score (increases/decreases influence)
+ * - Reviewer's credibility score (improves/degrades over time)
+ *
+ * @route POST /api/reviews/:reviewId/vote
+ * @requires Authentication
+ * @param req.params.reviewId - Review UUID
+ * @param req.body.isAgree - true for agree, false for disagree
+ * @returns 200 - Success message
+ * @returns 400 - Invalid vote type or error
+ * @returns 401 - Not authenticated
  */
-
-// POST /api/reviews/:reviewId/vote
 export async function voteOnReview(req: Request, res: Response) {
   try {
     const { reviewId } = req.params;

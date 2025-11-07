@@ -1,13 +1,36 @@
+/**
+ * Sentry Error Tracking Utilities
+ *
+ * Integrates Sentry error monitoring and performance tracking.
+ *
+ * Features:
+ * - Automatic error capture and reporting
+ * - Express middleware integration
+ * - Performance monitoring and tracing
+ * - Graceful degradation when SENTRY_DSN not set
+ *
+ * Setup Order (Important!):
+ * 1. Sentry.init() runs in sentry-init.ts (before Express import)
+ * 2. Request/tracing handlers attach to Express app
+ * 3. Error handler runs LAST in middleware chain
+ *
+ * Environment Variables:
+ * - SENTRY_DSN (optional): Sentry project DSN for error reporting
+ * - If not set, all functions become no-ops (development mode)
+ *
+ * Note: Modern Sentry auto-instruments Express, so request/tracing
+ * handlers return no-ops but are kept for future customization.
+ */
+
 import * as Sentry from '@sentry/node';
 import { Express } from 'express';
 
 /**
- * Sentry Middleware Configuration
- * Note: Sentry.init() is called in sentry-init.ts BEFORE express is imported
- */
-
-/**
  * Get Sentry request handler middleware
+ *
+ * Auto-instrumented by modern Sentry, returns no-op.
+ *
+ * @returns Express middleware (no-op if SENTRY_DSN not set)
  */
 export function getSentryRequestHandler() {
   if (!process.env.SENTRY_DSN) {

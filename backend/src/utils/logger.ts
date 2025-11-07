@@ -1,9 +1,28 @@
-import winston from 'winston';
-
 /**
  * Winston Logger Configuration
- * Provides structured logging with different levels and formats
+ *
+ * Provides structured logging with multiple transports and formats.
+ *
+ * Features:
+ * - Console logging with color-coded levels
+ * - File logging (errors.log, combined.log)
+ * - JSON format in production, pretty format in development
+ * - Automatic log rotation (handled externally)
+ * - Error stack trace capture
+ *
+ * Log Levels (from highest to lowest priority):
+ * - error (0): Critical errors requiring immediate attention
+ * - warn (1): Warning messages for potential issues
+ * - info (2): General informational messages
+ * - http (3): HTTP request logging
+ * - debug (4): Detailed debugging information
+ *
+ * Environment-based Logging:
+ * - Development: debug level, colorized console output
+ * - Production: info level, JSON format, file output
  */
+
+import winston from 'winston';
 
 // Define log levels
 const levels = {

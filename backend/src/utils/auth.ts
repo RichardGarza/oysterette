@@ -1,3 +1,25 @@
+/**
+ * Authentication Utilities
+ *
+ * Provides cryptographic functions for user authentication.
+ *
+ * Features:
+ * - Password hashing with bcrypt (10 rounds)
+ * - Password verification
+ * - JWT token generation with unique JTI
+ * - JWT token verification
+ *
+ * Security:
+ * - Bcrypt automatically salts passwords
+ * - JWT tokens expire after 7 days (configurable)
+ * - Unique JWT ID (jti) prevents token replay attacks
+ * - JWT_SECRET must be set in environment variables
+ *
+ * Environment Variables:
+ * - JWT_SECRET (required): Secret key for signing JWTs
+ * - JWT_EXPIRES_IN (optional): Token expiration (default: "7d")
+ */
+
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';

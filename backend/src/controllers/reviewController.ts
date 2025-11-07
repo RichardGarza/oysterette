@@ -1,10 +1,42 @@
+/**
+ * Review Controller
+ *
+ * Handles review operations including:
+ * - Creating reviews with duplicate detection
+ * - Fetching reviews for oysters and users
+ * - Updating and deleting reviews
+ * - Checking for existing user reviews
+ * - Automatic rating recalculation after mutations
+ */
+
 import { Request, Response } from 'express';
 import logger from '../utils/logger';
 import prisma from '../lib/prisma';
 import { ReviewRating } from '@prisma/client';
 import { recalculateOysterRatings } from '../services/ratingService';
 
-// Create a review
+/**
+ * Create a new review for an oyster
+ *
+ * Validates that the oyster exists and prevents duplicate reviews via unique constraint.
+ * Automatically triggers oyster rating recalculation after creation.
+ *
+ * @route POST /api/reviews
+ * @requires Authentication
+ * @param req.body.oysterId - UUID of oyster being reviewed
+ * @param req.body.rating - Overall rating (LOVE_IT | LIKE_IT | MEH | WHATEVER)
+ * @param req.body.size - Size rating 1-10 (optional)
+ * @param req.body.body - Body rating 1-10 (optional)
+ * @param req.body.sweetBrininess - Sweet/briny rating 1-10 (optional)
+ * @param req.body.flavorfulness - Flavor rating 1-10 (optional)
+ * @param req.body.creaminess - Creaminess rating 1-10 (optional)
+ * @param req.body.notes - Personal tasting notes (optional)
+ * @returns 201 - Created review with user and oyster info
+ * @returns 400 - Missing required fields or duplicate review
+ * @returns 401 - Not authenticated
+ * @returns 404 - Oyster not found
+ * @returns 500 - Server error
+ */
 export const createReview = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {
@@ -111,7 +143,16 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-// Get reviews for an oyster
+/**
+ * Get all reviews for a specific oyster
+ *
+ * Returns reviews ordered by most recent first.
+ *
+ * @route GET /api/reviews/oyster/:oysterId
+ * @param req.params.oysterId - Oyster UUID
+ * @returns 200 - Array of reviews with user info
+ * @returns 500 - Server error
+ */
 export const getOysterReviews = async (req: Request, res: Response): Promise<void> => {
   try {
     const { oysterId } = req.params;
@@ -143,7 +184,17 @@ export const getOysterReviews = async (req: Request, res: Response): Promise<voi
   }
 };
 
-// Get user's reviews
+/**
+ * Get all reviews written by the authenticated user
+ *
+ * Returns reviews ordered by most recent first, with full oyster info.
+ *
+ * @route GET /api/reviews/user
+ * @requires Authentication
+ * @returns 200 - Array of user's reviews with oyster info
+ * @returns 401 - Not authenticated
+ * @returns 500 - Server error
+ */
 export const getUserReviews = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {
@@ -176,7 +227,19 @@ export const getUserReviews = async (req: Request, res: Response): Promise<void>
   }
 };
 
-// Check if user has existing review for an oyster
+/**
+ * Check if authenticated user has already reviewed an oyster
+ *
+ * Used by mobile app to determine whether to show "Add Review" or "Update Review"
+ * button. Returns the existing review data if found for pre-filling the form.
+ *
+ * @route GET /api/reviews/check/:oysterId
+ * @requires Authentication
+ * @param req.params.oysterId - Oyster UUID to check
+ * @returns 200 - { hasReview: true, data: review } or { hasReview: false, data: null }
+ * @returns 401 - Not authenticated
+ * @returns 500 - Server error
+ */
 export const checkExistingReview = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {
@@ -228,7 +291,22 @@ export const checkExistingReview = async (req: Request, res: Response): Promise<
   }
 };
 
-// Update a review
+/**
+ * Update an existing review
+ *
+ * Only the review author can update their review. Automatically triggers
+ * oyster rating recalculation after update.
+ *
+ * @route PUT /api/reviews/:reviewId
+ * @requires Authentication
+ * @param req.params.reviewId - Review UUID
+ * @param req.body - Fields to update (partial review object)
+ * @returns 200 - Updated review with oyster info
+ * @returns 401 - Not authenticated
+ * @returns 403 - Not authorized (not review author)
+ * @returns 404 - Review not found
+ * @returns 500 - Server error
+ */
 export const updateReview = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {
@@ -288,7 +366,21 @@ export const updateReview = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-// Delete a review
+/**
+ * Delete a review
+ *
+ * Only the review author can delete their review. Automatically triggers
+ * oyster rating recalculation after deletion.
+ *
+ * @route DELETE /api/reviews/:reviewId
+ * @requires Authentication
+ * @param req.params.reviewId - Review UUID
+ * @returns 200 - Success confirmation
+ * @returns 401 - Not authenticated
+ * @returns 403 - Not authorized (not review author)
+ * @returns 404 - Review not found
+ * @returns 500 - Server error
+ */
 export const deleteReview = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {

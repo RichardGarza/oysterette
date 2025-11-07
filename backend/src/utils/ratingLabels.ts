@@ -1,9 +1,31 @@
+/**
+ * Rating Labels Utility
+ *
+ * Provides conversion functions and descriptive labels for oyster ratings and attributes.
+ *
+ * Features:
+ * - Convert ReviewRating enums to numeric scores
+ * - Convert scores to human-readable verdicts with emojis
+ * - Attribute descriptors for slider values (e.g., "Huge" for size 10)
+ * - Loaded from data/oyster-rating-labels.json for easy customization
+ *
+ * Rating Scale:
+ * - LOVE_IT: 9.0 (range 8.0-10.0)
+ * - LIKE_IT: 7.0 (range 6.0-7.9)
+ * - MEH: 4.95 (range 4.0-5.9)
+ * - WHATEVER: 2.5 (range 1.0-3.9)
+ */
+
 import { ReviewRating } from '@prisma/client';
 import ratingLabelsData from '../../data/oyster-rating-labels.json';
 
 /**
  * Convert ReviewRating enum to numeric score
- * Based on the midpoint of each rating range
+ *
+ * Uses midpoint of each rating range for consistent scoring.
+ *
+ * @param rating - Review rating enum value
+ * @returns Numeric score (1-10 scale)
  */
 export function ratingToScore(rating: ReviewRating): number {
   switch (rating) {

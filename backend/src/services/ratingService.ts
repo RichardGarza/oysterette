@@ -1,12 +1,35 @@
+/**
+ * Rating Service
+ *
+ * Handles sophisticated calculation and aggregation of oyster ratings using a
+ * multi-layered weighting system that balances seed data with community input.
+ *
+ * Key Features:
+ * - Dynamic weighting between seed data and user reviews
+ * - Review quality scoring (0.4-1.5x based on community votes)
+ * - Reviewer credibility weighting (0.5-1.5x based on reputation)
+ * - Gradual transition from seed data to user consensus
+ * - Attribute-level averaging (size, body, sweetness, etc.)
+ *
+ * Rating Formula:
+ * 1. Overall Rating = Weighted avg of review ratings × review quality × reviewer credibility
+ * 2. Attributes = (1 - userWeight) × seedValue + userWeight × weightedUserAvg
+ * 3. Overall Score = 40% rating + 60% average of 5 attributes
+ *
+ * Weighting Progression:
+ * - 0-4 reviews: Gradual increase from seed data
+ * - 5+ reviews: 70% user ratings, 30% seed data
+ *
+ * Automatically recalculated after:
+ * - New review creation
+ * - Review updates or deletion
+ * - Vote changes on reviews
+ */
+
 import prisma from '../lib/prisma';
 import { ReviewRating } from '@prisma/client';
 import logger from '../utils/logger';
 import { ratingToScore } from '../utils/ratingLabels';
-
-/**
- * Rating Service
- * Handles calculation and aggregation of oyster ratings
- */
 
 // Configuration for rating weights
 const RATING_CONFIG = {
@@ -82,6 +105,20 @@ function calculateWeightedAttribute(
 
 /**
  * Recalculate all aggregated ratings for a specific oyster
+ *
+ * Triggers complete recalculation of:
+ * - avgRating (weighted community consensus)
+ * - avgSize, avgBody, avgSweetBrininess, avgFlavorfulness, avgCreaminess
+ * - overallScore (40% rating + 60% attributes)
+ * - totalReviews count
+ *
+ * Incorporates three layers of weighting:
+ * 1. Review quality score (community votes)
+ * 2. Reviewer credibility (historical accuracy)
+ * 3. User vs seed data balance (based on review volume)
+ *
+ * @param oysterId - UUID of oyster to recalculate
+ * @throws Error if oyster not found
  */
 export async function recalculateOysterRatings(oysterId: string): Promise<void> {
   try {

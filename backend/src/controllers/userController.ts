@@ -1,9 +1,31 @@
+/**
+ * User Controller
+ *
+ * Handles user profile and account operations including:
+ * - Top oysters list management
+ * - User preferences updates
+ * - Profile information management
+ * - Profile statistics and analytics
+ * - Review history pagination
+ * - Password changes
+ * - Account deletion
+ * - Privacy settings management
+ */
+
 import { Request, Response } from 'express';
 import logger from '../utils/logger';
 import prisma from '../lib/prisma';
 import { hashPassword, comparePassword } from '../utils/auth';
 
-// Get user's top oysters
+/**
+ * Get user's top oysters list
+ *
+ * @route GET /api/users/top-oysters
+ * @requires Authentication
+ * @returns 200 - Array of top oysters ordered by rank
+ * @returns 401 - Not authenticated
+ * @returns 500 - Server error
+ */
 export const getTopOysters = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {
@@ -36,7 +58,19 @@ export const getTopOysters = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// Add oyster to top list
+/**
+ * Add an oyster to user's top list
+ *
+ * @route POST /api/users/top-oysters
+ * @requires Authentication
+ * @param req.body.oysterId - Oyster UUID to add
+ * @param req.body.rank - Position in list (optional, defaults to last)
+ * @returns 201 - Added oyster with rank
+ * @returns 400 - Invalid oyster or already in list
+ * @returns 401 - Not authenticated
+ * @returns 404 - Oyster not found
+ * @returns 500 - Server error
+ */
 export const addTopOyster = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {
@@ -253,7 +287,29 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// Get user profile with statistics
+/**
+ * Get comprehensive user profile with statistics
+ *
+ * Calculates and returns rich profile analytics including:
+ * - Total reviews, favorites, votes given/received
+ * - Average rating given
+ * - Credibility score and badge level (Novice/Trusted/Expert)
+ * - Most reviewed species and origin
+ * - Review streak (active if reviewed in last 7 days)
+ * - Membership duration
+ *
+ * Badge Levels:
+ * - Expert: credibility ≥ 1.5
+ * - Trusted: credibility ≥ 1.0
+ * - Novice: credibility < 1.0
+ *
+ * @route GET /api/users/profile
+ * @requires Authentication
+ * @returns 200 - User object with stats object
+ * @returns 401 - Not authenticated
+ * @returns 404 - User not found
+ * @returns 500 - Server error
+ */
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {
@@ -453,7 +509,22 @@ export const getMyReviews = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-// Change password
+/**
+ * Change user password
+ *
+ * Verifies current password before allowing change.
+ * OAuth users (Google Sign-In) cannot change password.
+ *
+ * @route PUT /api/users/password
+ * @requires Authentication
+ * @param req.body.currentPassword - Current password for verification
+ * @param req.body.newPassword - New password (validated by Zod)
+ * @returns 200 - Success message
+ * @returns 400 - OAuth user attempted password change
+ * @returns 401 - Current password incorrect or not authenticated
+ * @returns 404 - User not found
+ * @returns 500 - Server error
+ */
 export const changePassword = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {
@@ -523,7 +594,23 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
   }
 };
 
-// Delete user account
+/**
+ * Delete user account permanently
+ *
+ * Requires password verification (for non-OAuth users) and explicit confirmation text.
+ * Cascade deletes all user data: reviews, votes, favorites, and top oysters.
+ * This action is irreversible.
+ *
+ * @route DELETE /api/users/account
+ * @requires Authentication
+ * @param req.body.password - User password for verification (optional for OAuth users)
+ * @param req.body.confirmText - Must be exactly "DELETE MY ACCOUNT"
+ * @returns 200 - Success confirmation
+ * @returns 400 - Invalid confirmation text
+ * @returns 401 - Incorrect password or not authenticated
+ * @returns 404 - User not found
+ * @returns 500 - Server error
+ */
 export const deleteAccount = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {
@@ -591,7 +678,21 @@ export const deleteAccount = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// Update privacy settings
+/**
+ * Update user privacy settings
+ *
+ * Controls what information is visible on user's public profile.
+ *
+ * @route PUT /api/users/privacy
+ * @requires Authentication
+ * @param req.body.profileVisibility - "public" | "friends" | "private"
+ * @param req.body.showReviewHistory - Show reviews on profile (boolean)
+ * @param req.body.showFavorites - Show favorites on profile (boolean)
+ * @param req.body.showStatistics - Show stats and badge on profile (boolean)
+ * @returns 200 - Updated privacy settings
+ * @returns 401 - Not authenticated
+ * @returns 500 - Server error
+ */
 export const updatePrivacySettings = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {
