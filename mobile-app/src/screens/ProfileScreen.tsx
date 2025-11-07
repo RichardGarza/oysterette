@@ -77,7 +77,7 @@ import {
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { authStorage } from '../services/auth';
-import { userApi } from '../services/api';
+import { userApi, reviewApi } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { Review, User } from '../types/Oyster';
 import { EmptyState } from '../components/EmptyState';
@@ -236,6 +236,39 @@ export default function ProfileScreen() {
     if (review.oyster?.id) {
       navigation.navigate('OysterDetail', { oysterId: review.oyster.id });
     }
+  };
+
+  const handleDeleteReview = (review: Review, event: any) => {
+    // Stop propagation to prevent navigation to oyster detail
+    event.stopPropagation();
+
+    Alert.alert(
+      'Delete Review',
+      `Are you sure you want to delete your review for "${review.oyster?.name || 'this oyster'}"?`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await reviewApi.delete(review.id);
+              // Remove review from local state
+              setReviews(prevReviews => prevReviews.filter(r => r.id !== review.id));
+              Alert.alert('Success', 'Review deleted successfully');
+              // Refresh profile data to update stats
+              loadProfile();
+            } catch (error) {
+              console.error('Error deleting review:', error);
+              Alert.alert('Error', 'Failed to delete review. Please try again.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const getBadgeColor = (badgeLevel: string) => {
@@ -403,10 +436,18 @@ export default function ProfileScreen() {
                 onPress={() => handleReviewPress(review)}
               >
                 <View style={styles.reviewHeader}>
-                  <Text style={styles.oysterName}>
-                    {review.oyster?.name || 'Unknown Oyster'}
-                  </Text>
-                  <Text style={styles.reviewRating}>{review.rating.replace('_', ' ')}</Text>
+                  <View style={styles.reviewHeaderLeft}>
+                    <Text style={styles.oysterName}>
+                      {review.oyster?.name || 'Unknown Oyster'}
+                    </Text>
+                    <Text style={styles.reviewRating}>{review.rating.replace('_', ' ')}</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={(event) => handleDeleteReview(review, event)}
+                  >
+                    <Text style={styles.deleteButtonText}>🗑️</Text>
+                  </TouchableOpacity>
                 </View>
                 {review.notes && (
                   <Text style={styles.reviewNotes} numberOfLines={2}>
@@ -754,6 +795,12 @@ const createStyles = (colors: any, isDark: boolean) =>
       alignItems: 'center',
       marginBottom: 8,
     },
+    reviewHeaderLeft: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
     oysterName: {
       fontSize: 16,
       fontWeight: '600',
@@ -765,6 +812,14 @@ const createStyles = (colors: any, isDark: boolean) =>
       fontWeight: '600',
       color: colors.primary,
       textTransform: 'capitalize',
+    },
+    deleteButton: {
+      padding: 8,
+      borderRadius: 8,
+      backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)',
+    },
+    deleteButtonText: {
+      fontSize: 18,
     },
     reviewNotes: {
       fontSize: 14,

@@ -172,6 +172,7 @@ export const deleteAccountSchema = z.object({
 export const updateProfileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name too long').optional(),
   email: z.string().email('Invalid email address').toLowerCase().optional(),
+  profilePhotoUrl: z.string().url('Invalid photo URL').optional().nullable(),
 });
 
 export const updatePrivacySettingsSchema = z.object({

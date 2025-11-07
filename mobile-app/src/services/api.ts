@@ -182,6 +182,21 @@ export const authApi = {
     return response.data.data;
   },
 
+  // Apple Sign In
+  appleAuth: async (idToken: string, user?: any): Promise<AuthResponse> => {
+    const response = await api.post<ApiResponse<AuthResponse>>('/auth/apple', {
+      idToken,
+      user,
+    });
+    if (!response.data.data) throw new Error('Apple authentication failed');
+
+    // Save token and user
+    await authStorage.saveToken(response.data.data.token);
+    await authStorage.saveUser(response.data.data.user);
+
+    return response.data.data;
+  },
+
   // Get current user profile
   getProfile: async (): Promise<User> => {
     const response = await api.get<ApiResponse<User>>('/auth/profile');

@@ -240,10 +240,11 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    const { name, email } = req.body;
+    const { name, email, profilePhotoUrl } = req.body;
     const updateData: any = {};
 
     if (name) updateData.name = name;
+    if (profilePhotoUrl !== undefined) updateData.profilePhotoUrl = profilePhotoUrl;
     if (email) {
       // Check if email is already taken
       const existing = await prisma.user.findUnique({
@@ -268,6 +269,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
         id: true,
         email: true,
         name: true,
+        profilePhotoUrl: true,
         preferences: true,
         createdAt: true,
         updatedAt: true,
