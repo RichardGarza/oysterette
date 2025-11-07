@@ -1,3 +1,32 @@
+/**
+ * User Routes
+ *
+ * Handles user profile, preferences, and account management.
+ * All routes require authentication.
+ *
+ * Profile Management:
+ * - GET /api/users/profile - Get comprehensive profile with statistics
+ * - PUT /api/users/profile - Update name and email
+ *
+ * Review History:
+ * - GET /api/users/me/reviews - Paginated review history with sorting
+ *
+ * Account Security:
+ * - PUT /api/users/password - Change password (not for OAuth users)
+ * - DELETE /api/users/account - Permanent account deletion
+ *
+ * Privacy Settings:
+ * - PUT /api/users/privacy - Update profile visibility settings
+ *
+ * User Preferences:
+ * - PUT /api/users/preferences - Update app preferences (theme, etc.)
+ *
+ * Top Oysters List:
+ * - GET /api/users/top-oysters - Get user's curated top list
+ * - POST /api/users/top-oysters - Add oyster to top list
+ * - DELETE /api/users/top-oysters/:oysterId - Remove from top list
+ */
+
 import express from 'express';
 import {
   getTopOysters,

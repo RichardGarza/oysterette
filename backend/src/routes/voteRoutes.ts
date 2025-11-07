@@ -1,3 +1,25 @@
+/**
+ * Vote Routes
+ *
+ * Handles review voting (agree/disagree) and credibility tracking.
+ * All routes require authentication.
+ *
+ * Voting Operations:
+ * - POST /api/votes/reviews/:reviewId/vote - Cast agree/disagree vote
+ * - DELETE /api/votes/reviews/:reviewId/vote - Remove vote
+ *
+ * Vote Status:
+ * - GET /api/votes/reviews/votes?reviewIds=id1,id2,id3 - Batch get user votes
+ *
+ * Credibility:
+ * - GET /api/votes/users/:userId/credibility - Get user's credibility stats
+ *
+ * Features:
+ * - Automatic review weighted score updates
+ * - Automatic reviewer credibility recalculation
+ * - Prevents self-voting on own reviews
+ */
+
 import express from 'express';
 import * as voteController from '../controllers/voteController';
 import { authenticate } from '../middleware/auth';

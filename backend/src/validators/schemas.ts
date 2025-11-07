@@ -1,12 +1,39 @@
+/**
+ * Validation Schemas
+ *
+ * Centralized Zod schemas for runtime validation and data sanitization.
+ * Used by validate middleware to ensure type-safe request handling.
+ *
+ * Features:
+ * - Type-safe validation with TypeScript inference
+ * - Automatic data sanitization (e.g., email lowercasing, trimming)
+ * - Custom error messages for user-friendly feedback
+ * - Regex validation for complex patterns (passwords, UUIDs)
+ * - Enum validation for constrained values
+ *
+ * Schema Categories:
+ * - Auth: Registration, login, Google OAuth
+ * - Reviews: Create and update reviews with attribute validation
+ * - Oysters: CRUD operations with attribute ranges
+ * - Votes: Boolean agree/disagree validation
+ * - Queries: Pagination, sorting, search parameters
+ * - Params: UUID validation for route parameters
+ * - User: Profile updates, password changes, account deletion, privacy
+ *
+ * Password Requirements:
+ * - Minimum 8 characters
+ * - At least 1 uppercase letter
+ * - At least 1 lowercase letter
+ * - At least 1 number
+ *
+ * All schemas are exported and used by route middleware via validateBody/validateParams/validateQuery.
+ */
+
 import { z } from 'zod';
 import { ReviewRating } from '@prisma/client';
 
-/**
- * Validation Schemas
- * Using Zod for runtime type validation and input sanitization
- */
+// ==================== Auth Schemas ====================
 
-// Auth Schemas
 export const registerSchema = z.object({
   email: z.string().email('Invalid email address').toLowerCase(),
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name too long'),
@@ -27,7 +54,8 @@ export const googleAuthSchema = z.object({
   idToken: z.string().min(1, 'Google ID token is required'),
 });
 
-// Review Schemas
+// ==================== Review Schemas ====================
+
 export const createReviewSchema = z.object({
   oysterId: z.string().uuid('Invalid oyster ID'),
   rating: z.nativeEnum(ReviewRating),
@@ -49,7 +77,8 @@ export const updateReviewSchema = z.object({
   creaminess: z.number().int().min(1).max(10).optional(),
 });
 
-// Oyster Schemas
+// ==================== Oyster Schemas ====================
+
 export const createOysterSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
   species: z.string().max(100).optional(),
@@ -74,12 +103,14 @@ export const updateOysterSchema = z.object({
   creaminess: z.number().min(0).max(10).optional(),
 });
 
-// Vote Schemas
+// ==================== Vote Schemas ====================
+
 export const voteSchema = z.object({
   isAgree: z.boolean(),
 });
 
-// Query Schemas
+// ==================== Query Schemas ====================
+
 export const paginationSchema = z.object({
   page: z.string().regex(/^\d+$/).transform(Number).pipe(z.number().min(1)).optional(),
   limit: z.string().regex(/^\d+$/).transform(Number).pipe(z.number().min(1).max(100)).optional(),
@@ -89,7 +120,8 @@ export const reviewIdsQuerySchema = z.object({
   reviewIds: z.string().min(1, 'reviewIds query parameter required'),
 });
 
-// UUID param validation
+// ==================== UUID Param Validation ====================
+
 export const uuidParamSchema = z.object({
   id: z.string().uuid('Invalid ID format'),
 });
@@ -106,7 +138,8 @@ export const userIdParamSchema = z.object({
   userId: z.string().uuid('Invalid user ID format'),
 });
 
-// User Profile Schemas
+// ==================== User Profile Schemas ====================
+
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password required'),
   newPassword: z

@@ -1,3 +1,24 @@
+/**
+ * Review Routes
+ *
+ * Handles oyster review endpoints with duplicate detection.
+ *
+ * Public Routes:
+ * - GET /api/reviews/oyster/:oysterId - Get all reviews for an oyster
+ *
+ * Protected Routes (require authentication):
+ * - POST /api/reviews - Create new review (prevents duplicates)
+ * - GET /api/reviews/user - Get current user's reviews
+ * - GET /api/reviews/check/:oysterId - Check if user reviewed oyster
+ * - PUT /api/reviews/:reviewId - Update user's review
+ * - DELETE /api/reviews/:reviewId - Delete user's review
+ *
+ * Features:
+ * - Automatic duplicate detection via unique constraint
+ * - Review quality scoring based on community votes
+ * - Automatic oyster rating recalculation on mutations
+ */
+
 import express from 'express';
 import {
   createReview,

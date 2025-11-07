@@ -1,3 +1,24 @@
+/**
+ * Oyster Routes
+ *
+ * Handles oyster data endpoints with filtering, sorting, and search.
+ *
+ * Public Routes (optional authentication for user-specific features):
+ * - GET /api/oysters - List all oysters with optional filters/sorting
+ * - GET /api/oysters/search - Fuzzy search by name/origin/species
+ * - GET /api/oysters/filters - Get unique species and origins for UI
+ * - GET /api/oysters/:id - Get single oyster with reviews
+ *
+ * Protected Routes (require authentication):
+ * - POST /api/oysters - Create new oyster
+ * - PUT /api/oysters/:id - Update oyster
+ * - DELETE /api/oysters/:id - Delete oyster
+ *
+ * Filtering & Sorting:
+ * - Filter by: species, origin
+ * - Sort by: rating, name, size, sweetness, creaminess, flavorfulness, body
+ */
+
 import express from 'express';
 import {
   getAllOysters,

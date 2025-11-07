@@ -1,3 +1,19 @@
+/**
+ * Authentication Routes
+ *
+ * Handles user authentication endpoints.
+ *
+ * Public Routes:
+ * - POST /api/auth/register - Create new user account
+ * - POST /api/auth/login - Login with email/password
+ * - POST /api/auth/google - Login with Google OAuth
+ *
+ * Protected Routes:
+ * - GET /api/auth/profile - Get current user profile
+ *
+ * All routes use Zod validation middleware for request data sanitization.
+ */
+
 import express from 'express';
 import { register, login, getProfile, googleAuth } from '../controllers/authController';
 import { authenticate } from '../middleware/auth';
