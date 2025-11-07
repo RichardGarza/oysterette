@@ -190,7 +190,7 @@ export default function PrivacySettingsScreen() {
               <Switch
                 value={showReviewHistory}
                 onValueChange={setShowReviewHistory}
-                trackColor={{ false: colors.border, true: theme.colors.primary }}
+                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
                 thumbColor={Platform.OS === 'ios' ? '#fff' : showReviewHistory ? '#fff' : '#f4f3f4'}
               />
             </View>
@@ -205,7 +205,7 @@ export default function PrivacySettingsScreen() {
               <Switch
                 value={showFavorites}
                 onValueChange={setShowFavorites}
-                trackColor={{ false: colors.border, true: theme.colors.primary }}
+                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
                 thumbColor={Platform.OS === 'ios' ? '#fff' : showFavorites ? '#fff' : '#f4f3f4'}
               />
             </View>
@@ -220,7 +220,7 @@ export default function PrivacySettingsScreen() {
               <Switch
                 value={showStatistics}
                 onValueChange={setShowStatistics}
-                trackColor={{ false: colors.border, true: theme.colors.primary }}
+                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
                 thumbColor={Platform.OS === 'ios' ? '#fff' : showStatistics ? '#fff' : '#f4f3f4'}
               />
             </View>
@@ -243,7 +243,7 @@ export default function PrivacySettingsScreen() {
               <Switch
                 value={allowMessages}
                 onValueChange={setAllowMessages}
-                trackColor={{ false: colors.border, true: theme.colors.primary }}
+                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
                 thumbColor={Platform.OS === 'ios' ? '#fff' : allowMessages ? '#fff' : '#f4f3f4'}
               />
             </View>
