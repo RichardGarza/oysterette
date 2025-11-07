@@ -159,6 +159,7 @@ export interface Review {
   creaminess?: number;
 
   notes?: string;
+  photoUrls?: string[];
   createdAt: string;
 
   // Voting metrics

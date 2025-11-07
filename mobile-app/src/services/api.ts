@@ -303,6 +303,7 @@ export const reviewApi = {
     notes?: string;
     origin?: string;
     species?: string;
+    photoUrls?: string[];
   }): Promise<Review | null> => {
     const response = await api.post<ApiResponse<Review>>('/reviews', review);
     return response.data.data || null;

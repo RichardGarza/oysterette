@@ -77,9 +77,11 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
+import * as ImagePicker from 'expo-image-picker';
 import { AddReviewScreenRouteProp, AddReviewScreenNavigationProp } from '../navigation/types';
 import { reviewApi } from '../services/api';
 import { authStorage } from '../services/auth';
@@ -111,9 +113,144 @@ export default function AddReviewScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
+  // Photo upload state
+  const [photos, setPhotos] = useState<string[]>(existingReview?.photoUrls || []);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
   // Check if we should show origin/species inputs (only when data is missing)
   const showOriginInput = oysterOrigin === 'Unknown';
   const showSpeciesInput = oysterSpecies === 'Unknown';
+
+  // Request camera permissions on mount
+  useEffect(() => {
+    (async () => {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Camera permission not granted');
+      }
+      const mediaStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (mediaStatus.status !== 'granted') {
+        console.log('Media library permission not granted');
+      }
+    })();
+  }, []);
+
+  const pickImageFromCamera = async () => {
+    if (photos.length >= 5) {
+      Alert.alert('Maximum Photos', 'You can only add up to 5 photos per review.');
+      return;
+    }
+
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        await uploadPhoto(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image from camera:', error);
+      Alert.alert('Error', 'Failed to take photo. Please try again.');
+    }
+  };
+
+  const pickImageFromLibrary = async () => {
+    if (photos.length >= 5) {
+      Alert.alert('Maximum Photos', 'You can only add up to 5 photos per review.');
+      return;
+    }
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        await uploadPhoto(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image from library:', error);
+      Alert.alert('Error', 'Failed to select photo. Please try again.');
+    }
+  };
+
+  const uploadPhoto = async (uri: string) => {
+    try {
+      setUploadingPhoto(true);
+      const token = await authStorage.getToken();
+
+      if (!token) {
+        Alert.alert('Authentication Required', 'Please log in to upload photos.');
+        return;
+      }
+
+      // Create form data
+      const formData = new FormData();
+      const filename = uri.split('/').pop() || 'photo.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+      formData.append('image', {
+        uri,
+        name: filename,
+        type,
+      } as any);
+
+      // Upload to backend
+      const response = await fetch('https://oysterette-production.up.railway.app/api/upload/image?folder=reviews', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.data.url) {
+        setPhotos([...photos, data.data.url]);
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      Alert.alert('Upload Failed', 'Failed to upload photo. Please try again.');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos(photos.filter((_, i) => i !== index));
+  };
+
+  const showPhotoOptions = () => {
+    Alert.alert(
+      'Add Photo',
+      'Choose a photo source',
+      [
+        {
+          text: 'Take Photo',
+          onPress: pickImageFromCamera,
+        },
+        {
+          text: 'Choose from Library',
+          onPress: pickImageFromLibrary,
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
 
   const handleSubmit = async () => {
     // Check if user is logged in
@@ -142,6 +279,7 @@ export default function AddReviewScreen() {
           flavorfulness,
           creaminess,
           notes: notes.trim() || undefined,
+          photoUrls: photos.length > 0 ? photos : undefined,
         });
         console.log('✅ [AddReviewScreen] Review updated successfully');
       } else {
@@ -157,6 +295,7 @@ export default function AddReviewScreen() {
           notes: notes.trim() || undefined,
           origin: contributedOrigin.trim() || undefined,
           species: contributedSpecies.trim() || undefined,
+          photoUrls: photos.length > 0 ? photos : undefined,
         });
         console.log('✅ [AddReviewScreen] Review submitted successfully');
       }
@@ -422,6 +561,48 @@ export default function AddReviewScreen() {
             numberOfLines={4}
             textAlignVertical="top"
           />
+        </View>
+
+        {/* Photos */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>📸 Photos (Optional, max 5)</Text>
+
+          {/* Photo Grid */}
+          {photos.length > 0 && (
+            <View style={styles.photoGrid}>
+              {photos.map((photo, index) => (
+                <View key={index} style={styles.photoContainer}>
+                  <Image source={{ uri: photo }} style={styles.photoThumbnail} />
+                  <TouchableOpacity
+                    style={styles.removePhotoButton}
+                    onPress={() => removePhoto(index)}
+                  >
+                    <Text style={styles.removePhotoText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Add Photo Button */}
+          {photos.length < 5 && (
+            <TouchableOpacity
+              style={styles.addPhotoButton}
+              onPress={showPhotoOptions}
+              disabled={uploadingPhoto}
+            >
+              {uploadingPhoto ? (
+                <ActivityIndicator size="small" color="#3498db" />
+              ) : (
+                <>
+                  <Text style={styles.addPhotoIcon}>📷</Text>
+                  <Text style={styles.addPhotoText}>
+                    {photos.length === 0 ? 'Add Photos' : 'Add Another Photo'}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Origin (only if missing) */}
@@ -690,6 +871,60 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 12,
+  },
+  photoContainer: {
+    width: 100,
+    height: 100,
+    position: 'relative',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  photoThumbnail: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
+  removePhotoButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  removePhotoText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  addPhotoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#dee2e6',
+    borderStyle: 'dashed',
+    gap: 8,
+  },
+  addPhotoIcon: {
+    fontSize: 24,
+  },
+  addPhotoText: {
+    fontSize: 16,
+    color: '#3498db',
     fontWeight: '600',
   },
 });
