@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import logger from '../utils/logger';
 import prisma from '../lib/prisma';
+import { hashPassword, comparePassword } from '../utils/auth';
 
 // Get user's top oysters
 export const getTopOysters = async (req: Request, res: Response): Promise<void> => {
@@ -245,6 +246,390 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
     });
   } catch (error) {
     logger.error('Update profile error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error',
+    });
+  }
+};
+
+// Get user profile with statistics
+export const getProfile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Not authenticated',
+      });
+      return;
+    }
+
+    // Fetch user with aggregated stats
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      include: {
+        _count: {
+          select: {
+            reviews: true,
+            favorites: true,
+            votesGiven: true,
+          },
+        },
+        reviews: {
+          select: {
+            rating: true,
+            createdAt: true,
+            oyster: {
+              select: {
+                species: true,
+                origin: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        error: 'User not found',
+      });
+      return;
+    }
+
+    // Calculate average rating given
+    let avgRatingGiven = 0;
+    if (user.reviews.length > 0) {
+      const ratingValues = {
+        LOVE_IT: 4,
+        LIKE_IT: 3,
+        MEH: 2,
+        WHATEVER: 1,
+      };
+      const totalRating = user.reviews.reduce((sum, review) => sum + ratingValues[review.rating], 0);
+      avgRatingGiven = totalRating / user.reviews.length;
+    }
+
+    // Find most reviewed species and origin
+    const speciesCounts = user.reviews.reduce((acc, review) => {
+      if (review.oyster.species) {
+        acc[review.oyster.species] = (acc[review.oyster.species] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    const originCounts = user.reviews.reduce((acc, review) => {
+      if (review.oyster.origin) {
+        acc[review.oyster.origin] = (acc[review.oyster.origin] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    const mostReviewedSpecies = Object.keys(speciesCounts).length > 0
+      ? Object.entries(speciesCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
+      : undefined;
+
+    const mostReviewedOrigin = Object.keys(originCounts).length > 0
+      ? Object.entries(originCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
+      : undefined;
+
+    // Determine badge level
+    let badgeLevel: 'Novice' | 'Trusted' | 'Expert' = 'Novice';
+    if (user.credibilityScore >= 1.5) {
+      badgeLevel = 'Expert';
+    } else if (user.credibilityScore >= 1.0) {
+      badgeLevel = 'Trusted';
+    }
+
+    // Calculate review streak (simplified - just days since last review)
+    let reviewStreak = 0;
+    if (user.reviews.length > 0) {
+      const sortedReviews = user.reviews.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      const lastReview = sortedReviews[0];
+      if (lastReview) {
+        const daysSinceLastReview = Math.floor((Date.now() - lastReview.createdAt.getTime()) / (1000 * 60 * 60 * 24));
+        reviewStreak = daysSinceLastReview <= 7 ? user.reviews.length : 0;
+      }
+    }
+
+    const stats = {
+      totalReviews: user._count.reviews,
+      totalFavorites: user._count.favorites,
+      totalVotesGiven: user._count.votesGiven,
+      totalVotesReceived: user.totalAgrees + user.totalDisagrees,
+      avgRatingGiven: Number(avgRatingGiven.toFixed(2)),
+      credibilityScore: user.credibilityScore,
+      badgeLevel,
+      memberSince: user.createdAt.toISOString(),
+      reviewStreak,
+      mostReviewedSpecies,
+      mostReviewedOrigin,
+    };
+
+    // Return user without password and with stats
+    const { password, ...userWithoutPassword } = user;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: userWithoutPassword,
+        stats,
+      },
+    });
+  } catch (error) {
+    logger.error('Get profile error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error',
+    });
+  }
+};
+
+// Get user's review history
+export const getMyReviews = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Not authenticated',
+      });
+      return;
+    }
+
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+    const sortBy = (req.query.sortBy as string) || 'createdAt';
+
+    const skip = (page - 1) * limit;
+
+    // Build orderBy
+    const orderBy: any = {};
+    if (sortBy === 'createdAt') {
+      orderBy.createdAt = 'desc';
+    } else if (sortBy === 'rating') {
+      orderBy.rating = 'desc';
+    }
+
+    const reviews = await prisma.review.findMany({
+      where: { userId: req.userId },
+      include: {
+        oyster: {
+          select: {
+            id: true,
+            name: true,
+            species: true,
+            origin: true,
+            avgRating: true,
+            overallScore: true,
+          },
+        },
+        _count: {
+          select: { votes: true },
+        },
+      },
+      orderBy,
+      skip,
+      take: limit,
+    });
+
+    const total = await prisma.review.count({ where: { userId: req.userId } });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        reviews,
+        total,
+        page,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    logger.error('Get my reviews error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error',
+    });
+  }
+};
+
+// Change password
+export const changePassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Not authenticated',
+      });
+      return;
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    // Fetch user with password
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+    });
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        error: 'User not found',
+      });
+      return;
+    }
+
+    // Check if user has a password (OAuth users may not)
+    if (!user.password) {
+      res.status(400).json({
+        success: false,
+        error: 'Google OAuth users cannot change password',
+      });
+      return;
+    }
+
+    // Verify current password
+    const isValid = await comparePassword(currentPassword, user.password);
+    if (!isValid) {
+      res.status(401).json({
+        success: false,
+        error: 'Current password is incorrect',
+      });
+      return;
+    }
+
+    // Hash new password
+    const hashedPassword = await hashPassword(newPassword);
+
+    // Update password
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: { password: hashedPassword },
+    });
+
+    // Log password change
+    logger.info(`Password changed for user ${req.userId} (${user.email})`);
+
+    res.status(200).json({
+      success: true,
+      data: { message: 'Password changed successfully' },
+    });
+  } catch (error) {
+    logger.error('Change password error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error',
+    });
+  }
+};
+
+// Delete user account
+export const deleteAccount = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Not authenticated',
+      });
+      return;
+    }
+
+    const { password, confirmText } = req.body;
+
+    // Fetch user
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+    });
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        error: 'User not found',
+      });
+      return;
+    }
+
+    // Verify password if user has one (OAuth users may not)
+    if (user.password && password) {
+      const isValid = await comparePassword(password, user.password);
+      if (!isValid) {
+        res.status(401).json({
+          success: false,
+          error: 'Incorrect password',
+        });
+        return;
+      }
+    }
+
+    // Verify confirmation text
+    if (confirmText !== 'DELETE MY ACCOUNT') {
+      res.status(400).json({
+        success: false,
+        error: 'Confirmation text does not match. Please type "DELETE MY ACCOUNT"',
+      });
+      return;
+    }
+
+    // Delete user (Prisma will cascade delete reviews, votes, favorites, topOysters)
+    await prisma.user.delete({
+      where: { id: req.userId },
+    });
+
+    // Log deletion
+    logger.warn(`Account deleted: ${user.email} (${req.userId})`);
+
+    res.status(200).json({
+      success: true,
+      data: { message: 'Account deleted successfully' },
+    });
+  } catch (error) {
+    logger.error('Delete account error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error',
+    });
+  }
+};
+
+// Update privacy settings
+export const updatePrivacySettings = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Not authenticated',
+      });
+      return;
+    }
+
+    const { profileVisibility, showReviewHistory, showFavorites, showStatistics, allowMessages } = req.body;
+
+    const updateData: any = {};
+    if (profileVisibility !== undefined) updateData.profileVisibility = profileVisibility;
+    if (showReviewHistory !== undefined) updateData.showReviewHistory = showReviewHistory;
+    if (showFavorites !== undefined) updateData.showFavorites = showFavorites;
+    if (showStatistics !== undefined) updateData.showStatistics = showStatistics;
+    if (allowMessages !== undefined) updateData.allowMessages = allowMessages;
+
+    const user = await prisma.user.update({
+      where: { id: req.userId },
+      data: updateData,
+      select: {
+        id: true,
+        profileVisibility: true,
+        showReviewHistory: true,
+        showFavorites: true,
+        showStatistics: true,
+        allowMessages: true,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    logger.error('Update privacy settings error:', error);
     res.status(500).json({
       success: false,
       error: 'Server error',

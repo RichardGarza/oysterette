@@ -105,3 +105,38 @@ export const reviewIdParamSchema = z.object({
 export const userIdParamSchema = z.object({
   userId: z.string().uuid('Invalid user ID format'),
 });
+
+// User Profile Schemas
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password required'),
+  newPassword: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number'),
+});
+
+export const deleteAccountSchema = z.object({
+  password: z.string().optional(), // Optional for OAuth users
+  confirmText: z.string().min(1, 'Confirmation required'),
+});
+
+export const updateProfileSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name too long').optional(),
+  email: z.string().email('Invalid email address').toLowerCase().optional(),
+});
+
+export const updatePrivacySettingsSchema = z.object({
+  profileVisibility: z.enum(['public', 'friends', 'private']).optional(),
+  showReviewHistory: z.boolean().optional(),
+  showFavorites: z.boolean().optional(),
+  showStatistics: z.boolean().optional(),
+  allowMessages: z.boolean().optional(),
+});
+
+export const reviewQuerySchema = z.object({
+  page: z.string().regex(/^\d+$/).transform(Number).pipe(z.number().min(1)).optional(),
+  limit: z.string().regex(/^\d+$/).transform(Number).pipe(z.number().min(1).max(100)).optional(),
+  sortBy: z.enum(['createdAt', 'rating']).optional(),
+});
