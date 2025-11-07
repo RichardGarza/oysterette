@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   TextInput,
   Platform,
+  ScrollView,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -155,6 +156,30 @@ export default function OysterListScreen() {
     return oysters.filter(oyster => favorites.has(oyster.id));
   };
 
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (selectedSpecies) count++;
+    if (selectedOrigin) count++;
+    if (selectedSortBy && selectedSortBy !== 'name') count++;
+    return count;
+  };
+
+  const clearAllFilters = () => {
+    setSelectedSpecies('');
+    setSelectedOrigin('');
+    setSelectedSortBy('name');
+  };
+
+  const sortOptions = [
+    { value: 'name', label: 'Name' },
+    { value: 'rating', label: 'Rating' },
+    { value: 'size', label: 'Size' },
+    { value: 'sweetness', label: 'Sweetness' },
+    { value: 'creaminess', label: 'Creaminess' },
+    { value: 'flavorfulness', label: 'Flavor' },
+    { value: 'body', label: 'Body' },
+  ];
+
   const styles = createStyles(theme.colors, isDark);
 
   const renderOysterItem = ({ item }: { item: Oyster }) => (
@@ -237,22 +262,36 @@ export default function OysterListScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <View style={styles.filterTabs}>
+          <View style={styles.topRow}>
+            <View style={styles.filterTabs}>
+              <TouchableOpacity
+                style={[styles.filterTab, !showFavoritesOnly && styles.filterTabActive]}
+                onPress={() => setShowFavoritesOnly(false)}
+              >
+                <Text style={[styles.filterTabText, !showFavoritesOnly && styles.filterTabTextActive]}>
+                  All
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.filterTab, showFavoritesOnly && styles.filterTabActive]}
+                onPress={() => setShowFavoritesOnly(true)}
+              >
+                <Text style={[styles.filterTabText, showFavoritesOnly && styles.filterTabTextActive]}>
+                  ❤️ Favorites
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
-              style={[styles.filterTab, !showFavoritesOnly && styles.filterTabActive]}
-              onPress={() => setShowFavoritesOnly(false)}
+              style={styles.filterButton}
+              onPress={() => setShowFilters(!showFilters)}
             >
-              <Text style={[styles.filterTabText, !showFavoritesOnly && styles.filterTabTextActive]}>
-                All
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.filterTab, showFavoritesOnly && styles.filterTabActive]}
-              onPress={() => setShowFavoritesOnly(true)}
-            >
-              <Text style={[styles.filterTabText, showFavoritesOnly && styles.filterTabTextActive]}>
-                ❤️ Favorites
-              </Text>
+              <Text style={styles.filterButtonText}>🔍 Filters</Text>
+              {getActiveFilterCount() > 0 && (
+                <View style={styles.filterBadge}>
+                  <Text style={styles.filterBadgeText}>{getActiveFilterCount()}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
 
@@ -275,22 +314,36 @@ export default function OysterListScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.filterTabs}>
+        <View style={styles.topRow}>
+          <View style={styles.filterTabs}>
+            <TouchableOpacity
+              style={[styles.filterTab, !showFavoritesOnly && styles.filterTabActive]}
+              onPress={() => setShowFavoritesOnly(false)}
+            >
+              <Text style={[styles.filterTabText, !showFavoritesOnly && styles.filterTabTextActive]}>
+                All
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.filterTab, showFavoritesOnly && styles.filterTabActive]}
+              onPress={() => setShowFavoritesOnly(true)}
+            >
+              <Text style={[styles.filterTabText, showFavoritesOnly && styles.filterTabTextActive]}>
+                ❤️ Favorites
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity
-            style={[styles.filterTab, !showFavoritesOnly && styles.filterTabActive]}
-            onPress={() => setShowFavoritesOnly(false)}
+            style={styles.filterButton}
+            onPress={() => setShowFilters(!showFilters)}
           >
-            <Text style={[styles.filterTabText, !showFavoritesOnly && styles.filterTabTextActive]}>
-              All
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.filterTab, showFavoritesOnly && styles.filterTabActive]}
-            onPress={() => setShowFavoritesOnly(true)}
-          >
-            <Text style={[styles.filterTabText, showFavoritesOnly && styles.filterTabTextActive]}>
-              ❤️ Favorites
-            </Text>
+            <Text style={styles.filterButtonText}>🔍 Filters</Text>
+            {getActiveFilterCount() > 0 && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>{getActiveFilterCount()}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -300,6 +353,125 @@ export default function OysterListScreen() {
           value={searchQuery}
           onChangeText={handleSearch}
         />
+
+        {showFilters && (
+          <View style={styles.filterSection}>
+            <Text style={styles.filterSectionTitle}>Sort By</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScrollView}>
+              {sortOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.filterChip,
+                    selectedSortBy === option.value && styles.filterChipActive,
+                  ]}
+                  onPress={() => setSelectedSortBy(option.value)}
+                >
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      selectedSortBy === option.value && styles.filterChipTextActive,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {availableSpecies.length > 0 && (
+              <>
+                <Text style={styles.filterSectionTitle}>Species</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScrollView}>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterChip,
+                      !selectedSpecies && styles.filterChipActive,
+                    ]}
+                    onPress={() => setSelectedSpecies('')}
+                  >
+                    <Text
+                      style={[
+                        styles.filterChipText,
+                        !selectedSpecies && styles.filterChipTextActive,
+                      ]}
+                    >
+                      All Species
+                    </Text>
+                  </TouchableOpacity>
+                  {availableSpecies.map((species) => (
+                    <TouchableOpacity
+                      key={species}
+                      style={[
+                        styles.filterChip,
+                        selectedSpecies === species && styles.filterChipActive,
+                      ]}
+                      onPress={() => setSelectedSpecies(species)}
+                    >
+                      <Text
+                        style={[
+                          styles.filterChipText,
+                          selectedSpecies === species && styles.filterChipTextActive,
+                        ]}
+                      >
+                        {species}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+
+            {availableOrigins.length > 0 && (
+              <>
+                <Text style={styles.filterSectionTitle}>Origin</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScrollView}>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterChip,
+                      !selectedOrigin && styles.filterChipActive,
+                    ]}
+                    onPress={() => setSelectedOrigin('')}
+                  >
+                    <Text
+                      style={[
+                        styles.filterChipText,
+                        !selectedOrigin && styles.filterChipTextActive,
+                      ]}
+                    >
+                      All Origins
+                    </Text>
+                  </TouchableOpacity>
+                  {availableOrigins.map((origin) => (
+                    <TouchableOpacity
+                      key={origin}
+                      style={[
+                        styles.filterChip,
+                        selectedOrigin === origin && styles.filterChipActive,
+                      ]}
+                      onPress={() => setSelectedOrigin(origin)}
+                    >
+                      <Text
+                        style={[
+                          styles.filterChipText,
+                          selectedOrigin === origin && styles.filterChipTextActive,
+                        ]}
+                      >
+                        {origin}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+
+            {getActiveFilterCount() > 0 && (
+              <TouchableOpacity style={styles.clearFiltersButton} onPress={clearAllFilters}>
+                <Text style={styles.clearFiltersText}>✕ Clear All Filters</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </View>
 
       {error && (
@@ -374,34 +546,118 @@ const createStyles = (colors: any, isDark: boolean) =>
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
+    topRow: {
+      flexDirection: 'row',
+      marginBottom: 15,
+      gap: 10,
+      alignItems: 'center',
+    },
     filterTabs: {
-    flexDirection: 'row',
-    marginBottom: 15,
-    gap: 10,
-  },
-  filterTab: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: colors.inputBackground,
-    borderRadius: 8,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  filterTabActive: {
-    backgroundColor: isDark ? '#3a5a7a' : '#e8f4f8',
-    borderColor: colors.primary,
-  },
-  filterTabText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  filterTabTextActive: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
+      flexDirection: 'row',
+      flex: 1,
+      gap: 10,
+    },
+    filterTab: {
+      flex: 1,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      backgroundColor: colors.inputBackground,
+      borderRadius: 8,
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    filterTabActive: {
+      backgroundColor: isDark ? '#3a5a7a' : '#e8f4f8',
+      borderColor: colors.primary,
+    },
+    filterTabText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    filterTabTextActive: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    filterButton: {
+      backgroundColor: colors.primary,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    filterButtonText: {
+      color: '#fff',
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    filterBadge: {
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      width: 20,
+      height: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    filterBadgeText: {
+      color: colors.primary,
+      fontSize: 12,
+      fontWeight: 'bold',
+    },
+    filterSection: {
+      marginTop: 15,
+      paddingTop: 15,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    filterSectionTitle: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 10,
+      marginTop: 10,
+    },
+    chipScrollView: {
+      marginBottom: 10,
+    },
+    filterChip: {
+      backgroundColor: colors.inputBackground,
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      borderRadius: 20,
+      marginRight: 8,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    filterChipActive: {
+      backgroundColor: isDark ? '#3a5a7a' : '#e8f4f8',
+      borderColor: colors.primary,
+    },
+    filterChipText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    filterChipTextActive: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    clearFiltersButton: {
+      backgroundColor: isDark ? '#4a2020' : '#ffe5e5',
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginTop: 10,
+    },
+    clearFiltersText: {
+      color: colors.error,
+      fontSize: 14,
+      fontWeight: '600',
+    },
   searchInput: {
     backgroundColor: colors.inputBackground,
     padding: 12,
