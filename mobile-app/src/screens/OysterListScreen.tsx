@@ -52,7 +52,7 @@
  * - Review count
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -99,6 +99,9 @@ export default function OysterListScreen() {
   const [creaminess, setCreaminess] = useState<'low' | 'high' | ''>('');
   const [showFilters, setShowFilters] = useState(false);
 
+  // Ref for scrolling to top when filters change
+  const flatListRef = useRef<FlatList>(null);
+
   useEffect(() => {
     fetchOysters();
     loadFavorites();
@@ -106,9 +109,11 @@ export default function OysterListScreen() {
   }, []);
 
   useEffect(() => {
-    // Refetch when filters change
+    // Refetch when filters change and scroll to top
     if (!loading) {
       fetchOysters();
+      // Scroll to top of list when filters change
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
     }
   }, [selectedSortBy, sortDirection, sweetness, size, body, flavorfulness, creaminess]);
 
@@ -516,6 +521,7 @@ export default function OysterListScreen() {
       )}
 
       <FlatList
+        ref={flatListRef}
         data={getFilteredOysters()}
         renderItem={renderOysterItem}
         keyExtractor={(item) => item.id}
