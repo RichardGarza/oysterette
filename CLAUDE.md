@@ -72,7 +72,54 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 
 ---
 
-## Session Dates: October 28-29, 2025 | November 3-6, 2025
+## Session Dates: October 28-29, 2025 | November 3-7, 2025
+
+---
+
+## 🆕 SESSION: November 6-7, 2025 (Late Night) - Railway Build Fixes & Memory Issue Documentation
+
+### ✅ COMPLETED THIS SESSION
+
+#### 1. **Railway Build Failures - Fixed** 🐛
+
+**Problems:**
+- Duplicate `checkExistingReview` function declaration (lines 180 & 350)
+- Tests running during Railway build (tried to connect to localhost:5432)
+- Build timeout after 10 minutes
+- TypeScript compilation error (TS2322)
+
+**Fixes:**
+- Removed duplicate function declaration
+- Updated `prebuild` script to skip tests (Railway has no database)
+- Added non-null assertion for `oysterId` parameter
+- `prebuild` now only runs `depcheck` (no database required)
+- `build:prod` runs tests locally for development
+
+**Files Modified:**
+- `backend/src/controllers/reviewController.ts` (removed duplicate, fixed TS error)
+- `backend/package.json` (updated build scripts)
+
+**Result:** ✅ Railway builds successfully now!
+
+#### 2. **Memory Management Updates** 📚
+
+**Updated CLAUDE.md:**
+- Made memory-safe commands more prominent
+- Added explicit ❌ warnings for unsafe commands
+- Clarified that tests MUST use truncation
+- Added memory fix instructions
+
+**Key Rules Now Clear:**
+- ❌ `npm test` → Will crash with 90GB memory
+- ✅ `npm test 2>&1 | tail -30` → Safe version
+
+#### 3. **GitHub Issue Submitted** 📝
+
+**Issue #11155:** Claude Code memory leak problem
+- URL: https://github.com/anthropics/claude-code/issues/11155
+- Documents 90GB memory accumulation
+- Includes reproduction steps and workarounds
+- Suggests solutions (streaming, limits, garbage collection)
 
 ---
 
