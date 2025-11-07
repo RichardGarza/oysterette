@@ -96,7 +96,7 @@ const RATING_OPTIONS: { label: string; value: ReviewRating; emoji: string; color
 export default function AddReviewScreen() {
   const route = useRoute<AddReviewScreenRouteProp>();
   const navigation = useNavigation<AddReviewScreenNavigationProp>();
-  const { oysterId, oysterName, existingReview } = route.params;
+  const { oysterId, oysterName, oysterOrigin, oysterSpecies, existingReview } = route.params;
   const isUpdateMode = !!existingReview;
 
   const [rating, setRating] = useState<ReviewRating | null>(existingReview?.rating || null);
@@ -106,8 +106,14 @@ export default function AddReviewScreen() {
   const [flavorfulness, setFlavorfulness] = useState<number>(existingReview?.flavorfulness || 5);
   const [creaminess, setCreaminess] = useState<number>(existingReview?.creaminess || 5);
   const [notes, setNotes] = useState(existingReview?.notes || '');
+  const [contributedOrigin, setContributedOrigin] = useState('');
+  const [contributedSpecies, setContributedSpecies] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  // Check if we should show origin/species inputs (only when data is missing)
+  const showOriginInput = oysterOrigin === 'Unknown';
+  const showSpeciesInput = oysterSpecies === 'Unknown';
 
   const handleSubmit = async () => {
     // Check if user is logged in
@@ -139,7 +145,7 @@ export default function AddReviewScreen() {
         });
         console.log('✅ [AddReviewScreen] Review updated successfully');
       } else {
-        // Create new review
+        // Create new review (with optional origin/species contributions)
         await reviewApi.create({
           oysterId,
           rating,
@@ -149,6 +155,8 @@ export default function AddReviewScreen() {
           flavorfulness,
           creaminess,
           notes: notes.trim() || undefined,
+          origin: contributedOrigin.trim() || undefined,
+          species: contributedSpecies.trim() || undefined,
         });
         console.log('✅ [AddReviewScreen] Review submitted successfully');
       }
@@ -416,6 +424,38 @@ export default function AddReviewScreen() {
           />
         </View>
 
+        {/* Origin (only if missing) */}
+        {showOriginInput && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>📍 Add Origin (Optional)</Text>
+            <Text style={styles.sectionSubtitle}>
+              Help us complete this entry! Where is this oyster from?
+            </Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="e.g., Washington, Tomales Bay, British Columbia"
+              value={contributedOrigin}
+              onChangeText={setContributedOrigin}
+            />
+          </View>
+        )}
+
+        {/* Species (only if missing) */}
+        {showSpeciesInput && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🔬 Add Species (Optional)</Text>
+            <Text style={styles.sectionSubtitle}>
+              Help us complete this entry! What species is this?
+            </Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="e.g., Crassostrea gigas, Crassostrea virginica"
+              value={contributedSpecies}
+              onChangeText={setContributedSpecies}
+            />
+          </View>
+        )}
+
         {/* Submit Button */}
         <TouchableOpacity
           style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
@@ -558,6 +598,14 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     minHeight: 100,
+    backgroundColor: '#f5f5f5',
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
     backgroundColor: '#f5f5f5',
   },
   submitButton: {

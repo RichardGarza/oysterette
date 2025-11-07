@@ -189,6 +189,8 @@ export default function OysterDetailScreen() {
                 navigation.navigate('AddReview', {
                   oysterId: oyster.id,
                   oysterName: oyster.name,
+                  oysterOrigin: oyster.origin,
+                  oysterSpecies: oyster.species,
                   existingReview: existingReview,
                 });
               },
@@ -200,6 +202,8 @@ export default function OysterDetailScreen() {
         navigation.navigate('AddReview', {
           oysterId: oyster.id,
           oysterName: oyster.name,
+          oysterOrigin: oyster.origin,
+          oysterSpecies: oyster.species,
         });
       }
     } catch (error) {
@@ -208,6 +212,8 @@ export default function OysterDetailScreen() {
       navigation.navigate('AddReview', {
         oysterId: oyster.id,
         oysterName: oyster.name,
+        oysterOrigin: oyster.origin,
+        oysterSpecies: oyster.species,
       });
     }
   };
@@ -324,7 +330,7 @@ export default function OysterDetailScreen() {
           </View>
           {oyster.species === 'Unknown' && (
             <Text style={styles.unknownHintSmall}>
-              🔬 Know the species? Rate it and help us complete this entry!
+              🔬 Know the species? Rate it and add the species!
             </Text>
           )}
 

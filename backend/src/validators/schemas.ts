@@ -65,6 +65,8 @@ export const createReviewSchema = z.object({
   sweetBrininess: z.number().int().min(1).max(10, 'Sweet/Brininess must be between 1 and 10'),
   flavorfulness: z.number().int().min(1).max(10, 'Flavorfulness must be between 1 and 10'),
   creaminess: z.number().int().min(1).max(10, 'Creaminess must be between 1 and 10'),
+  origin: z.string().max(100, 'Origin too long').optional(),
+  species: z.string().max(100, 'Species too long').optional(),
 });
 
 export const updateReviewSchema = z.object({

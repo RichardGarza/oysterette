@@ -524,11 +524,22 @@
 - [ ] Approve/reject submissions
 - [ ] Edit before approving
 
+**Crowd-Sourced Data Approval:**
+- [ ] Queue for crowd-sourced origin/species contributions
+- [ ] View oysters with contributed data (currently auto-applied)
+- [ ] Review contribution history (who contributed what)
+- [ ] Ability to revert incorrect contributions
+- [ ] Flag suspicious contributions
+- [ ] Track contributor accuracy/reputation
+- [ ] Optional: Change current auto-apply to pending approval workflow
+
 **Database Changes:**
 - [ ] User role field ("user" | "admin")
 - [ ] OysterSubmission model
 - [ ] FlaggedReview model
 - [ ] Profanity detection (bad-words library)
+- [ ] OysterContribution model (track origin/species changes with user attribution)
+- [ ] ContributionStatus enum ("pending" | "approved" | "rejected")
 
 ### Phase 17: Homepage Redesign 📋
 
@@ -558,7 +569,7 @@
 **Issues to Fix:**
 - [ ] Add Oyster Screen: Replace inputs with sliders/emoji buttons
 - [ ] Keyboard handling consistency
-- [ ] Missing fields on review screen (origin/species for new oysters)
+- [x] ~~Missing fields on review screen (origin/species for new oysters)~~ ✅ Completed Nov 2025
 - [ ] New oyster validation (require origin/species)
 - [ ] Navigation updates (conditional login button)
 

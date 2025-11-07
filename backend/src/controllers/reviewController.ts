@@ -56,6 +56,8 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
       flavorfulness,
       creaminess,
       notes,
+      origin,
+      species,
     } = req.body;
 
     // Validation
@@ -78,6 +80,24 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
         error: 'Oyster not found',
       });
       return;
+    }
+
+    // Update oyster with crowd-sourced data if provided and missing
+    const oysterUpdates: any = {};
+    if (origin && origin.trim() && oyster.origin === 'Unknown') {
+      oysterUpdates.origin = origin.trim();
+    }
+    if (species && species.trim() && oyster.species === 'Unknown') {
+      oysterUpdates.species = species.trim();
+    }
+
+    // Apply updates if any
+    if (Object.keys(oysterUpdates).length > 0) {
+      await prisma.oyster.update({
+        where: { id: oysterId },
+        data: oysterUpdates,
+      });
+      logger.info(`Oyster ${oysterId} updated with crowd-sourced data:`, oysterUpdates);
     }
 
     // Check if user already reviewed this oyster
