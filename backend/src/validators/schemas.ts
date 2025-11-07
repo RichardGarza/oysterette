@@ -54,6 +54,16 @@ export const googleAuthSchema = z.object({
   idToken: z.string().min(1, 'Google ID token is required'),
 });
 
+export const appleAuthSchema = z.object({
+  idToken: z.string().min(1, 'Apple ID token is required'),
+  user: z.object({
+    fullName: z.object({
+      givenName: z.string().optional(),
+      familyName: z.string().optional(),
+    }).optional(),
+  }).optional(),
+});
+
 // ==================== Review Schemas ====================
 
 export const createReviewSchema = z.object({
@@ -67,6 +77,7 @@ export const createReviewSchema = z.object({
   creaminess: z.number().int().min(1).max(10, 'Creaminess must be between 1 and 10'),
   origin: z.string().max(100, 'Origin too long').optional(),
   species: z.string().max(100, 'Species too long').optional(),
+  photoUrls: z.array(z.string().url('Invalid photo URL')).max(5, 'Maximum 5 photos allowed').optional(),
 });
 
 export const updateReviewSchema = z.object({
@@ -77,6 +88,7 @@ export const updateReviewSchema = z.object({
   sweetBrininess: z.number().int().min(1).max(10).optional(),
   flavorfulness: z.number().int().min(1).max(10).optional(),
   creaminess: z.number().int().min(1).max(10).optional(),
+  photoUrls: z.array(z.string().url('Invalid photo URL')).max(5, 'Maximum 5 photos allowed').optional(),
 });
 
 // ==================== Oyster Schemas ====================

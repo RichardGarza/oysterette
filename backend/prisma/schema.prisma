@@ -15,8 +15,15 @@ model User {
   name      String
   password  String   // hashed with bcrypt
 
+  // OAuth provider IDs (optional)
+  googleId  String?  @unique  // Google's unique user ID
+  appleId   String?  @unique  // Apple's unique user ID
+
   // User preferences stored as JSON
   preferences Json?    @default("{}")
+
+  // Profile photo (Cloudinary URL)
+  profilePhotoUrl String?
 
   // Reviewer credibility metrics
   credibilityScore  Float   @default(1.0)  // Multiplier for review influence (0.5 to 1.5)
@@ -105,6 +112,9 @@ model Review {
 
   // Personal notes
   notes    String?
+
+  // Review photos (Cloudinary URLs, max 5)
+  photoUrls String[]  @default([])
 
   // Community voting metrics
   agreeCount     Int      @default(0)    // Total "Agree" votes

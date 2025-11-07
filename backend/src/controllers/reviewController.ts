@@ -31,6 +31,7 @@ import { recalculateOysterRatings } from '../services/ratingService';
  * @param req.body.flavorfulness - Flavor rating 1-10 (optional)
  * @param req.body.creaminess - Creaminess rating 1-10 (optional)
  * @param req.body.notes - Personal tasting notes (optional)
+ * @param req.body.photoUrls - Array of Cloudinary URLs for review photos (optional, max 5)
  * @returns 201 - Created review with user and oyster info
  * @returns 400 - Missing required fields or duplicate review
  * @returns 401 - Not authenticated
@@ -58,6 +59,7 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
       notes,
       origin,
       species,
+      photoUrls,
     } = req.body;
 
     // Validation
@@ -130,6 +132,7 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
         flavorfulness,
         creaminess,
         notes,
+        photoUrls: photoUrls || [],
       },
       include: {
         user: {

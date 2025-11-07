@@ -16,6 +16,7 @@ import userRoutes from './routes/userRoutes';
 import voteRoutes from './routes/voteRoutes';
 import recommendationRoutes from './routes/recommendationRoutes';
 import favoriteRoutes from './routes/favoriteRoutes';
+import uploadRoutes from './routes/uploadRoutes';
 import prisma from './lib/prisma';
 import logger from './utils/logger';
 import {
@@ -74,6 +75,7 @@ app.get('/', (req: Request, res: Response) => {
       votes: '/api/reviews/:reviewId/vote',
       recommendations: '/api/recommendations',
       favorites: '/api/favorites',
+      upload: '/api/upload',
     },
   });
 });
@@ -84,6 +86,7 @@ app.use('/api/reviews', apiLimiter, reviewRoutes);
 app.use('/api/users', apiLimiter, userRoutes);
 app.use('/api/recommendations', apiLimiter, recommendationRoutes);
 app.use('/api/favorites', apiLimiter, favoriteRoutes);
+app.use('/api/upload', apiLimiter, uploadRoutes);
 app.use('/api', apiLimiter, voteRoutes);
 
 // Health check endpoint

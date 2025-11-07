@@ -13,6 +13,7 @@ import prisma from '../lib/prisma';
 import { hashPassword, comparePassword, generateToken } from '../utils/auth';
 import logger from '../utils/logger';
 import { OAuth2Client } from 'google-auth-library';
+import appleSignin from 'apple-signin-auth';
 
 /**
  * Register a new user with email and password
@@ -259,15 +260,21 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
     const { email, name, picture } = payload;
     const googleId = payload.sub; // Google's unique user ID
 
-    // Check if user already exists
-    let user = await prisma.user.findUnique({
-      where: { email },
+    // Check if user already exists (by email or googleId)
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { googleId },
+        ],
+      },
       select: {
         id: true,
         email: true,
         name: true,
         preferences: true,
         createdAt: true,
+        googleId: true,
       },
     });
 
@@ -279,6 +286,7 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
           email,
           name: userName,
           password: '', // OAuth users don't need a password
+          googleId,
           preferences: picture ? { profilePhoto: picture } : {},
         },
         select: {
@@ -287,9 +295,25 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
           name: true,
           preferences: true,
           createdAt: true,
+          googleId: true,
         },
       });
       logger.info(`New user created via Google OAuth: ${email}`);
+    } else if (!user.googleId) {
+      // Update existing user with googleId if they signed up with email/password first
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { googleId },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          preferences: true,
+          createdAt: true,
+          googleId: true,
+        },
+      });
+      logger.info(`Linked Google account to existing user: ${email}`);
     }
 
     // Generate JWT token
@@ -307,6 +331,140 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({
       success: false,
       error: 'Server error during Google authentication',
+    });
+  }
+};
+
+/**
+ * Authenticate user with Apple Sign In
+ *
+ * Verifies Apple ID token from mobile app (Apple Sign-In SDK) and either:
+ * - Creates a new user if email doesn't exist
+ * - Logs in existing user if email is found
+ *
+ * Apple may provide a "private relay" email if user chooses to hide their email.
+ * OAuth users have empty password field and cannot use password login.
+ *
+ * @route POST /api/auth/apple
+ * @param req.body.idToken - Apple ID token from native Apple Sign-In SDK
+ * @param req.body.user - Optional user data (only provided on first sign-in)
+ * @returns 200 - User object and JWT token
+ * @returns 400 - Missing or invalid token
+ * @returns 401 - Token verification failed
+ * @returns 500 - Server error
+ */
+export const appleAuth = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { idToken, user: appleUser } = req.body;
+
+    if (!idToken) {
+      res.status(400).json({
+        success: false,
+        error: 'Apple ID token is required',
+      });
+      return;
+    }
+
+    // Verify the Apple ID token
+    let appleData;
+    try {
+      appleData = await appleSignin.verifyIdToken(idToken, {
+        // No audience check needed - Expo handles the client ID
+        ignoreExpiration: false,
+      });
+    } catch (error) {
+      logger.error('Apple token verification failed:', error);
+      res.status(401).json({
+        success: false,
+        error: 'Invalid Apple token',
+      });
+      return;
+    }
+
+    if (!appleData || !appleData.email) {
+      res.status(400).json({
+        success: false,
+        error: 'Invalid token payload',
+      });
+      return;
+    }
+
+    const { email, sub: appleId } = appleData;
+
+    // Apple only provides user info on FIRST sign-in, so we get it from the request
+    const userName = appleUser?.fullName
+      ? `${appleUser.fullName.givenName || ''} ${appleUser.fullName.familyName || ''}`.trim()
+      : email.split('@')[0] || 'User';
+
+    // Check if user already exists (by email or appleId)
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { appleId },
+        ],
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        preferences: true,
+        createdAt: true,
+        appleId: true,
+      },
+    });
+
+    // If user doesn't exist, create new user
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name: userName,
+          password: '', // OAuth users don't need a password
+          appleId,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          preferences: true,
+          createdAt: true,
+          appleId: true,
+        },
+      });
+      logger.info(`New user created via Apple Sign-In: ${email}`);
+    } else if (!user.appleId) {
+      // Update existing user with appleId if they signed up with email/password first
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { appleId },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          preferences: true,
+          createdAt: true,
+          appleId: true,
+        },
+      });
+      logger.info(`Linked Apple account to existing user: ${email}`);
+    }
+
+    // Generate JWT token
+    const token = generateToken(user.id);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user,
+        token,
+      },
+    });
+  } catch (error) {
+    logger.error('Apple Sign-In error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error during Apple authentication',
     });
   }
 };

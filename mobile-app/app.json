@@ -21,7 +21,12 @@
     },
     "ios": {
       "supportsTablet": true,
-      "buildNumber": "9"
+      "buildNumber": "9",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Oysterette needs access to your camera so you can take photos of your oysters for reviews.",
+        "NSPhotoLibraryUsageDescription": "Oysterette needs access to your photo library so you can select photos of your oysters for reviews.",
+        "NSPhotoLibraryAddUsageDescription": "Oysterette needs permission to save photos to your photo library."
+      }
     },
     "android": {
       "package": "com.oysterette.app",
@@ -31,7 +36,13 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "versionCode": 9
+      "versionCode": 9,
+      "permissions": [
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -46,6 +57,13 @@
         "@react-native-google-signin/google-signin",
         {
           "iosUrlScheme": "com.googleusercontent.apps.578059352307-osnf9gtai7o1g9h40bp0f997e286uit0"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Oysterette needs access to your photos to add images to your reviews.",
+          "cameraPermission": "Oysterette needs access to your camera to take photos of your oysters."
         }
       ]
     ]
