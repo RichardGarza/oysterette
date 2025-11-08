@@ -1067,11 +1067,21 @@ hybridScore = attributeScore * 0.6 + collaborativeScore * 0.4
 ```
 
 **Files Modified:**
-- `backend/src/services/recommendationService.ts` (added 3 new functions)
-- `backend/src/controllers/recommendationController.ts` (added 3 handlers)
-- `backend/src/routes/recommendationRoutes.ts` (added 3 routes)
+- Backend:
+  - `backend/src/services/recommendationService.ts` (added 3 new functions)
+  - `backend/src/controllers/recommendationController.ts` (added 3 handlers)
+  - `backend/src/routes/recommendationRoutes.ts` (added 3 routes)
+- Mobile:
+  - `mobile-app/src/services/api.ts` (added getCollaborative, getHybrid)
+  - `mobile-app/src/screens/HomeScreen.tsx` (now uses hybrid by default)
 
 **Tests:** 244/244 passing ✅
+
+**User Impact:**
+HomeScreen now shows hybrid recommendations automatically, combining:
+- Personal flavor profile matching (60% weight)
+- Taste similarity with other users (40% weight)
+- Graceful fallback to attribute-based if collaborative data unavailable
 
 **Deferred:**
 - Matrix factorization (not needed for current user base size)
