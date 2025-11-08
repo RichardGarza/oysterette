@@ -442,53 +442,9 @@ export default function OysterListScreen() {
           style={styles.logo}
           resizeMode="contain"
         />
-        <View style={styles.topRow}>
-          <SegmentedButtons
-            value={showFavoritesOnly ? 'favorites' : 'all'}
-            onValueChange={(value) => setShowFavoritesOnly(value === 'favorites')}
-            buttons={[
-              { value: 'all', label: 'All' },
-              { value: 'favorites', label: '❤️ Favorites' },
-            ]}
-            style={styles.segmentedButtons}
-          />
-        </View>
-        <View style={styles.listContainer}>
-            visible={menuVisible}
-            onDismiss={() => setMenuVisible(false)}
-            anchor={
-              <Appbar.Action
-                icon="menu"
-                onPress={() => setMenuVisible(true)}
-              />
-            }
-          >
-            <Menu.Item
-              onPress={() => {
-                setMenuVisible(false);
-                navigation.navigate('Profile');
-              }}
-              title="My Profile"
-              leadingIcon="account"
-            />
-            <Menu.Item
-              onPress={() => {
-                setMenuVisible(false);
-                navigation.navigate('Settings');
-              }}
-              title="Settings"
-              leadingIcon="cog"
-            />
-            <Divider />
-            <Menu.Item
-              onPress={handleLogout}
-              title="Log Out"
-              leadingIcon="logout"
-            />
-          </Menu>
-        </Appbar.Header>
+      </View>
 
-        <View style={styles.segmentedContainer}>
+      <View style={styles.segmentedContainer}>
           <SegmentedButtons
             value={showFavoritesOnly ? 'favorites' : 'all'}
             onValueChange={(value) => setShowFavoritesOnly(value === 'favorites')}
