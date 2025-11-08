@@ -46,49 +46,64 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
     // - Overlap at 4-6 creates fuzzy matching
     const where: any = {};
 
-    // Sweetness filter (±2 fuzzy range)
+    // Sweetness filter (±2 fuzzy range) - check both avg and seed data
     if (sweetness && typeof sweetness === 'string') {
-      if (sweetness === 'low') {
-        where.avgSweetBrininess = { gte: 1, lte: 6 };
-      } else if (sweetness === 'high') {
-        where.avgSweetBrininess = { gte: 4, lte: 10 };
-      }
+      const range = sweetness === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
+      where.AND = where.AND || [];
+      where.AND.push({
+        OR: [
+          { avgSweetBrininess: range },
+          { AND: [{ avgSweetBrininess: null }, { sweetBrininess: range }] }
+        ]
+      });
     }
 
-    // Size filter (±2 fuzzy range)
+    // Size filter (±2 fuzzy range) - check both avg and seed data
     if (size && typeof size === 'string') {
-      if (size === 'low') {
-        where.avgSize = { gte: 1, lte: 6 };
-      } else if (size === 'high') {
-        where.avgSize = { gte: 4, lte: 10 };
-      }
+      const range = size === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
+      where.AND = where.AND || [];
+      where.AND.push({
+        OR: [
+          { avgSize: range },
+          { AND: [{ avgSize: null }, { size: range }] }
+        ]
+      });
     }
 
-    // Body filter (±2 fuzzy range)
+    // Body filter (±2 fuzzy range) - check both avg and seed data
     if (body && typeof body === 'string') {
-      if (body === 'low') {
-        where.avgBody = { gte: 1, lte: 6 };
-      } else if (body === 'high') {
-        where.avgBody = { gte: 4, lte: 10 };
-      }
+      const range = body === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
+      where.AND = where.AND || [];
+      where.AND.push({
+        OR: [
+          { avgBody: range },
+          { AND: [{ avgBody: null }, { body: range }] }
+        ]
+      });
     }
 
-    // Flavorfulness filter (±2 fuzzy range)
+    // Flavorfulness filter (±2 fuzzy range) - check both avg and seed data
     if (flavorfulness && typeof flavorfulness === 'string') {
-      if (flavorfulness === 'low') {
-        where.avgFlavorfulness = { gte: 1, lte: 6 };
-      } else if (flavorfulness === 'high') {
-        where.avgFlavorfulness = { gte: 4, lte: 10 };
-      }
+      const range = flavorfulness === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
+      where.AND = where.AND || [];
+      where.AND.push({
+        OR: [
+          { avgFlavorfulness: range },
+          { AND: [{ avgFlavorfulness: null }, { flavorfulness: range }] }
+        ]
+      });
     }
 
-    // Creaminess filter (±2 fuzzy range)
+    // Creaminess filter (±2 fuzzy range) - check both avg and seed data
     if (creaminess && typeof creaminess === 'string') {
-      if (creaminess === 'low') {
-        where.avgCreaminess = { gte: 1, lte: 6 };
-      } else if (creaminess === 'high') {
-        where.avgCreaminess = { gte: 4, lte: 10 };
-      }
+      const range = creaminess === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
+      where.AND = where.AND || [];
+      where.AND.push({
+        OR: [
+          { avgCreaminess: range },
+          { AND: [{ avgCreaminess: null }, { creaminess: range }] }
+        ]
+      });
     }
 
     // Determine sort direction (default based on sort type)
