@@ -1424,11 +1424,29 @@ const theme = {
 }
 ```
 
-### Phase 20: AR Menu Scanner 📋
+### Phase 20: AR Menu Scanner 🚧
 
-**Estimated Time:** 30-40 hours
+**Status:** Initial Setup Complete (15% - 1.5 hours)
+**Estimated Time:** 30-40 hours total
 **Priority:** HIGH (Consumer Delight Feature)
 **Platform:** Mobile (iOS/Android), Web PWA (with camera API)
+
+**Completed (Initial Setup):**
+- [x] Install expo-camera package
+- [x] Create ScanMenuScreen with camera preview
+- [x] Camera permission handling (request + error states)
+- [x] Scan area overlay with corner guides
+- [x] "Scan Menu" quick action added to HomeScreen
+- [x] Navigation integration (added to App.tsx + types)
+
+**In Progress:**
+- [ ] OCR integration (expo-text-recognition or Google ML Kit)
+- [ ] Oyster name detection and parsing
+- [ ] Fuzzy matching with database (using Fuse.js)
+- [ ] AR overlay with match scores
+- [ ] Color-coded results (🟢🟡🔴)
+- [ ] Flavor profile tooltips
+- [ ] "View Details" navigation
 
 **Overview:**
 Revolutionize oyster menu navigation with augmented reality. Users point their phone camera at an oyster menu and instantly see personalized likelihood scores and flavor profiles overlaid on each oyster name.
