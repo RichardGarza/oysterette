@@ -360,8 +360,8 @@ export default function AddReviewScreen() {
             await authStorage.saveBadgeLevel(newBadgeLevel);
 
             const messages = {
-              Trusted: 'You've earned the Trusted Badge! ⭐\nKeep reviewing to become an Expert.',
-              Expert: 'You've earned the Expert Badge! 🏆\nYou're now a recognized oyster authority!',
+              Trusted: 'You\'ve earned the Trusted Badge! ⭐\nKeep reviewing to become an Expert.',
+              Expert: 'You\'ve earned the Expert Badge! 🏆\nYou\'re now a recognized oyster authority!',
             };
 
             Alert.alert(

@@ -17,7 +17,7 @@
  * Screen Parameters:
  * - Home: No params (landing page)
  * - Login/Register: No params (auth screens)
- * - OysterList: No params (browse all oysters)
+ * - OysterList: { searchQuery?: string } - Optional search query
  * - OysterDetail: { oysterId: string } - Required oyster ID
  * - AddOyster: No params (new oyster form)
  * - AddReview: { oysterId, oysterName, existingReview? } - Oyster info + optional update mode
@@ -87,7 +87,7 @@ export type RootStackParamList = {
   Home: undefined;
   Login: undefined;
   Register: undefined;
-  OysterList: undefined;
+  OysterList: { searchQuery?: string } | undefined;
   OysterDetail: { oysterId: string };
   AddOyster: undefined;
   AddReview: {
@@ -115,9 +115,11 @@ export type HomeScreenNavigationProp = NativeStackNavigationProp<
   'Home'
 > & {
   navigate(screen: 'TopOysters'): void;
-  navigate(screen: 'OysterList'): void;
+  navigate(screen: 'OysterList', params?: { searchQuery?: string }): void;
   navigate(screen: 'Login'): void;
   navigate(screen: 'SetFlavorProfile'): void;
+  navigate(screen: 'Profile'): void;
+  navigate(screen: 'OysterDetail', params: { oysterId: string }): void;
 };
 
 export type OysterListScreenNavigationProp = NativeStackNavigationProp<

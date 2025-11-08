@@ -22,13 +22,14 @@ import {
   ActivityIndicator,
   Card,
   Surface,
+  Searchbar,
 } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from '../navigation/types';
 import { useTheme } from '../context/ThemeContext';
 import { authStorage } from '../services/auth';
 import { favoritesStorage } from '../services/favorites';
-import { recommendationApi } from '../services/api';
+import { recommendationApi, userApi, oysterApi } from '../services/api';
 import { Oyster } from '../types/Oyster';
 import RecommendedOysterCard from '../components/RecommendedOysterCard';
 
@@ -47,6 +48,7 @@ const LOGO_SIZES = {
 } as const;
 
 const RECOMMENDATIONS_LIMIT = 5;
+const TOP_RATED_LIMIT = 5;
 
 // ============================================================================
 // COMPONENT
@@ -60,16 +62,11 @@ export default function HomeScreen() {
   const [showLoading, setShowLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<Oyster[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const [topRated, setTopRated] = useState<Oyster[]>([]);
+  const [userStats, setUserStats] = useState({ reviews: 0, favorites: 0, oystersTried: 0 });
+  const [searchQuery, setSearchQuery] = useState('');
   const fadeAnim = useState(new Animated.Value(0))[0];
 
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', checkAuth);
-    return unsubscribe;
-  }, [navigation, checkAuth]);
 
   // Handle Android back button press - show exit confirmation
   useEffect(() => {
@@ -110,6 +107,36 @@ export default function HomeScreen() {
     }
   }, []);
 
+  const loadTopRated = useCallback(async () => {
+    try {
+      const data = await oysterApi.getAll();
+      const sorted = data
+        .filter(oyster => oyster.totalReviews > 0)
+        .sort((a, b) => b.overallScore - a.overallScore)
+        .slice(0, TOP_RATED_LIMIT);
+      setTopRated(sorted);
+    } catch (error) {
+      if (__DEV__) {
+        console.error('❌ [HomeScreen] Error loading top rated:', error);
+      }
+    }
+  }, []);
+
+  const loadUserStats = useCallback(async () => {
+    try {
+      const profile = await userApi.getProfile();
+      setUserStats({
+        reviews: profile.stats?.totalReviews || 0,
+        favorites: profile.stats?.totalFavorites || 0,
+        oystersTried: profile.stats?.totalReviews || 0,
+      });
+    } catch (error) {
+      if (__DEV__) {
+        console.error('❌ [HomeScreen] Error loading user stats:', error);
+      }
+    }
+  }, []);
+
   const checkAuth = useCallback(async () => {
     try {
       const token = await authStorage.getToken();
@@ -121,10 +148,12 @@ export default function HomeScreen() {
         setIsLoggedIn(true);
         setChecking(false);
         loadRecommendations();
+        loadUserStats();
       } else {
         setIsLoggedIn(false);
         setChecking(false);
       }
+      loadTopRated();
     } catch (error) {
       if (__DEV__) {
         console.error('❌ [HomeScreen] Error checking auth:', error);
@@ -132,12 +161,28 @@ export default function HomeScreen() {
       setIsLoggedIn(false);
       setChecking(false);
     }
-  }, [loadUserTheme, loadRecommendations]);
+  }, [loadUserTheme, loadRecommendations, loadUserStats, loadTopRated]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', checkAuth);
+    return unsubscribe;
+  }, [navigation, checkAuth]);
 
   const handleLogout = useCallback(async () => {
     await authStorage.clearAuth();
     setIsLoggedIn(false);
   }, []);
+
+  const handleSearch = useCallback(() => {
+    if (searchQuery.trim()) {
+      navigation.navigate('OysterList', { searchQuery: searchQuery.trim() });
+      setSearchQuery('');
+    }
+  }, [searchQuery, navigation]);
 
   const handleBrowseOysters = useCallback(() => {
     setShowLoading(true);
@@ -189,9 +234,40 @@ export default function HomeScreen() {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text variant="bodyLarge" style={styles.subtitle}>
-          Discover, review, and track your favorite oysters
+        <Text variant="headlineSmall" style={styles.welcome}>
+          Welcome to Oysterette
         </Text>
+        <Text variant="bodyMedium" style={styles.subtitle}>
+          Discover and review oysters from around the world
+        </Text>
+
+        {/* Search Bar */}
+        <Searchbar
+          placeholder="Search oysters..."
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+          onSubmitEditing={handleSearch}
+          onIconPress={handleSearch}
+          style={styles.searchBar}
+        />
+
+        {/* Quick Stats - Only show if logged in */}
+        {isLoggedIn && (
+          <View style={styles.statsContainer}>
+            <Surface style={styles.statCard} elevation={1}>
+              <Text variant="headlineSmall" style={styles.statNumber}>{userStats.reviews}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>Reviews</Text>
+            </Surface>
+            <Surface style={styles.statCard} elevation={1}>
+              <Text variant="headlineSmall" style={styles.statNumber}>{userStats.favorites}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>Favorites</Text>
+            </Surface>
+            <Surface style={styles.statCard} elevation={1}>
+              <Text variant="headlineSmall" style={styles.statNumber}>{userStats.oystersTried}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>Tried</Text>
+            </Surface>
+          </View>
+        )}
 
         {/* Recommendations Section - Only show if logged in */}
         {isLoggedIn && (
@@ -247,6 +323,29 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {/* Top Rated This Week */}
+        {topRated.length > 0 && (
+          <View style={styles.topRatedSection}>
+            <Text variant="headlineSmall" style={styles.sectionTitle}>
+              Top Rated Oysters
+            </Text>
+            <FlatList
+              data={topRated}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <RecommendedOysterCard
+                  oyster={item}
+                  onPress={() => navigation.navigate('OysterDetail', { oysterId: item.id })}
+                />
+              )}
+              contentContainerStyle={styles.topRatedList}
+            />
+          </View>
+        )}
+
+        {/* Quick Action Buttons */}
         {isLoggedIn && (
           <Button
             mode="contained"
@@ -292,15 +391,17 @@ export default function HomeScreen() {
           </Button>
         )}
 
-        <Card mode="outlined" style={styles.infoCard}>
-          <Card.Content>
-            <Text variant="bodyMedium" style={styles.infoText}>
-              Explore oyster varieties from around the world with our 10-point
-              attribute system. Create an account to add reviews and track your
-              favorite oysters.
-            </Text>
-          </Card.Content>
-        </Card>
+{!isLoggedIn && (
+          <Card mode="outlined" style={styles.infoCard}>
+            <Card.Content>
+              <Text variant="bodyMedium" style={styles.infoText}>
+                Explore oyster varieties from around the world with our 10-point
+                attribute system. Create an account to add reviews and track your
+                favorite oysters.
+              </Text>
+            </Card.Content>
+          </Card>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -344,9 +445,45 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 20,
   },
+  welcome: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
   subtitle: {
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 20,
+  },
+  searchBar: {
+    width: '100%',
+    marginBottom: 24,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginBottom: 24,
+  },
+  statCard: {
+    flex: 1,
+    marginHorizontal: 4,
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  statLabel: {
+    opacity: 0.7,
+  },
+  topRatedSection: {
+    width: '100%',
+    marginBottom: 24,
+  },
+  topRatedList: {
+    paddingRight: 12,
   },
   button: {
     marginBottom: 15,
