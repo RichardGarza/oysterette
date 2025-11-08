@@ -219,8 +219,8 @@
   - Filters to only show oysters with reviews
   - Pull-to-refresh functionality
   - Gold "🏆 Top Oysters" button on HomeScreen
-- [ ] Add ability to edit/delete own reviews
-- [ ] Add user profile screen
+- [x] Add ability to edit/delete own reviews (EditReviewScreen + ReviewCard buttons)
+- [x] Add user profile screen (ProfileScreen exists)
 
 ---
 
