@@ -106,6 +106,7 @@ import TopOystersScreen from './src/screens/TopOystersScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import PrivacySettingsScreen from './src/screens/PrivacySettingsScreen';
 import SetFlavorProfileScreen from './src/screens/SetFlavorProfileScreen';
+import ScanMenuScreen from './src/screens/ScanMenuScreen';
 
 /**
  * TO REPLACE "Oysterette" TEXT WITH LOGO:
@@ -275,6 +276,14 @@ function AppNavigator() {
             title: 'Flavor Profile',
             headerRight: () => <SettingsButton navigation={navigation} />,
           })}
+        />
+        <Stack.Screen
+          name="ScanMenu"
+          component={ScanMenuScreen}
+          options={{
+            title: 'Scan Menu',
+            headerShown: false,
+          }}
         />
       </Stack.Navigator>
       </NavigationContainer>

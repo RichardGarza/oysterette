@@ -375,6 +375,13 @@ export default function HomeScreen() {
               </Card.Content>
             </Card>
 
+            <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('ScanMenu')}>
+              <Card.Content style={styles.actionCardContent}>
+                <Text variant="headlineMedium" style={styles.actionIcon}>📸</Text>
+                <Text variant="titleMedium" style={styles.actionTitle}>Scan Menu</Text>
+              </Card.Content>
+            </Card>
+
             <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('TopOysters')}>
               <Card.Content style={styles.actionCardContent}>
                 <Text variant="headlineMedium" style={styles.actionIcon}>🏆</Text>
