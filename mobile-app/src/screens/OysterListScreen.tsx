@@ -406,22 +406,24 @@ export default function OysterListScreen() {
   if (loading && oysters.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
+        <Appbar.Header elevated>
           <Image
             source={require('../../assets/logo.png')}
-            style={styles.logo}
+            style={styles.logoSmall}
             resizeMode="contain"
           />
-          <View style={styles.topRow}>
-            <SegmentedButtons
-              value={showFavoritesOnly ? 'favorites' : 'all'}
-              onValueChange={(value) => setShowFavoritesOnly(value === 'favorites')}
-              buttons={[
-                { value: 'all', label: 'All' },
-                { value: 'favorites', label: '❤️ Favorites' },
-              ]}
-              style={styles.segmentedButtons}
-            />
+          <Appbar.Content title="" />
+        </Appbar.Header>
+        <View style={styles.segmentedContainer}>
+          <SegmentedButtons
+            value={showFavoritesOnly ? 'favorites' : 'all'}
+            onValueChange={(value) => setShowFavoritesOnly(value === 'favorites')}
+            buttons={[
+              { value: 'all', label: 'All' },
+              { value: 'favorites', label: '❤️ Favorites' },
+            ]}
+            style={styles.segmentedButtons}
+          />
 
             <IconButton
               icon="filter"
@@ -469,19 +471,8 @@ export default function OysterListScreen() {
             ]}
             style={styles.segmentedButtons}
           />
-
-          <IconButton
-            icon="filter"
-            mode="contained"
-            size={SIZES.ICON_SMALL}
-            onPress={() => setShowFilters(!showFilters)}
-            style={styles.filterIconButton}
-          />
-          {getActiveFilterCount > 0 && (
-            <Badge style={styles.filterBadge}>{getActiveFilterCount}</Badge>
-          )}
-
-          <Menu
+        </View>
+        <View style={styles.listContainer}>
             visible={menuVisible}
             onDismiss={() => setMenuVisible(false)}
             anchor={
