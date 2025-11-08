@@ -95,8 +95,8 @@ export const updateReviewSchema = z.object({
 
 export const createOysterSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
-  species: z.string().max(100).optional(),
-  origin: z.string().max(200).optional(),
+  species: z.string().min(1, 'Species is required').max(100, 'Species too long'),
+  origin: z.string().min(1, 'Origin is required').max(200, 'Origin too long'),
   standoutNotes: z.string().max(500).optional(),
   size: z.number().min(0).max(10).optional(),
   body: z.number().min(0).max(10).optional(),

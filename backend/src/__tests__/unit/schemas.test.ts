@@ -385,13 +385,35 @@ describe('Oyster Schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should accept only name (all other fields optional)', () => {
+    it('should require name, species, and origin', () => {
       const validData = {
         name: 'Kumamoto',
+        species: 'Crassostrea sikamea',
+        origin: 'California',
       };
 
       const result = createOysterSchema.safeParse(validData);
       expect(result.success).toBe(true);
+    });
+
+    it('should reject missing species', () => {
+      const invalidData = {
+        name: 'Kumamoto',
+        origin: 'California',
+      };
+
+      const result = createOysterSchema.safeParse(invalidData);
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject missing origin', () => {
+      const invalidData = {
+        name: 'Kumamoto',
+        species: 'Crassostrea sikamea',
+      };
+
+      const result = createOysterSchema.safeParse(invalidData);
+      expect(result.success).toBe(false);
     });
 
     it('should reject empty name', () => {
@@ -435,6 +457,8 @@ describe('Oyster Schemas', () => {
     it('should accept decimal attribute values', () => {
       const validData = {
         name: 'Test Oyster',
+        species: 'Crassostrea gigas',
+        origin: 'Pacific Northwest',
         size: 5.5,
         body: 6.7,
         sweetBrininess: 7.8,

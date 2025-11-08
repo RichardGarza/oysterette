@@ -51,10 +51,6 @@ const COLORS = {
   SCALE_TEXT: '#95a5a6',
 } as const;
 
-const DEFAULTS = {
-  SPECIES: 'Unknown',
-  ORIGIN: 'Unknown',
-} as const;
 
 const ATTRIBUTE_LABELS = {
   size: { label: 'Size', description: '1 = Tiny → 10 = Huge' },
@@ -115,6 +111,16 @@ export default function AddOysterScreen() {
       return false;
     }
 
+    if (!formData.species.trim()) {
+      Alert.alert('Validation Error', 'Species is required');
+      return false;
+    }
+
+    if (!formData.origin.trim()) {
+      Alert.alert('Validation Error', 'Origin is required');
+      return false;
+    }
+
     const attributes: Array<keyof FormData> = ['size', 'body', 'sweetBrininess', 'flavorfulness', 'creaminess'];
     for (const attr of attributes) {
       const value = parseInt(formData[attr]);
@@ -134,8 +140,8 @@ export default function AddOysterScreen() {
       setLoading(true);
       const oysterData = {
         name: formData.name.trim(),
-        species: formData.species.trim() || DEFAULTS.SPECIES,
-        origin: formData.origin.trim() || DEFAULTS.ORIGIN,
+        species: formData.species.trim(),
+        origin: formData.origin.trim(),
         standoutNotes: formData.standoutNotes.trim() || undefined,
         size: parseInt(formData.size),
         body: parseInt(formData.body),
