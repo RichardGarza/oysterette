@@ -276,24 +276,6 @@
 
 ---
 
-## 🚧 NEXT UP - Remove Direct Messages Feature
-
-**Priority:** IMMEDIATE (Next Session)
-**Estimated Time:** 30 minutes
-
-**Reason:** Feature not needed, incorrectly included in Phase 10
-
-**Tasks:**
-- [ ] Remove "Allow Direct Messages" from PrivacySettingsScreen UI
-- [ ] Remove "Communication" section from PrivacySettingsScreen
-- [ ] Remove `allowMessages` field from backend Prisma schema
-- [ ] Remove `allowMessages` from privacy validation schema
-- [ ] Remove `allowMessages` from updatePrivacySettings controller
-- [ ] Run Prisma migration to drop column
-- [ ] Deploy backend to Railway
-- [ ] Commit mobile changes
-- [ ] Deploy OTA update
-
 ---
 
 ## 🔮 Future Phases (Post-MVP)
