@@ -628,6 +628,7 @@ export default function AddReviewScreen() {
           <TextInput
             mode="outlined"
             placeholder="Share your thoughts about this oyster..."
+            placeholderTextColor={paperTheme.colors.onSurfaceVariant}
             value={notes}
             onChangeText={setNotes}
             multiline
