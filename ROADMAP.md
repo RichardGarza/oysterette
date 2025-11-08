@@ -750,7 +750,7 @@ git push
 
 **Current Status:**
 - **Backend:** ✅ Production-ready on Railway
-- **Database:** ✅ Neon PostgreSQL with 838 oysters
+- **Database:** ✅ Neon PostgreSQL with 131 unique oysters
 - **Mobile App:** ✅ Version 1.1.0 with enhanced filters
 - **Legal Docs:** ✅ Hosted on GitHub Pages
 - **Compliance:** Apple 95%, Google 100% (documentation)

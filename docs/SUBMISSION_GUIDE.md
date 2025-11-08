@@ -180,7 +180,7 @@ Copyright: 2025 [YOUR NAME/COMPANY]
 
 **Promotional Text (170 chars, editable without review):**
 ```
-🦪 Discover the perfect oyster! Browse 838+ varieties, read detailed reviews, and track your favorites. Join the ultimate oyster community today!
+🦪 Discover the perfect oyster! Browse 130+ varieties, read detailed reviews, and track your favorites. Join the ultimate oyster community today!
 ```
 
 **Description (4000 chars):**
@@ -209,7 +209,7 @@ oyster, seafood, restaurant, review, rating, food, dining, culinary, gourmet, sh
 Oysterette is finally here! Discover, review, and track oysters like never before.
 
 ✨ Launch Features:
-• Browse 838+ oyster varieties
+• Browse 130+ oyster varieties
 • Detailed 10-point attribute ratings
 • Community-driven reviews and ratings
 • Favorite oysters with cross-device sync
@@ -576,7 +576,7 @@ eas submit --platform android
 Discover, review, and track oysters like never before.
 
 ✨ Features:
-• Browse 838+ oyster varieties
+• Browse 130+ oyster varieties
 • Detailed 10-point attribute ratings
 • Community reviews and ratings
 • Favorite oysters with sync

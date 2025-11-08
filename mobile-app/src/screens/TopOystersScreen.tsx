@@ -52,7 +52,7 @@
  * - Back button returns to HomeScreen
  *
  * Performance:
- * - Fetches all oysters (838 total)
+ * - Fetches all oysters (131 total)
  * - Client-side filtering and sorting
  * - Could be optimized with backend endpoint
  * - FlatList handles efficient rendering

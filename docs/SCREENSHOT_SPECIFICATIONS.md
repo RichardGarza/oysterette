@@ -106,7 +106,7 @@ If you want to optimize for specific devices:
 - Favorite heart icons
 - Rating stars/scores
 
-**Caption Idea:** "Browse 838+ Oyster Varieties from Around the World"
+**Caption Idea:** "Browse 130+ Oyster Varieties from Around the World"
 
 **Why:** Shows the breadth of content and discovery features
 

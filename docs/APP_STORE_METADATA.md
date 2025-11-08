@@ -46,7 +46,7 @@ Character count: 33 / 30 max (Apple), 80 max (Google) ✅
 Oysterette is the ultimate mobile app for oyster enthusiasts, foodies, and seafood lovers. Whether you're a seasoned oyster connoisseur or just beginning your oyster journey, Oysterette helps you discover, review, and track oysters from around the world.
 
 🦪 DISCOVER OYSTERS
-• Browse a comprehensive database of 838+ oyster varieties
+• Browse a comprehensive database of 130+ oyster varieties
 • Search by name, species, or origin
 • Filter by characteristics you love
 • View detailed profiles with species and origin information
@@ -122,7 +122,7 @@ Each attribute has descriptive labels to help you understand exactly what you're
 • Offline access to your favorites
 
 ✨ KEY FEATURES
-• 838+ oyster varieties in the database
+• 130+ oyster varieties in the database
 • Detailed 10-point attribute ratings
 • Community voting system
 • Credibility scoring for reviewers
@@ -243,7 +243,7 @@ Questionnaire responses:
 Oysterette is finally here! Discover, review, and track oysters like never before.
 
 ✨ Launch Features:
-• Browse 838+ oyster varieties
+• Browse 130+ oyster varieties
 • Detailed 10-point attribute ratings
 • Community-driven reviews and ratings
 • Favorite oysters with cross-device sync
@@ -339,7 +339,7 @@ See SCREENSHOT_SPECIFICATIONS.md for detailed requirements.
 **This appears above the description and can be updated without review:**
 
 ```
-"🦪 Discover the perfect oyster! Browse 838+ varieties, read detailed reviews, and track your favorites. Join the ultimate oyster community today!"
+"🦪 Discover the perfect oyster! Browse 130+ varieties, read detailed reviews, and track your favorites. Join the ultimate oyster community today!"
 ```
 
 **Character count:** 166 / 170 ✅
