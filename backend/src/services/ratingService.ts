@@ -296,8 +296,8 @@ export async function getOysterRatingStats(oysterId: string) {
   const ratingBreakdown = {
     loveIt: oyster.reviews.filter((r) => r.rating === 'LOVE_IT').length,
     likeIt: oyster.reviews.filter((r) => r.rating === 'LIKE_IT').length,
+    okay: oyster.reviews.filter((r) => r.rating === 'OKAY').length,
     meh: oyster.reviews.filter((r) => r.rating === 'MEH').length,
-    whatever: oyster.reviews.filter((r) => r.rating === 'WHATEVER').length,
   };
 
   const userWeight = calculateUserRatingWeight(oyster.totalReviews);

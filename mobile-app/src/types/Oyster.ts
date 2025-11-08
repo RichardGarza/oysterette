@@ -24,24 +24,24 @@
  * - standoutNotes: Optional description
  * - Seed attributes (size, body, sweetBrininess, flavorfulness, creaminess): 1-10 scale
  * - totalReviews: Count of reviews
- * - avgRating: Average rating (0-4 scale: WHATEVER=1, MEH=2, LIKE_IT=3, LOVE_IT=4)
+ * - avgRating: Average rating (1-4 scale: MEH=1, OKAY=2, LIKE_IT=3, LOVE_IT=4)
  * - overallScore: Weighted score (0-10 scale) = 40% avgRating + 60% attributes
  * - Aggregated attributes: Weighted averages from user reviews
  * - _count, reviews: Optional nested data
  *
  * Review Interface:
  * - id, userId, oysterId: Relations
- * - rating: ReviewRating enum (LOVE_IT, LIKE_IT, MEH, WHATEVER)
+ * - rating: ReviewRating enum (LOVE_IT, LIKE_IT, MEH, OKAY)
  * - Attribute sliders: Optional 1-10 scores
  * - notes: Optional tasting notes
  * - Voting metrics: agreeCount, disagreeCount, netVoteScore, weightedScore
  * - Relations: user, oyster (nested objects)
  *
- * ReviewRating Enum:
- * - LOVE_IT: ❤️ (Best, value 4)
- * - LIKE_IT: 👍 (Good, value 3)
- * - MEH: 😐 (Okay, value 2)
- * - WHATEVER: 🤷 (Poor, value 1)
+ * ReviewRating Enum (highest to lowest):
+ * - LOVE_IT: ❤️ (Best, value 4 → 9.0/10)
+ * - LIKE_IT: 👍 (Good, value 3 → 7.0/10)
+ * - OKAY: 👌 (Okay, value 2 → 4.95/10)
+ * - MEH: 😐 (Worst, value 1 → 2.5/10)
  *
  * User Interface:
  * - id, email, name: Basic account info
@@ -83,9 +83,9 @@
  *
  * Rating Algorithm:
  * - Overall Score = (40% avgRating) + (60% average of all attributes)
- * - avgRating mapped: WHATEVER=1 → 2.5/10, MEH=2 → 5/10, LIKE_IT=3 → 7.5/10, LOVE_IT=4 → 10/10
+ * - avgRating mapped: MEH=1 → 2.5/10, OKAY=2 → 4.95/10, LIKE_IT=3 → 7.0/10, LOVE_IT=4 → 9.0/10
  * - Attribute average: (size + body + sweetBrininess + flavorfulness + creaminess) / 5
- * - Example: avgRating=3.5, avgAttributes=7 → (0.4 * 8.75) + (0.6 * 7) = 7.7
+ * - Example: avgRating=3 (LIKE_IT), avgAttributes=7 → (0.4 * 7.0) + (0.6 * 7) = 7.0
  *
  * Usage Throughout App:
  * - API service: Response type checking
@@ -142,7 +142,7 @@ export interface Oyster {
 }
 
 // Review rating enum
-export type ReviewRating = 'LOVE_IT' | 'LIKE_IT' | 'MEH' | 'WHATEVER';
+export type ReviewRating = 'LOVE_IT' | 'LIKE_IT' | 'MEH' | 'OKAY';
 
 // Review type
 export interface Review {

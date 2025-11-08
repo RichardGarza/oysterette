@@ -124,8 +124,8 @@ export default function TopOystersScreen() {
       onPress={() => navigation.navigate('OysterDetail', { oysterId: item.id })}
     >
       <Card.Content style={styles.cardInner}>
-        <Surface style={styles.rankBadge} elevation={2}>
-          <Text variant="titleMedium" style={styles.rankText}>
+        <Surface style={[styles.rankBadge, { backgroundColor: paperTheme.colors.primary }]} elevation={2}>
+          <Text variant="titleMedium" style={[styles.rankText, { color: paperTheme.colors.onPrimary }]}>
             #{index + 1}
           </Text>
         </Surface>
@@ -143,10 +143,10 @@ export default function TopOystersScreen() {
           <Text variant="bodySmall" style={styles.origin}>{item.origin}</Text>
 
           <View style={styles.ratingContainer}>
-            <Text variant="titleLarge" style={styles.scoreText}>
+            <Text variant="titleLarge" style={[styles.scoreText, { color: paperTheme.colors.primary }]}>
               {item.overallScore.toFixed(1)}
             </Text>
-            <Text variant="bodySmall" style={styles.scoreLabel}>/10</Text>
+            <Text variant="bodySmall" style={[styles.scoreLabel, { color: paperTheme.colors.onSurfaceVariant }]}>/10</Text>
             <RatingDisplay
               overallScore={item.overallScore}
               totalReviews={item.totalReviews}
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   rankText: {
-    color: '#fff',
+    // Color applied dynamically via theme
   },
   cardContent: {
     flex: 1,
@@ -282,11 +282,11 @@ const styles = StyleSheet.create({
   },
   scoreText: {
     fontWeight: '700',
-    color: '#3498db',
+    // Color applied dynamically via theme
   },
   scoreLabel: {
-    color: '#6b7280',
     marginRight: 8,
+    // Color applied dynamically via theme
   },
   notes: {
     fontStyle: 'italic',

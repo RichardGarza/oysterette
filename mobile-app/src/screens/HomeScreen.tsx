@@ -429,5 +429,6 @@ const styles = StyleSheet.create({
   },
   recommendationsList: {
     paddingRight: 12,
+    paddingBottom: 16, // Prevent shadow clipping at bottom of cards
   },
 });

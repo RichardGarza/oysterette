@@ -143,7 +143,7 @@ describe('Review API Integration Tests', () => {
       const response = await request(app)
         .put(`/api/reviews/${reviewId}`)
         .set('Authorization', `Bearer ${otherUserToken}`)
-        .send({ rating: 'WHATEVER' })
+        .send({ rating: 'OKAY' })
         .expect(403);
 
       expect(response.body.success).toBe(false);

@@ -9,11 +9,11 @@
  * - Attribute descriptors for slider values (e.g., "Huge" for size 10)
  * - Loaded from data/oyster-rating-labels.json for easy customization
  *
- * Rating Scale:
- * - LOVE_IT: 9.0 (range 8.0-10.0)
- * - LIKE_IT: 7.0 (range 6.0-7.9)
- * - MEH: 4.95 (range 4.0-5.9)
- * - WHATEVER: 2.5 (range 1.0-3.9)
+ * Rating Scale (highest to lowest):
+ * - LOVE_IT: 9.0 (range 8.0-10.0) - Best
+ * - LIKE_IT: 7.0 (range 6.0-7.9) - Good
+ * - OKAY: 4.95 (range 4.0-5.9) - Okay
+ * - MEH: 2.5 (range 1.0-3.9) - Worst
  */
 
 import { ReviewRating } from '@prisma/client';
@@ -29,13 +29,13 @@ import ratingLabelsData from '../../data/oyster-rating-labels.json';
  */
 export function ratingToScore(rating: ReviewRating): number {
   switch (rating) {
-    case 'LOVE_IT':   // 8.0-10.0
+    case 'LOVE_IT':   // 8.0-10.0 (Best)
       return 9.0;
-    case 'LIKE_IT':   // 6.0-7.9
+    case 'LIKE_IT':   // 6.0-7.9 (Good)
       return 7.0;
-    case 'MEH':       // 4.0-5.9
+    case 'OKAY':      // 4.0-5.9 (Okay)
       return 4.95;
-    case 'WHATEVER':  // 1.0-3.9
+    case 'MEH':       // 1.0-3.9 (Worst)
       return 2.5;
     default:
       return 5.0; // Fallback

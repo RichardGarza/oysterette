@@ -17,12 +17,12 @@ describe('ratingLabels', () => {
       expect(ratingToScore('LIKE_IT')).toBe(7.0);
     });
 
-    it('should convert MEH to 4.95', () => {
-      expect(ratingToScore('MEH')).toBe(4.95);
+    it('should convert OKAY to 4.95', () => {
+      expect(ratingToScore('OKAY')).toBe(4.95);
     });
 
-    it('should convert WHATEVER to 2.5', () => {
-      expect(ratingToScore('WHATEVER')).toBe(2.5);
+    it('should convert MEH to 2.5', () => {
+      expect(ratingToScore('MEH')).toBe(2.5);
     });
   });
 
@@ -200,25 +200,25 @@ describe('ratingLabels', () => {
     });
 
     it('should calculate average of mixed ratings', () => {
-      const ratings: ReviewRating[] = ['LOVE_IT', 'LOVE_IT', 'LIKE_IT', 'MEH'];
+      const ratings: ReviewRating[] = ['LOVE_IT', 'LOVE_IT', 'LIKE_IT', 'OKAY'];
       // (9.0 + 9.0 + 7.0 + 4.95) / 4 = 29.95 / 4 = 7.4875
       expect(calculateOverallScore(ratings)).toBe(7.49);
     });
 
     it('should handle all same ratings', () => {
-      const ratings: ReviewRating[] = ['MEH', 'MEH', 'MEH'];
+      const ratings: ReviewRating[] = ['OKAY', 'OKAY', 'OKAY'];
       // (4.95 + 4.95 + 4.95) / 3 = 4.95
       expect(calculateOverallScore(ratings)).toBe(4.95);
     });
 
     it('should handle all ratings types', () => {
-      const ratings: ReviewRating[] = ['LOVE_IT', 'LIKE_IT', 'MEH', 'WHATEVER'];
+      const ratings: ReviewRating[] = ['LOVE_IT', 'LIKE_IT', 'OKAY', 'MEH'];
       // (9.0 + 7.0 + 4.95 + 2.5) / 4 = 23.45 / 4 = 5.8625
       expect(calculateOverallScore(ratings)).toBe(5.86);
     });
 
     it('should round to 2 decimal places', () => {
-      const ratings: ReviewRating[] = ['LOVE_IT', 'MEH', 'WHATEVER'];
+      const ratings: ReviewRating[] = ['LOVE_IT', 'OKAY', 'MEH'];
       // (9.0 + 4.95 + 2.5) / 3 = 16.45 / 3 = 5.483333...
       const result = calculateOverallScore(ratings);
       expect(result).toBe(5.48);

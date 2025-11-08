@@ -361,10 +361,10 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     let avgRatingGiven = 0;
     if (user.reviews.length > 0) {
       const ratingValues = {
-        LOVE_IT: 4,
-        LIKE_IT: 3,
-        MEH: 2,
-        WHATEVER: 1,
+        LOVE_IT: 4,   // Best
+        LIKE_IT: 3,   // Good
+        OKAY: 2,      // Okay
+        MEH: 1,       // Worst
       };
       const totalRating = user.reviews.reduce((sum, review) => sum + ratingValues[review.rating], 0);
       avgRatingGiven = totalRating / user.reviews.length;

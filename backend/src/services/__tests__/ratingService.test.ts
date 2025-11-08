@@ -107,8 +107,8 @@ describe('Rating Service', () => {
 
       const updateCall = (prisma.oyster.update as jest.Mock).mock.calls[0][0];
 
-      // Average rating: (9.0 + 7.0 + 4.95) / 3 = 6.983...
-      expect(updateCall.data.avgRating).toBeCloseTo(6.98, 1);
+      // Average rating: (9.0 + 7.0 + 2.5) / 3 = 6.166...
+      expect(updateCall.data.avgRating).toBeCloseTo(6.17, 1);
       expect(updateCall.data.totalReviews).toBe(3);
     });
 
@@ -137,9 +137,9 @@ describe('Rating Service', () => {
           { rating: 'LIKE_IT' as ReviewRating },
           { rating: 'LIKE_IT' as ReviewRating },
           { rating: 'LIKE_IT' as ReviewRating },
+          { rating: 'OKAY' as ReviewRating },
           { rating: 'MEH' as ReviewRating },
           { rating: 'MEH' as ReviewRating },
-          { rating: 'WHATEVER' as ReviewRating },
         ],
       };
 
@@ -154,8 +154,8 @@ describe('Rating Service', () => {
         ratingBreakdown: {
           loveIt: 3,
           likeIt: 4,
+          okay: 1,
           meh: 2,
-          whatever: 1,
         },
       });
       expect(stats.userRatingWeight).toBeCloseTo(0.7, 1);
@@ -179,8 +179,8 @@ describe('Rating Service', () => {
       expect(stats.ratingBreakdown).toEqual({
         loveIt: 0,
         likeIt: 0,
+        okay: 0,
         meh: 0,
-        whatever: 0,
       });
       expect(stats.userRatingWeight).toBe(0);
       expect(stats.seedDataWeight).toBe(1);

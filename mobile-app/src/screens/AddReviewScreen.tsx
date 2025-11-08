@@ -97,10 +97,10 @@ import { useTheme } from '../context/ThemeContext';
 import { tempReviewsStorage } from '../services/tempReviews';
 
 const RATING_OPTIONS: { label: string; value: ReviewRating; emoji: string; color: string }[] = [
-  { label: 'Love It', value: 'LOVE_IT', emoji: '❤️', color: '#e74c3c' },
-  { label: 'Like It', value: 'LIKE_IT', emoji: '👍', color: '#27ae60' },
-  { label: 'Meh', value: 'MEH', emoji: '😐', color: '#f39c12' },
-  { label: 'Whatever', value: 'WHATEVER', emoji: '🤷', color: '#95a5a6' },
+  { label: 'Love It', value: 'LOVE_IT', emoji: '❤️', color: '#e74c3c' },  // Best
+  { label: 'Like It', value: 'LIKE_IT', emoji: '👍', color: '#27ae60' },  // Good
+  { label: 'Okay', value: 'OKAY', emoji: '👌', color: '#3498db' },        // Okay
+  { label: 'Meh', value: 'MEH', emoji: '😐', color: '#95a5a6' },          // Worst
 ];
 
 export default function AddReviewScreen() {
@@ -494,20 +494,21 @@ export default function AddReviewScreen() {
         keyboardVerticalOffset={100}
       >
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Review Oyster</Text>
-          <Text style={styles.oysterName}>{oysterName}</Text>
+        <View style={[styles.header, { backgroundColor: paperTheme.colors.surface, borderBottomColor: paperTheme.colors.outlineVariant }]}>
+          <Text style={[styles.title, { color: paperTheme.colors.onSurface }]}>Review Oyster</Text>
+          <Text style={[styles.oysterName, { color: paperTheme.colors.onSurfaceVariant }]}>{oysterName}</Text>
         </View>
 
         {/* Overall Rating */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Overall Rating *</Text>
+          <Text style={[styles.sectionTitle, { color: paperTheme.colors.onSurface }]}>Overall Rating *</Text>
           <View style={styles.ratingOptions}>
             {RATING_OPTIONS.map((option) => (
               <TouchableOpacity
                 key={option.value}
                 style={[
                   styles.ratingOption,
+                  { backgroundColor: paperTheme.colors.surfaceVariant, borderColor: paperTheme.colors.outline },
                   rating === option.value && {
                     backgroundColor: option.color,
                     borderColor: option.color,
@@ -519,6 +520,7 @@ export default function AddReviewScreen() {
                 <Text
                   style={[
                     styles.ratingLabel,
+                    { color: paperTheme.colors.onSurface },
                     rating === option.value && styles.ratingLabelActive,
                   ]}
                 >
@@ -531,22 +533,22 @@ export default function AddReviewScreen() {
 
         {/* Attribute Ratings */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Attribute Ratings (Optional)</Text>
-          <Text style={styles.sectionSubtitle}>
+          <Text style={[styles.sectionTitle, { color: paperTheme.colors.onSurface }]}>Attribute Ratings (Optional)</Text>
+          <Text style={[styles.sectionSubtitle, { color: paperTheme.colors.onSurfaceVariant }]}>
             Rate on a scale of 1-10
           </Text>
 
           {/* Size */}
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
-              <Text style={styles.sliderLabel}>Size</Text>
-              <Text style={styles.sliderValue}>{size}/10</Text>
+              <Text style={[styles.sliderLabel, { color: paperTheme.colors.onSurface }]}>Size</Text>
+              <Text style={[styles.sliderValue, { color: paperTheme.colors.primary }]}>{size}/10</Text>
             </View>
             <View style={styles.sliderLabels}>
-              <Text style={styles.sliderMin}>Tiny</Text>
-              <Text style={styles.sliderMax}>Huge</Text>
+              <Text style={[styles.sliderMin, { color: paperTheme.colors.onSurfaceVariant }]}>Tiny</Text>
+              <Text style={[styles.sliderMax, { color: paperTheme.colors.onSurfaceVariant }]}>Huge</Text>
             </View>
-            <Text style={styles.sliderDescriptor}>{getAttributeDescriptor('size', size)}</Text>
+            <Text style={[styles.sliderDescriptor, { color: paperTheme.colors.primary }]}>{getAttributeDescriptor('size', size)}</Text>
             <Slider
               style={styles.slider}
               minimumValue={1}
@@ -563,14 +565,14 @@ export default function AddReviewScreen() {
           {/* Body */}
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
-              <Text style={styles.sliderLabel}>Body</Text>
-              <Text style={styles.sliderValue}>{body}/10</Text>
+              <Text style={[styles.sliderLabel, { color: paperTheme.colors.onSurface }]}>Body</Text>
+              <Text style={[styles.sliderValue, { color: paperTheme.colors.primary }]}>{body}/10</Text>
             </View>
             <View style={styles.sliderLabels}>
-              <Text style={styles.sliderMin}>Thin</Text>
-              <Text style={styles.sliderMax}>Fat</Text>
+              <Text style={[styles.sliderMin, { color: paperTheme.colors.onSurfaceVariant }]}>Thin</Text>
+              <Text style={[styles.sliderMax, { color: paperTheme.colors.onSurfaceVariant }]}>Fat</Text>
             </View>
-            <Text style={styles.sliderDescriptor}>{getAttributeDescriptor('body', body)}</Text>
+            <Text style={[styles.sliderDescriptor, { color: paperTheme.colors.primary }]}>{getAttributeDescriptor('body', body)}</Text>
             <Slider
               style={styles.slider}
               minimumValue={1}
@@ -587,14 +589,14 @@ export default function AddReviewScreen() {
           {/* Sweet/Brininess */}
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
-              <Text style={styles.sliderLabel}>Sweet/Brininess</Text>
-              <Text style={styles.sliderValue}>{sweetBrininess}/10</Text>
+              <Text style={[styles.sliderLabel, { color: paperTheme.colors.onSurface }]}>Sweet/Brininess</Text>
+              <Text style={[styles.sliderValue, { color: paperTheme.colors.primary }]}>{sweetBrininess}/10</Text>
             </View>
             <View style={styles.sliderLabels}>
-              <Text style={styles.sliderMin}>Sweet</Text>
-              <Text style={styles.sliderMax}>Salty</Text>
+              <Text style={[styles.sliderMin, { color: paperTheme.colors.onSurfaceVariant }]}>Sweet</Text>
+              <Text style={[styles.sliderMax, { color: paperTheme.colors.onSurfaceVariant }]}>Salty</Text>
             </View>
-            <Text style={styles.sliderDescriptor}>{getAttributeDescriptor('sweet_brininess', sweetBrininess)}</Text>
+            <Text style={[styles.sliderDescriptor, { color: paperTheme.colors.primary }]}>{getAttributeDescriptor('sweet_brininess', sweetBrininess)}</Text>
             <Slider
               style={styles.slider}
               minimumValue={1}
@@ -611,14 +613,14 @@ export default function AddReviewScreen() {
           {/* Flavorfulness */}
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
-              <Text style={styles.sliderLabel}>Flavorfulness</Text>
-              <Text style={styles.sliderValue}>{flavorfulness}/10</Text>
+              <Text style={[styles.sliderLabel, { color: paperTheme.colors.onSurface }]}>Flavorfulness</Text>
+              <Text style={[styles.sliderValue, { color: paperTheme.colors.primary }]}>{flavorfulness}/10</Text>
             </View>
             <View style={styles.sliderLabels}>
-              <Text style={styles.sliderMin}>Boring</Text>
-              <Text style={styles.sliderMax}>Bold</Text>
+              <Text style={[styles.sliderMin, { color: paperTheme.colors.onSurfaceVariant }]}>Boring</Text>
+              <Text style={[styles.sliderMax, { color: paperTheme.colors.onSurfaceVariant }]}>Bold</Text>
             </View>
-            <Text style={styles.sliderDescriptor}>{getAttributeDescriptor('flavorfulness', flavorfulness)}</Text>
+            <Text style={[styles.sliderDescriptor, { color: paperTheme.colors.primary }]}>{getAttributeDescriptor('flavorfulness', flavorfulness)}</Text>
             <Slider
               style={styles.slider}
               minimumValue={1}
@@ -635,14 +637,14 @@ export default function AddReviewScreen() {
           {/* Creaminess */}
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
-              <Text style={styles.sliderLabel}>Creaminess</Text>
-              <Text style={styles.sliderValue}>{creaminess}/10</Text>
+              <Text style={[styles.sliderLabel, { color: paperTheme.colors.onSurface }]}>Creaminess</Text>
+              <Text style={[styles.sliderValue, { color: paperTheme.colors.primary }]}>{creaminess}/10</Text>
             </View>
             <View style={styles.sliderLabels}>
-              <Text style={styles.sliderMin}>None</Text>
-              <Text style={styles.sliderMax}>Creamy</Text>
+              <Text style={[styles.sliderMin, { color: paperTheme.colors.onSurfaceVariant }]}>None</Text>
+              <Text style={[styles.sliderMax, { color: paperTheme.colors.onSurfaceVariant }]}>Creamy</Text>
             </View>
-            <Text style={styles.sliderDescriptor}>{getAttributeDescriptor('creaminess', creaminess)}</Text>
+            <Text style={[styles.sliderDescriptor, { color: paperTheme.colors.primary }]}>{getAttributeDescriptor('creaminess', creaminess)}</Text>
             <Slider
               style={styles.slider}
               minimumValue={1}
@@ -673,7 +675,7 @@ export default function AddReviewScreen() {
 
         {/* Photos */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📸 Photo (Optional, max 1)</Text>
+          <Text style={[styles.sectionTitle, { color: paperTheme.colors.onSurface }]}>📸 Photo (Optional, max 1)</Text>
 
           {/* Photo Grid */}
           {photos.length > 0 && (
@@ -695,16 +697,16 @@ export default function AddReviewScreen() {
           {/* Add Photo Button */}
           {photos.length < 1 && (
             <TouchableOpacity
-              style={styles.addPhotoButton}
+              style={[styles.addPhotoButton, { backgroundColor: paperTheme.colors.surfaceVariant, borderColor: paperTheme.colors.outline }]}
               onPress={showPhotoOptions}
               disabled={uploadingPhoto}
             >
               {uploadingPhoto ? (
-                <ActivityIndicator size="small" color="#3498db" />
+                <ActivityIndicator size="small" animating={true} />
               ) : (
                 <>
                   <Text style={styles.addPhotoIcon}>📷</Text>
-                  <Text style={styles.addPhotoText}>Add Photo</Text>
+                  <Text style={[styles.addPhotoText, { color: paperTheme.colors.primary }]}>Add Photo</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -714,13 +716,14 @@ export default function AddReviewScreen() {
         {/* Origin (only if missing) */}
         {showOriginInput && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>📍 Add Origin (Optional)</Text>
-            <Text style={styles.sectionSubtitle}>
+            <Text style={[styles.sectionTitle, { color: paperTheme.colors.onSurface }]}>📍 Add Origin (Optional)</Text>
+            <Text style={[styles.sectionSubtitle, { color: paperTheme.colors.onSurfaceVariant }]}>
               Help us complete this entry! Where is this oyster from?
             </Text>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { backgroundColor: paperTheme.colors.surfaceVariant, borderColor: paperTheme.colors.outline, color: paperTheme.colors.onSurface }]}
               placeholder="e.g., Washington, Tomales Bay, British Columbia"
+              placeholderTextColor={paperTheme.colors.onSurfaceVariant}
               value={contributedOrigin}
               onChangeText={setContributedOrigin}
             />
@@ -730,13 +733,14 @@ export default function AddReviewScreen() {
         {/* Species (only if missing) */}
         {showSpeciesInput && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🔬 Add Species (Optional)</Text>
-            <Text style={styles.sectionSubtitle}>
+            <Text style={[styles.sectionTitle, { color: paperTheme.colors.onSurface }]}>🔬 Add Species (Optional)</Text>
+            <Text style={[styles.sectionSubtitle, { color: paperTheme.colors.onSurfaceVariant }]}>
               Help us complete this entry! What species is this?
             </Text>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { backgroundColor: paperTheme.colors.surfaceVariant, borderColor: paperTheme.colors.outline, color: paperTheme.colors.onSurface }]}
               placeholder="e.g., Crassostrea gigas, Crassostrea virginica"
+              placeholderTextColor={paperTheme.colors.onSurfaceVariant}
               value={contributedSpecies}
               onChangeText={setContributedSpecies}
             />
@@ -773,20 +777,16 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    backgroundColor: '#fff',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#2c3e50',
     marginBottom: 5,
   },
   oysterName: {
     fontSize: 18,
-    color: '#7f8c8d',
   },
   section: {
     padding: 20,
@@ -797,7 +797,6 @@ const styles = StyleSheet.create({
   },
   sectionSubtitle: {
     fontSize: 14,
-    color: '#7f8c8d',
     marginBottom: 15,
   },
   ratingOptions: {
@@ -812,8 +811,6 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e0e0e0',
-    backgroundColor: '#f5f5f5',
   },
   ratingEmoji: {
     fontSize: 32,
@@ -822,7 +819,6 @@ const styles = StyleSheet.create({
   ratingLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#2c3e50',
   },
   ratingLabelActive: {
     color: '#fff',
@@ -839,12 +835,10 @@ const styles = StyleSheet.create({
   sliderLabel: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#2c3e50',
   },
   sliderValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#3498db',
   },
   sliderLabels: {
     flexDirection: 'row',
@@ -853,16 +847,13 @@ const styles = StyleSheet.create({
   },
   sliderMin: {
     fontSize: 12,
-    color: '#7f8c8d',
   },
   sliderMax: {
     fontSize: 12,
-    color: '#7f8c8d',
   },
   sliderDescriptor: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#3498db',
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 4,
@@ -877,11 +868,9 @@ const styles = StyleSheet.create({
   },
   textInput: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#f5f5f5',
   },
   submitButton: {
     marginHorizontal: 20,
@@ -929,10 +918,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    backgroundColor: '#f8f9fa',
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#dee2e6',
     borderStyle: 'dashed',
     gap: 8,
   },
@@ -941,7 +928,6 @@ const styles = StyleSheet.create({
   },
   addPhotoText: {
     fontSize: 16,
-    color: '#3498db',
     fontWeight: '600',
   },
   dialogActions: {

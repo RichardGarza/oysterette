@@ -308,7 +308,7 @@ describe('Review Schemas', () => {
     });
 
     it('should accept all valid ReviewRating enums', () => {
-      const ratings = [ReviewRating.LOVE_IT, ReviewRating.LIKE_IT, ReviewRating.MEH, ReviewRating.WHATEVER];
+      const ratings = [ReviewRating.LOVE_IT, ReviewRating.LIKE_IT, ReviewRating.OKAY, ReviewRating.MEH];
 
       ratings.forEach((rating) => {
         const data = {

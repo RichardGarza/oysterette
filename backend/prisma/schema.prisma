@@ -193,10 +193,10 @@ model ReviewVote {
   @@map("review_votes")
 }
 
-// Enum for Review Ratings
+// Enum for Review Ratings (highest to lowest)
 enum ReviewRating {
-  LOVE_IT   // 8.0-10.0 → 9.0
-  LIKE_IT   // 6.0-7.9 → 7.0
-  MEH       // 4.0-5.9 → 4.95
-  WHATEVER  // 1.0-3.9 → 2.5
+  LOVE_IT   // 8.0-10.0 → 9.0 (Best)
+  LIKE_IT   // 6.0-7.9 → 7.0 (Good)
+  OKAY      // 4.0-5.9 → 4.95 (Okay, renamed from WHATEVER)
+  MEH       // 1.0-3.9 → 2.5 (Worst)
 }
