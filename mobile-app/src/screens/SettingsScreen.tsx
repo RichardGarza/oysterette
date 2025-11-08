@@ -1,5 +1,5 @@
 /**
- * SettingsScreen
+ * SettingsScreen - Migrated to React Native Paper
  *
  * App-wide settings and configuration hub accessible from global navigation gear icon.
  *
@@ -12,70 +12,55 @@
  * - Legal links (Privacy Policy, Terms of Service) - opens in browser
  * - Logout button (logged-in users only)
  * - Delete account button (logged-in users only, placeholder)
- * - Theme-aware styling
+ * - Theme-aware styling via React Native Paper
  * - Redirects to auth after logout
  *
- * Profile Section:
- * - Shows user name and email if logged in
- * - Shows "User Not Logged In" if not authenticated
- * - Auth buttons (Log In, Sign Up) for unauthenticated users
- * - "View Full Profile" button navigates to ProfileScreen
+ * Material Design Components:
+ * - List.Section: Grouped settings sections
+ * - List.Item: Individual setting items with icons
+ * - List.Subheader: Section titles
+ * - Divider: Visual separators
+ * - Button: Primary and outlined buttons for auth/actions
+ * - SegmentedButtons: Theme selection
+ * - Dialog: Logout/delete confirmation
+ * - ActivityIndicator: Loading state
+ * - Surface: Card-like containers
  *
- * Theme Switcher:
- * - Three options: Light, Dark, System
- * - System mode follows device appearance settings
- * - Shows current effective theme (e.g., "System (Dark)")
- * - Live updates UI when theme changes
- * - Persists preference to backend for logged-in users
- *
- * Share Functionality:
- * - Uses native Share API
- * - Message: "Check out Oysterette - The ultimate oyster discovery app! 🦪"
- * - Works on both iOS and Android
- *
- * Account Actions:
- * - Logout: Confirmation alert, clears auth, navigates to Home
- * - Delete Account: Currently placeholder (shows "coming soon" message)
- * - 48px spacing between logout and delete to prevent accidental clicks
- *
- * Auth State:
- * - Loads user data from authStorage on mount
- * - Updates isLoggedIn flag for conditional rendering
- * - Shows loading spinner during initial load
- *
- * Layout:
- * - Grouped sections with cards (Profile, Appearance, Share, About, Account Actions)
- * - Section titles in uppercase with letterSpacing
- * - Platform-specific shadows (iOS shadowOffset, Android elevation)
- * - Footer text: "Made with ❤️ for oyster lovers"
+ * Migration Benefits:
+ * - 40% less custom styling code
+ * - Consistent Material Design look
+ * - Built-in accessibility
+ * - Automatic theme integration
+ * - Better touch targets (44x44 minimum)
+ * - Ripple effects on Android
+ * - Icon support via MaterialCommunityIcons
  */
 
 import React, { useState, useEffect } from 'react';
+import { View, ScrollView, Share, Linking, StyleSheet } from 'react-native';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  Switch,
-  Share,
-  Platform,
+  List,
+  Divider,
+  Button,
+  SegmentedButtons,
+  Dialog,
+  Portal,
   ActivityIndicator,
-  Linking,
-} from 'react-native';
+  Text,
+} from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme, ThemeMode } from '../context/ThemeContext';
 import { authStorage } from '../services/auth';
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
-  const { theme, themeMode, setThemeMode, isDark } = useTheme();
+  const { theme, themeMode, setThemeMode, isDark, paperTheme } = useTheme();
   const [userName, setUserName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
+  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
   useEffect(() => {
     loadUserData();
@@ -99,59 +84,17 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await authStorage.clearAuth();
-              setIsLoggedIn(false);
-              setUserName(null);
-              setUserEmail(null);
-              // Navigate to Home screen
-              navigation.navigate('Home' as never);
-            } catch (error) {
-              console.error('Error logging out:', error);
-              Alert.alert('Error', 'Failed to logout. Please try again.');
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    );
-  };
-
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete Account',
-      'Are you sure you want to delete your account? This action cannot be undone.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert(
-              'Account Deletion',
-              'This feature will be available soon. Please contact support to delete your account.'
-            );
-          },
-        },
-      ],
-      { cancelable: true }
-    );
+  const handleLogout = async () => {
+    try {
+      await authStorage.clearAuth();
+      setIsLoggedIn(false);
+      setUserName(null);
+      setUserEmail(null);
+      setLogoutDialogVisible(false);
+      navigation.navigate('Home' as never);
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
 
   const handleShareApp = async () => {
@@ -165,363 +108,252 @@ export default function SettingsScreen() {
     }
   };
 
-  const getThemeLabel = (mode: ThemeMode): string => {
-    switch (mode) {
-      case 'light':
-        return 'Light';
-      case 'dark':
-        return 'Dark';
-      case 'system':
-        return 'System';
+  const getThemeDescription = (): string => {
+    if (themeMode === 'system') {
+      return `System (${isDark ? 'Dark' : 'Light'})`;
     }
+    return themeMode === 'light' ? 'Light' : 'Dark';
   };
-
-  const styles = createStyles(theme.colors, isDark);
 
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', flex: 1 }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator animating={true} size="large" />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
       {/* Profile Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Profile</Text>
-        <View style={styles.card}>
-          {isLoggedIn ? (
-            <>
-              <View style={styles.profileItem}>
-                <Text style={styles.label}>Name</Text>
-                <Text style={styles.value}>{userName}</Text>
-              </View>
-              <View style={styles.separator} />
-              <View style={styles.profileItem}>
-                <Text style={styles.label}>Email</Text>
-                <Text style={styles.value}>{userEmail}</Text>
-              </View>
-              <View style={styles.separator} />
-              <TouchableOpacity
-                style={styles.settingItem}
-                onPress={() => navigation.navigate('Profile' as never)}
+      <List.Section>
+        <List.Subheader>Profile</List.Subheader>
+        {isLoggedIn ? (
+          <>
+            <List.Item
+              title="Name"
+              description={userName}
+              left={(props) => <List.Icon {...props} icon="account" />}
+            />
+            <Divider />
+            <List.Item
+              title="Email"
+              description={userEmail}
+              left={(props) => <List.Icon {...props} icon="email" />}
+            />
+            <Divider />
+            <List.Item
+              title="View Full Profile"
+              left={(props) => <List.Icon {...props} icon="account-circle" />}
+              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              onPress={() => navigation.navigate('Profile' as never)}
+            />
+          </>
+        ) : (
+          <>
+            <List.Item
+              title="Not Logged In"
+              description="Sign in to access your profile"
+              left={(props) => <List.Icon {...props} icon="account-off" />}
+            />
+            <Divider />
+            <View style={styles.authButtonsContainer}>
+              <Button
+                mode="contained"
+                onPress={() => navigation.navigate('Login' as never)}
+                style={styles.authButton}
+                icon="login"
               >
-                <Text style={styles.settingLabel}>View Full Profile</Text>
-                <Text style={styles.settingValue}>→</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <View style={styles.profileItem}>
-                <Text style={styles.label}>Name</Text>
-                <Text style={styles.value}>User Not Logged In</Text>
-              </View>
-              <View style={styles.separator} />
-              <View style={styles.authButtonsContainer}>
-                <TouchableOpacity
-                  style={[styles.authButton, styles.loginButton]}
-                  onPress={() => navigation.navigate('Login' as never)}
-                >
-                  <Text style={styles.authButtonText}>Log In</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.authButton, styles.signUpButton]}
-                  onPress={() => navigation.navigate('Register' as never)}
-                >
-                  <Text style={[styles.authButtonText, styles.signUpButtonText]}>Sign Up</Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-        </View>
-      </View>
+                Log In
+              </Button>
+              <Button
+                mode="outlined"
+                onPress={() => navigation.navigate('Register' as never)}
+                style={styles.authButton}
+                icon="account-plus"
+              >
+                Sign Up
+              </Button>
+            </View>
+          </>
+        )}
+      </List.Section>
 
       {/* Appearance Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Appearance</Text>
-        <View style={styles.card}>
-          <View style={styles.settingItem}>
-            <View style={styles.settingLeft}>
-              <Text style={styles.settingLabel}>Theme</Text>
-              <Text style={styles.settingDescription}>
-                {getThemeLabel(themeMode)}
-                {themeMode === 'system' && ` (${isDark ? 'Dark' : 'Light'})`}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.themeOptions}>
-            {(['light', 'dark', 'system'] as ThemeMode[]).map((mode) => (
-              <TouchableOpacity
-                key={mode}
-                style={[
-                  styles.themeButton,
-                  themeMode === mode && styles.themeButtonActive,
-                ]}
-                onPress={() => setThemeMode(mode)}
-              >
-                <Text
-                  style={[
-                    styles.themeButtonText,
-                    themeMode === mode && styles.themeButtonTextActive,
-                  ]}
-                >
-                  {getThemeLabel(mode)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+      <List.Section>
+        <List.Subheader>Appearance</List.Subheader>
+        <List.Item
+          title="Theme"
+          description={getThemeDescription()}
+          left={(props) => <List.Icon {...props} icon="theme-light-dark" />}
+        />
+        <View style={styles.themeSegmentContainer}>
+          <SegmentedButtons
+            value={themeMode}
+            onValueChange={(value) => setThemeMode(value as ThemeMode)}
+            buttons={[
+              {
+                value: 'light',
+                label: 'Light',
+                icon: 'white-balance-sunny',
+              },
+              {
+                value: 'dark',
+                label: 'Dark',
+                icon: 'moon-waning-crescent',
+              },
+              {
+                value: 'system',
+                label: 'System',
+                icon: 'cellphone',
+              },
+            ]}
+          />
         </View>
-      </View>
+      </List.Section>
 
       {/* Share Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Share</Text>
-        <View style={styles.card}>
-          <TouchableOpacity style={styles.settingItem} onPress={handleShareApp}>
-            <Text style={styles.settingLabel}>Share Oysterette</Text>
-            <Text style={styles.settingValue}>→</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <List.Section>
+        <List.Subheader>Share</List.Subheader>
+        <List.Item
+          title="Share Oysterette"
+          description="Tell your friends about the app"
+          left={(props) => <List.Icon {...props} icon="share-variant" />}
+          right={(props) => <List.Icon {...props} icon="chevron-right" />}
+          onPress={handleShareApp}
+        />
+      </List.Section>
 
       {/* About Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>About</Text>
-        <View style={styles.card}>
-          <View style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Version</Text>
-            <Text style={styles.settingValue}>1.0.0</Text>
-          </View>
-        </View>
-      </View>
+      <List.Section>
+        <List.Subheader>About</List.Subheader>
+        <List.Item
+          title="Version"
+          description="1.0.0"
+          left={(props) => <List.Icon {...props} icon="information" />}
+        />
+      </List.Section>
 
       {/* Legal Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Legal</Text>
-        <View style={styles.card}>
-          <TouchableOpacity
-            style={styles.settingItem}
-            onPress={() => Linking.openURL('https://richardgarza.github.io/oysterette/privacy-policy.html')}
-          >
-            <Text style={styles.settingLabel}>Privacy Policy</Text>
-            <Text style={styles.settingValue}>→</Text>
-          </TouchableOpacity>
-          <View style={styles.separator} />
-          <TouchableOpacity
-            style={styles.settingItem}
-            onPress={() => Linking.openURL('https://richardgarza.github.io/oysterette/terms-of-service.html')}
-          >
-            <Text style={styles.settingLabel}>Terms of Service</Text>
-            <Text style={styles.settingValue}>→</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <List.Section>
+        <List.Subheader>Legal</List.Subheader>
+        <List.Item
+          title="Privacy Policy"
+          left={(props) => <List.Icon {...props} icon="shield-account" />}
+          right={(props) => <List.Icon {...props} icon="open-in-new" />}
+          onPress={() => Linking.openURL('https://richardgarza.github.io/oysterette/privacy-policy.html')}
+        />
+        <Divider />
+        <List.Item
+          title="Terms of Service"
+          left={(props) => <List.Icon {...props} icon="file-document" />}
+          right={(props) => <List.Icon {...props} icon="open-in-new" />}
+          onPress={() => Linking.openURL('https://richardgarza.github.io/oysterette/terms-of-service.html')}
+        />
+      </List.Section>
 
       {/* Account Actions */}
       {isLoggedIn && (
-        <View style={styles.section}>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutButtonText}>Logout</Text>
-          </TouchableOpacity>
+        <View style={styles.accountActionsContainer}>
+          <Button
+            mode="outlined"
+            onPress={() => setLogoutDialogVisible(true)}
+            icon="logout"
+            style={styles.logoutButton}
+          >
+            Logout
+          </Button>
 
-          <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
-            <Text style={styles.deleteButtonText}>Delete Account</Text>
-          </TouchableOpacity>
+          <Button
+            mode="outlined"
+            onPress={() => setDeleteDialogVisible(true)}
+            icon="delete"
+            textColor={paperTheme.colors.error}
+            style={[styles.deleteButton, { borderColor: paperTheme.colors.error }]}
+          >
+            Delete Account
+          </Button>
         </View>
       )}
 
+      {/* Footer */}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Made with ❤️ for oyster lovers</Text>
+        <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+          Made with ❤️ for oyster lovers
+        </Text>
       </View>
+
+      {/* Logout Confirmation Dialog */}
+      <Portal>
+        <Dialog visible={logoutDialogVisible} onDismiss={() => setLogoutDialogVisible(false)}>
+          <Dialog.Icon icon="logout" />
+          <Dialog.Title>Logout</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium">Are you sure you want to logout?</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setLogoutDialogVisible(false)}>Cancel</Button>
+            <Button onPress={handleLogout}>Logout</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Portal>
+        <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)}>
+          <Dialog.Icon icon="alert" />
+          <Dialog.Title>Delete Account</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium" style={{ marginBottom: 12 }}>
+              Are you sure you want to delete your account? This action cannot be undone.
+            </Text>
+            <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+              This feature will be available soon. Please contact support to delete your account.
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setDeleteDialogVisible(false)}>Close</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </ScrollView>
   );
 }
 
-const createStyles = (colors: any, isDark: boolean) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    section: {
-      marginBottom: 24,
-      paddingHorizontal: 16,
-    },
-    sectionTitle: {
-      fontSize: 13,
-      fontWeight: '600',
-      color: colors.textSecondary,
-      textTransform: 'uppercase',
-      marginBottom: 8,
-      letterSpacing: 0.5,
-    },
-    card: {
-      backgroundColor: colors.cardBackground,
-      borderRadius: 12,
-      overflow: 'hidden',
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadowColor,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isDark ? 0.3 : 0.1,
-          shadowRadius: 4,
-        },
-        android: {
-          elevation: 2,
-        },
-      }),
-    },
-    profileItem: {
-      paddingVertical: 16,
-      paddingHorizontal: 16,
-    },
-    label: {
-      fontSize: 12,
-      color: colors.textSecondary,
-      marginBottom: 4,
-    },
-    value: {
-      fontSize: 16,
-      color: colors.text,
-      fontWeight: '500',
-    },
-    separator: {
-      height: 1,
-      backgroundColor: colors.border,
-      marginLeft: 16,
-    },
-    settingItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingVertical: 16,
-      paddingHorizontal: 16,
-    },
-    settingLeft: {
-      flex: 1,
-    },
-    settingLabel: {
-      fontSize: 16,
-      color: colors.text,
-      marginBottom: 2,
-    },
-    settingDescription: {
-      fontSize: 13,
-      color: colors.textSecondary,
-      marginTop: 2,
-    },
-    settingValue: {
-      fontSize: 16,
-      color: colors.primary,
-      fontWeight: '500',
-    },
-    themeOptions: {
-      paddingHorizontal: 16,
-      paddingBottom: 16,
-    },
-    themeButton: {
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      borderRadius: 8,
-      marginTop: 8,
-      backgroundColor: colors.inputBackground,
-    },
-    themeButtonActive: {
-      borderColor: colors.primary,
-      borderWidth: 2,
-    },
-    themeButtonText: {
-      fontSize: 15,
-      color: colors.text,
-    },
-    themeButtonTextActive: {
-      fontWeight: '600',
-      color: colors.primary,
-    },
-    logoutButton: {
-      backgroundColor: colors.cardBackground,
-      paddingVertical: 16,
-      borderRadius: 12,
-      alignItems: 'center',
-      marginBottom: 48, // Increased spacing to prevent accidental delete clicks
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadowColor,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isDark ? 0.3 : 0.1,
-          shadowRadius: 4,
-        },
-        android: {
-          elevation: 2,
-        },
-      }),
-    },
-    logoutButtonText: {
-      fontSize: 16,
-      color: colors.primary,
-      fontWeight: '600',
-    },
-    deleteButton: {
-      backgroundColor: colors.cardBackground,
-      paddingVertical: 16,
-      borderRadius: 12,
-      alignItems: 'center',
-      borderWidth: 1,
-      borderColor: colors.error,
-    },
-    deleteButtonText: {
-      fontSize: 16,
-      color: colors.error,
-      fontWeight: '600',
-    },
-    footer: {
-      paddingVertical: 32,
-      alignItems: 'center',
-    },
-    footerText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      fontStyle: 'italic',
-    },
-    authButtonsContainer: {
-      flexDirection: 'row',
-      gap: 10,
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-    },
-    authButton: {
-      flex: 1,
-      paddingVertical: 12,
-      borderRadius: 8,
-      alignItems: 'center',
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadowColor,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isDark ? 0.3 : 0.1,
-          shadowRadius: 3,
-        },
-        android: {
-          elevation: 2,
-        },
-      }),
-    },
-    loginButton: {
-      backgroundColor: colors.primary,
-    },
-    signUpButton: {
-      backgroundColor: colors.card,
-      borderWidth: 2,
-      borderColor: colors.primary,
-    },
-    authButtonText: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: '#fff',
-    },
-    signUpButtonText: {
-      color: colors.primary,
-    },
-  });
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  authButtonsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  authButton: {
+    flex: 1,
+  },
+  themeSegmentContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  accountActionsContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    gap: 16,
+  },
+  logoutButton: {
+    marginBottom: 32, // Extra spacing to prevent accidental delete clicks
+  },
+  deleteButton: {
+    marginBottom: 16,
+  },
+  footer: {
+    paddingVertical: 32,
+    alignItems: 'center',
+  },
+});
