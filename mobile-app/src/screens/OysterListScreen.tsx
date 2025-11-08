@@ -32,8 +32,8 @@ import {
   Divider,
 } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { OysterListScreenNavigationProp } from '../navigation/types';
+import { useNavigation, useFocusEffect, useRoute, RouteProp } from '@react-navigation/native';
+import { OysterListScreenNavigationProp, RootStackParamList } from '../navigation/types';
 import { oysterApi } from '../services/api';
 import { favoritesStorage } from '../services/favorites';
 import { authStorage } from '../services/auth';
@@ -101,6 +101,7 @@ const TEXT = {
 
 export default function OysterListScreen() {
   const navigation = useNavigation<OysterListScreenNavigationProp>();
+  const route = useRoute<RouteProp<RootStackParamList, 'OysterList'>>();
   const { theme, isDark, paperTheme } = useTheme();
   const [oysters, setOysters] = useState<Oyster[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +127,10 @@ export default function OysterListScreen() {
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
+    // Set initial search query from navigation params
+    if (route.params?.searchQuery) {
+      setSearchQuery(route.params.searchQuery);
+    }
     fetchOysters();
     loadFavorites();
     checkAuth();
