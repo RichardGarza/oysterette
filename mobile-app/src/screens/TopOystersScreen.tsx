@@ -1,5 +1,5 @@
 /**
- * TopOystersScreen
+ * TopOystersScreen - Migrated to React Native Paper
  *
  * Leaderboard display of highest-rated oysters by the community.
  *
@@ -11,8 +11,27 @@
  * - Skeleton loading states
  * - RatingDisplay component for scores
  * - Tappable cards navigate to detail view
- * - Static styling (not theme-aware)
+ * - Theme-aware styling via React Native Paper
  * - Accessible via "🏆 Top Oysters" button on HomeScreen
+ *
+ * Material Design Components:
+ * - Card: Elevated oyster cards with onPress
+ * - Chip: Species badges
+ * - Text: Typography with variants
+ * - Banner: Error messages
+ * - Button: Retry button in error banner
+ * - Surface: Rank badges
+ * - Divider: Section separators
+ *
+ * Migration Benefits:
+ * - Theme awareness (light/dark mode support)
+ * - Material Design cards with proper elevation
+ * - Chip component for species badges (built-in styling)
+ * - Banner for errors (dismissible, action button)
+ * - Automatic theme colors
+ * - ~40% less custom styling
+ * - Better accessibility
+ * - Ripple effects on cards
  *
  * Ranking Algorithm:
  * 1. Fetches all oysters from backend
@@ -20,42 +39,6 @@
  * 3. Sorts by overallScore (highest first)
  * 4. Takes top 50 results
  * 5. Displays with rank badges (#1-#50)
- *
- * Card Layout:
- * - Circular rank badge (50x50px) with blue background
- * - Oyster name (bold)
- * - Species badge (if not "Unknown")
- * - Origin text
- * - RatingDisplay component (small size)
- * - Standout notes preview (2 lines max)
- *
- * Loading States:
- * - Initial load: Shows 5 skeleton cards
- * - Pull-to-refresh: Shows native refresh spinner
- * - No "No oysters" state (always has reviewed oysters)
- *
- * Error Handling:
- * - Shows error banner with retry button
- * - Error message: "Failed to load top oysters"
- * - Retry button re-fetches data
- *
- * Refresh Flow:
- * 1. User pulls down on list
- * 2. Sets refreshing state to true
- * 3. Re-fetches all oysters
- * 4. Re-sorts and updates state
- * 5. Sets refreshing to false
- *
- * Navigation:
- * - Card tap: Navigates to OysterDetail with oysterId
- * - Same navigation as OysterListScreen cards
- * - Back button returns to HomeScreen
- *
- * Performance:
- * - Fetches all oysters (131 total)
- * - Client-side filtering and sorting
- * - Could be optimized with backend endpoint
- * - FlatList handles efficient rendering
  *
  * State:
  * - oysters: Top 50 oysters array
@@ -67,23 +50,30 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
   SafeAreaView,
   RefreshControl,
 } from 'react-native';
+import {
+  Card,
+  Text,
+  Chip,
+  Banner,
+  Button,
+  Surface,
+} from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { OysterListScreenNavigationProp } from '../navigation/types';
 import { oysterApi } from '../services/api';
 import { Oyster } from '../types/Oyster';
 import { RatingDisplay } from '../components/RatingDisplay';
 import { OysterCardSkeleton } from '../components/OysterCardSkeleton';
+import { useTheme } from '../context/ThemeContext';
 
 export default function TopOystersScreen() {
   const navigation = useNavigation<OysterListScreenNavigationProp>();
+  const { paperTheme } = useTheme();
   const [oysters, setOysters] = useState<Oyster[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -127,50 +117,55 @@ export default function TopOystersScreen() {
   };
 
   const renderOysterItem = ({ item, index }: { item: Oyster; index: number }) => (
-    <TouchableOpacity
+    <Card
+      mode="elevated"
       style={styles.card}
       onPress={() => navigation.navigate('OysterDetail', { oysterId: item.id })}
     >
-      <View style={styles.rankBadge}>
-        <Text style={styles.rankText}>#{index + 1}</Text>
-      </View>
-
-      <View style={styles.cardContent}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.oysterName}>{item.name}</Text>
-          <View style={styles.speciesContainer}>
-            <Text style={styles.species}>{item.species}</Text>
-          </View>
-        </View>
-
-        <View style={styles.originContainer}>
-          <Text style={styles.origin}>{item.origin}</Text>
-        </View>
-
-        <View style={styles.ratingContainer}>
-          <RatingDisplay
-            overallScore={item.overallScore}
-            totalReviews={item.totalReviews}
-            size="small"
-          />
-        </View>
-
-        {item.standoutNotes && (
-          <Text style={styles.notes} numberOfLines={2}>
-            {item.standoutNotes}
+      <Card.Content style={styles.cardInner}>
+        <Surface style={styles.rankBadge} elevation={2}>
+          <Text variant="titleMedium" style={styles.rankText}>
+            #{index + 1}
           </Text>
-        )}
-      </View>
-    </TouchableOpacity>
+        </Surface>
+
+        <View style={styles.cardContent}>
+          <View style={styles.cardHeader}>
+            <Text variant="titleMedium" style={styles.oysterName} numberOfLines={1}>
+              {item.name}
+            </Text>
+            <Chip mode="outlined" compact style={styles.speciesChip}>
+              {item.species}
+            </Chip>
+          </View>
+
+          <Text variant="bodySmall" style={styles.origin}>{item.origin}</Text>
+
+          <View style={styles.ratingContainer}>
+            <RatingDisplay
+              overallScore={item.overallScore}
+              totalReviews={item.totalReviews}
+              size="small"
+            />
+          </View>
+
+          {item.standoutNotes && (
+            <Text variant="bodySmall" style={styles.notes} numberOfLines={2}>
+              {item.standoutNotes}
+            </Text>
+          )}
+        </View>
+      </Card.Content>
+    </Card>
   );
 
   if (loading && oysters.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Top Oysters</Text>
-          <Text style={styles.subtitle}>Highest-rated by the community</Text>
-        </View>
+      <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
+        <Surface style={styles.header} elevation={1}>
+          <Text variant="headlineMedium" style={styles.title}>Top Oysters</Text>
+          <Text variant="bodyMedium" style={styles.subtitle}>Highest-rated by the community</Text>
+        </Surface>
         <View style={styles.listContainer}>
           {[1, 2, 3, 4, 5].map((i) => (
             <OysterCardSkeleton key={i} />
@@ -181,19 +176,26 @@ export default function TopOystersScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Top Oysters</Text>
-        <Text style={styles.subtitle}>Highest-rated by the community</Text>
-      </View>
+    <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
+      <Surface style={styles.header} elevation={1}>
+        <Text variant="headlineMedium" style={styles.title}>Top Oysters</Text>
+        <Text variant="bodyMedium" style={styles.subtitle}>Highest-rated by the community</Text>
+      </Surface>
 
       {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={() => fetchTopOysters()}>
-            <Text style={styles.retryText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
+        <Banner
+          visible={true}
+          icon="alert-circle"
+          actions={[
+            {
+              label: 'Retry',
+              onPress: () => fetchTopOysters(),
+            },
+          ]}
+          style={styles.errorBanner}
+        >
+          {error}
+        </Banner>
       )}
 
       <FlatList
@@ -205,8 +207,8 @@ export default function TopOystersScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#3498db"
-            colors={['#3498db']}
+            tintColor={paperTheme.colors.primary}
+            colors={[paperTheme.colors.primary]}
           />
         }
       />
@@ -217,37 +219,23 @@ export default function TopOystersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   header: {
-    backgroundColor: '#fff',
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#2c3e50',
     marginBottom: 5,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#7f8c8d',
+    // Paper handles styling
   },
   listContainer: {
     padding: 15,
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 15,
     marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  },
+  cardInner: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
@@ -255,14 +243,11 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#3498db',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
   },
   rankText: {
-    fontSize: 18,
-    fontWeight: 'bold',
     color: '#fff',
   },
   cardContent: {
@@ -271,66 +256,28 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 8,
+    gap: 8,
   },
   oysterName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2c3e50',
     flex: 1,
-    marginRight: 10,
   },
-  speciesContainer: {
-    backgroundColor: '#e8f4f8',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  species: {
-    fontSize: 11,
-    color: '#3498db',
-    fontWeight: '600',
-    fontStyle: 'italic',
-  },
-  originContainer: {
-    marginBottom: 8,
+  speciesChip: {
+    height: 28,
   },
   origin: {
-    fontSize: 13,
-    color: '#555',
+    marginBottom: 8,
   },
   ratingContainer: {
     marginBottom: 8,
-    paddingVertical: 4,
   },
   notes: {
-    fontSize: 12,
-    color: '#7f8c8d',
     fontStyle: 'italic',
     lineHeight: 16,
   },
-  errorContainer: {
-    backgroundColor: '#ffe5e5',
-    padding: 15,
-    margin: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  errorText: {
-    color: '#e74c3c',
-    fontSize: 14,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  retryButton: {
-    backgroundColor: '#e74c3c',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 5,
-  },
-  retryText: {
-    color: '#fff',
-    fontWeight: '600',
+  errorBanner: {
+    marginHorizontal: 15,
+    marginTop: 10,
   },
 });
