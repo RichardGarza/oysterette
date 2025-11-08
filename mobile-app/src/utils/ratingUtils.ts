@@ -11,7 +11,7 @@ import ratingLabels from '../data/oyster-rating-labels.json';
 // TYPES
 // ============================================================================
 
-export type OysterAttribute = 'size' | 'body' | 'sweet_brininess' | 'flavorfulness' | 'creaminess';
+export type OysterAttribute = 'size' | 'body' | 'sweet_brininess' | 'sweetBrininess' | 'flavorfulness' | 'creaminess';
 
 export interface VerdictResult {
   readonly verdict: string;
@@ -83,7 +83,9 @@ export function getAttributeDescriptor(
   score: number
 ): string {
   const rounded = Math.round(score);
-  const descriptors = ratingLabels.descriptors[attribute];
+  // Normalize camelCase to snake_case for JSON lookup
+  const normalizedAttribute = attribute === 'sweetBrininess' ? 'sweet_brininess' : attribute;
+  const descriptors = ratingLabels.descriptors[normalizedAttribute as keyof typeof ratingLabels.descriptors];
 
   if (!descriptors) {
     return score.toString();
