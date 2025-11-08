@@ -2,89 +2,53 @@
  * EmptyState Component
  *
  * Reusable empty state display with optional action button.
- *
- * Features:
- * - Large emoji icon (64px)
- * - Title and optional description
- * - Optional call-to-action button
- * - Theme-aware styling
- * - Centered layout with padding
- *
- * Props:
- * - icon?: string (default: '🔍') - Emoji to display
- * - title: string - Main message
- * - description?: string - Optional longer explanation
- * - actionLabel?: string - Button text (if provided)
- * - onAction?: () => void - Button callback (if provided)
- *
- * Usage Examples:
- *
- * 1. No Favorites:
- *    <EmptyState
- *      icon="❤️"
- *      title="No Favorites Yet"
- *      description="You haven't added any oysters to your favorites..."
- *      actionLabel="View All Oysters"
- *      onAction={() => setShowFavoritesOnly(false)}
- *    />
- *
- * 2. No Search Results:
- *    <EmptyState
- *      icon="🔎"
- *      title="No Oysters Found"
- *      description={`No results for "${searchQuery}". Try a different search...`}
- *      actionLabel="Clear Search"
- *      onAction={() => handleSearch('')}
- *    />
- *
- * 3. No Reviews:
- *    <EmptyState
- *      icon="📝"
- *      title="No Reviews Yet"
- *      description="Be the first to share your tasting experience..."
- *    />
- *
- * Layout:
- * - Centered vertically and horizontally
- * - Icon at top
- * - Title below icon (bold, 20px)
- * - Description below title (16px, secondary color)
- * - Action button at bottom (if provided)
- *
- * Button Styling:
- * - Primary color background
- * - White text
- * - Rounded (20px border radius)
- * - Padding: 24px horizontal, 12px vertical
- *
- * Used In:
- * - OysterListScreen (no favorites, no search results)
- * - OysterDetailScreen (no reviews)
- * - ProfileScreen (no reviews yet)
+ * Theme-aware with centered layout.
  */
 
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme, Theme } from '../context/ThemeContext';
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const DEFAULTS = {
+  ICON: '🔍',
+  ICON_SIZE: 64,
+  PADDING: 40,
+  TITLE_SIZE: 20,
+  DESCRIPTION_SIZE: 16,
+  BUTTON_RADIUS: 20,
+  BUTTON_PADDING_H: 24,
+  BUTTON_PADDING_V: 12,
+} as const;
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 interface EmptyStateProps {
-  icon?: string;
-  title: string;
-  description?: string;
-  actionLabel?: string;
-  onAction?: () => void;
+  readonly icon?: string;
+  readonly title: string;
+  readonly description?: string;
+  readonly actionLabel?: string;
+  readonly onAction?: () => void;
 }
 
-export function EmptyState({
-  icon = '🔍',
+// ============================================================================
+// COMPONENT
+// ============================================================================
+
+export const EmptyState = memo(({
+  icon = DEFAULTS.ICON,
   title,
   description,
   actionLabel,
   onAction,
-}: EmptyStateProps) {
+}: EmptyStateProps) => {
   const { theme } = useTheme();
-
-  const styles = createStyles(theme.colors);
+  const styles = useStyles(theme);
 
   return (
     <View style={styles.container}>
@@ -100,46 +64,51 @@ export function EmptyState({
       )}
     </View>
   );
-}
+});
 
-const createStyles = (colors: any) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: 40,
-      backgroundColor: colors.background,
-    },
-    icon: {
-      fontSize: 64,
-      marginBottom: 20,
-      color: colors.text,
-    },
-    title: {
-      fontSize: 20,
-      fontWeight: '600',
-      color: colors.text,
-      textAlign: 'center',
-      marginBottom: 10,
-    },
-    description: {
-      fontSize: 16,
-      color: colors.textSecondary,
-      textAlign: 'center',
-      lineHeight: 24,
-      marginBottom: 20,
-    },
-    button: {
-      backgroundColor: colors.primary,
-      paddingHorizontal: 24,
-      paddingVertical: 12,
-      borderRadius: 20,
-      marginTop: 10,
-    },
-    buttonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: '600',
-    },
-  });
+EmptyState.displayName = 'EmptyState';
+
+// ============================================================================
+// STYLES
+// ============================================================================
+
+const useStyles = (theme: Theme) => useMemo(() => StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: DEFAULTS.PADDING,
+    backgroundColor: theme.colors.background,
+  },
+  icon: {
+    fontSize: DEFAULTS.ICON_SIZE,
+    marginBottom: 20,
+    color: theme.colors.text,
+  },
+  title: {
+    fontSize: DEFAULTS.TITLE_SIZE,
+    fontWeight: '600',
+    color: theme.colors.text,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: DEFAULTS.DESCRIPTION_SIZE,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: DEFAULTS.BUTTON_PADDING_H,
+    paddingVertical: DEFAULTS.BUTTON_PADDING_V,
+    borderRadius: DEFAULTS.BUTTON_RADIUS,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+}), [theme]);
