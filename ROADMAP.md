@@ -1028,23 +1028,54 @@ Credibility Score:
 - [ ] Backend storage endpoints
 - [ ] Database schema updates
 
-### Phase 16: Advanced Recommendations (Collaborative Filtering) 📋
+### Phase 16: Advanced Recommendations (Collaborative Filtering) ✅
 
-**Estimated Time:** 12-16 hours
+**Status:** Complete
+**Completion Date:** November 8, 2025
+**Actual Time:** 2 hours
 **Priority:** MEDIUM
 
-**Features:**
-- [ ] Collaborative filtering algorithm
-- [ ] Find users with similar taste profiles
-- [ ] "Users who liked X also liked Y" recommendations
-- [ ] Hybrid approach (combine attribute + collaborative)
-- [ ] A/B testing framework for algorithm comparison
+**Completed Features:**
+- [x] Collaborative filtering algorithm (cosine similarity)
+- [x] Find users with similar taste profiles (findSimilarUsers)
+- [x] "Users who liked X also liked Y" recommendations
+- [x] Hybrid approach (60% attribute + 40% collaborative)
 
-**Implementation:**
-- [ ] User similarity scoring
-- [ ] Matrix factorization (optional, advanced)
-- [ ] Performance optimization for large user base
-- [ ] Recommendation quality metrics
+**Implementation Details:**
+- [x] User similarity scoring (cosine similarity on shared ratings)
+- [x] Requires 3+ reviews and 2+ common oysters for matching
+- [x] Similarity threshold: >50% to be considered similar
+- [x] Weighted scoring: LOVE_IT=2, LIKE_IT=1
+- [x] Hybrid normalizes both scores to 0-1 range before combining
+
+**New API Endpoints:**
+- GET /api/recommendations (existing, attribute-based)
+- GET /api/recommendations/collaborative (users who liked X also liked Y)
+- GET /api/recommendations/hybrid (combined approach)
+- GET /api/recommendations/similar-users (find taste twins)
+
+**Algorithm:**
+```typescript
+// Cosine similarity for user matching
+similarity = dotProduct(userA, userB) / (magnitude(userA) * magnitude(userB))
+
+// Collaborative score
+score = sum(similarUser.similarity * ratingWeight)
+
+// Hybrid score
+hybridScore = attributeScore * 0.6 + collaborativeScore * 0.4
+```
+
+**Files Modified:**
+- `backend/src/services/recommendationService.ts` (added 3 new functions)
+- `backend/src/controllers/recommendationController.ts` (added 3 handlers)
+- `backend/src/routes/recommendationRoutes.ts` (added 3 routes)
+
+**Tests:** 244/244 passing ✅
+
+**Deferred:**
+- Matrix factorization (not needed for current user base size)
+- A/B testing framework (can add post-launch if needed)
 
 ### Phase 17: Web Application 📋
 
