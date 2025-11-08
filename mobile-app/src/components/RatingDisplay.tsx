@@ -1,97 +1,115 @@
 /**
  * RatingDisplay Component
  *
- * Reusable rating visualization component with multiple display modes.
- *
- * Features:
- * - Three size variants: small, medium, large
- * - Small mode: 5-star display with review count
- * - Medium/Large mode: Emoji + verdict word + score + review count
- * - Converts 0-10 backend score to 0-5 star display
- * - Handles zero reviews gracefully
- * - Uses utility functions from ratingUtils.ts
- *
- * Props:
- * - overallScore: 0-10 score from backend (40% rating + 60% attributes)
- * - totalReviews: Number of reviews for this oyster
- * - size?: 'small' | 'medium' | 'large' (default: 'medium')
- * - showDetails?: boolean (default: true) - Show review count
- *
- * Display Modes:
- * 1. Small (List View):
- *    - 5 stars (full/half/empty)
- *    - Review count in parentheses (e.g., "(23)")
- *    - Star sizes: 14px
- * 2. Medium (Detail View):
- *    - Emoji (24px) + Verdict word + Score/10
- *    - Review count (e.g., "(23 reviews)")
- *    - Font size: 18px
- * 3. Large:
- *    - Same as medium but larger
- *    - Emoji: 32px, Font: 22px
- *
- * Star Conversion:
- * - Backend score: 0-10
- * - Display score: 0-5 stars (score / 2)
- * - Half star: If decimal ≥ 0.5
- * - Examples:
- *   - 8.6 → 4.3 stars → ★★★★½
- *   - 7.2 → 3.6 stars → ★★★☆
- *
- * Verdict Mapping (from ratingUtils):
- * - 9-10: 🏆 "Outstanding"
- * - 8-8.9: ⭐ "Excellent"
- * - 7-7.9: 😊 "Very Good"
- * - 6-6.9: 👍 "Good"
- * - 5-5.9: 🆗 "Decent"
- * - 4-4.9: 😐 "Mediocre"
- * - 0-3.9: 👎 "Poor"
- *
- * Zero Reviews:
- * - Shows "No reviews yet" instead of score
- * - Styled as italic, secondary color
- *
- * Used In:
- * - OysterListScreen cards (small mode)
- * - OysterDetailScreen header (medium mode)
- * - TopOystersScreen cards (small mode)
+ * Reusable rating visualization with multiple display modes.
+ * Converts 0-10 backend scores to 0-5 star display.
  */
 
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { scoreToVerdict, scoreToStars } from '../utils/ratingUtils';
+import { REVIEW_RATING_VALUES } from '../types/Oyster';
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const SIZE_CONFIG = {
+  small: { fontSize: 14, starSize: 14, emojiSize: 16 },
+  medium: { fontSize: 18, starSize: 16, emojiSize: 24 },
+  large: { fontSize: 22, starSize: 18, emojiSize: 32 },
+} as const;
+
+const RATING_COLORS = {
+  LOVE_IT: '#10b981',
+  LIKE_IT: '#3b82f6',
+  OKAY: '#f59e0b',
+  MEH: '#ef4444',
+} as const;
+
+const COLORS = {
+  STAR_FILLED: '#fbbf24',
+  STAR_EMPTY: '#d1d5db',
+  TEXT_PRIMARY: '#2c3e50',
+  TEXT_SECONDARY: '#6b7280',
+  TEXT_MUTED: '#9ca3af',
+  BACKGROUND: '#f9fafb',
+  BAR_BACKGROUND: '#e5e7eb',
+} as const;
+
+const CONSTANTS = {
+  MAX_STARS: 5,
+  HALF_STAR_THRESHOLD: 0.5,
+} as const;
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
+type DisplaySize = 'small' | 'medium' | 'large';
 
 interface RatingDisplayProps {
-  overallScore: number;
-  totalReviews: number;
-  size?: 'small' | 'medium' | 'large';
-  showDetails?: boolean;
+  readonly overallScore: number;
+  readonly totalReviews: number;
+  readonly size?: DisplaySize;
+  readonly showDetails?: boolean;
 }
 
-export const RatingDisplay: React.FC<RatingDisplayProps> = ({
+interface RatingBreakdownProps {
+  readonly avgRating: number;
+  readonly totalReviews: number;
+  readonly ratingBreakdown?: {
+    loveIt: number;
+    likeIt: number;
+    okay: number;
+    meh: number;
+  };
+}
+
+interface RatingBarProps {
+  readonly label: string;
+  readonly count: number;
+  readonly total: number;
+  readonly color: string;
+}
+
+// ============================================================================
+// HELPERS
+// ============================================================================
+
+function getRatingLabel(value: number): string {
+  if (value >= 3.5) return 'Love It';
+  if (value >= 2.5) return 'Like It';
+  if (value >= 1.5) return 'Okay';
+  return 'Meh';
+}
+
+function getRatingColor(value: number): string {
+  if (value >= 3.5) return RATING_COLORS.LOVE_IT;
+  if (value >= 2.5) return RATING_COLORS.LIKE_IT;
+  if (value >= 1.5) return RATING_COLORS.OKAY;
+  return RATING_COLORS.MEH;
+}
+
+// ============================================================================
+// RATING DISPLAY COMPONENT
+// ============================================================================
+
+export const RatingDisplay = memo<RatingDisplayProps>(({
   overallScore,
   totalReviews,
   size = 'medium',
   showDetails = true,
 }) => {
-  // Convert 0-10 score to 0-5 stars for display
+  const currentSize = SIZE_CONFIG[size];
+
   const stars = scoreToStars(overallScore);
   const fullStars = Math.floor(stars);
-  const hasHalfStar = stars % 1 >= 0.5;
-  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+  const hasHalfStar = stars % 1 >= CONSTANTS.HALF_STAR_THRESHOLD;
+  const emptyStars = CONSTANTS.MAX_STARS - fullStars - (hasHalfStar ? 1 : 0);
 
-  // Get verdict (emoji + word) based on score
   const verdict = scoreToVerdict(overallScore);
 
-  const sizeStyles = {
-    small: { fontSize: 14, starSize: 14, emojiSize: 16 },
-    medium: { fontSize: 18, starSize: 16, emojiSize: 24 },
-    large: { fontSize: 22, starSize: 18, emojiSize: 32 },
-  };
-
-  const currentSize = sizeStyles[size];
-
-  // Don't show rating if there are no reviews
   if (totalReviews === 0) {
     return (
       <View style={styles.container}>
@@ -102,12 +120,11 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
     );
   }
 
-  // Small size: Show only stars (list view)
   if (size === 'small') {
     return (
       <View style={styles.container}>
         <View style={styles.starsContainer}>
-          {[...Array(fullStars)].map((_, i) => (
+          {Array.from({ length: fullStars }).map((_, i) => (
             <Text key={`full-${i}`} style={[styles.star, { fontSize: currentSize.starSize }]}>
               ★
             </Text>
@@ -115,7 +132,7 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
           {hasHalfStar && (
             <Text style={[styles.star, { fontSize: currentSize.starSize }]}>½</Text>
           )}
-          {[...Array(emptyStars)].map((_, i) => (
+          {Array.from({ length: emptyStars }).map((_, i) => (
             <Text key={`empty-${i}`} style={[styles.starEmpty, { fontSize: currentSize.starSize }]}>
               ☆
             </Text>
@@ -130,7 +147,6 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
     );
   }
 
-  // Medium/Large size: Show emoji + verdict word (detail view)
   return (
     <View style={styles.container}>
       <Text style={[styles.emoji, { fontSize: currentSize.emojiSize }]}>
@@ -151,38 +167,19 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
       )}
     </View>
   );
-};
+});
 
-interface RatingBreakdownProps {
-  avgRating: number;
-  totalReviews: number;
-  ratingBreakdown?: {
-    loveIt: number;
-    likeIt: number;
-    meh: number;
-    whatever: number;
-  };
-}
+RatingDisplay.displayName = 'RatingDisplay';
 
-export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({
+// ============================================================================
+// RATING BREAKDOWN COMPONENT
+// ============================================================================
+
+export const RatingBreakdown = memo<RatingBreakdownProps>(({
   avgRating,
   totalReviews,
   ratingBreakdown,
 }) => {
-  const getRatingLabel = (value: number): string => {
-    if (value >= 3.5) return 'Love It';
-    if (value >= 2.5) return 'Like It';
-    if (value >= 1.5) return 'Meh';
-    return 'Whatever';
-  };
-
-  const getRatingColor = (value: number): string => {
-    if (value >= 3.5) return '#10b981';
-    if (value >= 2.5) return '#3b82f6';
-    if (value >= 1.5) return '#f59e0b';
-    return '#ef4444';
-  };
-
   if (totalReviews === 0) {
     return (
       <View style={styles.breakdownContainer}>
@@ -205,24 +202,23 @@ export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({
 
       {ratingBreakdown && (
         <View style={styles.barsContainer}>
-          <RatingBar label="Love It" count={ratingBreakdown.loveIt} total={totalReviews} color="#10b981" />
-          <RatingBar label="Like It" count={ratingBreakdown.likeIt} total={totalReviews} color="#3b82f6" />
-          <RatingBar label="Meh" count={ratingBreakdown.meh} total={totalReviews} color="#f59e0b" />
-          <RatingBar label="Whatever" count={ratingBreakdown.whatever} total={totalReviews} color="#ef4444" />
+          <RatingBar label="Love It" count={ratingBreakdown.loveIt} total={totalReviews} color={RATING_COLORS.LOVE_IT} />
+          <RatingBar label="Like It" count={ratingBreakdown.likeIt} total={totalReviews} color={RATING_COLORS.LIKE_IT} />
+          <RatingBar label="Okay" count={ratingBreakdown.okay} total={totalReviews} color={RATING_COLORS.OKAY} />
+          <RatingBar label="Meh" count={ratingBreakdown.meh} total={totalReviews} color={RATING_COLORS.MEH} />
         </View>
       )}
     </View>
   );
-};
+});
 
-interface RatingBarProps {
-  label: string;
-  count: number;
-  total: number;
-  color: string;
-}
+RatingBreakdown.displayName = 'RatingBreakdown';
 
-const RatingBar: React.FC<RatingBarProps> = ({ label, count, total, color }) => {
+// ============================================================================
+// RATING BAR COMPONENT
+// ============================================================================
+
+const RatingBar = memo<RatingBarProps>(({ label, count, total, color }) => {
   const percentage = total > 0 ? (count / total) * 100 : 0;
 
   return (
@@ -234,7 +230,13 @@ const RatingBar: React.FC<RatingBarProps> = ({ label, count, total, color }) => 
       <Text style={styles.ratingBarCount}>{count}</Text>
     </View>
   );
-};
+});
+
+RatingBar.displayName = 'RatingBar';
+
+// ============================================================================
+// STYLES
+// ============================================================================
 
 const styles = StyleSheet.create({
   container: {
@@ -249,17 +251,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   outOf: {
-    color: '#6b7280',
+    color: COLORS.TEXT_SECONDARY,
     marginLeft: 2,
   },
   starsContainer: {
     flexDirection: 'row',
   },
   star: {
-    color: '#fbbf24',
+    color: COLORS.STAR_FILLED,
   },
   starEmpty: {
-    color: '#d1d5db',
+    color: COLORS.STAR_EMPTY,
   },
   emoji: {
     marginRight: 8,
@@ -269,23 +271,23 @@ const styles = StyleSheet.create({
   },
   verdictText: {
     fontWeight: '700',
-    color: '#2c3e50',
+    color: COLORS.TEXT_PRIMARY,
   },
   scoreText: {
-    color: '#6b7280',
+    color: COLORS.TEXT_SECONDARY,
     marginTop: 2,
   },
   reviewCount: {
-    color: '#6b7280',
+    color: COLORS.TEXT_SECONDARY,
     marginLeft: 4,
   },
   noReviews: {
-    color: '#9ca3af',
+    color: COLORS.TEXT_MUTED,
     fontStyle: 'italic',
   },
   breakdownContainer: {
     padding: 16,
-    backgroundColor: '#f9fafb',
+    backgroundColor: COLORS.BACKGROUND,
     borderRadius: 8,
   },
   avgRatingContainer: {
@@ -304,12 +306,12 @@ const styles = StyleSheet.create({
   },
   avgRatingCount: {
     fontSize: 14,
-    color: '#6b7280',
+    color: COLORS.TEXT_SECONDARY,
     marginTop: 2,
   },
   noReviewsText: {
     textAlign: 'center',
-    color: '#6b7280',
+    color: COLORS.TEXT_SECONDARY,
     fontSize: 14,
   },
   barsContainer: {
@@ -329,7 +331,7 @@ const styles = StyleSheet.create({
   barBackground: {
     flex: 1,
     height: 8,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: COLORS.BAR_BACKGROUND,
     borderRadius: 4,
     overflow: 'hidden',
     marginRight: 8,
@@ -342,7 +344,7 @@ const styles = StyleSheet.create({
     width: 30,
     textAlign: 'right',
     fontSize: 12,
-    color: '#6b7280',
+    color: COLORS.TEXT_SECONDARY,
     fontWeight: '600',
   },
 });
