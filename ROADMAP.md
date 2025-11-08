@@ -1158,9 +1158,9 @@ Credibility Score:
 
 **Issues to Fix:**
 - [ ] Add Oyster Screen: Replace inputs with sliders/emoji buttons
-- [ ] Keyboard handling consistency
+- [x] Keyboard handling consistency (KeyboardAvoidingView in all forms) ✅
 - [x] ~~Missing fields on review screen (origin/species for new oysters)~~ ✅ Completed Nov 2025
-- [ ] New oyster validation (require origin/species)
+- [x] New oyster validation (require origin/species) ✅ Nov 2025
 - [ ] Navigation updates (conditional login button)
 
 ### Phase 19: UI Modernization with React Native Paper 📋
