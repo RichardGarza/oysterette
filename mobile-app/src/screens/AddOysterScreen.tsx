@@ -7,22 +7,20 @@
 import React, { useState, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  TextInput,
-  TouchableOpacity,
   ScrollView,
   SafeAreaView,
   Alert,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { TextInput, Button, Card, Text, HelperText } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { oysterApi } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
 
 // ============================================================================
 // CONSTANTS
@@ -87,6 +85,7 @@ interface FormData {
 
 export default function AddOysterScreen() {
   const navigation = useNavigation<AddOysterScreenNavigationProp>();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
@@ -179,10 +178,14 @@ export default function AddOysterScreen() {
     return (
       <View style={styles.sliderContainer}>
         <View style={styles.sliderHeader}>
-          <Text style={styles.sliderLabel}>{config.label}</Text>
-          <Text style={styles.sliderValue}>{formData[field]}/10</Text>
+          <Text variant="bodyLarge" style={{ color: theme.colors.text }}>{config.label}</Text>
+          <Text variant="bodyLarge" style={{ color: theme.colors.primary, fontWeight: 'bold' }}>
+            {formData[field]}/10
+          </Text>
         </View>
-        <Text style={styles.sliderDescription}>{config.description}</Text>
+        <HelperText type="info" style={{ marginBottom: 8 }}>
+          {config.description}
+        </HelperText>
         <Slider
           style={styles.slider}
           minimumValue={SLIDER_CONFIG.MIN_VALUE}
@@ -190,101 +193,114 @@ export default function AddOysterScreen() {
           step={SLIDER_CONFIG.STEP}
           value={parseInt(formData[field])}
           onValueChange={(value) => updateField(field, Math.round(value).toString())}
-          minimumTrackTintColor={SLIDER_CONFIG.MIN_TRACK_COLOR}
-          maximumTrackTintColor={SLIDER_CONFIG.MAX_TRACK_COLOR}
-          thumbTintColor={SLIDER_CONFIG.THUMB_COLOR}
+          minimumTrackTintColor={theme.colors.primary}
+          maximumTrackTintColor={theme.colors.border}
+          thumbTintColor={theme.colors.primary}
         />
         <View style={styles.scaleIndicator}>
-          <Text style={styles.scaleText}>1</Text>
-          <Text style={styles.scaleText}>5</Text>
-          <Text style={styles.scaleText}>10</Text>
+          <Text variant="bodySmall" style={{ color: theme.colors.textSecondary }}>1</Text>
+          <Text variant="bodySmall" style={{ color: theme.colors.textSecondary }}>5</Text>
+          <Text variant="bodySmall" style={{ color: theme.colors.textSecondary }}>10</Text>
         </View>
       </View>
     );
-  }, [formData, updateField]);
+  }, [formData, updateField, theme]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
         <ScrollView style={styles.scrollView}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Add New Oyster</Text>
-          <Text style={styles.subtitle}>
-            Help grow our database by adding oysters you discover!
-          </Text>
-        </View>
+        <Card style={styles.header}>
+          <Card.Content>
+            <Text variant="headlineMedium" style={{ color: theme.colors.text }}>Add New Oyster</Text>
+            <Text variant="bodyMedium" style={{ color: theme.colors.textSecondary, marginTop: 4 }}>
+              Help grow our database by adding oysters you discover!
+            </Text>
+          </Card.Content>
+        </Card>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Basic Information</Text>
+        <Card style={styles.section}>
+          <Card.Content>
+            <Text variant="titleMedium" style={{ marginBottom: 16, color: theme.colors.text }}>Basic Information</Text>
 
-          <Text style={styles.label}>Oyster Name *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g., Kumamoto"
-            value={formData.name}
-            onChangeText={(value) => updateField('name', value)}
-          />
+            <TextInput
+              mode="outlined"
+              label="Oyster Name *"
+              placeholder="e.g., Kumamoto"
+              value={formData.name}
+              onChangeText={(value) => updateField('name', value)}
+              style={styles.input}
+            />
 
-          <Text style={styles.label}>Species *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g., Crassostrea gigas"
-            value={formData.species}
-            onChangeText={(value) => updateField('species', value)}
-          />
+            <TextInput
+              mode="outlined"
+              label="Species *"
+              placeholder="e.g., Crassostrea gigas"
+              value={formData.species}
+              onChangeText={(value) => updateField('species', value)}
+              style={styles.input}
+            />
 
-          <Text style={styles.label}>Origin *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g., Hood Canal, Washington"
-            value={formData.origin}
-            onChangeText={(value) => updateField('origin', value)}
-          />
+            <TextInput
+              mode="outlined"
+              label="Origin *"
+              placeholder="e.g., Hood Canal, Washington"
+              value={formData.origin}
+              onChangeText={(value) => updateField('origin', value)}
+              style={styles.input}
+            />
 
-          <Text style={styles.label}>Standout Notes (Optional)</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Any special characteristics or tasting notes..."
-            value={formData.standoutNotes}
-            onChangeText={(value) => updateField('standoutNotes', value)}
-            multiline
-            numberOfLines={3}
-          />
-        </View>
+            <TextInput
+              mode="outlined"
+              label="Standout Notes (Optional)"
+              placeholder="Any special characteristics or tasting notes..."
+              value={formData.standoutNotes}
+              onChangeText={(value) => updateField('standoutNotes', value)}
+              multiline
+              numberOfLines={3}
+              style={[styles.input, styles.textArea]}
+            />
+          </Card.Content>
+        </Card>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Attribute Profile (1-10 Scale)</Text>
+        <Card style={styles.section}>
+          <Card.Content>
+            <Text variant="titleMedium" style={{ marginBottom: 16, color: theme.colors.text }}>
+              Attribute Profile (1-10 Scale)
+            </Text>
 
-          {renderSlider('size')}
-          {renderSlider('body')}
-          {renderSlider('sweetBrininess')}
-          {renderSlider('flavorfulness')}
-          {renderSlider('creaminess')}
-        </View>
+            {renderSlider('size')}
+            {renderSlider('body')}
+            {renderSlider('sweetBrininess')}
+            {renderSlider('flavorfulness')}
+            {renderSlider('creaminess')}
+          </Card.Content>
+        </Card>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, styles.cancelButton]}
+          <Button
+            mode="outlined"
             onPress={() => navigation.goBack()}
             disabled={loading}
+            style={styles.cancelButton}
+            contentStyle={styles.buttonContent}
           >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
+            Cancel
+          </Button>
 
-          <TouchableOpacity
-            style={[styles.button, styles.submitButton]}
+          <Button
+            mode="contained"
             onPress={handleSubmit}
             disabled={loading}
+            loading={loading}
+            style={styles.submitButton}
+            contentStyle={styles.buttonContent}
           >
-            {loading ? (
-              <ActivityIndicator color={COLORS.WHITE} />
-            ) : (
-              <Text style={styles.submitButtonText}>Add Oyster</Text>
-            )}
-          </TouchableOpacity>
+            Add Oyster
+          </Button>
         </View>
       </ScrollView>
       </KeyboardAvoidingView>
@@ -295,7 +311,6 @@ export default function AddOysterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
   },
   keyboardView: {
     flex: 1,
@@ -304,76 +319,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    backgroundColor: COLORS.WHITE,
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
     marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: COLORS.TEXT_SECONDARY,
-    lineHeight: 20,
   },
   section: {
-    backgroundColor: COLORS.WHITE,
-    padding: 20,
-    marginTop: 10,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
-    marginBottom: 15,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.TEXT_LABEL,
     marginBottom: 8,
-    marginTop: 12,
   },
   input: {
-    backgroundColor: COLORS.INPUT_BG,
-    borderWidth: 1,
-    borderColor: COLORS.BORDER,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: COLORS.TEXT_PRIMARY,
+    marginBottom: 12,
   },
   textArea: {
     minHeight: 80,
-    textAlignVertical: 'top',
   },
   sliderContainer: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   sliderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 4,
-  },
-  sliderLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.TEXT_LABEL,
-  },
-  sliderValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.PRIMARY,
-  },
-  sliderDescription: {
-    fontSize: 12,
-    color: COLORS.TEXT_SECONDARY,
-    marginBottom: 10,
   },
   slider: {
     width: '100%',
@@ -385,39 +349,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginTop: -5,
   },
-  scaleText: {
-    fontSize: 12,
-    color: COLORS.SCALE_TEXT,
-    fontWeight: '500',
-  },
   buttonContainer: {
     flexDirection: 'row',
     padding: 20,
-    gap: 10,
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    gap: 12,
   },
   cancelButton: {
-    backgroundColor: COLORS.WHITE,
-    borderWidth: 1,
-    borderColor: COLORS.BORDER,
-  },
-  cancelButtonText: {
-    color: COLORS.TEXT_LABEL,
-    fontSize: 16,
-    fontWeight: '600',
+    flex: 1,
+    borderRadius: 8,
   },
   submitButton: {
-    backgroundColor: COLORS.PRIMARY,
+    flex: 1,
+    borderRadius: 8,
   },
-  submitButtonText: {
-    color: COLORS.WHITE,
-    fontSize: 16,
-    fontWeight: '600',
+  buttonContent: {
+    paddingVertical: 8,
   },
 });

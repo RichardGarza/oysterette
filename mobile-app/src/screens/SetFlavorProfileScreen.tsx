@@ -45,11 +45,11 @@ export default function SetFlavorProfileScreen() {
   const { theme, paperTheme } = useTheme();
   const styles = useStyles(theme.colors);
 
-  const [size, setSize] = useState(SLIDER_CONFIG.DEFAULT_VALUE);
-  const [body, setBody] = useState(SLIDER_CONFIG.DEFAULT_VALUE);
-  const [sweetBrininess, setSweetBrininess] = useState(SLIDER_CONFIG.DEFAULT_VALUE);
-  const [flavorfulness, setFlavorfulness] = useState(SLIDER_CONFIG.DEFAULT_VALUE);
-  const [creaminess, setCreaminess] = useState(SLIDER_CONFIG.DEFAULT_VALUE);
+  const [size, setSize] = useState<number>(SLIDER_CONFIG.DEFAULT_VALUE);
+  const [body, setBody] = useState<number>(SLIDER_CONFIG.DEFAULT_VALUE);
+  const [sweetBrininess, setSweetBrininess] = useState<number>(SLIDER_CONFIG.DEFAULT_VALUE);
+  const [flavorfulness, setFlavorfulness] = useState<number>(SLIDER_CONFIG.DEFAULT_VALUE);
+  const [creaminess, setCreaminess] = useState<number>(SLIDER_CONFIG.DEFAULT_VALUE);
   const [saving, setSaving] = useState(false);
 
   const handleSave = useCallback(async () => {
@@ -222,7 +222,7 @@ export default function SetFlavorProfileScreen() {
   );
 }
 
-const useStyles = (colors: typeof import('../context/ThemeContext').Theme['colors']) =>
+const useStyles = (colors: any) =>
   useMemo(() => StyleSheet.create({
     container: {
       flex: 1,
