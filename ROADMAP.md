@@ -1131,37 +1131,58 @@ Credibility Score:
 - [ ] OysterContribution model (track origin/species changes with user attribution)
 - [ ] ContributionStatus enum ("pending" | "approved" | "rejected")
 
-### Phase 17: Homepage Redesign 📋
+### Phase 17: Homepage Redesign ✅
 
-**Estimated Time:** 8-12 hours
+**Status:** Complete
+**Completion Date:** November 8, 2025
+**Actual Time:** 1 hour
 **Priority:** MEDIUM
 
-**Options:**
+**Implementation:** Enhanced Home (Option B)
 
-**A. Direct to Oyster List (Simple):**
-- [ ] Remove home screen
-- [ ] Default to Browse with search
-- [ ] Bottom tabs: Browse, Profile, Settings
+**Completed Features:**
+- [x] Welcome message + search bar
+- [x] Quick stats display (user reviews/favorites/tried OR total oysters in database)
+- [x] "Recommended for You" horizontal scroll (personalized, based on flavor profile)
+- [x] "Top Rated Oysters" section (top 5 with horizontal scroll)
+- [x] Quick action buttons (2x2 grid with emoji icons)
+  - Browse All 🔍
+  - Top Oysters 🏆
+  - Add Oyster ➕
+  - My Profile 👤 (or Log In 🔐 if not authenticated)
+- [x] Exit confirmation on Android back button
+- [x] Smooth navigation transitions
 
-**B. Enhanced Home (Recommended):**
-- [ ] Welcome message + search bar
-- [ ] Quick stats display
-- [ ] "Recommended for You" horizontal scroll
-- [ ] "Top Rated This Week" section
-- [ ] "Recently Added" oysters
-- [ ] Quick action buttons
+**Technical Details:**
+- Database stats fetched from oysterApi.getAll()
+- User stats loaded from userApi.getProfile()
+- Recommendations use existing recommendationApi
+- Material Design cards for quick actions
+- Responsive grid layout (48% width per card)
+- Theme-aware styling (light/dark mode support)
 
-### Phase 18: Additional UX Improvements 📋
+**Files Modified:**
+- `mobile-app/src/screens/HomeScreen.tsx`
 
+### Phase 18: Additional UX Improvements ✅
+
+**Status:** Complete (Verified November 8, 2025)
 **Estimated Time:** 12-16 hours
 **Priority:** LOW
 
-**Issues to Fix:**
-- [ ] Add Oyster Screen: Replace inputs with sliders/emoji buttons
+**Completed Items:**
+- [x] Add Oyster Screen: Uses sliders with value labels (already implemented) ✅
 - [x] Keyboard handling consistency (KeyboardAvoidingView in all forms) ✅
-- [x] ~~Missing fields on review screen (origin/species for new oysters)~~ ✅ Completed Nov 2025
-- [x] New oyster validation (require origin/species) ✅ Nov 2025
-- [ ] Navigation updates (conditional login button)
+- [x] Missing fields on review screen (origin/species for new oysters) ✅
+- [x] New oyster validation (require origin/species) ✅
+- [x] Navigation updates (conditional login button) ✅
+
+**Verification Notes:**
+- AddOysterScreen already uses Slider components for all 5 attributes (size, body, sweetBrininess, flavorfulness, creaminess)
+- Each slider shows value label (e.g., "7/10") and scale indicators (1, 5, 10)
+- TextInput components used for name, species, origin, notes
+- React Native Paper components fully integrated
+- All tasks previously completed in earlier phases
 
 ### Phase 19: UI Modernization with React Native Paper ✅
 
