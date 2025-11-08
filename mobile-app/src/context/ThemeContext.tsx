@@ -2,125 +2,60 @@
  * ThemeContext
  *
  * Global theme management with light/dark mode support and backend synchronization.
- *
- * Features:
- * - Three theme modes: light, dark, system
- * - System mode follows device appearance settings
- * - Persistent theme preference (AsyncStorage)
- * - Backend sync for logged-in users
- * - React Context API for global access
- * - Automatic system theme change detection
- * - Pre-defined color palettes for both modes
- *
- * Theme Modes:
- * - light: Always light theme
- * - dark: Always dark theme
- * - system: Follows device setting (respects user's system preference)
- *
- * Color Definitions:
- * Light Theme:
- * - primary: #3498db (blue)
- * - background: #f5f5f5 (light gray)
- * - card: #ffffff (white)
- * - text: #2c3e50 (dark gray)
- * - textSecondary: #7f8c8d (medium gray)
- * - border: #e0e0e0 (light gray)
- * - error: #e74c3c (red)
- * - success: #27ae60 (green)
- * - warning: #f59e0b (orange)
- *
- * Dark Theme:
- * - primary: #5dade2 (lighter blue for contrast)
- * - background: #1a1a1a (near black)
- * - card: #2c2c2c (dark gray)
- * - text: #ecf0f1 (light gray)
- * - textSecondary: #95a5a6 (medium gray)
- * - border: #3a3a3a (dark gray)
- * - error: #e74c3c (red, same as light)
- * - success: #2ecc71 (green)
- * - warning: #f39c12 (orange)
- *
- * Context Values:
- * - theme: Current theme object with colors
- * - themeMode: Current mode ('light' | 'dark' | 'system')
- * - isDark: Boolean indicating if dark theme is active
- * - setThemeMode: Function to change theme mode
- * - loadUserTheme: Function to load theme from user object
- *
- * Storage & Sync:
- * - Local: AsyncStorage key @oysterette_theme_mode
- * - Backend: user.preferences.theme field
- * - On setThemeMode: Saves locally AND syncs to backend (if logged in)
- * - On login: loadUserTheme() loads preference from user object
- * - On app start: Loads from AsyncStorage
- *
- * Theme Change Flow:
- * 1. User selects mode in SettingsScreen
- * 2. setThemeMode() called with new mode
- * 3. Saved to AsyncStorage immediately
- * 4. State updated (triggers UI re-render)
- * 5. Backend API call to save preference (if logged in)
- * 6. If sync fails, local preference persists
- *
- * System Mode Detection:
- * - Uses Appearance.getColorScheme() for initial value
- * - Subscribes to Appearance.addChangeListener() for live updates
- * - isDark computed based on mode and system setting
- * - Example: mode='system' + systemColorScheme='dark' → isDark=true
- *
- * Usage:
- * ```tsx
- * // Wrap app in provider (App.tsx):
- * <ThemeProvider>
- *   <NavigationContainer>
- *     {screens}
- *   </NavigationContainer>
- * </ThemeProvider>
- *
- * // Use in component:
- * const { theme, themeMode, isDark, setThemeMode } = useTheme();
- * const styles = StyleSheet.create({
- *   container: { backgroundColor: theme.colors.background }
- * });
- * ```
- *
- * Hook Safety:
- * - useTheme() throws error if used outside ThemeProvider
- * - Ensures proper context usage throughout app
- *
- * Used By:
- * - All screens and components that need theme-aware styling
- * - SettingsScreen: Theme switcher UI
- * - HomeScreen, LoginScreen: Loads user theme on login
- * - App.tsx: Wraps entire app
  */
 
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
 import { Appearance, ColorSchemeName } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MD3LightTheme, MD3DarkTheme, MD3Theme } from 'react-native-paper';
 import { userApi } from '../services/api';
 import { authStorage } from '../services/auth';
+import { User } from '../types/Oyster';
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
-export type Theme = {
-  colors: {
-    primary: string;
-    background: string;
-    card: string;
-    text: string;
-    textSecondary: string;
-    border: string;
-    notification: string;
-    error: string;
-    success: string;
-    warning: string;
-    cardBackground: string;
-    inputBackground: string;
-    shadowColor: string;
+export interface Theme {
+  readonly colors: {
+    readonly primary: string;
+    readonly background: string;
+    readonly card: string;
+    readonly text: string;
+    readonly textSecondary: string;
+    readonly border: string;
+    readonly notification: string;
+    readonly error: string;
+    readonly success: string;
+    readonly warning: string;
+    readonly cardBackground: string;
+    readonly inputBackground: string;
+    readonly shadowColor: string;
   };
-};
+}
+
+interface ThemeContextType {
+  readonly theme: Theme;
+  readonly themeMode: ThemeMode;
+  readonly isDark: boolean;
+  readonly paperTheme: MD3Theme;
+  setThemeMode: (mode: ThemeMode) => Promise<void>;
+  loadUserTheme: (user: User) => Promise<void>;
+}
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const STORAGE_KEY = '@oysterette_theme_mode';
+
+const THEME_MODES: readonly ThemeMode[] = ['light', 'dark', 'system'];
+
+// ============================================================================
+// THEME DEFINITIONS
+// ============================================================================
 
 const lightTheme: Theme = {
   colors: {
@@ -163,11 +98,11 @@ export const paperLightTheme: MD3Theme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    primary: '#FF6B35',           // Oyster orange
+    primary: '#FF6B35',
     primaryContainer: '#FFE5DB',
-    secondary: '#004E89',         // Ocean blue
+    secondary: '#004E89',
     secondaryContainer: '#D4E6F1',
-    tertiary: '#4A7C59',          // Seaweed green
+    tertiary: '#4A7C59',
     tertiaryContainer: '#D5E8DB',
     surface: '#FFFFFF',
     surfaceVariant: '#F5F5F5',
@@ -185,11 +120,11 @@ export const paperDarkTheme: MD3Theme = {
   ...MD3DarkTheme,
   colors: {
     ...MD3DarkTheme.colors,
-    primary: '#FFB59A',           // Lighter orange for dark mode
+    primary: '#FFB59A',
     primaryContainer: '#8B3A1F',
-    secondary: '#5DADE2',         // Brighter blue
+    secondary: '#5DADE2',
     secondaryContainer: '#00344D',
-    tertiary: '#7FAC8E',          // Lighter green
+    tertiary: '#7FAC8E',
     tertiaryContainer: '#2F4A38',
     surface: '#1C1B1F',
     surfaceVariant: '#2B2930',
@@ -203,18 +138,23 @@ export const paperDarkTheme: MD3Theme = {
   },
 };
 
-interface ThemeContextType {
-  theme: Theme;
-  themeMode: ThemeMode;
-  isDark: boolean;
-  paperTheme: MD3Theme;
-  setThemeMode: (mode: ThemeMode) => void;
-  loadUserTheme: (user: any) => void;
-}
+// ============================================================================
+// CONTEXT
+// ============================================================================
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const THEME_STORAGE_KEY = '@oysterette_theme_mode';
+// ============================================================================
+// HELPERS
+// ============================================================================
+
+function isValidThemeMode(value: string): value is ThemeMode {
+  return THEME_MODES.includes(value as ThemeMode);
+}
+
+// ============================================================================
+// PROVIDER
+// ============================================================================
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
@@ -222,7 +162,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     Appearance.getColorScheme()
   );
 
-  // Load saved theme preference
+  // Load saved theme preference on mount
   useEffect(() => {
     loadThemePreference();
   }, []);
@@ -232,63 +172,63 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const subscription = Appearance.addChangeListener(({ colorScheme }) => {
       setSystemColorScheme(colorScheme);
     });
-
     return () => subscription.remove();
   }, []);
 
-  const loadThemePreference = async () => {
+  const loadThemePreference = useCallback(async () => {
     try {
-      const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-      if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
-        setThemeModeState(savedTheme as ThemeMode);
+      const savedTheme = await AsyncStorage.getItem(STORAGE_KEY);
+      if (savedTheme && isValidThemeMode(savedTheme)) {
+        setThemeModeState(savedTheme);
       }
     } catch (error) {
-      console.error('Failed to load theme preference:', error);
+      console.error('❌ [Theme] Failed to load preference:', error);
     }
-  };
+  }, []);
 
-  const setThemeMode = async (mode: ThemeMode) => {
+  const setThemeMode = useCallback(async (mode: ThemeMode) => {
     try {
       // Save locally
-      await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
+      await AsyncStorage.setItem(STORAGE_KEY, mode);
       setThemeModeState(mode);
 
-      // Sync with backend if user is logged in
+      // Sync with backend if logged in
       try {
         const user = await authStorage.getUser();
         if (user?.id) {
-          const preferences = { theme: mode };
-          await userApi.updatePreferences(preferences);
-          console.log('Theme preference synced to server');
+          await userApi.updatePreferences({ theme: mode });
+          if (__DEV__) {
+            console.log('✅ [Theme] Synced to server:', mode);
+          }
         }
       } catch (syncError) {
         // Silently fail - local preference is still saved
-        console.log('Could not sync theme to server (user may not be logged in)');
-      }
-    } catch (error) {
-      console.error('Failed to save theme preference:', error);
-    }
-  };
-
-  const loadUserTheme = (user: any) => {
-    try {
-      // Load theme from user preferences if available
-      if (user?.preferences && typeof user.preferences === 'object') {
-        const savedTheme = user.preferences.theme;
-        if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
-          setThemeModeState(savedTheme as ThemeMode);
-          AsyncStorage.setItem(THEME_STORAGE_KEY, savedTheme);
-          console.log('Loaded user theme preference:', savedTheme);
+        if (__DEV__) {
+          console.log('⚠️ [Theme] Could not sync to server (user may not be logged in)');
         }
       }
     } catch (error) {
-      console.error('Failed to load user theme:', error);
+      console.error('❌ [Theme] Failed to save preference:', error);
     }
-  };
+  }, []);
+
+  const loadUserTheme = useCallback(async (user: User) => {
+    try {
+      const preferences = user.preferences;
+      if (preferences?.theme && isValidThemeMode(preferences.theme)) {
+        setThemeModeState(preferences.theme);
+        await AsyncStorage.setItem(STORAGE_KEY, preferences.theme);
+        if (__DEV__) {
+          console.log('✅ [Theme] Loaded user preference:', preferences.theme);
+        }
+      }
+    } catch (error) {
+      console.error('❌ [Theme] Failed to load user theme:', error);
+    }
+  }, []);
 
   // Determine active theme
-  const isDark =
-    themeMode === 'dark' || (themeMode === 'system' && systemColorScheme === 'dark');
+  const isDark = themeMode === 'dark' || (themeMode === 'system' && systemColorScheme === 'dark');
   const theme = isDark ? darkTheme : lightTheme;
   const paperTheme = isDark ? paperDarkTheme : paperLightTheme;
 
@@ -303,6 +243,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
+
+// ============================================================================
+// HOOK
+// ============================================================================
 
 export function useTheme(): ThemeContextType {
   const context = useContext(ThemeContext);

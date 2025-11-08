@@ -2,98 +2,54 @@
  * Rating Utilities
  *
  * Helper functions for converting and displaying oyster ratings.
- *
- * Purpose:
- * - Convert numerical scores to human-readable formats
- * - Map 0-10 scores to verdicts, emojis, stars
- * - Provide descriptive labels for attribute values
- * - Centralized rating logic used across UI
- *
- * Data Source:
- * - Reads from ../data/oyster-rating-labels.json
- * - Contains verdict ranges, emojis, and attribute descriptors
- * - Shared with backend for consistency
- *
- * Functions:
- *
- * 1. scoreToVerdict(score: number):
- *    - Converts 0-10 score to verdict object
- *    - Returns: { verdict, emoji, meaning }
- *    - Examples:
- *      - 9.5 → { verdict: "Outstanding", emoji: "🏆", meaning: "World-class!" }
- *      - 7.3 → { verdict: "Very Good", emoji: "😊", meaning: "Quite enjoyable" }
- *      - 4.8 → { verdict: "Mediocre", emoji: "😐", meaning: "Fine. Nothing special." }
- *      - 2.1 → { verdict: "Poor", emoji: "👎", meaning: "Not recommended" }
- *    - Used by: RatingDisplay component for detail views
- *
- * 2. scoreToStars(score: number):
- *    - Converts 0-10 score to 0-5 star rating
- *    - Formula: score / 2
- *    - Returns number with 1 decimal (e.g., 3.5)
- *    - Examples:
- *      - 10 → 5.0 stars
- *      - 8.6 → 4.3 stars
- *      - 7.0 → 3.5 stars
- *      - 5.2 → 2.6 stars
- *    - Used by: RatingDisplay component for list views
- *
- * 3. getAttributeDescriptor(attribute, score):
- *    - Maps numeric score to descriptive word
- *    - Attributes: size, body, sweet_brininess, flavorfulness, creaminess
- *    - Rounds score to nearest integer (1-10)
- *    - Returns string descriptor from JSON data
- *
- *    Examples:
- *    - size, 10 → "Huge"
- *    - body, 9 → "Baddy McFatty"
- *    - sweet_brininess, 1 → "Sweet AF"
- *    - flavorfulness, 5 → "Moderate"
- *    - creaminess, 10 → "Nothing but cream"
- *
- *    - Used by: AddReviewScreen, OysterDetailScreen for slider labels
- *
- * Verdict Ranges (from JSON):
- * - 9.0-10.0: Outstanding 🏆 "World-class oyster"
- * - 8.0-8.9: Excellent ⭐ "Exceptional quality"
- * - 7.0-7.9: Very Good 😊 "Quite enjoyable"
- * - 6.0-6.9: Good 👍 "Solid choice"
- * - 5.0-5.9: Decent 🆗 "Worth trying"
- * - 4.0-4.9: Mediocre 😐 "Fine. Nothing special."
- * - 0.0-3.9: Poor 👎 "Not recommended"
- *
- * Attribute Descriptors (examples from JSON):
- * Size: Tiny → Petite → Small → Medium → Large → XL → XXL → Jumbo → Gigantic → Huge
- * Body: Thin → Slim → Light → Medium → Full → Thick → Rich → Fat → Obese → Baddy McFatty
- * Sweet/Brininess: Sweet AF → Very Sweet → Sweet → Mild → Balanced → Briny → Salty → Very Salty → Ocean Water → Salt Lick
- * Flavorfulness: Boring AF → Bland → Subtle → Light → Moderate → Flavorful → Bold → Intense → Explosive → Flavor Bomb
- * Creaminess: None → Hint → Light → Some → Moderate → Creamy → Very Creamy → Rich → Decadent → Nothing but cream
- *
- * Integration:
- * - RatingDisplay: Uses scoreToVerdict and scoreToStars
- * - AddReviewScreen: Uses getAttributeDescriptor for dynamic slider labels
- * - OysterDetailScreen: Uses getAttributeDescriptor for attribute bars
- * - Backend uses same JSON for consistency
- *
- * Error Handling:
- * - scoreToVerdict: Falls back to "Meh" if no range matches
- * - getAttributeDescriptor: Falls back to numeric string if attribute not found
- * - Rounds scores to handle floating point edge cases
+ * Data sourced from ../data/oyster-rating-labels.json for consistency with backend.
  */
 
 import ratingLabels from '../data/oyster-rating-labels.json';
 
+// ============================================================================
+// TYPES
+// ============================================================================
+
+export type OysterAttribute = 'size' | 'body' | 'sweet_brininess' | 'flavorfulness' | 'creaminess';
+
+export interface VerdictResult {
+  readonly verdict: string;
+  readonly emoji: string;
+  readonly meaning: string;
+}
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const SCORE_BOUNDS = {
+  MIN: 0,
+  MAX: 10,
+} as const;
+
+const STARS_MAX = 5;
+
+const FALLBACK_VERDICT: VerdictResult = {
+  verdict: 'Meh',
+  emoji: '😐',
+  meaning: 'Fine. Nothing special.',
+};
+
+// ============================================================================
+// FUNCTIONS
+// ============================================================================
+
 /**
  * Convert numeric score (0-10) to verdict with emoji and meaning
+ * @param score - Overall score between 0-10
+ * @returns Verdict object with verdict, emoji, and meaning
  */
-export function scoreToVerdict(score: number): {
-  verdict: string;
-  emoji: string;
-  meaning: string;
-} {
+export function scoreToVerdict(score: number): VerdictResult {
   const verdicts = ratingLabels.overallVerdict;
 
   for (const item of verdicts) {
-    const [min = 0, max = 10] = item.range;
+    const [min = SCORE_BOUNDS.MIN, max = SCORE_BOUNDS.MAX] = item.range;
     if (score >= min && score <= max) {
       return {
         verdict: item.verdict,
@@ -103,26 +59,27 @@ export function scoreToVerdict(score: number): {
     }
   }
 
-  // Fallback to Meh
-  return {
-    verdict: 'Meh',
-    emoji: '😐',
-    meaning: 'Fine. Nothing special.',
-  };
+  return FALLBACK_VERDICT;
 }
 
 /**
  * Convert numeric score (0-10) to star rating (0-5)
+ * @param score - Overall score between 0-10
+ * @returns Star rating with 1 decimal place
  */
 export function scoreToStars(score: number): number {
-  return Number((score / 2).toFixed(1));
+  const stars = score / 2;
+  return Number(stars.toFixed(1));
 }
 
 /**
- * Get attribute descriptor for a given attribute and score
+ * Get descriptive label for an attribute score
+ * @param attribute - The attribute type
+ * @param score - Numeric score (1-10)
+ * @returns Human-readable descriptor (e.g., "Huge", "Baddy McFatty")
  */
 export function getAttributeDescriptor(
-  attribute: 'size' | 'body' | 'sweet_brininess' | 'flavorfulness' | 'creaminess',
+  attribute: OysterAttribute,
   score: number
 ): string {
   const rounded = Math.round(score);
@@ -133,4 +90,22 @@ export function getAttributeDescriptor(
   }
 
   return descriptors[rounded.toString() as keyof typeof descriptors] || score.toString();
+}
+
+/**
+ * Clamp a score to valid bounds (0-10)
+ * @param score - Raw score value
+ * @returns Clamped score between 0-10
+ */
+export function clampScore(score: number): number {
+  return Math.max(SCORE_BOUNDS.MIN, Math.min(SCORE_BOUNDS.MAX, score));
+}
+
+/**
+ * Validate if a score is within valid range
+ * @param score - Score to validate
+ * @returns True if score is between 0-10
+ */
+export function isValidScore(score: number): boolean {
+  return !isNaN(score) && score >= SCORE_BOUNDS.MIN && score <= SCORE_BOUNDS.MAX;
 }

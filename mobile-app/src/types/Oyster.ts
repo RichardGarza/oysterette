@@ -1,232 +1,243 @@
 /**
- * Data Type Definitions
+ * Type Definitions
  *
- * TypeScript interfaces and types for all app data structures.
- *
- * Purpose:
- * - Type safety across frontend and backend
- * - Matches PostgreSQL schema via Prisma
- * - Autocomplete for object properties
- * - Compile-time validation
- * - Self-documenting data structures
- *
- * Main Interfaces:
- * 1. Oyster: Core oyster data with attributes and aggregated ratings
- * 2. Review: User review with rating, attributes, and voting metrics
- * 3. User: User account with preferences and privacy settings
- * 4. UserTopOyster: User's favorite oysters ranking
- * 5. AuthResponse: Login/register API response
- * 6. ApiResponse<T>: Generic API wrapper
- *
- * Oyster Interface:
- * - id: UUID from database
- * - name, species, origin: Basic info
- * - standoutNotes: Optional description
- * - Seed attributes (size, body, sweetBrininess, flavorfulness, creaminess): 1-10 scale
- * - totalReviews: Count of reviews
- * - avgRating: Average rating (1-4 scale: MEH=1, OKAY=2, LIKE_IT=3, LOVE_IT=4)
- * - overallScore: Weighted score (0-10 scale) = 40% avgRating + 60% attributes
- * - Aggregated attributes: Weighted averages from user reviews
- * - _count, reviews: Optional nested data
- *
- * Review Interface:
- * - id, userId, oysterId: Relations
- * - rating: ReviewRating enum (LOVE_IT, LIKE_IT, OKAY, MEH) - highest to lowest
- * - Attribute sliders: Optional 1-10 scores
- * - notes: Optional tasting notes
- * - Voting metrics: agreeCount, disagreeCount, netVoteScore, weightedScore
- * - Relations: user, oyster (nested objects)
- *
- * ReviewRating Enum (highest to lowest):
- * - LOVE_IT: ❤️ (Best, value 4 → 9.0/10)
- * - LIKE_IT: 👍 (Good, value 3 → 7.0/10)
- * - OKAY: 👌 (Okay, value 2 → 4.95/10)
- * - MEH: 😐 (Worst, value 1 → 2.5/10)
- *
- * User Interface:
- * - id, email, name: Basic account info
- * - preferences: JSON field for theme and other settings
- * - Credibility metrics: credibilityScore, totalAgrees, totalDisagrees, reviewCount
- * - Privacy settings: profileVisibility, showReviewHistory, showFavorites, showStatistics
- * - createdAt, updatedAt: Timestamps
- *
- * User Credibility Badges:
- * - Novice: 0-0.9 (🌟 Bronze)
- * - Standard: 1.0 (default, not shown)
- * - Trusted: 1.0-1.4 (⭐ Silver)
- * - Expert: 1.5+ (🏆 Gold)
- *
- * UserTopOyster Interface:
- * - User's manually ranked favorite oysters (future feature)
- * - rank: Position in user's list (1-10)
- * - addedAt: Timestamp
- * - oyster: Full oyster object
- *
- * AuthResponse Interface:
- * - Returned from /auth/register, /auth/login, /auth/google
- * - user: Full user object
- * - token: JWT for subsequent API calls
- *
- * ApiResponse<T> Interface:
- * - Generic wrapper for all backend responses
- * - success: Boolean indicating success/failure
- * - data?: Generic type T (oyster, review, user, etc.)
- * - count?: Total count for paginated responses
- * - error?: Error message string
- *
- * Attribute Scales (1-10):
- * - Size: 1 (Tiny) → 10 (Huge)
- * - Body: 1 (Thin) → 10 (Extremely Fat)
- * - Sweet/Brininess: 1 (Very Sweet) → 10 (Very Salty)
- * - Flavorfulness: 1 (Boring) → 10 (Extremely Bold)
- * - Creaminess: 1 (None) → 10 (Nothing But Cream)
- *
- * Rating Algorithm:
- * - Overall Score = (40% avgRating) + (60% average of all attributes)
- * - avgRating mapped: MEH=1 → 2.5/10, OKAY=2 → 4.95/10, LIKE_IT=3 → 7.0/10, LOVE_IT=4 → 9.0/10
- * - Attribute average: (size + body + sweetBrininess + flavorfulness + creaminess) / 5
- * - Example: avgRating=3 (LIKE_IT), avgAttributes=7 → (0.4 * 7.0) + (0.6 * 7) = 7.0
- *
- * Usage Throughout App:
- * - API service: Response type checking
- * - Screens: State typing for data
- * - Components: Prop typing
- * - Navigation: Route params
- * - Services: Storage and sync
- *
- * Type Safety Benefits:
- * - Prevents accessing non-existent properties
- * - Catches typos at compile time
- * - Self-documenting (no need to check backend)
- * - Refactoring safety
- * - IDE autocomplete
+ * Core TypeScript interfaces matching the PostgreSQL schema.
+ * All types are shared between mobile app and backend for consistency.
  */
 
-// Oyster type matching PostgreSQL schema
-export interface Oyster {
-  id: string;
-  name: string;
-  species: string;
-  origin: string;
-  standoutNotes: string | null;
+// ============================================================================
+// CONSTANTS
+// ============================================================================
 
-  // 10-point scale attributes (seed data)
-  size: number;           // 1 (Tiny) to 10 (Huge)
-  body: number;           // 1 (Thin) to 10 (Extremely Fat)
-  sweetBrininess: number; // 1 (Very Sweet) to 10 (Very Salty)
-  flavorfulness: number;  // 1 (Boring) to 10 (Extremely Bold)
-  creaminess: number;     // 1 (None) to 10 (Nothing But Cream)
+/** Rating scale boundaries */
+export const RATING_SCALE = {
+  MIN: 1,
+  MAX: 10,
+} as const;
 
-  // Aggregated rating data (from user reviews)
-  totalReviews: number;        // Total number of reviews
-  avgRating: number;           // Average rating (0-4 scale)
-  overallScore: number;        // Overall weighted score (0-10 scale)
+/** Review rating values (highest to lowest) */
+export const REVIEW_RATING_VALUES = {
+  LOVE_IT: 4,
+  LIKE_IT: 3,
+  OKAY: 2,
+  MEH: 1,
+} as const;
 
-  // Aggregated attribute scores (weighted average)
-  avgSize: number | null;
-  avgBody: number | null;
-  avgSweetBrininess: number | null;
-  avgFlavorfulness: number | null;
-  avgCreaminess: number | null;
+/** Review rating score mappings (out of 10) */
+export const RATING_SCORES = {
+  LOVE_IT: 9.0,
+  LIKE_IT: 7.0,
+  OKAY: 4.95,
+  MEH: 2.5,
+} as const;
 
-  createdAt: string;
-  updatedAt: string;
+// ============================================================================
+// ENUMS & TYPES
+// ============================================================================
 
-  // Include review count if available
-  _count?: {
-    reviews: number;
-  };
-
-  // Include reviews if fetched with details
-  reviews?: Review[];
-}
-
-// Review rating enum (highest to lowest: LOVE_IT > LIKE_IT > OKAY > MEH)
+/** Review rating options (highest to lowest: LOVE_IT > LIKE_IT > OKAY > MEH) */
 export type ReviewRating = 'LOVE_IT' | 'LIKE_IT' | 'OKAY' | 'MEH';
 
-// Review type
+/** User profile visibility levels */
+export type ProfileVisibility = 'public' | 'friends' | 'private';
+
+/** User credibility badge tiers */
+export type CredibilityBadge = 'novice' | 'standard' | 'trusted' | 'expert';
+
+// ============================================================================
+// INTERFACES
+// ============================================================================
+
+/**
+ * User preferences stored as JSON
+ * @property theme - Light or dark mode preference
+ * @property notifications - Notification settings
+ */
+export interface UserPreferences {
+  theme?: 'light' | 'dark';
+  notifications?: {
+    reviews?: boolean;
+    votes?: boolean;
+    recommendations?: boolean;
+  };
+}
+
+/**
+ * Oyster entity with attributes and aggregated ratings
+ * @remarks Matches Prisma schema: Oyster model
+ */
+export interface Oyster {
+  readonly id: string;
+  readonly name: string;
+  readonly species: string;
+  readonly origin: string;
+  readonly standoutNotes: string | null;
+
+  // Seed attributes (1-10 scale)
+  readonly size: number;
+  readonly body: number;
+  readonly sweetBrininess: number;
+  readonly flavorfulness: number;
+  readonly creaminess: number;
+
+  // Aggregated rating data
+  readonly totalReviews: number;
+  readonly avgRating: number;
+  readonly overallScore: number;
+
+  // Aggregated attribute scores (weighted average from reviews)
+  readonly avgSize: number | null;
+  readonly avgBody: number | null;
+  readonly avgSweetBrininess: number | null;
+  readonly avgFlavorfulness: number | null;
+  readonly avgCreaminess: number | null;
+
+  readonly createdAt: string;
+  readonly updatedAt: string;
+
+  // Optional nested data
+  readonly _count?: {
+    reviews: number;
+  };
+  readonly reviews?: Review[];
+}
+
+/**
+ * Review entity with rating, attributes, and voting metrics
+ * @remarks Matches Prisma schema: Review model
+ */
 export interface Review {
-  id: string;
-  userId: string;
-  oysterId: string;
-  rating: ReviewRating;
+  readonly id: string;
+  readonly userId: string;
+  readonly oysterId: string;
+  readonly rating: ReviewRating;
 
-  // 10-point scale sliders (optional)
-  size?: number;
-  body?: number;
-  sweetBrininess?: number;
-  flavorfulness?: number;
-  creaminess?: number;
+  // Optional 10-point scale attributes
+  readonly size?: number;
+  readonly body?: number;
+  readonly sweetBrininess?: number;
+  readonly flavorfulness?: number;
+  readonly creaminess?: number;
 
-  notes?: string;
-  photoUrls?: string[];
-  createdAt: string;
+  readonly notes?: string;
+  readonly photoUrls?: string[];
+  readonly createdAt: string;
 
   // Voting metrics
-  agreeCount: number;
-  disagreeCount: number;
-  netVoteScore: number;
-  weightedScore: number;
+  readonly agreeCount: number;
+  readonly disagreeCount: number;
+  readonly netVoteScore: number;
+  readonly weightedScore: number;
 
-  // Relations
-  user?: {
+  // Optional relations
+  readonly user?: {
     id: string;
     name: string;
   };
-  oyster?: Oyster;
+  readonly oyster?: Oyster;
 }
 
-// User type
+/**
+ * User entity with preferences and privacy settings
+ * @remarks Matches Prisma schema: User model
+ */
 export interface User {
-  id: string;
-  email: string;
-  name: string;
-  profilePhotoUrl?: string;
-  preferences?: any; // JSON field
+  readonly id: string;
+  readonly email: string;
+  readonly name: string;
+  readonly profilePhotoUrl?: string;
+  readonly preferences?: UserPreferences;
 
   // Reviewer credibility metrics
-  credibilityScore: number;
-  totalAgrees: number;
-  totalDisagrees: number;
-  reviewCount: number;
+  readonly credibilityScore: number;
+  readonly totalAgrees: number;
+  readonly totalDisagrees: number;
+  readonly reviewCount: number;
 
   // Privacy settings
-  profileVisibility: 'public' | 'friends' | 'private';
-  showReviewHistory: boolean;
-  showFavorites: boolean;
-  showStatistics: boolean;
+  readonly profileVisibility: ProfileVisibility;
+  readonly showReviewHistory: boolean;
+  readonly showFavorites: boolean;
+  readonly showStatistics: boolean;
 
   // Baseline flavor profile (for recommendations)
-  baselineSize?: number | null;
-  baselineBody?: number | null;
-  baselineSweetBrininess?: number | null;
-  baselineFlavorfulness?: number | null;
-  baselineCreaminess?: number | null;
+  readonly baselineSize?: number | null;
+  readonly baselineBody?: number | null;
+  readonly baselineSweetBrininess?: number | null;
+  readonly baselineFlavorfulness?: number | null;
+  readonly baselineCreaminess?: number | null;
 
-  createdAt: string;
-  updatedAt: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
 }
 
-// User Top Oyster
+/**
+ * User's manually ranked favorite oysters
+ * @remarks Future feature for custom top lists
+ */
 export interface UserTopOyster {
-  id: string;
-  userId: string;
-  oysterId: string;
-  rank: number;
-  addedAt: string;
-  oyster: Oyster;
+  readonly id: string;
+  readonly userId: string;
+  readonly oysterId: string;
+  readonly rank: number;
+  readonly addedAt: string;
+  readonly oyster: Oyster;
 }
 
-// Auth response
+/**
+ * Authentication response from login/register endpoints
+ */
 export interface AuthResponse {
-  user: User;
-  token: string;
+  readonly user: User;
+  readonly token: string;
 }
 
-// API Response wrapper
+/**
+ * Generic API response wrapper
+ * @template T The data type returned in the response
+ */
 export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  count?: number;
-  error?: string;
+  readonly success: boolean;
+  readonly data?: T;
+  readonly count?: number;
+  readonly error?: string;
+}
+
+// ============================================================================
+// TYPE GUARDS
+// ============================================================================
+
+/**
+ * Type guard to check if a value is a valid ReviewRating
+ */
+export function isReviewRating(value: unknown): value is ReviewRating {
+  return typeof value === 'string' &&
+    ['LOVE_IT', 'LIKE_IT', 'OKAY', 'MEH'].includes(value);
+}
+
+/**
+ * Type guard to check if a value is a valid ProfileVisibility
+ */
+export function isProfileVisibility(value: unknown): value is ProfileVisibility {
+  return typeof value === 'string' &&
+    ['public', 'friends', 'private'].includes(value);
+}
+
+/**
+ * Get credibility badge tier based on score
+ * @param score - User's credibility score
+ * @returns The corresponding badge tier
+ */
+export function getCredibilityBadge(score: number): CredibilityBadge {
+  if (score < 0.9) return 'novice';
+  if (score < 1.0) return 'standard';
+  if (score < 1.5) return 'trusted';
+  return 'expert';
+}
+
+/**
+ * Validate if a number is within the 1-10 attribute scale
+ */
+export function isValidAttributeScore(value: number): boolean {
+  return Number.isInteger(value) && value >= RATING_SCALE.MIN && value <= RATING_SCALE.MAX;
 }

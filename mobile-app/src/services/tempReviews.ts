@@ -1,67 +1,52 @@
 /**
  * Temporary Reviews Storage Service
  *
- * Manages reviews that are pending user authentication.
- * Reviews are stored locally in AsyncStorage until the user
- * decides to either:
- * 1. Log in and link the review to their account
- * 2. Submit anonymously without logging in
- * 3. Discard the review
- *
- * Used by:
- * - AddReviewScreen: Store reviews when user is not logged in
- * - LoginScreen/RegisterScreen: Submit pending reviews after auth
- *
- * Storage Format:
- * {
- *   [reviewId]: {
- *     oysterId: string;
- *     oysterName: string;
- *     rating: ReviewRating;
- *     size: number;
- *     body: number;
- *     sweetBrininess: number;
- *     flavorfulness: number;
- *     creaminess: number;
- *     notes?: string;
- *     origin?: string;
- *     species?: string;
- *     photoUrls?: string[];
- *     createdAt: string;
- *   }
- * }
+ * Manages reviews pending user authentication.
+ * Reviews are stored locally until user logs in or discards them.
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ReviewRating } from '../types/Oyster';
 
-const TEMP_REVIEWS_KEY = '@oysterette_temp_reviews';
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const STORAGE_KEY = '@oysterette_temp_reviews';
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 export interface TempReview {
-  id: string; // Temporary local ID
-  oysterId: string;
-  oysterName: string;
-  rating: ReviewRating;
-  size: number;
-  body: number;
-  sweetBrininess: number;
-  flavorfulness: number;
-  creaminess: number;
-  notes?: string;
-  origin?: string;
-  species?: string;
-  photoUrls?: string[];
-  createdAt: string;
+  readonly id: string; // Temporary local ID
+  readonly oysterId: string;
+  readonly oysterName: string;
+  readonly rating: ReviewRating;
+  readonly size: number;
+  readonly body: number;
+  readonly sweetBrininess: number;
+  readonly flavorfulness: number;
+  readonly creaminess: number;
+  readonly notes?: string;
+  readonly origin?: string;
+  readonly species?: string;
+  readonly photoUrls?: string[];
+  readonly createdAt: string;
 }
+
+// ============================================================================
+// STORAGE INTERFACE
+// ============================================================================
 
 export const tempReviewsStorage = {
   /**
    * Store a review temporarily until user logs in
    */
-  store: async (review: Omit<TempReview, 'id' | 'createdAt'>): Promise<string> => {
+  async store(review: Omit<TempReview, 'id' | 'createdAt'>): Promise<string> {
     try {
-      const reviews = await tempReviewsStorage.getAll();
-      const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const reviews = await this.getAll();
+      const tempId = `temp_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
       const tempReview: TempReview = {
         ...review,
@@ -70,9 +55,11 @@ export const tempReviewsStorage = {
       };
 
       reviews[tempId] = tempReview;
-      await AsyncStorage.setItem(TEMP_REVIEWS_KEY, JSON.stringify(reviews));
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reviews));
 
-      console.log('📝 [TempReviews] Stored review:', tempId);
+      if (__DEV__) {
+        console.log('📝 [TempReviews] Stored review:', tempId);
+      }
       return tempId;
     } catch (error) {
       console.error('❌ [TempReviews] Failed to store review:', error);
@@ -83,9 +70,9 @@ export const tempReviewsStorage = {
   /**
    * Get all temporary reviews
    */
-  getAll: async (): Promise<Record<string, TempReview>> => {
+  async getAll(): Promise<Record<string, TempReview>> {
     try {
-      const data = await AsyncStorage.getItem(TEMP_REVIEWS_KEY);
+      const data = await AsyncStorage.getItem(STORAGE_KEY);
       return data ? JSON.parse(data) : {};
     } catch (error) {
       console.error('❌ [TempReviews] Failed to get reviews:', error);
@@ -96,9 +83,9 @@ export const tempReviewsStorage = {
   /**
    * Get a single temporary review by ID
    */
-  getById: async (id: string): Promise<TempReview | null> => {
+  async getById(id: string): Promise<TempReview | null> {
     try {
-      const reviews = await tempReviewsStorage.getAll();
+      const reviews = await this.getAll();
       return reviews[id] || null;
     } catch (error) {
       console.error('❌ [TempReviews] Failed to get review:', error);
@@ -109,12 +96,14 @@ export const tempReviewsStorage = {
   /**
    * Remove a temporary review (after successful submission or cancellation)
    */
-  remove: async (id: string): Promise<void> => {
+  async remove(id: string): Promise<void> {
     try {
-      const reviews = await tempReviewsStorage.getAll();
+      const reviews = await this.getAll();
       delete reviews[id];
-      await AsyncStorage.setItem(TEMP_REVIEWS_KEY, JSON.stringify(reviews));
-      console.log('🗑️ [TempReviews] Removed review:', id);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reviews));
+      if (__DEV__) {
+        console.log('🗑️ [TempReviews] Removed review:', id);
+      }
     } catch (error) {
       console.error('❌ [TempReviews] Failed to remove review:', error);
       throw error;
@@ -124,10 +113,12 @@ export const tempReviewsStorage = {
   /**
    * Clear all temporary reviews (e.g., after batch submission)
    */
-  clearAll: async (): Promise<void> => {
+  async clearAll(): Promise<void> {
     try {
-      await AsyncStorage.removeItem(TEMP_REVIEWS_KEY);
-      console.log('🗑️ [TempReviews] Cleared all reviews');
+      await AsyncStorage.removeItem(STORAGE_KEY);
+      if (__DEV__) {
+        console.log('🗑️ [TempReviews] Cleared all reviews');
+      }
     } catch (error) {
       console.error('❌ [TempReviews] Failed to clear reviews:', error);
       throw error;
@@ -137,9 +128,9 @@ export const tempReviewsStorage = {
   /**
    * Get count of pending reviews
    */
-  getCount: async (): Promise<number> => {
+  async getCount(): Promise<number> {
     try {
-      const reviews = await tempReviewsStorage.getAll();
+      const reviews = await this.getAll();
       return Object.keys(reviews).length;
     } catch (error) {
       console.error('❌ [TempReviews] Failed to get count:', error);
