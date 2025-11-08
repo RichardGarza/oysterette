@@ -313,7 +313,54 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 
 ## 📋 NEXT SESSION TASKS
 
-### Priority 1: Sign in with Apple (CRITICAL)
+### 🚨 Priority 1: Phase 14 - Production Testing & Critical Bug Fixes (CRITICAL)
+
+**Why Critical:** Issues discovered during production build testing MUST be fixed before public release
+**Estimated Time:** 12-16 hours total
+**Test Build Date:** November 7, 2025
+
+**See ROADMAP.md Phase 14 for complete details** (12 sub-phases with detailed tasks)
+
+**Top Priority Sub-Phases:**
+
+1. **Review System Overhaul (4-5 hours)** - CRITICAL
+   - Allow anonymous reviews (no login required)
+   - Fix photo upload failures
+   - Pre-populate flavor attributes from oyster data
+   - Auto-refresh after submission
+
+2. **Logo & Branding (45 min)** - HIGH
+   - Replace "Oysterette" text with logo image in header
+   - Increase logo size on homescreen
+
+3. **Filter Algorithm Fixes (2-3 hours)** - HIGH
+   - Fix Sweet/Briny/Small filters returning no results
+   - Implement fuzzy matching (±2 range)
+   - Clear filters on search
+
+4. **Rating Display Fixes (2-3 hours)** - HIGH
+   - Hide "Overall Rating" for oysters with 0 reviews
+   - Weight favorited oysters 1.5x in flavor profile
+   - Show numeric rating on Top Oysters
+
+5. **Navigation Fixes (1-2 hours)** - HIGH
+   - Add "Exit app?" confirmation on homepage back
+   - Fix Favorites screen back navigation
+
+**Quick Reference Checklist:**
+- [ ] Anonymous reviews work
+- [ ] Photo uploads succeed
+- [ ] Filters return results
+- [ ] Back navigation fixed
+- [ ] Dark mode applies everywhere
+- [ ] Logo replaces text
+- [ ] Rating logic fixed
+
+**Full Details:** See `ROADMAP.md` Phase 14 for comprehensive task breakdown
+
+---
+
+### Priority 2: Sign in with Apple (CRITICAL - After Phase 14)
 
 **Why Critical:** Apple REQUIRES Sign in with Apple if offering other social logins (Google)
 **Estimated Time:** 2-4 hours
@@ -322,7 +369,6 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 **Implementation Plan:**
 
 1. **Backend (1-1.5 hours):**
-
    - Install `apple-signin-auth` package
    - Create `POST /api/auth/apple` endpoint
    - Apple ID token verification
@@ -331,7 +377,6 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
    - Add `appleId` field to User schema
 
 2. **Mobile (1-1.5 hours):**
-
    - Install `expo-apple-authentication` package
    - Add Apple Sign-In button to LoginScreen
    - Handle authentication flow
@@ -339,7 +384,6 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
    - Store JWT and navigate
 
 3. **Configuration (30 min):**
-
    - Apple Developer Console setup
    - Enable Sign in with Apple capability
    - Configure Service ID
@@ -352,26 +396,22 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
    - Error handling verification
 
 **Files to Modify:**
-
 - Backend: authController.ts, authRoutes.ts, schema.prisma, package.json
 - Mobile: LoginScreen.tsx, api.ts, app.json, package.json
 
 **Prerequisites:**
-
 - Apple Developer Program membership ($99/year)
 - Bundle ID registered
 - Physical iOS device for testing
 
-### Priority 2: Screenshot Capture (1-2 hours)
+### Priority 3: Screenshot Capture (1-2 hours)
 
 **Requirements:**
-
 - iPhone 6.7" display: 1290 x 2796 pixels (minimum 3)
 - Android phone: 1080 x 1920 pixels (minimum 2)
 - Follow specs in `docs/SCREENSHOT_SPECIFICATIONS.md`
 
 **Screens to Capture:**
-
 1. Home screen (welcome)
 2. Oyster list (browse/discover)
 3. Oyster detail (information)
@@ -379,7 +419,7 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 5. Profile (track progress)
 6. Top Oysters (social proof)
 
-### Priority 3: Production Builds
+### Priority 4: Production Builds
 
 - iOS: `eas build --platform ios --profile production`
 - Android: `eas build --platform android --profile production`
