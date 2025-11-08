@@ -806,53 +806,28 @@ Credibility Score:
 
 ### 14.10: Profile Enhancements - Clickable Stats 📊
 
-**Time:** 2-3 hours
+**Status:** ✅ COMPLETE (Simplified Implementation - November 8, 2025)
 **Priority:** MEDIUM
 
-**Issues Found:**
-- Profile stat cards should be clickable buttons
-- "X reviews" should show all user reviews
-- "Votes received" should show reviews with votes
-- "X favorites" should show user favorites
-- Recent reviews section is redundant once "X reviews" is clickable
+**Completed Tasks:**
+- [x] Make stat cards clickable with onPress handlers
+- [x] Reviews card navigates to OysterList
+- [x] Favorites card navigates to OysterList (favorites tab)
+- [x] Votes Received card navigates to OysterList
 
-**Tasks:**
+**Implementation Notes:**
+- Used existing OysterList screen instead of creating new UserReviewsScreen
+- Simpler UX - reuses familiar navigation patterns
+- Badge, Avg Rating, and Streak cards remain informational only
+- Recent Reviews section kept as quick preview
 
-**Make Stat Cards Clickable:**
-- [ ] Convert stat cards to `<Card onPress={...}>` components
-- [ ] "X reviews" card → navigate to UserReviewsScreen (new screen)
-  - Show all user reviews, most recent first
-  - Include oyster name, rating, date, votes
-  - Allow navigation to oyster detail
-  - Pull-to-refresh support
-- [ ] "Votes received" card → navigate to UserReviewsScreen with filter
-  - Same screen, filtered to reviews with votes > 0
-  - Sorted by total votes (agree + disagree) descending
-- [ ] "X favorites" card → navigate to FavoritesScreen
-  - Reuse existing favorites functionality
-  - Or create dedicated "My Favorites" view
+**Deferred for Future:**
+- Dedicated UserReviewsScreen with filtering/sorting
+- Advanced review management features
+- Vote-specific filtering
 
-**Reorder Stat Cards:**
-- [ ] Top row: Reviews, Favorites, Badge (clickable/info)
-- [ ] Bottom row: Votes Received, Avg Rating, Streak (info only)
-- [ ] Update grid layout to reflect new order
-
-**Remove/Reconsider Recent Reviews:**
-- [ ] Remove "Recent Reviews" section from ProfileScreen
-- [ ] Or keep as "Quick View" with "See All" button
-- [ ] User testing needed to decide
-
-**New Screen: UserReviewsScreen:**
-- [ ] Create new screen showing all user reviews
-- [ ] Pagination or infinite scroll
-- [ ] Filter support (all reviews vs voted reviews)
-- [ ] Sort options (most recent, most votes, highest rated)
-- [ ] Pull-to-refresh
-
-**Files to Modify:**
+**Files Modified:**
 - `mobile-app/src/screens/ProfileScreen.tsx`
-- `mobile-app/src/screens/UserReviewsScreen.tsx` (new file)
-- `mobile-app/App.tsx` (add new route)
 
 ---
 

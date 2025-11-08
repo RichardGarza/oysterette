@@ -557,14 +557,17 @@ export default function ProfileScreen() {
 
         {/* Stats Cards */}
         <View style={styles.statsGrid}>
-          <Card mode="elevated" style={styles.statCard}>
+          <Card mode="elevated" style={styles.statCard} onPress={() => navigation.navigate('OysterList' as any)}>
             <Card.Content style={styles.statCardContent}>
               <Text variant="headlineMedium" style={styles.statValue}>{stats.totalReviews}</Text>
               <Text variant="bodySmall" style={styles.statLabel}>Reviews</Text>
             </Card.Content>
           </Card>
 
-          <Card mode="elevated" style={styles.statCard}>
+          <Card mode="elevated" style={styles.statCard} onPress={() => {
+            navigation.navigate('OysterList' as any);
+            // Note: OysterList will need to support auto-selecting favorites tab
+          }}>
             <Card.Content style={styles.statCardContent}>
               <Text variant="headlineMedium" style={styles.statValue}>{stats.totalFavorites}</Text>
               <Text variant="bodySmall" style={styles.statLabel}>Favorites</Text>
@@ -583,7 +586,7 @@ export default function ProfileScreen() {
             </Card.Content>
           </Card>
 
-          <Card mode="elevated" style={styles.statCard}>
+          <Card mode="elevated" style={styles.statCard} onPress={() => navigation.navigate('OysterList' as any)}>
             <Card.Content style={styles.statCardContent}>
               <Text variant="headlineMedium" style={styles.statValue}>{stats.totalVotesReceived}</Text>
               <Text variant="bodySmall" style={styles.statLabel}>Votes Received</Text>
