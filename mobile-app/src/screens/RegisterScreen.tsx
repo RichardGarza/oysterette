@@ -1,5 +1,5 @@
 /**
- * RegisterScreen
+ * RegisterScreen - Migrated to React Native Paper
  *
  * User registration screen with email/password and Google OAuth options.
  *
@@ -12,84 +12,50 @@
  * - KeyboardAvoidingView for iOS keyboard handling
  * - ScrollView for long forms
  * - Link to Login screen for existing users
- * - Theme-aware styling
+ * - Theme-aware styling via React Native Paper
  *
- * Registration Flow (Email/Password):
- * 1. Validates form fields:
- *    - Name not empty
- *    - Email valid format (regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/)
- *    - Password min 8 chars
- *    - Password contains uppercase letter
- *    - Password contains lowercase letter
- *    - Password contains number
- *    - Passwords match (password === confirmPassword)
- * 2. Calls authApi.register() with credentials
- * 3. Saves JWT token and user data to storage
- * 4. Loads user's theme preference (light/dark/system)
- * 5. Syncs favorites with backend
- * 6. Shows success alert
- * 7. Resets navigation stack to OysterList
+ * Material Design Components:
+ * - Card: Form container with elevation
+ * - TextInput: All form inputs with icons and floating labels
+ * - Button: Primary (contained) and secondary (outlined) buttons
+ * - Divider: "OR" separator between auth methods
+ * - Text: Typography with variants (headlineLarge, bodyMedium, etc.)
+ * - HelperText: Password requirements hint
  *
- * Google Sign-In Flow:
- * 1. Configures GoogleSignin with web client ID
- * 2. Checks Google Play Services availability
- * 3. Initiates native Google Sign-In UI
- * 4. Extracts ID token from sign-in result
- * 5. Sends ID token to backend for verification
- * 6. Backend verifies token with Google API and creates/finds user
- * 7. Saves JWT token and user data to storage
- * 8. Loads theme and syncs favorites
- * 9. Resets navigation stack to OysterList
+ * Migration Benefits:
+ * - Built-in password visibility toggles for both password fields
+ * - Floating labels with smooth animations
+ * - Helper text for password requirements (Material Design pattern)
+ * - Icons for all inputs (account, email, lock)
+ * - Automatic error states
+ * - Better accessibility
+ * - Consistent Material Design look
  *
  * Password Requirements (enforced by backend, validated in frontend):
  * - Minimum 8 characters
  * - At least 1 uppercase letter (A-Z)
  * - At least 1 lowercase letter (a-z)
  * - At least 1 number (0-9)
- *
- * Validation Alerts:
- * - Shows specific error message for each validation failure
- * - Examples: "Password Too Short", "Password Missing Uppercase", etc.
- * - Backend validation errors parsed from Zod and displayed
- * - Handles duplicate email errors gracefully
- *
- * Error Handling:
- * - Backend validation errors: Parses Zod details array and formats as bullets
- * - Backend error message: Shows specific error (e.g., "Email already exists")
- * - Generic errors: Shows status code and suggests checking connection
- * - Google Sign-In: Same error handling as LoginScreen
- *
- * Auto-Redirect:
- * - useEffect checks for existing token on mount
- * - If token exists, resets navigation to OysterList
- * - Prevents duplicate registration for authenticated users
- *
- * Navigation:
- * - Uses CommonActions.reset() to clear navigation history
- * - Prevents back button from returning to register after signup
- * - Login link navigates to LoginScreen
- *
- * State:
- * - name, email, password, confirmPassword: Form input values
- * - loading: Email/password registration in progress
- * - googleLoading: Google Sign-In in progress
- * - Both disabled during either loading state
  */
 
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
   SafeAreaView,
   Alert,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
   ScrollView,
 } from 'react-native';
+import {
+  TextInput,
+  Button,
+  Card,
+  Text,
+  Divider,
+  HelperText,
+} from 'react-native-paper';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
@@ -106,18 +72,20 @@ type RegisterScreenNavigationProp = NativeStackNavigationProp<
 
 export default function RegisterScreen() {
   const navigation = useNavigation<RegisterScreenNavigationProp>();
-  const { theme, loadUserTheme } = useTheme();
+  const { paperTheme, loadUserTheme } = useTheme();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
   // Configure Google Sign-In
   React.useEffect(() => {
     GoogleSignin.configure({
-      webClientId: '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com', // Web client ID for backend verification
+      webClientId: '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com',
       offlineAccess: false,
     });
     console.log('✅ Native Google Sign-In configured in RegisterScreen');
@@ -128,7 +96,6 @@ export default function RegisterScreen() {
     const checkIfLoggedIn = async () => {
       const token = await authStorage.getToken();
       if (token) {
-        // User is already logged in, redirect to OysterList
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
@@ -145,37 +112,26 @@ export default function RegisterScreen() {
       setGoogleLoading(true);
       console.log('🔵 Starting native Google Sign-In...');
 
-      // Check if Google Play services are available
       await GoogleSignin.hasPlayServices();
-
-      // Sign in and get user info with ID token
       const userInfo = await GoogleSignin.signIn();
       console.log('✅ Google Sign-In successful, user:', userInfo.data?.user?.email);
 
-      // Get the ID token
       const idToken = userInfo.data?.idToken;
       if (!idToken) {
         throw new Error('No ID token received from Google');
       }
 
       console.log('🔵 Sending ID token to backend...');
-
-      // Send ID token to backend for verification
       const authResponse = await authApi.googleAuth(idToken);
 
-      // Save token and user data
       await authStorage.saveToken(authResponse.token);
       await authStorage.saveUser(authResponse.user);
 
-      // Load user's theme preference
       loadUserTheme(authResponse.user);
-
-      // Sync favorites with backend
       await favoritesStorage.syncWithBackend();
 
       console.log('✅ Authentication complete, navigating to OysterList');
 
-      // Navigate to main app and reset navigation stack
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
@@ -186,7 +142,6 @@ export default function RegisterScreen() {
       console.error('❌ Google Sign-In error:', error);
 
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        // User cancelled the sign-in, no alert needed
         console.log('User cancelled Google Sign-In');
       } else if (error.code === statusCodes.IN_PROGRESS) {
         Alert.alert('Sign-In In Progress', 'Google Sign-In is already in progress');
@@ -217,19 +172,14 @@ export default function RegisterScreen() {
       return false;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       Alert.alert('Validation Error', 'Please enter a valid email address');
       return false;
     }
 
-    // Password validation matching backend requirements
     if (password.length < 8) {
-      Alert.alert(
-        'Password Too Short',
-        'Password must be at least 8 characters long'
-      );
+      Alert.alert('Password Too Short', 'Password must be at least 8 characters long');
       return false;
     }
 
@@ -281,35 +231,30 @@ export default function RegisterScreen() {
 
       console.log('✅ Registration successful');
 
-      // Save token and user data
       await authStorage.saveToken(response.token);
       await authStorage.saveUser(response.user);
 
-      // Load user's theme preference
       loadUserTheme(response.user);
-
-      // Sync favorites with backend
       await favoritesStorage.syncWithBackend();
 
       Alert.alert('Success', 'Account created successfully!', [
         {
           text: 'OK',
-          onPress: () => navigation.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{ name: 'OysterList' }],
-            })
-          ),
+          onPress: () =>
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'OysterList' }],
+              })
+            ),
         },
       ]);
     } catch (error: any) {
       console.error('❌ Registration error:', error);
 
-      // Parse validation errors from backend
       const errorData = error?.response?.data;
 
       if (errorData?.details && Array.isArray(errorData.details)) {
-        // Show specific validation errors from Zod
         const errorMessages = errorData.details
           .map((detail: any) => {
             const field = detail.field || 'Unknown';
@@ -318,18 +263,10 @@ export default function RegisterScreen() {
           })
           .join('\n');
 
-        Alert.alert(
-          'Registration Error',
-          `Please fix the following:\n\n${errorMessages}`
-        );
+        Alert.alert('Registration Error', `Please fix the following:\n\n${errorMessages}`);
       } else if (errorData?.error) {
-        // Show specific error message from backend
-        Alert.alert(
-          'Registration Failed',
-          errorData.error
-        );
+        Alert.alert('Registration Failed', errorData.error);
       } else {
-        // Show generic error with status code
         const statusCode = error?.response?.status || 'Unknown';
         Alert.alert(
           'Registration Failed',
@@ -342,115 +279,133 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.content}>
-            <View style={styles.header}>
-              <Text style={styles.title}>Create Account</Text>
-              <Text style={styles.subtitle}>Join Oysterette today</Text>
-            </View>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.header}>
+            <Text variant="headlineLarge" style={styles.title}>
+              Create Account
+            </Text>
+            <Text variant="bodyLarge" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+              Join Oysterette today
+            </Text>
+          </View>
 
-            <View style={styles.form}>
-              <Text style={styles.label}>Name</Text>
+          <Card mode="elevated" style={styles.card}>
+            <Card.Content>
               <TextInput
-                style={styles.input}
-                placeholder="Your name"
+                label="Name"
                 value={name}
                 onChangeText={setName}
+                mode="outlined"
                 autoCapitalize="words"
-                editable={!loading}
+                disabled={loading || googleLoading}
+                left={<TextInput.Icon icon="account" />}
+                style={styles.input}
               />
 
-              <Text style={styles.label}>Email</Text>
               <TextInput
-                style={styles.input}
-                placeholder="your@email.com"
+                label="Email"
                 value={email}
                 onChangeText={setEmail}
-                autoCapitalize="none"
+                mode="outlined"
                 keyboardType="email-address"
+                autoCapitalize="none"
                 autoComplete="email"
-                editable={!loading}
+                disabled={loading || googleLoading}
+                left={<TextInput.Icon icon="email" />}
+                style={styles.input}
               />
 
-              <Text style={styles.label}>Password</Text>
               <TextInput
-                style={styles.input}
-                placeholder="Enter your password"
+                label="Password"
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry
+                mode="outlined"
+                secureTextEntry={!passwordVisible}
                 autoCapitalize="none"
-                editable={!loading}
-              />
-              <Text style={styles.passwordHint}>
-                Must be 8+ characters with uppercase, lowercase, and a number
-              </Text>
-
-              <Text style={styles.label}>Confirm Password</Text>
-              <TextInput
+                disabled={loading || googleLoading}
+                left={<TextInput.Icon icon="lock" />}
+                right={
+                  <TextInput.Icon
+                    icon={passwordVisible ? 'eye-off' : 'eye'}
+                    onPress={() => setPasswordVisible(!passwordVisible)}
+                  />
+                }
                 style={styles.input}
-                placeholder="Re-enter your password"
+              />
+              <HelperText type="info" visible={true}>
+                Must be 8+ characters with uppercase, lowercase, and a number
+              </HelperText>
+
+              <TextInput
+                label="Confirm Password"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                secureTextEntry
+                mode="outlined"
+                secureTextEntry={!confirmPasswordVisible}
                 autoCapitalize="none"
-                editable={!loading}
+                disabled={loading || googleLoading}
+                left={<TextInput.Icon icon="lock-check" />}
+                right={
+                  <TextInput.Icon
+                    icon={confirmPasswordVisible ? 'eye-off' : 'eye'}
+                    onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+                  />
+                }
+                style={styles.input}
               />
 
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
+              <Button
+                mode="contained"
                 onPress={handleRegister}
-                disabled={loading}
+                loading={loading}
+                disabled={loading || googleLoading}
+                style={styles.signUpButton}
+                icon="account-plus"
               >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Sign Up</Text>
-                )}
-              </TouchableOpacity>
+                Sign Up
+              </Button>
 
-              {/* Google Sign-In - Native Implementation */}
-              <>
-                {/* Divider */}
-                <View style={styles.divider}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>OR</Text>
-                  <View style={styles.dividerLine} />
-                </View>
+              <View style={styles.dividerContainer}>
+                <Divider style={styles.divider} />
+                <Text variant="bodySmall" style={styles.dividerText}>
+                  OR
+                </Text>
+                <Divider style={styles.divider} />
+              </View>
 
-                {/* Google Sign-In Button */}
-                <TouchableOpacity
-                  style={[styles.googleButton, (googleLoading || loading) && styles.buttonDisabled]}
-                  onPress={handleGoogleSignIn}
-                  disabled={googleLoading || loading}
-                >
-                  {googleLoading ? (
-                    <ActivityIndicator color="#555" />
-                  ) : (
-                    <>
-                      <Text style={styles.googleIcon}>G</Text>
-                      <Text style={styles.googleButtonText}>Continue with Google</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-              </>
+              <Button
+                mode="outlined"
+                onPress={handleGoogleSignIn}
+                loading={googleLoading}
+                disabled={loading || googleLoading}
+                icon="google"
+                style={styles.googleButton}
+              >
+                Continue with Google
+              </Button>
 
               <View style={styles.loginContainer}>
-                <Text style={styles.loginText}>Already have an account? </Text>
-                <TouchableOpacity
+                <Text variant="bodyMedium">Already have an account? </Text>
+                <Button
+                  mode="text"
                   onPress={() => navigation.navigate('Login')}
-                  disabled={loading}
+                  disabled={loading || googleLoading}
+                  compact
+                  labelStyle={styles.loginButtonLabel}
                 >
-                  <Text style={styles.loginLink}>Log In</Text>
-                </TouchableOpacity>
+                  Log In
+                </Button>
               </View>
-            </View>
-          </View>
+            </Card.Content>
+          </Card>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -460,130 +415,55 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-  },
-  content: {
-    flex: 1,
     justifyContent: 'center',
     padding: 20,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 32,
   },
   title: {
-    fontSize: 32,
     fontWeight: 'bold',
-    color: '#2c3e50',
     marginBottom: 8,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#7f8c8d',
-  },
-  form: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#555',
-    marginBottom: 8,
-    marginTop: 12,
+  card: {
+    marginBottom: 16,
   },
   input: {
-    backgroundColor: '#f8f9fa',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#2c3e50',
+    marginBottom: 8,
   },
-  button: {
-    backgroundColor: '#3498db',
-    paddingVertical: 15,
-    borderRadius: 8,
+  signUpButton: {
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
+    marginVertical: 16,
   },
-  buttonDisabled: {
-    opacity: 0.6,
+  divider: {
+    flex: 1,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  dividerText: {
+    marginHorizontal: 12,
+    fontWeight: '500',
+  },
+  googleButton: {
+    marginBottom: 16,
   },
   loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
-  },
-  loginText: {
-    fontSize: 14,
-    color: '#555',
-  },
-  loginLink: {
-    fontSize: 14,
-    color: '#3498db',
-    fontWeight: '600',
-  },
-  passwordHint: {
-    fontSize: 12,
-    color: '#7f8c8d',
-    marginTop: 4,
-    marginLeft: 2,
-  },
-  divider: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 20,
+    marginTop: 8,
   },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#e0e0e0',
-  },
-  dividerText: {
-    marginHorizontal: 10,
-    fontSize: 14,
-    color: '#7f8c8d',
-    fontWeight: '500',
-  },
-  googleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    paddingVertical: 15,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  googleIcon: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginRight: 10,
-    color: '#4285F4',
-  },
-  googleButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#555',
+  loginButtonLabel: {
+    marginHorizontal: 0,
   },
 });

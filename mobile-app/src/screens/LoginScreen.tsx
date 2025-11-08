@@ -1,5 +1,5 @@
 /**
- * LoginScreen
+ * LoginScreen - Migrated to React Native Paper
  *
  * Authentication screen supporting email/password and Google OAuth sign-in.
  *
@@ -12,7 +12,24 @@
  * - KeyboardAvoidingView for iOS keyboard handling
  * - "Continue as Guest" option
  * - Link to Register screen
- * - Theme-aware styling
+ * - Theme-aware styling via React Native Paper
+ *
+ * Material Design Components:
+ * - Card: Form container with elevation
+ * - TextInput: Email and password inputs with icons
+ * - Button: Primary (contained) and secondary (outlined) buttons
+ * - Divider: "OR" separator between auth methods
+ * - Text: Typography with variants (headlineLarge, bodyMedium, etc.)
+ * - ActivityIndicator: Built-in loading states in Button
+ *
+ * Migration Benefits:
+ * - Built-in password visibility toggle (eye icon)
+ * - Floating labels with smooth animations
+ * - Automatic error states and helper text
+ * - Better accessibility (labels, hints, error announcements)
+ * - Consistent Material Design look
+ * - Icons integrated into inputs
+ * - Loading states handled by Button component
  *
  * Login Flow (Email/Password):
  * 1. Validates email and password not empty
@@ -32,56 +49,25 @@
  * 7. Saves JWT token and user data to storage
  * 8. Loads theme and syncs favorites
  * 9. Resets navigation stack to OysterList
- *
- * Google Sign-In Configuration:
- * - Web Client ID: 578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com
- * - Used for backend verification (not OAuth redirect)
- * - Native SDK handles Android authentication
- * - offlineAccess: false (no refresh token needed)
- *
- * Error Handling:
- * - Email/password: Shows "Invalid email or password" alert
- * - Google: Handles specific status codes:
- *   - SIGN_IN_CANCELLED: Silent (user cancelled)
- *   - IN_PROGRESS: Alert "Sign-In In Progress"
- *   - PLAY_SERVICES_NOT_AVAILABLE: Alert to install/update Play Services
- *   - Other: Alert with backend error message
- *
- * Auto-Redirect:
- * - useEffect checks for existing token on mount
- * - If token exists, resets navigation to OysterList
- * - Prevents showing login form to already-authenticated users
- *
- * Guest Mode:
- * - "Continue as Guest" button navigates to OysterList
- * - User can browse oysters without account
- * - Cannot submit reviews or save favorites until logging in
- *
- * Navigation:
- * - Uses CommonActions.reset() to clear navigation history
- * - Prevents back button from returning to login after auth
- * - Register link navigates to RegisterScreen
- *
- * State:
- * - email, password: Form input values
- * - loading: Email/password login in progress
- * - googleLoading: Google Sign-In in progress
- * - Both disabled during either loading state
  */
 
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
   SafeAreaView,
   Alert,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
+  ScrollView,
 } from 'react-native';
+import {
+  TextInput,
+  Button,
+  Card,
+  Text,
+  Divider,
+} from 'react-native-paper';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
@@ -104,18 +90,15 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { theme, loadUserTheme } = useTheme();
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const { paperTheme, loadUserTheme } = useTheme();
 
   console.log('🔵 LoginScreen: State initialized');
-
-  const styles = createStyles(theme.colors);
-
-  console.log('🔵 LoginScreen: Styles created');
 
   // Configure Google Sign-In
   React.useEffect(() => {
     GoogleSignin.configure({
-      webClientId: '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com', // Web client ID for backend verification
+      webClientId: '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com',
       offlineAccess: false,
     });
     console.log('✅ Native Google Sign-In configured');
@@ -126,7 +109,6 @@ export default function LoginScreen() {
     const checkIfLoggedIn = async () => {
       const token = await authStorage.getToken();
       if (token) {
-        // User is already logged in, redirect to OysterList
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
@@ -143,22 +125,16 @@ export default function LoginScreen() {
       setGoogleLoading(true);
       console.log('🔵 Starting native Google Sign-In...');
 
-      // Check if Google Play services are available
       await GoogleSignin.hasPlayServices();
-
-      // Sign in and get user info with ID token
       const userInfo = await GoogleSignin.signIn();
       console.log('✅ Google Sign-In successful, user:', userInfo.data?.user?.email);
 
-      // Get the ID token
       const idToken = userInfo.data?.idToken;
       if (!idToken) {
         throw new Error('No ID token received from Google');
       }
 
       console.log('🔵 Sending ID token to backend...');
-
-      // Send ID token to backend for verification
       const authResponse = await authApi.googleAuth(idToken);
 
       console.log('📦 [LoginScreen] Auth response received:', {
@@ -169,28 +145,21 @@ export default function LoginScreen() {
         userId: authResponse.user?.id
       });
 
-      // Validate token before saving
       if (!authResponse.token || typeof authResponse.token !== 'string' || authResponse.token.length === 0) {
         throw new Error('Invalid token received from backend');
       }
 
-      // Save token and user data
       await authStorage.saveToken(authResponse.token);
       await authStorage.saveUser(authResponse.user);
 
-      // Verify token was saved
       const savedToken = await authStorage.getToken();
       console.log('✅ [LoginScreen] Token saved and verified:', savedToken ? savedToken.substring(0, 20) + '...' : 'NULL');
 
-      // Load user's theme preference
       loadUserTheme(authResponse.user);
-
-      // Sync favorites with backend
       await favoritesStorage.syncWithBackend();
 
       console.log('✅ Authentication complete, navigating to OysterList');
 
-      // Navigate to main app and reset navigation stack
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
@@ -201,7 +170,6 @@ export default function LoginScreen() {
       console.error('❌ Google Sign-In error:', error);
 
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        // User cancelled the sign-in, no alert needed
         console.log('User cancelled Google Sign-In');
       } else if (error.code === statusCodes.IN_PROGRESS) {
         Alert.alert('Sign-In In Progress', 'Google Sign-In is already in progress');
@@ -221,8 +189,6 @@ export default function LoginScreen() {
     }
   };
 
-  console.log('🟢 LoginScreen: About to render JSX');
-
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
       Alert.alert('Validation Error', 'Please enter both email and password');
@@ -233,17 +199,12 @@ export default function LoginScreen() {
       setLoading(true);
       const response = await authApi.login(email.trim(), password);
 
-      // Save token and user data
       await authStorage.saveToken(response.token);
       await authStorage.saveUser(response.user);
 
-      // Load user's theme preference
       loadUserTheme(response.user);
-
-      // Sync favorites with backend
       await favoritesStorage.syncWithBackend();
 
-      // Navigate to main app and reset navigation stack
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
@@ -261,233 +222,171 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <View style={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.header}>
-            <Text style={styles.title}>Oysterette</Text>
-            <Text style={styles.subtitle}>Welcome back!</Text>
+            <Text variant="headlineLarge" style={styles.title}>
+              Oysterette
+            </Text>
+            <Text variant="bodyLarge" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+              Welcome back!
+            </Text>
           </View>
 
-          <View style={styles.form}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="your@email.com"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              autoComplete="email"
-              editable={!loading}
-              placeholderTextColor={theme.colors.textSecondary}
-            />
+          <Card mode="elevated" style={styles.card}>
+            <Card.Content>
+              <TextInput
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                mode="outlined"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                disabled={loading || googleLoading}
+                left={<TextInput.Icon icon="email" />}
+                style={styles.input}
+              />
 
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoCapitalize="none"
-              editable={!loading}
-              placeholderTextColor={theme.colors.textSecondary}
-            />
+              <TextInput
+                label="Password"
+                value={password}
+                onChangeText={setPassword}
+                mode="outlined"
+                secureTextEntry={!passwordVisible}
+                autoCapitalize="none"
+                disabled={loading || googleLoading}
+                left={<TextInput.Icon icon="lock" />}
+                right={
+                  <TextInput.Icon
+                    icon={passwordVisible ? 'eye-off' : 'eye'}
+                    onPress={() => setPasswordVisible(!passwordVisible)}
+                  />
+                }
+                style={styles.input}
+              />
 
-            <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleLogin}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Log In</Text>
-              )}
-            </TouchableOpacity>
+              <Button
+                mode="contained"
+                onPress={handleLogin}
+                loading={loading}
+                disabled={loading || googleLoading}
+                style={styles.loginButton}
+                icon="login"
+              >
+                Log In
+              </Button>
 
-            {/* Google Sign-In - Native Implementation */}
-            <>
-              {/* Divider */}
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>OR</Text>
-                <View style={styles.dividerLine} />
+              <View style={styles.dividerContainer}>
+                <Divider style={styles.divider} />
+                <Text variant="bodySmall" style={styles.dividerText}>
+                  OR
+                </Text>
+                <Divider style={styles.divider} />
               </View>
 
-              {/* Google Sign-In Button */}
-              <TouchableOpacity
-                style={[styles.googleButton, (googleLoading || loading) && styles.buttonDisabled]}
+              <Button
+                mode="outlined"
                 onPress={handleGoogleSignIn}
-                disabled={googleLoading || loading}
+                loading={googleLoading}
+                disabled={loading || googleLoading}
+                icon="google"
+                style={styles.googleButton}
               >
-                {googleLoading ? (
-                  <ActivityIndicator color="#555" />
-                ) : (
-                  <>
-                    <Text style={styles.googleIcon}>G</Text>
-                    <Text style={styles.googleButtonText}>Continue with Google</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </>
+                Continue with Google
+              </Button>
 
-            <View style={styles.registerContainer}>
-              <Text style={styles.registerText}>Don't have an account? </Text>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Register')}
-                disabled={loading}
+              <View style={styles.registerContainer}>
+                <Text variant="bodyMedium">Don't have an account? </Text>
+                <Button
+                  mode="text"
+                  onPress={() => navigation.navigate('Register')}
+                  disabled={loading || googleLoading}
+                  compact
+                  labelStyle={styles.registerButtonLabel}
+                >
+                  Sign Up
+                </Button>
+              </View>
+
+              <Button
+                mode="text"
+                onPress={() => navigation.navigate('OysterList')}
+                disabled={loading || googleLoading}
+                style={styles.guestButton}
               >
-                <Text style={styles.registerLink}>Sign Up</Text>
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity
-              style={styles.skipButton}
-              onPress={() => navigation.navigate('OysterList')}
-              disabled={loading}
-            >
-              <Text style={styles.skipText}>Continue as Guest</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+                Continue as Guest
+              </Button>
+            </Card.Content>
+          </Card>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-const createStyles = (colors: any) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    keyboardView: {
-      flex: 1,
-    },
-    content: {
-      flex: 1,
-      justifyContent: 'center',
-      padding: 20,
-    },
-    header: {
-      alignItems: 'center',
-      marginBottom: 40,
-    },
-    title: {
-      fontSize: 36,
-      fontWeight: 'bold',
-      color: colors.text,
-      marginBottom: 8,
-    },
-    subtitle: {
-      fontSize: 18,
-      color: colors.textSecondary,
-    },
-    form: {
-      backgroundColor: colors.card,
-      padding: 20,
-      borderRadius: 12,
-      shadowColor: colors.shadowColor,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-    },
-    label: {
-      fontSize: 14,
-      fontWeight: '500',
-      color: colors.textSecondary,
-      marginBottom: 8,
-      marginTop: 12,
-    },
-    input: {
-      backgroundColor: colors.inputBackground,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 8,
-      padding: 12,
-      fontSize: 16,
-      color: colors.text,
-    },
-    button: {
-      backgroundColor: colors.primary,
-      paddingVertical: 15,
-      borderRadius: 8,
-      alignItems: 'center',
-      marginTop: 20,
-    },
-    buttonDisabled: {
-      opacity: 0.6,
-    },
-    buttonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    registerContainer: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-      marginTop: 20,
-    },
-    registerText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-    },
-    registerLink: {
-      fontSize: 14,
-      color: colors.primary,
-      fontWeight: '600',
-    },
-    skipButton: {
-      alignItems: 'center',
-      marginTop: 15,
-      paddingVertical: 10,
-    },
-    skipText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-    },
-    divider: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginVertical: 20,
-    },
-    dividerLine: {
-      flex: 1,
-      height: 1,
-      backgroundColor: colors.border,
-    },
-    dividerText: {
-      marginHorizontal: 10,
-      fontSize: 14,
-      color: colors.textSecondary,
-      fontWeight: '500',
-    },
-    googleButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#fff',
-      borderWidth: 1,
-      borderColor: colors.border,
-      paddingVertical: 15,
-      borderRadius: 8,
-      marginBottom: 10,
-    },
-    googleIcon: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      marginRight: 10,
-      color: '#4285F4',
-    },
-    googleButtonText: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: '#555',
-    },
-  });
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  title: {
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  card: {
+    marginBottom: 16,
+  },
+  input: {
+    marginBottom: 16,
+  },
+  loginButton: {
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  divider: {
+    flex: 1,
+  },
+  dividerText: {
+    marginHorizontal: 12,
+    fontWeight: '500',
+  },
+  googleButton: {
+    marginBottom: 16,
+  },
+  registerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  registerButtonLabel: {
+    marginHorizontal: 0,
+  },
+  guestButton: {
+    marginTop: 8,
+  },
+});
