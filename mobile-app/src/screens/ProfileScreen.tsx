@@ -91,7 +91,6 @@ import {
   RefreshControl,
   Alert,
   Platform,
-  Alert,
   Image,
   TouchableOpacity,
 } from 'react-native';
