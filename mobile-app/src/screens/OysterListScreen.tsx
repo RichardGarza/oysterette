@@ -379,7 +379,7 @@ export default function OysterListScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <Image
-            source={require('../../assets/top-bar-logo.png')}
+            source={require('../../assets/logo.png')}
             style={styles.logo}
             resizeMode="contain"
           />
@@ -426,7 +426,7 @@ export default function OysterListScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Image
-          source={require('../../assets/top-bar-logo.png')}
+          source={require('../../assets/logo.png')}
           style={styles.logo}
           resizeMode="contain"
         />

@@ -113,31 +113,26 @@ export default function AddReviewScreen() {
   const showOriginInput = oysterOrigin === 'Unknown';
   const showSpeciesInput = oysterSpecies === 'Unknown';
 
-  // Request camera permissions on mount
-  useEffect(() => {
-    (async () => {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Camera permission not granted');
-      }
-      const mediaStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (mediaStatus.status !== 'granted') {
-        console.log('Media library permission not granted');
-      }
-    })();
-  }, []);
+  // Note: Camera permissions are now requested only when user taps Add Photo button
+  // This prevents the intrusive permission prompt on screen load
 
   const pickImageFromCamera = async () => {
-    if (photos.length >= 5) {
-      Alert.alert('Maximum Photos', 'You can only add up to 5 photos per review.');
+    if (photos.length >= 1) {
+      Alert.alert('Maximum Photos', 'You can only add 1 photo per review.');
+      return;
+    }
+
+    // Request permission only when needed
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Camera permission is required to take photos.');
       return;
     }
 
     try {
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
+        allowsEditing: false,
         quality: 0.8,
       });
 
@@ -151,16 +146,22 @@ export default function AddReviewScreen() {
   };
 
   const pickImageFromLibrary = async () => {
-    if (photos.length >= 5) {
-      Alert.alert('Maximum Photos', 'You can only add up to 5 photos per review.');
+    if (photos.length >= 1) {
+      Alert.alert('Maximum Photos', 'You can only add 1 photo per review.');
+      return;
+    }
+
+    // Request permission only when needed
+    const mediaStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (mediaStatus.status !== 'granted') {
+      Alert.alert('Permission Required', 'Media library permission is required to select photos.');
       return;
     }
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
+        allowsEditing: false,
         quality: 0.8,
       });
 

@@ -320,8 +320,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 192,
-    height: 192,
+    width: 256,
+    height: 256,
     marginBottom: 20,
   },
   loadingOverlay: {
