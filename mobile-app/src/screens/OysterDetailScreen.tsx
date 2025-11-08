@@ -245,11 +245,11 @@ export default function OysterDetailScreen() {
           oysterName: oyster.name,
           oysterOrigin: oyster.origin,
           oysterSpecies: oyster.species,
-          oysterAvgSize: oyster.avgSize,
-          oysterAvgBody: oyster.avgBody,
-          oysterAvgSweetBrininess: oyster.avgSweetBrininess,
-          oysterAvgFlavorfulness: oyster.avgFlavorfulness,
-          oysterAvgCreaminess: oyster.avgCreaminess,
+          oysterAvgSize: oyster.avgSize ?? undefined,
+          oysterAvgBody: oyster.avgBody ?? undefined,
+          oysterAvgSweetBrininess: oyster.avgSweetBrininess ?? undefined,
+          oysterAvgFlavorfulness: oyster.avgFlavorfulness ?? undefined,
+          oysterAvgCreaminess: oyster.avgCreaminess ?? undefined,
         });
       }
     } catch (error) {
@@ -262,11 +262,11 @@ export default function OysterDetailScreen() {
         oysterName: oyster.name,
         oysterOrigin: oyster.origin,
         oysterSpecies: oyster.species,
-        oysterAvgSize: oyster.avgSize,
-        oysterAvgBody: oyster.avgBody,
-        oysterAvgSweetBrininess: oyster.avgSweetBrininess,
-        oysterAvgFlavorfulness: oyster.avgFlavorfulness,
-        oysterAvgCreaminess: oyster.avgCreaminess,
+        oysterAvgSize: oyster.avgSize ?? undefined,
+        oysterAvgBody: oyster.avgBody ?? undefined,
+        oysterAvgSweetBrininess: oyster.avgSweetBrininess ?? undefined,
+        oysterAvgFlavorfulness: oyster.avgFlavorfulness ?? undefined,
+        oysterAvgCreaminess: oyster.avgCreaminess ?? undefined,
       });
     }
   }, [oyster, navigation]);
@@ -536,7 +536,7 @@ export default function OysterDetailScreen() {
   );
 }
 
-const createStyles = (colors: typeof import('../context/ThemeContext').Theme['colors'], isDark: boolean) =>
+const createStyles = (colors: any, isDark: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,

@@ -544,7 +544,7 @@ export default function OysterListScreen() {
               <ToggleButton.Row
                 key={filter.key}
                 value={filter.state}
-                onValueChange={(value) => filter.setState(value === filter.state ? '' : value)}
+                onValueChange={(value) => filter.setState(value === filter.state ? '' : value as any)}
                 style={styles.attributeFilterRow}
               >
                 <ToggleButton
@@ -640,7 +640,7 @@ export default function OysterListScreen() {
   );
 }
 
-const createStyles = (colors: typeof import('../context/ThemeContext').Theme['colors'], isDark: boolean) =>
+const createStyles = (colors: any, isDark: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
