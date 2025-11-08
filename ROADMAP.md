@@ -1426,7 +1426,7 @@ const theme = {
 
 ### Phase 20: AR Menu Scanner 🚧
 
-**Status:** Core Functionality Complete (60% - 4 hours)
+**Status:** Core Features Complete (75% - 5 hours)
 **Estimated Time:** 30-40 hours total
 **Priority:** HIGH (Consumer Delight Feature)
 **Platform:** Mobile (iOS/Android), Web PWA (with camera API)
@@ -1445,17 +1445,24 @@ const theme = {
 - [x] Color-coded scores (🟢 90%+, 🟡 70-89%, 🔴 <70%)
 - [x] Personalized scoring based on user flavor profile
 - [x] "View Details" navigation to OysterDetailScreen
+- [x] Position tracking for menu order preservation
+- [x] Unmatched oyster detection (not in database)
+- [x] "Add to Database" button for unmatched items
+- [x] Results sorted by position (maintains menu order)
 
 **Current Implementation:**
 - Photo-based scanning (tap "Scan Now" → take photo → OCR → results)
+- Shows both matched and unmatched oysters in menu order
 - Works offline after oyster data loaded
 - Fuzzy matching handles typos and variations
-- Scrollable results list with personalized scores
+- Scrollable results: matched (elevated cards) + unmatched (outlined cards)
+- Summary stats: "X in database • Y not found"
 
-**In Progress (40% remaining):**
+**Remaining (25%):**
 - [ ] Real-time AR overlay (live camera feed with overlays)
 - [ ] Bounding box detection (highlight oyster names on screen)
 - [ ] Live text detection during preview (no photo needed)
+- [ ] Pre-fill AddOyster name from unmatched detection
 - [ ] Performance optimizations (debounce, caching)
 - [ ] Flavor profile tooltips on tap
 - [ ] Session tracking ("Mark as Ordered")
