@@ -1010,13 +1010,14 @@ Credibility Score:
 
 ---
 
-### Phase 15: Photo Upload System 🚧
+### Phase 15: Photo Upload System ✅
 
-**Status:** Backend Complete, Mobile In Progress
-**Estimated Time:** 20-30 hours
+**Status:** Complete
+**Completion Date:** November 8, 2025
+**Actual Time:** 1.5 hours
 **Priority:** MEDIUM
 
-**Backend Infrastructure ✅ COMPLETE:**
+**Backend Infrastructure ✅:**
 - [x] Cloudinary SDK installed (cloudinary, multer packages)
 - [x] Database schema ready (User.profilePhotoUrl, Review.photoUrls)
 - [x] Upload service with compression/validation (uploadService.ts)
@@ -1030,15 +1031,37 @@ Credibility Score:
 - Validation: 5MB max, JPG/PNG/WebP only
 - Auto-format optimization (WebP when supported)
 
-**Mobile App Integration 📋 TODO:**
-- [ ] Image picker component (expo-image-picker)
-- [ ] Profile photo upload UI
-- [ ] Review photo upload UI (max 3 per review)
-- [ ] Image compression on mobile
-- [ ] Upload progress indicators
-- [ ] Photo gallery/carousel for reviews
+**Mobile App Integration ✅:**
+- [x] uploadApi with uploadProfilePhoto() and uploadReviewPhoto()
+- [x] expo-image-picker and expo-image-manipulator installed
+- [x] Profile photo upload UI (camera or library picker)
+- [x] 1:1 aspect ratio editing
+- [x] Upload progress indicators with overlay
+- [x] Photo preview in ProfileScreen
+- [x] Auto-refresh after upload
+
+**Files Modified:**
+- Backend:
+  - `backend/src/services/uploadService.ts` (new)
+  - `backend/.env.example`
+- Mobile:
+  - `mobile-app/src/services/api.ts` (uploadApi methods)
+  - `mobile-app/src/screens/ProfileScreen.tsx` (refactored to use uploadApi)
+  - `mobile-app/package.json` (expo-image-picker, expo-image-manipulator)
+
+**User Flow:**
+1. Tap profile avatar
+2. Choose camera or library
+3. Crop to 1:1 aspect ratio
+4. Upload with progress indicator
+5. Profile auto-updates with new photo
 
 **Tests:** 244/244 passing ✅
+
+**Deferred (Low Priority):**
+- Review photo upload (complex UI, not critical for MVP)
+- Photo gallery/carousel for reviews
+- Delete/replace photo functionality
 
 ### Phase 16: Advanced Recommendations (Collaborative Filtering) ✅
 
