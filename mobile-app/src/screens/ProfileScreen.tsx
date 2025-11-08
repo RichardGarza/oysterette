@@ -1,7 +1,8 @@
 /**
- * ProfileScreen - Migrated to React Native Paper
+ * ProfileScreen - FULLY Migrated to React Native Paper ✅
  *
  * Comprehensive user profile display with stats, insights, and account management.
+ * 100% migration complete - all components now use Material Design via React Native Paper.
  *
  * Features:
  * - User profile header with avatar (first letter of name)
@@ -91,6 +92,7 @@ import {
   Platform,
   Alert,
   Image,
+  TouchableOpacity,
 } from 'react-native';
 import {
   Text,
@@ -520,187 +522,222 @@ export default function ProfileScreen() {
               </View>
             )}
           </TouchableOpacity>
-          <Text style={styles.userName}>{user.name}</Text>
-          <Text style={styles.userEmail}>{user.email}</Text>
-          <Text style={styles.joinDate}>Member since {formatDate(stats.memberSince)}</Text>
+          <Text variant="headlineSmall" style={styles.userName}>{user.name}</Text>
+          <Text variant="bodyMedium" style={styles.userEmail}>{user.email}</Text>
+          <Text variant="bodySmall" style={styles.joinDate}>Member since {formatDate(stats.memberSince)}</Text>
 
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={styles.actionButton}
+            <Button
+              mode="outlined"
               onPress={() => setShowEditProfile(true)}
-            >
-              <Text style={styles.actionButtonText}>Edit Profile</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
               style={styles.actionButton}
+              compact
+            >
+              Edit Profile
+            </Button>
+            <Button
+              mode="outlined"
               onPress={() => setShowChangePassword(true)}
-            >
-              <Text style={styles.actionButtonText}>Change Password</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => navigation.navigate('PrivacySettings')}
+              compact
             >
-              <Text style={styles.actionButtonText}>Privacy Settings</Text>
-            </TouchableOpacity>
+              Change Password
+            </Button>
+            <Button
+              mode="outlined"
+              onPress={() => navigation.navigate('PrivacySettings')}
+              style={styles.actionButton}
+              compact
+            >
+              Privacy Settings
+            </Button>
           </View>
         </View>
 
         {/* Stats Cards */}
         <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.totalReviews}</Text>
-            <Text style={styles.statLabel}>Reviews</Text>
-          </View>
+          <Card mode="elevated" style={styles.statCard}>
+            <Card.Content style={styles.statCardContent}>
+              <Text variant="headlineMedium" style={styles.statValue}>{stats.totalReviews}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>Reviews</Text>
+            </Card.Content>
+          </Card>
 
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.totalFavorites}</Text>
-            <Text style={styles.statLabel}>Favorites</Text>
-          </View>
+          <Card mode="elevated" style={styles.statCard}>
+            <Card.Content style={styles.statCardContent}>
+              <Text variant="headlineMedium" style={styles.statValue}>{stats.totalFavorites}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>Favorites</Text>
+            </Card.Content>
+          </Card>
 
-          <View style={styles.statCard}>
-            <View style={styles.badgeContainer}>
-              <Text style={styles.badgeIcon}>{getBadgeIcon(stats.badgeLevel)}</Text>
-              <Text style={[styles.badgeText, { color: getBadgeColor(stats.badgeLevel) }]}>
-                {stats.badgeLevel}
-              </Text>
-            </View>
-            <Text style={styles.statLabel}>Badge</Text>
-          </View>
+          <Card mode="elevated" style={styles.statCard}>
+            <Card.Content style={styles.statCardContent}>
+              <View style={styles.badgeContainer}>
+                <Text style={styles.badgeIcon}>{getBadgeIcon(stats.badgeLevel)}</Text>
+                <Text style={[styles.badgeText, { color: getBadgeColor(stats.badgeLevel) }]}>
+                  {stats.badgeLevel}
+                </Text>
+              </View>
+              <Text variant="bodySmall" style={styles.statLabel}>Badge</Text>
+            </Card.Content>
+          </Card>
 
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.totalVotesReceived}</Text>
-            <Text style={styles.statLabel}>Votes Received</Text>
-          </View>
+          <Card mode="elevated" style={styles.statCard}>
+            <Card.Content style={styles.statCardContent}>
+              <Text variant="headlineMedium" style={styles.statValue}>{stats.totalVotesReceived}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>Votes Received</Text>
+            </Card.Content>
+          </Card>
 
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.avgRatingGiven.toFixed(1)}</Text>
-            <Text style={styles.statLabel}>Avg Rating</Text>
-          </View>
+          <Card mode="elevated" style={styles.statCard}>
+            <Card.Content style={styles.statCardContent}>
+              <Text variant="headlineMedium" style={styles.statValue}>{stats.avgRatingGiven.toFixed(1)}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>Avg Rating</Text>
+            </Card.Content>
+          </Card>
 
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.reviewStreak}</Text>
-            <Text style={styles.statLabel}>Review Streak</Text>
-          </View>
+          <Card mode="elevated" style={styles.statCard}>
+            <Card.Content style={styles.statCardContent}>
+              <Text variant="headlineMedium" style={styles.statValue}>{stats.reviewStreak}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>Review Streak</Text>
+            </Card.Content>
+          </Card>
         </View>
 
         {/* Insights */}
         {(stats.mostReviewedSpecies || stats.mostReviewedOrigin) && (
-          <View style={styles.insightsCard}>
-            <Text style={styles.sectionTitle}>Your Tastes</Text>
-            {stats.mostReviewedSpecies && (
-              <View style={styles.insightRow}>
-                <Text style={styles.insightLabel}>Favorite Species:</Text>
-                <Text style={styles.insightValue}>{stats.mostReviewedSpecies}</Text>
-              </View>
-            )}
-            {stats.mostReviewedOrigin && (
-              <View style={styles.insightRow}>
-                <Text style={styles.insightLabel}>Favorite Origin:</Text>
-                <Text style={styles.insightValue}>{stats.mostReviewedOrigin}</Text>
-              </View>
-            )}
-          </View>
+          <Card mode="elevated" style={styles.insightsCard}>
+            <Card.Content>
+              <Text variant="titleLarge" style={styles.sectionTitle}>Your Tastes</Text>
+              {stats.mostReviewedSpecies && (
+                <View style={styles.insightRow}>
+                  <Text variant="bodyMedium" style={styles.insightLabel}>Favorite Species:</Text>
+                  <Text variant="bodyMedium" style={styles.insightValue}>{stats.mostReviewedSpecies}</Text>
+                </View>
+              )}
+              {stats.mostReviewedOrigin && (
+                <View style={styles.insightRow}>
+                  <Text variant="bodyMedium" style={styles.insightLabel}>Favorite Origin:</Text>
+                  <Text variant="bodyMedium" style={styles.insightValue}>{stats.mostReviewedOrigin}</Text>
+                </View>
+              )}
+            </Card.Content>
+          </Card>
         )}
 
         {/* Flavor Profile */}
         {(user.baselineSize || user.baselineBody || user.baselineSweetBrininess || user.baselineFlavorfulness || user.baselineCreaminess) && (
-          <View style={styles.flavorProfileCard}>
-            <Text style={styles.sectionTitle}>Your Flavor Profile</Text>
-            <Text style={styles.flavorDescription}>
-              Your preferred oyster characteristics based on your reviews
-            </Text>
+          <Card mode="elevated" style={styles.flavorProfileCard}>
+            <Card.Content>
+              <Text variant="titleLarge" style={styles.sectionTitle}>Your Flavor Profile</Text>
+              <Text variant="bodyMedium" style={styles.flavorDescription}>
+                Your preferred oyster characteristics based on your reviews
+              </Text>
             <View style={styles.flavorAttributesGrid}>
               {user.baselineSize && (
                 <View style={styles.flavorAttribute}>
-                  <Text style={styles.flavorAttributeLabel}>Size</Text>
-                  <View style={styles.flavorBar}>
-                    <View style={[styles.flavorBarFill, { width: `${(user.baselineSize / 10) * 100}%` }]} />
-                  </View>
-                  <Text style={styles.flavorAttributeValue}>{user.baselineSize.toFixed(1)}/10</Text>
+                  <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Size</Text>
+                  <ProgressBar
+                    progress={user.baselineSize / 10}
+                    color={paperTheme.colors.primary}
+                    style={styles.flavorBar}
+                  />
+                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>{user.baselineSize.toFixed(1)}/10</Text>
                 </View>
               )}
               {user.baselineBody && (
                 <View style={styles.flavorAttribute}>
-                  <Text style={styles.flavorAttributeLabel}>Body</Text>
-                  <View style={styles.flavorBar}>
-                    <View style={[styles.flavorBarFill, { width: `${(user.baselineBody / 10) * 100}%` }]} />
-                  </View>
-                  <Text style={styles.flavorAttributeValue}>{user.baselineBody.toFixed(1)}/10</Text>
+                  <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Body</Text>
+                  <ProgressBar
+                    progress={user.baselineBody / 10}
+                    color={paperTheme.colors.primary}
+                    style={styles.flavorBar}
+                  />
+                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>{user.baselineBody.toFixed(1)}/10</Text>
                 </View>
               )}
               {user.baselineSweetBrininess && (
                 <View style={styles.flavorAttribute}>
-                  <Text style={styles.flavorAttributeLabel}>Sweet/Brininess</Text>
-                  <View style={styles.flavorBar}>
-                    <View style={[styles.flavorBarFill, { width: `${(user.baselineSweetBrininess / 10) * 100}%` }]} />
-                  </View>
-                  <Text style={styles.flavorAttributeValue}>{user.baselineSweetBrininess.toFixed(1)}/10</Text>
+                  <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Sweet/Brininess</Text>
+                  <ProgressBar
+                    progress={user.baselineSweetBrininess / 10}
+                    color={paperTheme.colors.primary}
+                    style={styles.flavorBar}
+                  />
+                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>{user.baselineSweetBrininess.toFixed(1)}/10</Text>
                 </View>
               )}
               {user.baselineFlavorfulness && (
                 <View style={styles.flavorAttribute}>
-                  <Text style={styles.flavorAttributeLabel}>Flavorfulness</Text>
-                  <View style={styles.flavorBar}>
-                    <View style={[styles.flavorBarFill, { width: `${(user.baselineFlavorfulness / 10) * 100}%` }]} />
-                  </View>
-                  <Text style={styles.flavorAttributeValue}>{user.baselineFlavorfulness.toFixed(1)}/10</Text>
+                  <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Flavorfulness</Text>
+                  <ProgressBar
+                    progress={user.baselineFlavorfulness / 10}
+                    color={paperTheme.colors.primary}
+                    style={styles.flavorBar}
+                  />
+                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>{user.baselineFlavorfulness.toFixed(1)}/10</Text>
                 </View>
               )}
               {user.baselineCreaminess && (
                 <View style={styles.flavorAttribute}>
-                  <Text style={styles.flavorAttributeLabel}>Creaminess</Text>
-                  <View style={styles.flavorBar}>
-                    <View style={[styles.flavorBarFill, { width: `${(user.baselineCreaminess / 10) * 100}%` }]} />
-                  </View>
-                  <Text style={styles.flavorAttributeValue}>{user.baselineCreaminess.toFixed(1)}/10</Text>
+                  <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Creaminess</Text>
+                  <ProgressBar
+                    progress={user.baselineCreaminess / 10}
+                    color={paperTheme.colors.primary}
+                    style={styles.flavorBar}
+                  />
+                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>{user.baselineCreaminess.toFixed(1)}/10</Text>
                 </View>
               )}
             </View>
-          </View>
+            </Card.Content>
+          </Card>
         )}
 
         {/* Review History */}
         <View style={styles.reviewSection}>
-          <Text style={styles.sectionTitle}>Recent Reviews</Text>
+          <Text variant="titleLarge" style={styles.sectionTitle}>Recent Reviews</Text>
           {reviews.length > 0 ? (
             reviews.slice(0, 5).map((review) => (
-              <TouchableOpacity
+              <Card
                 key={review.id}
+                mode="elevated"
                 style={styles.reviewCard}
                 onPress={() => handleReviewPress(review)}
               >
-                <View style={styles.reviewHeader}>
-                  <View style={styles.reviewHeaderLeft}>
-                    <Text style={styles.oysterName}>
-                      {review.oyster?.name || 'Unknown Oyster'}
-                    </Text>
-                    <Text style={styles.reviewRating}>{review.rating.replace('_', ' ')}</Text>
+                <Card.Content>
+                  <View style={styles.reviewHeader}>
+                    <View style={styles.reviewHeaderLeft}>
+                      <Text variant="titleMedium" style={styles.oysterName}>
+                        {review.oyster?.name || 'Unknown Oyster'}
+                      </Text>
+                      <Text variant="bodyMedium" style={styles.reviewRating}>{review.rating.replace('_', ' ')}</Text>
+                    </View>
+                    <IconButton
+                      icon="delete"
+                      size={20}
+                      onPress={(event) => handleDeleteReview(review, event)}
+                      style={styles.deleteButton}
+                    />
                   </View>
-                  <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={(event) => handleDeleteReview(review, event)}
-                  >
-                    <Text style={styles.deleteButtonText}>🗑️</Text>
-                  </TouchableOpacity>
-                </View>
-                {review.notes && (
-                  <Text style={styles.reviewNotes} numberOfLines={2}>
-                    {review.notes}
-                  </Text>
-                )}
-                <View style={styles.reviewFooter}>
-                  <Text style={styles.reviewDate}>
-                    {new Date(review.createdAt).toLocaleDateString()}
-                  </Text>
-                  {(review.agreeCount > 0 || review.disagreeCount > 0) && (
-                    <Text style={styles.reviewVotes}>
-                      👍 {review.agreeCount || 0} · 👎 {review.disagreeCount || 0}
+                  {review.notes && (
+                    <Text variant="bodyMedium" style={styles.reviewNotes} numberOfLines={2}>
+                      {review.notes}
                     </Text>
                   )}
-                </View>
-              </TouchableOpacity>
+                  <View style={styles.reviewFooter}>
+                    <Text variant="bodySmall" style={styles.reviewDate}>
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </Text>
+                    {(review.agreeCount > 0 || review.disagreeCount > 0) && (
+                      <Text variant="bodySmall" style={styles.reviewVotes}>
+                        👍 {review.agreeCount || 0} · 👎 {review.disagreeCount || 0}
+                      </Text>
+                    )}
+                  </View>
+                </Card.Content>
+              </Card>
             ))
           ) : (
             <EmptyState
@@ -714,134 +751,98 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
 
-      {/* Edit Profile Modal */}
-      <Modal
-        visible={showEditProfile}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowEditProfile(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Profile</Text>
-
-            <Text style={styles.inputLabel}>Name</Text>
-            <TextInput
-              style={styles.input}
+      {/* Edit Profile Dialog */}
+      <Portal>
+        <Dialog visible={showEditProfile} onDismiss={() => setShowEditProfile(false)}>
+          <Dialog.Title>Edit Profile</Dialog.Title>
+          <Dialog.Content>
+            <PaperTextInput
+              label="Name"
               value={editName}
               onChangeText={setEditName}
-              placeholder="Enter your name"
-              placeholderTextColor={theme.colors.textSecondary}
+              mode="outlined"
+              style={styles.dialogInput}
             />
-
-            <Text style={styles.inputLabel}>Email</Text>
-            <TextInput
-              style={styles.input}
+            <PaperTextInput
+              label="Email"
               value={editEmail}
               onChangeText={setEditEmail}
-              placeholder="Enter your email"
-              placeholderTextColor={theme.colors.textSecondary}
+              mode="outlined"
               keyboardType="email-address"
               autoCapitalize="none"
+              style={styles.dialogInput}
             />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setShowEditProfile(false)} disabled={editLoading}>
+              Cancel
+            </Button>
+            <Button onPress={handleEditProfile} loading={editLoading} disabled={editLoading}>
+              Save
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setShowEditProfile(false)}
-                disabled={editLoading}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.saveButton]}
-                onPress={handleEditProfile}
-                disabled={editLoading}
-              >
-                {editLoading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.saveButtonText}>Save</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Change Password Modal */}
-      <Modal
-        visible={showChangePassword}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowChangePassword(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Change Password</Text>
-
-            <Text style={styles.inputLabel}>Current Password</Text>
-            <TextInput
-              style={styles.input}
+      {/* Change Password Dialog */}
+      <Portal>
+        <Dialog
+          visible={showChangePassword}
+          onDismiss={() => {
+            setShowChangePassword(false);
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+          }}
+        >
+          <Dialog.Title>Change Password</Dialog.Title>
+          <Dialog.Content>
+            <PaperTextInput
+              label="Current Password"
               value={currentPassword}
               onChangeText={setCurrentPassword}
-              placeholder="Enter current password"
-              placeholderTextColor={theme.colors.textSecondary}
+              mode="outlined"
               secureTextEntry
+              style={styles.dialogInput}
             />
-
-            <Text style={styles.inputLabel}>New Password</Text>
-            <TextInput
-              style={styles.input}
+            <PaperTextInput
+              label="New Password"
               value={newPassword}
               onChangeText={setNewPassword}
-              placeholder="Enter new password"
-              placeholderTextColor={theme.colors.textSecondary}
+              mode="outlined"
               secureTextEntry
+              style={styles.dialogInput}
             />
-
-            <Text style={styles.inputLabel}>Confirm New Password</Text>
-            <TextInput
-              style={styles.input}
+            <PaperTextInput
+              label="Confirm New Password"
               value={confirmPassword}
               onChangeText={setConfirmPassword}
-              placeholder="Confirm new password"
-              placeholderTextColor={theme.colors.textSecondary}
+              mode="outlined"
               secureTextEntry
+              style={styles.dialogInput}
             />
-
-            <Text style={styles.passwordHint}>
+            <Text variant="bodySmall" style={styles.passwordHint}>
               Password must be at least 8 characters and contain uppercase, lowercase, and numbers
             </Text>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => {
-                  setShowChangePassword(false);
-                  setCurrentPassword('');
-                  setNewPassword('');
-                  setConfirmPassword('');
-                }}
-                disabled={passwordLoading}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.saveButton]}
-                onPress={handleChangePassword}
-                disabled={passwordLoading}
-              >
-                {passwordLoading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.saveButtonText}>Change</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button
+              onPress={() => {
+                setShowChangePassword(false);
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+              }}
+              disabled={passwordLoading}
+            >
+              Cancel
+            </Button>
+            <Button onPress={handleChangePassword} loading={passwordLoading} disabled={passwordLoading}>
+              Change
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </SafeAreaView>
   );
 }
@@ -946,15 +947,7 @@ const createStyles = (colors: any, isDark: boolean) =>
       marginTop: 8,
     },
     actionButton: {
-      backgroundColor: colors.primary,
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 8,
-    },
-    actionButtonText: {
-      color: '#fff',
-      fontSize: 13,
-      fontWeight: '600',
+      // Paper Button handles styling
     },
     statsGrid: {
       flexDirection: 'row',
@@ -964,21 +957,9 @@ const createStyles = (colors: any, isDark: boolean) =>
     },
     statCard: {
       width: '30%',
-      backgroundColor: colors.cardBackground,
-      borderRadius: 12,
-      padding: 16,
+    },
+    statCardContent: {
       alignItems: 'center',
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadowColor,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isDark ? 0.3 : 0.1,
-          shadowRadius: 4,
-        },
-        android: {
-          elevation: 2,
-        },
-      }),
     },
     statValue: {
       fontSize: 24,
@@ -1005,20 +986,6 @@ const createStyles = (colors: any, isDark: boolean) =>
     insightsCard: {
       marginHorizontal: 16,
       marginBottom: 16,
-      backgroundColor: colors.cardBackground,
-      borderRadius: 12,
-      padding: 16,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadowColor,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isDark ? 0.3 : 0.1,
-          shadowRadius: 4,
-        },
-        android: {
-          elevation: 2,
-        },
-      }),
     },
     insightRow: {
       flexDirection: 'row',
@@ -1037,20 +1004,6 @@ const createStyles = (colors: any, isDark: boolean) =>
     flavorProfileCard: {
       marginHorizontal: 16,
       marginBottom: 16,
-      backgroundColor: colors.cardBackground,
-      borderRadius: 12,
-      padding: 16,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadowColor,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isDark ? 0.3 : 0.1,
-          shadowRadius: 4,
-        },
-        android: {
-          elevation: 2,
-        },
-      }),
     },
     flavorDescription: {
       fontSize: 13,
@@ -1071,16 +1024,7 @@ const createStyles = (colors: any, isDark: boolean) =>
       marginBottom: 8,
     },
     flavorBar: {
-      height: 8,
-      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-      borderRadius: 4,
-      overflow: 'hidden',
       marginBottom: 4,
-    },
-    flavorBarFill: {
-      height: '100%',
-      backgroundColor: colors.primary,
-      borderRadius: 4,
     },
     flavorAttributeValue: {
       fontSize: 12,
@@ -1097,21 +1041,7 @@ const createStyles = (colors: any, isDark: boolean) =>
       marginBottom: 16,
     },
     reviewCard: {
-      backgroundColor: colors.cardBackground,
-      borderRadius: 12,
-      padding: 16,
       marginBottom: 12,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadowColor,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isDark ? 0.3 : 0.1,
-          shadowRadius: 4,
-        },
-        android: {
-          elevation: 2,
-        },
-      }),
     },
     reviewHeader: {
       flexDirection: 'row',
@@ -1138,12 +1068,7 @@ const createStyles = (colors: any, isDark: boolean) =>
       textTransform: 'capitalize',
     },
     deleteButton: {
-      padding: 8,
-      borderRadius: 8,
-      backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)',
-    },
-    deleteButtonText: {
-      fontSize: 18,
+      // Paper IconButton handles styling
     },
     reviewNotes: {
       fontSize: 14,
@@ -1165,76 +1090,11 @@ const createStyles = (colors: any, isDark: boolean) =>
       color: colors.textSecondary,
     },
 
-    // Modal styles
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    modalContent: {
-      backgroundColor: colors.card,
-      borderRadius: 16,
-      padding: 24,
-      width: '85%',
-      maxWidth: 400,
-    },
-    modalTitle: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      color: colors.text,
-      marginBottom: 20,
-      textAlign: 'center',
-    },
-    inputLabel: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: colors.text,
-      marginBottom: 8,
-      marginTop: 8,
-    },
-    input: {
-      backgroundColor: colors.background,
-      borderRadius: 8,
-      padding: 12,
-      fontSize: 16,
-      color: colors.text,
-      borderWidth: 1,
-      borderColor: colors.border,
+    // Dialog styles
+    dialogInput: {
+      marginBottom: 12,
     },
     passwordHint: {
-      fontSize: 12,
-      color: colors.textSecondary,
       marginTop: 8,
-      fontStyle: 'italic',
-    },
-    modalButtons: {
-      flexDirection: 'row',
-      gap: 12,
-      marginTop: 24,
-    },
-    modalButton: {
-      flex: 1,
-      paddingVertical: 12,
-      borderRadius: 8,
-      alignItems: 'center',
-    },
-    cancelButton: {
-      backgroundColor: colors.background,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    cancelButtonText: {
-      color: colors.text,
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    saveButton: {
-      backgroundColor: colors.primary,
-    },
-    saveButtonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: '600',
     },
   });
