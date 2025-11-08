@@ -241,7 +241,265 @@ export const calculateSimilarityScore = (
 };
 
 /**
- * Get personalized oyster recommendations
+ * Find similar users based on review patterns
+ *
+ * Uses cosine similarity on shared oyster ratings.
+ *
+ * @param userId - Target user UUID
+ * @param limit - Number of similar users to return
+ * @returns Array of user IDs with similarity scores
+ */
+export const findSimilarUsers = async (
+  userId: string,
+  limit: number = 10
+): Promise<Array<{ userId: string; similarity: number }>> => {
+  try {
+    // Get target user's reviews
+    const userReviews = await prisma.review.findMany({
+      where: { userId },
+      select: { oysterId: true, rating: true },
+    });
+
+    if (userReviews.length < 3) {
+      return []; // Need at least 3 reviews for meaningful comparison
+    }
+
+    // Create rating map for target user
+    const userRatingMap = new Map<string, number>();
+    userReviews.forEach((r) => {
+      const score = r.rating === 'LOVE_IT' ? 5 : r.rating === 'LIKE_IT' ? 4 : r.rating === 'OKAY' ? 3 : r.rating === 'MEH' ? 2 : 1;
+      userRatingMap.set(r.oysterId, score);
+    });
+
+    const oysterIds = Array.from(userRatingMap.keys());
+
+    // Find other users who reviewed same oysters
+    const otherUsersReviews = await prisma.review.findMany({
+      where: {
+        oysterId: { in: oysterIds },
+        userId: { not: userId },
+      },
+      select: { userId: true, oysterId: true, rating: true },
+    });
+
+    // Group by user
+    const userMap = new Map<string, Map<string, number>>();
+    otherUsersReviews.forEach((r) => {
+      if (!r.userId) return; // Skip if userId is null
+      if (!userMap.has(r.userId)) {
+        userMap.set(r.userId, new Map());
+      }
+      const score = r.rating === 'LOVE_IT' ? 5 : r.rating === 'LIKE_IT' ? 4 : r.rating === 'OKAY' ? 3 : r.rating === 'MEH' ? 2 : 1;
+      userMap.get(r.userId)!.set(r.oysterId, score);
+    });
+
+    // Calculate cosine similarity with each user
+    const similarities: Array<{ userId: string; similarity: number }> = [];
+
+    userMap.forEach((otherUserRatings, otherUserId) => {
+      // Find common oysters
+      const commonOysters = oysterIds.filter((id) => otherUserRatings.has(id));
+
+      if (commonOysters.length < 2) return; // Need at least 2 common reviews
+
+      // Calculate cosine similarity
+      let dotProduct = 0;
+      let userMagnitude = 0;
+      let otherMagnitude = 0;
+
+      commonOysters.forEach((oysterId) => {
+        const userRating = userRatingMap.get(oysterId)!;
+        const otherRating = otherUserRatings.get(oysterId)!;
+
+        dotProduct += userRating * otherRating;
+        userMagnitude += userRating * userRating;
+        otherMagnitude += otherRating * otherRating;
+      });
+
+      const magnitude = Math.sqrt(userMagnitude) * Math.sqrt(otherMagnitude);
+      const similarity = magnitude > 0 ? dotProduct / magnitude : 0;
+
+      if (similarity > 0.5) {
+        // Only include users with >50% similarity
+        similarities.push({ userId: otherUserId, similarity });
+      }
+    });
+
+    // Sort by similarity (descending)
+    similarities.sort((a, b) => b.similarity - a.similarity);
+
+    return similarities.slice(0, limit);
+  } catch (error) {
+    logger.error('Error finding similar users:', error);
+    return [];
+  }
+};
+
+/**
+ * Get collaborative filtering recommendations
+ *
+ * Finds oysters that similar users liked but target user hasn't tried.
+ *
+ * @param userId - User UUID
+ * @param limit - Number of recommendations to return
+ * @returns Array of recommended oysters with collaborative scores
+ */
+export const getCollaborativeRecommendations = async (
+  userId: string,
+  limit: number = 10
+): Promise<any[]> => {
+  try {
+    const similarUsers = await findSimilarUsers(userId, 20);
+
+    if (similarUsers.length === 0) {
+      return [];
+    }
+
+    // Get target user's reviewed oysters (to exclude)
+    const reviewedOysterIds = await prisma.review
+      .findMany({
+        where: { userId },
+        select: { oysterId: true },
+      })
+      .then((reviews) => reviews.map((r) => r.oysterId));
+
+    // Get oysters liked by similar users
+    const similarUserIds = similarUsers.map((u) => u.userId);
+    const similarityMap = new Map(similarUsers.map((u) => [u.userId, u.similarity]));
+
+    const likedByOthers = await prisma.review.findMany({
+      where: {
+        userId: { in: similarUserIds },
+        rating: { in: ['LIKE_IT', 'LOVE_IT'] },
+        oysterId: { notIn: reviewedOysterIds },
+      },
+      include: {
+        oyster: true,
+      },
+    });
+
+    // Score each oyster by weighted sum of similar users' ratings
+    const oysterScores = new Map<string, { oyster: any; score: number; count: number }>();
+
+    likedByOthers.forEach((review) => {
+      if (!review.userId) return; // Skip if userId is null
+      const userSimilarity = similarityMap.get(review.userId) || 0;
+      const ratingWeight = review.rating === 'LOVE_IT' ? 2 : 1;
+      const score = userSimilarity * ratingWeight;
+
+      if (oysterScores.has(review.oysterId)) {
+        const existing = oysterScores.get(review.oysterId)!;
+        existing.score += score;
+        existing.count += 1;
+      } else {
+        oysterScores.set(review.oysterId, {
+          oyster: review.oyster,
+          score,
+          count: 1,
+        });
+      }
+    });
+
+    // Convert to array and sort by score
+    const recommendations = Array.from(oysterScores.values())
+      .map((item) => ({
+        ...item.oyster,
+        collaborativeScore: item.score,
+        similarUserCount: item.count,
+        reason: 'collaborative',
+      }))
+      .sort((a, b) => b.collaborativeScore - a.collaborativeScore)
+      .slice(0, limit);
+
+    logger.info(
+      `Generated ${recommendations.length} collaborative recommendations for user ${userId}`
+    );
+
+    return recommendations;
+  } catch (error) {
+    logger.error('Error getting collaborative recommendations:', error);
+    return [];
+  }
+};
+
+/**
+ * Get hybrid recommendations (attribute + collaborative)
+ *
+ * Combines attribute-based and collaborative filtering approaches.
+ *
+ * @param userId - User UUID
+ * @param limit - Number of recommendations to return
+ * @returns Array of recommended oysters with hybrid scores
+ */
+export const getHybridRecommendations = async (
+  userId: string,
+  limit: number = 10
+): Promise<any[]> => {
+  try {
+    // Get both types of recommendations
+    const [attributeBased, collaborative] = await Promise.all([
+      getRecommendations(userId, limit * 2),
+      getCollaborativeRecommendations(userId, limit * 2),
+    ]);
+
+    // Create combined map with normalized scores
+    const oysterMap = new Map<string, any>();
+
+    // Normalize attribute scores (0-1)
+    attributeBased.forEach((oyster) => {
+      const normalizedSimilarity = oyster.similarity ? oyster.similarity / 100 : 0;
+      oysterMap.set(oyster.id, {
+        ...oyster,
+        attributeScore: normalizedSimilarity,
+        collaborativeScore: 0,
+        hybridScore: normalizedSimilarity * 0.6, // 60% weight for attributes
+      });
+    });
+
+    // Add collaborative scores (normalize and weight)
+    if (collaborative.length > 0) {
+      const maxCollabScore = Math.max(...collaborative.map((o) => o.collaborativeScore));
+
+      collaborative.forEach((oyster) => {
+        const normalizedCollab = oyster.collaborativeScore / maxCollabScore;
+
+        if (oysterMap.has(oyster.id)) {
+          // Oyster in both lists - combine scores
+          const existing = oysterMap.get(oyster.id);
+          existing.collaborativeScore = normalizedCollab;
+          existing.hybridScore = existing.attributeScore * 0.6 + normalizedCollab * 0.4;
+          existing.reason = 'hybrid';
+        } else {
+          // Only in collaborative list
+          oysterMap.set(oyster.id, {
+            ...oyster,
+            attributeScore: 0,
+            collaborativeScore: normalizedCollab,
+            hybridScore: normalizedCollab * 0.4, // 40% weight for collaborative only
+            reason: 'collaborative',
+          });
+        }
+      });
+    }
+
+    // Sort by hybrid score
+    const recommendations = Array.from(oysterMap.values())
+      .sort((a, b) => b.hybridScore - a.hybridScore)
+      .slice(0, limit);
+
+    logger.info(
+      `Generated ${recommendations.length} hybrid recommendations for user ${userId}`
+    );
+
+    return recommendations;
+  } catch (error) {
+    logger.error('Error getting hybrid recommendations:', error);
+    return [];
+  }
+};
+
+/**
+ * Get personalized oyster recommendations (attribute-based)
  *
  * @param userId - User UUID
  * @param limit - Number of recommendations to return (default 10)

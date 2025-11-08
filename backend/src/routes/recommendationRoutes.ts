@@ -1,34 +1,39 @@
 /**
  * Recommendation Routes
  *
- * Provides personalized oyster recommendations based on user preferences.
+ * Provides personalized oyster recommendations using multiple algorithms.
  *
  * Routes:
- * - GET /api/recommendations - Get personalized recommendations
+ * - GET /api/recommendations - Attribute-based recommendations (default)
+ * - GET /api/recommendations/collaborative - Collaborative filtering
+ * - GET /api/recommendations/hybrid - Hybrid approach (60% attribute + 40% collaborative)
+ * - GET /api/recommendations/similar-users - Find users with similar taste
  *
  * Requirements:
  * - User must be authenticated
- * - User must have at least 1 positive review (LOVE_IT or LIKE_IT)
+ * - Collaborative filtering requires 3+ reviews
  *
- * Algorithm:
- * - Analyzes user's highly-rated reviews
- * - Calculates preferred attribute profile
- * - Finds similar oysters via Euclidean distance
- * - Returns top 10 matches with similarity scores
- *
- * Response includes:
- * - Similarity score (0-100)
- * - Match reason (e.g., "Similar size and flavor")
- * - Oyster details with community ratings
+ * Algorithms:
+ * 1. Attribute-based: Euclidean distance on flavor profile
+ * 2. Collaborative: Cosine similarity on review patterns
+ * 3. Hybrid: Weighted combination of both
  */
 
 import express from 'express';
-import { getUserRecommendations } from '../controllers/recommendationController';
+import {
+  getUserRecommendations,
+  getCollaborativeRecommendationsHandler,
+  getHybridRecommendationsHandler,
+  getSimilarUsersHandler,
+} from '../controllers/recommendationController';
 import { authenticate } from '../middleware/auth';
 
 const router = express.Router();
 
-// Protected route - requires authentication
+// Protected routes - all require authentication
 router.get('/', authenticate, getUserRecommendations);
+router.get('/collaborative', authenticate, getCollaborativeRecommendationsHandler);
+router.get('/hybrid', authenticate, getHybridRecommendationsHandler);
+router.get('/similar-users', authenticate, getSimilarUsersHandler);
 
 export default router;
