@@ -19,6 +19,7 @@ import {
   Banner,
   Button,
   Appbar,
+  Surface,
 } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { OysterListScreenNavigationProp } from '../navigation/types';

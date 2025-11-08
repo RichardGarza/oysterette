@@ -442,9 +442,8 @@ export default function OysterListScreen() {
           style={styles.logo}
           resizeMode="contain"
         />
-      </View>
 
-      <View style={styles.segmentedContainer}>
+        <View style={styles.segmentedContainer}>
           <SegmentedButtons
             value={showFavoritesOnly ? 'favorites' : 'all'}
             onValueChange={(value) => setShowFavoritesOnly(value === 'favorites')}
@@ -601,6 +600,14 @@ const createStyles = (colors: any, isDark: boolean) =>
       width: SIZES.LOGO_WIDTH,
       height: SIZES.LOGO_HEIGHT,
       alignSelf: 'center',
+      marginBottom: SPACING.MARGIN_BOTTOM_LARGE,
+    },
+    logoSmall: {
+      width: SIZES.LOGO_WIDTH,
+      height: SIZES.LOGO_HEIGHT,
+      marginLeft: SPACING.PADDING_MEDIUM,
+    },
+    segmentedContainer: {
       marginBottom: SPACING.MARGIN_BOTTOM_LARGE,
     },
     topRow: {
