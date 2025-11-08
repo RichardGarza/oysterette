@@ -458,7 +458,556 @@ similarity = ((maxDistance - euclideanDistance) / maxDistance) * 100;
 
 ---
 
-### Phase 14: Photo Upload System 📋
+## 🚨 Phase 14: Production Testing & Critical Bug Fixes 📋
+
+**Status:** PLANNED (Next Session)
+**Estimated Time:** 12-16 hours total
+**Priority:** CRITICAL (Must complete before App Store submission)
+**Test Build Date:** November 7, 2025
+
+**Context:** Issues discovered during production build testing. These must be addressed systematically before public release.
+
+---
+
+### 14.1: Logo & Branding Updates 🎨
+
+**Time:** 45 minutes
+**Priority:** HIGH
+
+**Issues Found:**
+- "Oysterette" text in header should be replaced with logo image
+- New logo file already swapped in `assets/logo.png`
+- Logo on homescreen should be larger
+- Back button still showing on homepage (needs verification/fix)
+
+**Tasks:**
+- [ ] Replace text "Oysterette" in OysterListScreen header with logo image
+- [ ] Position logo between back button and settings gear icon
+- [ ] Use new logo from `assets/logo.png`
+- [ ] Increase logo size on HomeScreen
+- [ ] Verify back button removal on HomeScreen (was supposedly done before)
+- [ ] Test on both iOS and Android
+
+**Files to Modify:**
+- `mobile-app/src/screens/OysterListScreen.tsx`
+- `mobile-app/src/screens/HomeScreen.tsx`
+
+---
+
+### 14.2: Review System Overhaul 🔄
+
+**Time:** 4-5 hours
+**Priority:** CRITICAL
+
+**Issues Found:**
+- Login required to submit reviews (should allow anonymous)
+- Camera permissions requested immediately on "Add Review" (should only trigger when adding photos)
+- Photo crop step is annoying (should be removed)
+- Photo uploads failing (both review photos and profile photos)
+- No limit on photos per review (should be 1 max)
+- Page doesn't auto-refresh after review submission
+- Flavor attributes default to 5 instead of oyster's existing values
+
+**Tasks:**
+
+**Anonymous Review Flow:**
+- [ ] Remove login requirement check from AddReviewScreen
+- [ ] Add temporary review storage (AsyncStorage or state)
+- [ ] Update "Login Required" popup with new options:
+  - "Sign In to Save to Profile"
+  - "Sign Up to Save to Profile"
+  - "Just Post Review" (anonymous)
+- [ ] After successful login/signup, post the stored review
+- [ ] Show "Review posted!" confirmation
+- [ ] Navigate back to oyster detail screen
+- [ ] Auto-refresh oyster with new review visible
+
+**Photo System Fixes:**
+- [ ] Move camera permission request to photo button press (not screen mount)
+- [ ] Remove `allowsEditing: true` from ImagePicker config (eliminates crop)
+- [ ] Limit to 1 photo per review (hide add photo button after 1 selected)
+- [ ] Debug and fix photo upload failures:
+  - Check FormData format
+  - Check API endpoint (`/api/upload/image`)
+  - Check file size limits
+  - Check content-type headers
+  - Test on both platforms
+- [ ] Fix profile photo upload (same debugging approach)
+
+**Pre-populate Flavor Attributes:**
+- [ ] Fetch oyster data before showing AddReviewScreen
+- [ ] Set initial slider values to oyster's existing attributes:
+  - size → oyster.avgSize
+  - body → oyster.avgBody
+  - sweetBrininess → oyster.avgSweetBrininess
+  - flavorfulness → oyster.avgFlavorfulness
+  - creaminess → oyster.avgCreaminess
+- [ ] Fallback to 5 if oyster has no reviews yet
+
+**Auto-refresh After Submission:**
+- [ ] After successful review POST, trigger oyster detail refresh
+- [ ] Update reviews list without manual pull-to-refresh
+- [ ] Scroll to new review (optional enhancement)
+
+**Files to Modify:**
+- `mobile-app/src/screens/AddReviewScreen.tsx`
+- `mobile-app/src/screens/OysterDetailScreen.tsx`
+- `mobile-app/src/services/api.ts` (photo upload debugging)
+
+---
+
+### 14.3: Navigation & Back Button Behavior 🔙
+
+**Time:** 1-2 hours
+**Priority:** HIGH
+
+**Issues Found:**
+- Swiping back from Favorites exits the app (should go to homepage)
+- Need "Exit app?" confirmation when pressing back on homepage
+
+**Tasks:**
+- [ ] Audit all screen navigation flows
+- [ ] Ensure all "back" actions eventually lead to HomeScreen
+- [ ] Add back handler to HomeScreen:
+  - Show Alert: "Exit Oysterette?"
+  - Options: "Stay" (cancel), "Exit" (BackHandler.exitApp())
+- [ ] Fix Favorites screen navigation to return to home
+- [ ] Test swipe-back gesture on iOS
+- [ ] Test hardware back button on Android
+
+**Implementation Notes:**
+```typescript
+// HomeScreen.tsx
+useEffect(() => {
+  const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+    Alert.alert('Exit Oysterette?', 'Are you sure you want to exit?', [
+      { text: 'Stay', style: 'cancel' },
+      { text: 'Exit', onPress: () => BackHandler.exitApp() },
+    ]);
+    return true; // Prevent default back behavior
+  });
+  return () => backHandler.remove();
+}, []);
+```
+
+**Files to Modify:**
+- `mobile-app/src/screens/HomeScreen.tsx`
+- `mobile-app/App.tsx` (navigation structure review)
+
+---
+
+### 14.4: Rating & Recommendation Logic Enhancements 📊
+
+**Time:** 2-3 hours
+**Priority:** HIGH
+
+**Issues Found:**
+- All recommended oysters show "5 stars with no reviews" (incorrect)
+- Overall Rating should be hidden until oyster has reviews
+- Favorited oysters should have more weight in flavor profile calculation
+- Top Oysters screen should show numeric rating (e.g., "3.5") next to stars
+
+**Tasks:**
+
+**Fix Overall Rating Display:**
+- [ ] Update OysterCard component to check `reviewCount > 0`
+- [ ] If no reviews, show "No ratings yet" instead of rating
+- [ ] Update RecommendedCard component (same logic)
+- [ ] Ensure backend returns `reviewCount` in recommendations
+
+**Weight Favorited Oysters:**
+- [ ] Update baseline calculation to detect if reviewed oyster is favorited
+- [ ] Apply 1.5x weight to favorited oyster attributes in moving average
+- [ ] Formula: `newBaseline = currentBaseline * 0.7 + (reviewAttribute * 1.5) * 0.3` (if favorited)
+- [ ] Document in recommendationService.ts
+
+**Show Numeric Rating on Top Oysters:**
+- [ ] Update TopOystersScreen card to show "3.5 ⭐⭐⭐✨" format
+- [ ] Position numeric rating to left of stars
+- [ ] Use `avgRating.toFixed(1)` for display
+
+**Files to Modify:**
+- `mobile-app/src/components/OysterCard.tsx` (or wherever cards are)
+- `mobile-app/src/screens/TopOystersScreen.tsx`
+- `backend/src/services/recommendationService.ts`
+
+---
+
+### 14.5: Filter & Search Algorithm Improvements 🔍
+
+**Time:** 2-3 hours
+**Priority:** HIGH
+
+**Issues Found:**
+- Selecting "Sweet" filter returns no oysters
+- "Briny" and "Small" filters also return no results
+- Filters should show closest matches, not just perfect matches
+- Size filters should work as: small=1-5, big=5-10 (5 should appear in both)
+
+**Tasks:**
+
+**Fuzzy Filter Matching:**
+- [ ] Change filter logic from exact match to range-based matching
+- [ ] For attribute filters, use ±2 range from selected value
+  - Example: "Sweet" (value 2) → show oysters with sweetBrininess 1-4
+  - Example: "Briny" (value 8) → show oysters with sweetBrininess 6-10
+- [ ] Sort results by closeness to target value
+- [ ] Always return top 20 closest matches (don't return empty)
+
+**Size Filter Fix:**
+- [ ] Small filter: avgSize 1-5 (inclusive)
+- [ ] Medium filter: avgSize 4-6 (inclusive, overlaps)
+- [ ] Large filter: avgSize 5-10 (inclusive, overlaps)
+- [ ] Size 5 oysters appear in Small, Medium, and Large filters
+
+**Clear Filters on Search:**
+- [ ] When user types in search box, auto-clear all active filters
+- [ ] Show toast/message: "Filters cleared"
+- [ ] Reset filter UI to default state
+
+**Backend Updates:**
+- [ ] Update `getAllOysters` controller filter logic
+- [ ] Add range queries instead of exact matches
+- [ ] Add sorting by distance from filter target
+- [ ] Document filter ranges in comments
+
+**Files to Modify:**
+- `backend/src/controllers/oysterController.ts`
+- `mobile-app/src/screens/OysterListScreen.tsx`
+
+---
+
+### 14.6: Dark Mode & Theme Fixes 🌓
+
+**Time:** 1 hour
+**Priority:** MEDIUM
+
+**Issues Found:**
+- Review Oyster screen (AddReviewScreen?) not respecting dark mode
+- Top Oysters screen not respecting dark mode
+- Light mode: placeholder text "Share your thoughts..." is white on light grey (unreadable)
+
+**Tasks:**
+- [ ] Audit AddReviewScreen for theme usage
+  - Ensure `useTheme()` hook is called
+  - Use `theme.colors.text` for all text
+  - Use `theme.colors.background` for backgrounds
+  - Check TextInput placeholderTextColor
+- [ ] Audit TopOystersScreen for theme usage (same checks)
+- [ ] Fix placeholder text in light mode:
+  - Change from hardcoded white to `theme.colors.textSecondary`
+  - Or use `placeholderTextColor={theme.colors.textTertiary}`
+- [ ] Test both light and dark mode on all affected screens
+
+**Files to Modify:**
+- `mobile-app/src/screens/AddReviewScreen.tsx`
+- `mobile-app/src/screens/TopOystersScreen.tsx`
+- `mobile-app/src/context/ThemeContext.tsx` (add textTertiary color if needed)
+
+---
+
+### 14.7: Badge System Enhancement 🏆
+
+**Time:** 2-3 hours
+**Priority:** MEDIUM
+
+**Issues Found:**
+- Badge system exists but logic/levels are unclear
+- Need to define what "Trusted Badge" means
+- Want level-up popup notifications
+
+**Tasks:**
+
+**Define Badge Levels & Criteria:**
+- [ ] Document badge system in ROADMAP.md:
+  ```
+  Badge Levels:
+  - 🌟 Novice: 0-9 reviews OR credibility < 1.0
+  - ⭐ Trusted: 10-49 reviews AND credibility 1.0-1.4
+  - 🏆 Expert: 50+ reviews AND credibility 1.5+
+
+  Credibility Score:
+  - Starts at 1.0 (neutral)
+  - Increases when your reviews get "Agree" votes
+  - Decreases when your reviews get "Disagree" votes
+  - Range: 0.5 (low) to 2.0 (high)
+  ```
+- [ ] Update badge calculation logic in userController.ts
+- [ ] Add `reviewCount` check to badge determination
+- [ ] Update badge display to show progress to next level
+
+**Level-Up Popup Notifications:**
+- [ ] Add badge level to user state/storage
+- [ ] After each review submission, check if badge level changed
+- [ ] If changed, show celebratory Alert:
+  ```typescript
+  Alert.alert(
+    '🎉 Badge Upgrade!',
+    'You've earned the Trusted Badge! Keep reviewing to become an Expert.',
+    [{ text: 'Awesome!', style: 'default' }]
+  );
+  ```
+- [ ] Consider adding confetti animation (optional)
+- [ ] Track last known badge level in AsyncStorage
+
+**Files to Modify:**
+- `backend/src/controllers/userController.ts` (badge logic)
+- `mobile-app/src/screens/AddReviewScreen.tsx` (level-up check)
+- `mobile-app/src/screens/ProfileScreen.tsx` (badge display)
+- `ROADMAP.md` (document badge criteria)
+
+---
+
+### 14.8: Rating Scale Update 🎭
+
+**Time:** 30 minutes
+**Priority:** LOW
+
+**Issues Found:**
+- "Whatever" rating is confusing
+- Should be "Okay" instead
+
+**Tasks:**
+- [ ] Update rating enum in backend:
+  ```typescript
+  enum Rating {
+    LOVE_IT = 'LOVE_IT',
+    LIKE_IT = 'LIKE_IT',
+    OKAY = 'OKAY',      // Changed from WHATEVER
+    MEH = 'MEH'
+  }
+  ```
+- [ ] Update Prisma schema if enum is defined there
+- [ ] Run Prisma migration to update database
+- [ ] Update mobile app rating options:
+  - Display: "Love it", "Like it", "Okay", "Meh"
+- [ ] Update rating utils (getAttributeDescriptor, etc.)
+- [ ] Update all screens that display ratings
+
+**Files to Modify:**
+- `backend/prisma/schema.prisma`
+- `backend/src/types/*.ts` (rating types)
+- `mobile-app/src/types/Oyster.ts`
+- `mobile-app/src/screens/AddReviewScreen.tsx`
+- `mobile-app/src/utils/ratingUtils.ts`
+
+---
+
+### 14.9: Navigation Menu Redesign 🍔
+
+**Time:** 2 hours
+**Priority:** MEDIUM
+
+**Issues Found:**
+- Settings gear icon should be hamburger menu
+- Need dropdown menu with: My Profile, Settings, Log Out
+- Homescreen needs "My Profile" link
+- Remove standalone "Log Out" button from homescreen
+
+**Tasks:**
+
+**Hamburger Menu Implementation:**
+- [ ] Replace settings gear IconButton with hamburger menu icon (☰)
+- [ ] Implement dropdown/modal menu with 3 options:
+  - "My Profile" → navigate to ProfileScreen
+  - "Settings" → navigate to SettingsScreen
+  - "Log Out" → show confirmation, then logout
+- [ ] Use React Native Paper Menu component:
+  ```typescript
+  <Menu
+    visible={menuVisible}
+    onDismiss={() => setMenuVisible(false)}
+    anchor={<IconButton icon="menu" onPress={() => setMenuVisible(true)} />}
+  >
+    <Menu.Item onPress={() => navigate('Profile')} title="My Profile" leadingIcon="account" />
+    <Menu.Item onPress={() => navigate('Settings')} title="Settings" leadingIcon="cog" />
+    <Divider />
+    <Menu.Item onPress={handleLogout} title="Log Out" leadingIcon="logout" />
+  </Menu>
+  ```
+
+**Homescreen Updates:**
+- [ ] Add "My Profile" button/card to homescreen (when logged in)
+- [ ] Remove standalone "Log Out" button
+- [ ] Adjust layout for better balance (recommendations take up less space)
+
+**Files to Modify:**
+- `mobile-app/src/screens/OysterListScreen.tsx` (hamburger menu)
+- `mobile-app/src/screens/HomeScreen.tsx` (My Profile link, remove Log Out)
+
+---
+
+### 14.10: Profile Enhancements - Clickable Stats 📊
+
+**Time:** 2-3 hours
+**Priority:** MEDIUM
+
+**Issues Found:**
+- Profile stat cards should be clickable buttons
+- "X reviews" should show all user reviews
+- "Votes received" should show reviews with votes
+- "X favorites" should show user favorites
+- Recent reviews section is redundant once "X reviews" is clickable
+
+**Tasks:**
+
+**Make Stat Cards Clickable:**
+- [ ] Convert stat cards to `<Card onPress={...}>` components
+- [ ] "X reviews" card → navigate to UserReviewsScreen (new screen)
+  - Show all user reviews, most recent first
+  - Include oyster name, rating, date, votes
+  - Allow navigation to oyster detail
+  - Pull-to-refresh support
+- [ ] "Votes received" card → navigate to UserReviewsScreen with filter
+  - Same screen, filtered to reviews with votes > 0
+  - Sorted by total votes (agree + disagree) descending
+- [ ] "X favorites" card → navigate to FavoritesScreen
+  - Reuse existing favorites functionality
+  - Or create dedicated "My Favorites" view
+
+**Reorder Stat Cards:**
+- [ ] Top row: Reviews, Favorites, Badge (clickable/info)
+- [ ] Bottom row: Votes Received, Avg Rating, Streak (info only)
+- [ ] Update grid layout to reflect new order
+
+**Remove/Reconsider Recent Reviews:**
+- [ ] Remove "Recent Reviews" section from ProfileScreen
+- [ ] Or keep as "Quick View" with "See All" button
+- [ ] User testing needed to decide
+
+**New Screen: UserReviewsScreen:**
+- [ ] Create new screen showing all user reviews
+- [ ] Pagination or infinite scroll
+- [ ] Filter support (all reviews vs voted reviews)
+- [ ] Sort options (most recent, most votes, highest rated)
+- [ ] Pull-to-refresh
+
+**Files to Modify:**
+- `mobile-app/src/screens/ProfileScreen.tsx`
+- `mobile-app/src/screens/UserReviewsScreen.tsx` (new file)
+- `mobile-app/App.tsx` (add new route)
+
+---
+
+### 14.11: Email Verification System 📧
+
+**Time:** 3-4 hours
+**Priority:** MEDIUM
+
+**Issues Found:**
+- Users can change email freely (security risk)
+- SSO users (Google/Apple) shouldn't be able to change email
+- Need email verification before locking email changes
+
+**Tasks:**
+
+**Backend Updates:**
+- [ ] Add database fields:
+  - `emailVerified: boolean` (default false)
+  - `emailVerificationToken: string?`
+  - `authProvider: enum { 'local', 'google', 'apple' }`
+- [ ] Create email verification endpoint: `POST /api/auth/verify-email`
+- [ ] Create resend verification endpoint: `POST /api/auth/resend-verification`
+- [ ] Email sending service (use Railway SMTP or SendGrid)
+- [ ] Verification email template
+
+**Update Profile Endpoint:**
+- [ ] Block email changes if `authProvider !== 'local'`
+- [ ] Block email changes if `emailVerified === true`
+- [ ] Allow email changes if `emailVerified === false` (typo fix window)
+- [ ] Send new verification email if email is changed
+
+**Mobile Updates:**
+- [ ] Show verification status in ProfileScreen
+- [ ] If email not verified, show banner: "Verify your email"
+- [ ] Add "Resend verification email" button
+- [ ] Disable email field in EditProfile if:
+  - User has Google/Apple login, OR
+  - Email is already verified
+- [ ] Show tooltip explaining why email can't be changed
+
+**Email Flow:**
+1. User registers with email → verification email sent
+2. User clicks link → `emailVerified` set to true
+3. Email is now locked from changes
+4. SSO users have `emailVerified = true` automatically
+
+**Files to Modify:**
+- `backend/prisma/schema.prisma` (add fields)
+- `backend/src/controllers/authController.ts` (verification endpoints)
+- `backend/src/services/emailService.ts` (new file)
+- `backend/src/controllers/userController.ts` (updateProfile restrictions)
+- `mobile-app/src/screens/ProfileScreen.tsx` (verification UI)
+
+---
+
+### 14.12: UI Polish & Visual Fixes 🎨
+
+**Time:** 1-2 hours
+**Priority:** LOW
+
+**Issues Found:**
+- Recommended cards: bottom corners cut off, shadows clipped
+- Heart icon (favorite button) is not good
+- Arrow icons inconsistent between screens
+- Transition screen feels cheesy (remove it)
+
+**Tasks:**
+
+**Fix Recommended Cards:**
+- [ ] Add bottom padding/margin to RecommendedCard container
+- [ ] Ensure shadow/elevation not clipped by parent
+- [ ] Check `overflow: 'visible'` on parent container
+- [ ] Test on both iOS and Android
+
+**Replace Heart Icon:**
+- [ ] Research better heart icons:
+  - Material Design: `heart-outline` / `heart`
+  - Or custom SVG icon
+- [ ] Update all favorite buttons to use new icon
+- [ ] Ensure consistency across screens
+
+**Fix Arrow Consistency:**
+- [ ] Audit all screens with back arrows
+- [ ] Use same icon family (Material Icons recommended)
+- [ ] Ensure size and color match across screens
+
+**Remove Transition Screen:**
+- [ ] Remove transition screen from navigation stack
+- [ ] Update navigation flow to skip transition
+- [ ] Note: User will create animation later, removing for now
+
+**Files to Modify:**
+- `mobile-app/src/components/RecommendedCard.tsx` (or wherever)
+- `mobile-app/src/screens/*.tsx` (favorite button updates)
+- `mobile-app/App.tsx` (remove transition screen)
+
+---
+
+## Phase 14 Testing Checklist ✅
+
+**Before marking complete, verify:**
+- [ ] Logo displays correctly in header and homescreen
+- [ ] Anonymous reviews work end-to-end
+- [ ] Photo uploads succeed (review & profile)
+- [ ] Back navigation doesn't exit app unexpectedly
+- [ ] Exit confirmation shows on homepage back press
+- [ ] Overall rating hidden for oysters with 0 reviews
+- [ ] Favorited oysters weighted correctly in recommendations
+- [ ] All filters return results (Sweet, Briny, Small, etc.)
+- [ ] Filter shows closest matches instead of empty results
+- [ ] Dark mode applies to all screens
+- [ ] Light mode text is readable
+- [ ] Badge level-up popup appears
+- [ ] Rating scale shows "Okay" instead of "Whatever"
+- [ ] Hamburger menu works with 3 options
+- [ ] Profile stat cards are clickable
+- [ ] Email verification flow works
+- [ ] UI polish complete (cards, icons, arrows)
+
+---
+
+### Phase 15: Photo Upload System 📋
 
 **Estimated Time:** 20-30 hours
 **Priority:** MEDIUM
@@ -476,7 +1025,7 @@ similarity = ((maxDistance - euclideanDistance) / maxDistance) * 100;
 - [ ] Backend storage endpoints
 - [ ] Database schema updates
 
-### Phase 15: Advanced Recommendations (Collaborative Filtering) 📋
+### Phase 16: Advanced Recommendations (Collaborative Filtering) 📋
 
 **Estimated Time:** 12-16 hours
 **Priority:** MEDIUM
@@ -494,7 +1043,7 @@ similarity = ((maxDistance - euclideanDistance) / maxDistance) * 100;
 - [ ] Performance optimization for large user base
 - [ ] Recommendation quality metrics
 
-### Phase 16: Web Application 📋
+### Phase 17: Web Application 📋
 
 **Estimated Time:** 60-80 hours
 **Priority:** LOW
@@ -521,7 +1070,7 @@ similarity = ((maxDistance - euclideanDistance) / maxDistance) * 100;
 - [ ] SSL/HTTPS (automatic)
 - [ ] SEO optimization
 
-### Phase 16: Admin Dashboard 📋
+### Phase 18: Admin Dashboard 📋
 
 **Estimated Time:** 40-50 hours
 **Priority:** LOW
