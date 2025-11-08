@@ -6,8 +6,10 @@
  */
 
 import React, { memo, useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Text, Surface, ProgressBar } from 'react-native-paper';
 import { scoreToVerdict, scoreToStars } from '../utils/ratingUtils';
+import { useTheme } from '../context/ThemeContext';
 
 // ============================================================================
 // CONSTANTS
@@ -188,22 +190,28 @@ export const RatingBreakdown = memo<RatingBreakdownProps>(({
   totalReviews,
   ratingBreakdown,
 }) => {
+  const { theme } = useTheme();
+
   if (totalReviews === 0) {
     return (
-      <View style={styles.breakdownContainer}>
-        <Text style={styles.noReviewsText}>No ratings yet. Be the first to review!</Text>
-      </View>
+      <Surface style={styles.breakdownContainer}>
+        <Text variant="bodyMedium" style={{ color: theme.colors.textSecondary, textAlign: 'center' }}>
+          No ratings yet. Be the first to review!
+        </Text>
+      </Surface>
     );
   }
 
   return (
-    <View style={styles.breakdownContainer}>
+    <Surface style={styles.breakdownContainer}>
       <View style={styles.avgRatingContainer}>
-        <Text style={[styles.avgRatingValue, { color: getRatingColor(avgRating) }]}>
+        <Text variant="displaySmall" style={{ color: getRatingColor(avgRating), fontWeight: '700' }}>
           {avgRating.toFixed(1)}
         </Text>
-        <Text style={styles.avgRatingLabel}>{getRatingLabel(avgRating)}</Text>
-        <Text style={styles.avgRatingCount}>
+        <Text variant="titleMedium" style={{ color: theme.colors.text, marginTop: 4 }}>
+          {getRatingLabel(avgRating)}
+        </Text>
+        <Text variant="bodyMedium" style={{ color: theme.colors.textSecondary, marginTop: 2 }}>
           {totalReviews} {totalReviews === 1 ? 'rating' : 'ratings'}
         </Text>
       </View>
@@ -216,7 +224,7 @@ export const RatingBreakdown = memo<RatingBreakdownProps>(({
           <RatingBar label="Meh" count={ratingBreakdown.meh} total={totalReviews} color={RATING_COLORS.MEH} />
         </View>
       )}
-    </View>
+    </Surface>
   );
 });
 
@@ -227,15 +235,17 @@ RatingBreakdown.displayName = 'RatingBreakdown';
 // ============================================================================
 
 const RatingBar = memo<RatingBarProps>(({ label, count, total, color }) => {
-  const percentage = total > 0 ? (count / total) * 100 : 0;
+  const progress = total > 0 ? count / total : 0;
 
   return (
     <View style={styles.ratingBarContainer}>
-      <Text style={styles.ratingBarLabel}>{label}</Text>
-      <View style={styles.barBackground}>
-        <View style={[styles.barFill, { width: `${percentage}%`, backgroundColor: color }]} />
-      </View>
-      <Text style={styles.ratingBarCount}>{count}</Text>
+      <Text variant="bodySmall" style={styles.ratingBarLabel}>{label}</Text>
+      <ProgressBar
+        progress={progress}
+        color={color}
+        style={styles.progressBar}
+      />
+      <Text variant="bodySmall" style={styles.ratingBarCount}>{count}</Text>
     </View>
   );
 });
@@ -295,32 +305,11 @@ const styles = StyleSheet.create({
   },
   breakdownContainer: {
     padding: 16,
-    backgroundColor: COLORS.BACKGROUND,
     borderRadius: 8,
   },
   avgRatingContainer: {
     alignItems: 'center',
     marginBottom: 16,
-  },
-  avgRatingValue: {
-    fontSize: 48,
-    fontWeight: '700',
-  },
-  avgRatingLabel: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#374151',
-    marginTop: 4,
-  },
-  avgRatingCount: {
-    fontSize: 14,
-    color: COLORS.TEXT_SECONDARY,
-    marginTop: 2,
-  },
-  noReviewsText: {
-    textAlign: 'center',
-    color: COLORS.TEXT_SECONDARY,
-    fontSize: 14,
   },
   barsContainer: {
     marginTop: 4,
@@ -331,28 +320,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   ratingBarLabel: {
-    width: 80,
-    fontSize: 12,
-    color: '#374151',
+    width: 70,
     marginRight: 8,
   },
-  barBackground: {
+  progressBar: {
     flex: 1,
     height: 8,
-    backgroundColor: COLORS.BAR_BACKGROUND,
     borderRadius: 4,
-    overflow: 'hidden',
     marginRight: 8,
-  },
-  barFill: {
-    height: '100%',
-    borderRadius: 4,
   },
   ratingBarCount: {
     width: 30,
     textAlign: 'right',
-    fontSize: 12,
-    color: COLORS.TEXT_SECONDARY,
     fontWeight: '600',
   },
 });

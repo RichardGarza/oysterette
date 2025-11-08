@@ -7,12 +7,10 @@
 import React, { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
+import { Card, Text, IconButton, Chip, Button, ActivityIndicator } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
 import { Review } from '../types/Oyster';
 import { voteApi, reviewApi } from '../services/api';
@@ -180,111 +178,85 @@ export const ReviewCard = memo<ReviewCardProps>(({
   const showCredibilityBadge = credibilityBadge && credibilityBadge.level !== 'Standard';
 
   return (
-    <View style={styles.reviewCard}>
-      <View style={styles.reviewHeader}>
-        <View style={styles.reviewHeaderLeft}>
-          <Text style={styles.reviewRating}>{formatRatingText(review.rating)}</Text>
-          {showCredibilityBadge && (
-            <View style={[styles.credibilityBadge, { backgroundColor: `${credibilityColor}${STYLES_CONFIG.BADGE_OPACITY}` }]}>
-              <Text style={[styles.credibilityText, { color: credibilityColor }]}>
+    <Card style={styles.reviewCard}>
+      <Card.Content>
+        <View style={styles.reviewHeader}>
+          <View style={styles.reviewHeaderLeft}>
+            <Text variant="labelLarge" style={{ color: theme.colors.primary }}>
+              {formatRatingText(review.rating)}
+            </Text>
+            {showCredibilityBadge && (
+              <Chip
+                compact
+                style={{ backgroundColor: `${credibilityColor}${STYLES_CONFIG.BADGE_OPACITY}` }}
+                textStyle={{ color: credibilityColor, fontSize: 10 }}
+              >
                 {credibilityDisplay}
-              </Text>
-            </View>
-          )}
-        </View>
-        <View style={styles.reviewHeaderRight}>
-          <Text style={styles.reviewDate}>{formatDate(review.createdAt)}</Text>
-          {isOwnReview && (
-            <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => onEdit?.(review)}
-                disabled={deleting}
-              >
-                <Text style={styles.actionButtonText}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.deleteButton]}
-                onPress={handleDelete}
-                disabled={deleting}
-              >
-                {deleting ? (
-                  <ActivityIndicator size="small" color={COLORS.DISAGREE_INDICATOR} />
-                ) : (
-                  <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Delete</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      </View>
-
-      {review.notes && (
-        <Text style={styles.reviewNotes}>{review.notes}</Text>
-      )}
-
-      <View style={styles.voteContainer}>
-        <View style={styles.voteButtons}>
-          <TouchableOpacity
-            style={[
-              styles.voteButton,
-              currentVote === true && styles.voteButtonActive,
-              voting && styles.voteButtonDisabled,
-            ]}
-            onPress={() => handleVote(true)}
-            disabled={voting}
-          >
-            {voting && currentVote === true ? (
-              <ActivityIndicator size="small" color={COLORS.AGREE_INDICATOR} />
-            ) : (
-              <>
-                <Text style={[
-                  styles.voteButtonIcon,
-                  currentVote === true && styles.voteButtonIconActive
-                ]}>
-                  👍
-                </Text>
-                <Text style={[
-                  styles.voteButtonText,
-                  currentVote === true && styles.voteButtonTextActive
-                ]}>
-                  Agree ({review.agreeCount || 0})
-                </Text>
-              </>
+              </Chip>
             )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.voteButton,
-              currentVote === false && styles.voteButtonActiveDisagree,
-              voting && styles.voteButtonDisabled,
-            ]}
-            onPress={() => handleVote(false)}
-            disabled={voting}
-          >
-            {voting && currentVote === false ? (
-              <ActivityIndicator size="small" color={COLORS.DISAGREE_INDICATOR} />
-            ) : (
-              <>
-                <Text style={[
-                  styles.voteButtonIcon,
-                  currentVote === false && styles.voteButtonIconActive
-                ]}>
-                  👎
-                </Text>
-                <Text style={[
-                  styles.voteButtonText,
-                  currentVote === false && styles.voteButtonTextActiveDisagree
-                ]}>
-                  Disagree ({review.disagreeCount || 0})
-                </Text>
-              </>
+          </View>
+          <View style={styles.reviewHeaderRight}>
+            <Text variant="bodySmall" style={{ color: theme.colors.textSecondary }}>
+              {formatDate(review.createdAt)}
+            </Text>
+            {isOwnReview && (
+              <View style={styles.actionButtons}>
+                <IconButton
+                  icon="pencil"
+                  size={16}
+                  onPress={() => onEdit?.(review)}
+                  disabled={deleting}
+                />
+                <IconButton
+                  icon="delete"
+                  size={16}
+                  iconColor={theme.colors.error}
+                  onPress={handleDelete}
+                  disabled={deleting}
+                  loading={deleting}
+                />
+              </View>
             )}
-          </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </View>
+
+        {review.notes && (
+          <Text variant="bodyMedium" style={{ color: theme.colors.text, marginTop: 8 }}>
+            {review.notes}
+          </Text>
+        )}
+
+        <View style={styles.voteContainer}>
+          <View style={styles.voteButtons}>
+            <Button
+              mode={currentVote === true ? 'contained' : 'outlined'}
+              onPress={() => handleVote(true)}
+              disabled={voting}
+              loading={voting && currentVote === true}
+              icon="thumb-up"
+              style={styles.voteButton}
+              contentStyle={styles.voteButtonContent}
+              buttonColor={currentVote === true ? theme.colors.success : undefined}
+            >
+              Agree ({review.agreeCount || 0})
+            </Button>
+
+            <Button
+              mode={currentVote === false ? 'contained' : 'outlined'}
+              onPress={() => handleVote(false)}
+              disabled={voting}
+              loading={voting && currentVote === false}
+              icon="thumb-down"
+              style={styles.voteButton}
+              contentStyle={styles.voteButtonContent}
+              buttonColor={currentVote === false ? theme.colors.error : undefined}
+            >
+              Disagree ({review.disagreeCount || 0})
+            </Button>
+          </View>
+        </View>
+      </Card.Content>
+    </Card>
   );
 });
 
@@ -296,16 +268,12 @@ ReviewCard.displayName = 'ReviewCard';
 
 const useStyles = (theme: Theme, isDark: boolean) => useMemo(() => StyleSheet.create({
   reviewCard: {
-    backgroundColor: theme.colors.cardBackground,
-    padding: STYLES_CONFIG.CARD_PADDING,
-    borderRadius: STYLES_CONFIG.CARD_RADIUS,
     marginBottom: STYLES_CONFIG.CARD_MARGIN_BOTTOM,
   },
   reviewHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
   },
   reviewHeaderLeft: {
     flexDirection: 'row',
@@ -313,114 +281,28 @@ const useStyles = (theme: Theme, isDark: boolean) => useMemo(() => StyleSheet.cr
     gap: 8,
     flex: 1,
   },
-  reviewRating: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    textTransform: 'capitalize',
-  },
-  credibilityBadge: {
-    paddingHorizontal: STYLES_CONFIG.BADGE_PADDING_H,
-    paddingVertical: STYLES_CONFIG.BADGE_PADDING_V,
-    borderRadius: STYLES_CONFIG.BADGE_RADIUS,
-  },
-  credibilityText: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
   reviewHeaderRight: {
     alignItems: 'flex-end',
   },
-  reviewDate: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    marginBottom: 4,
-  },
   actionButtons: {
     flexDirection: 'row',
-    gap: 6,
-  },
-  actionButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-    backgroundColor: theme.colors.primary,
-  },
-  deleteButton: {
-    backgroundColor: theme.colors.error,
-    minWidth: STYLES_CONFIG.ACTION_BUTTON_MIN_WIDTH,
-    alignItems: 'center',
-  },
-  actionButtonText: {
-    fontSize: 11,
-    color: COLORS.WHITE,
-    fontWeight: '600',
-  },
-  deleteButtonText: {
-    color: COLORS.WHITE,
-  },
-  reviewNotes: {
-    fontSize: 14,
-    color: theme.colors.text,
-    lineHeight: 20,
-    marginBottom: 12,
+    marginTop: -8,
+    marginRight: -12,
   },
   voteContainer: {
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     paddingTop: 12,
-    marginTop: 4,
-  },
-  voteLabel: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    marginBottom: 8,
+    marginTop: 12,
   },
   voteButtons: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   voteButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    backgroundColor: theme.colors.inputBackground,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
   },
-  voteButtonActive: {
-    backgroundColor: isDark ? COLORS.AGREE_BG_DARK : COLORS.AGREE_BG_LIGHT,
-    borderColor: theme.colors.success,
-  },
-  voteButtonActiveDisagree: {
-    backgroundColor: isDark ? COLORS.DISAGREE_BG_DARK : COLORS.DISAGREE_BG_LIGHT,
-    borderColor: theme.colors.error,
-  },
-  voteButtonDisabled: {
-    opacity: STYLES_CONFIG.DISABLED_OPACITY,
-  },
-  voteButtonIcon: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  voteButtonIconActive: {
-    transform: [{ scale: STYLES_CONFIG.VOTE_ICON_SCALE }],
-  },
-  voteButtonText: {
-    fontSize: 12,
-    color: theme.colors.text,
-    fontWeight: '500',
-  },
-  voteButtonTextActive: {
-    color: theme.colors.success,
-    fontWeight: '600',
-  },
-  voteButtonTextActiveDisagree: {
-    color: theme.colors.error,
-    fontWeight: '600',
+  voteButtonContent: {
+    paddingVertical: 4,
   },
 }), [theme, isDark]);
