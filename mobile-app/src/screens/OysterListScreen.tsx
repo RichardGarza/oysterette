@@ -424,25 +424,6 @@ export default function OysterListScreen() {
             ]}
             style={styles.segmentedButtons}
           />
-
-            <IconButton
-              icon="filter"
-              mode="contained"
-              size={SIZES.ICON_SMALL}
-              onPress={() => setShowFilters(!showFilters)}
-              style={styles.filterIconButton}
-            />
-            {getActiveFilterCount > 0 && (
-              <Badge style={styles.filterBadge}>{getActiveFilterCount}</Badge>
-            )}
-          </View>
-
-          <Searchbar
-            placeholder="Search oysters..."
-            value={searchQuery}
-            onChangeText={handleSearch}
-            style={styles.searchBar}
-          />
         </View>
         <View style={styles.listContainer}>
           {Array.from({ length: SKELETON.COUNT }).map((_, i) => (
