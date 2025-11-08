@@ -1,5 +1,7 @@
 # UI Modernization Plan
-**Oysterette Mobile App - Modern UI Transformation**
+**Oysterette Mobile App - Modern UI Transformation with React Native Paper**
+
+**Last Updated:** November 7, 2025
 
 ## Current State Analysis
 The app currently uses basic React Native StyleSheet with:
@@ -8,367 +10,785 @@ The app currently uses basic React Native StyleSheet with:
 - Simple color schemes
 - Minimal animations
 - Standard fonts and spacing
+- **Custom components for all UI elements**
 
 ## Goals
-- Create a modern, premium feel
-- Improve visual hierarchy
+- Create a modern, premium Material Design experience
+- Improve visual hierarchy and consistency
 - Add smooth micro-interactions
 - Maintain excellent performance
-- Ensure accessibility standards
-- Support both light and dark themes
+- Ensure accessibility standards (WCAG AA)
+- Support both light and dark themes seamlessly
+- **Reduce custom styling code by 30-40%**
+- **Leverage battle-tested UI components**
 
 ---
 
-## Phase 1: Foundation (Install Libraries)
+## Why React Native Paper?
 
-### Recommended Dependencies:
+**Benefits:**
+- ✅ **Material Design 3** - Modern, professional aesthetic
+- ✅ **Built-in theming** - Light/dark mode integration
+- ✅ **Accessibility** - Screen reader support, keyboard navigation
+- ✅ **TypeScript support** - Full type safety
+- ✅ **Well-maintained** - Active development, regular updates
+- ✅ **Customizable** - Can match brand identity
+- ✅ **Comprehensive** - 40+ components out of the box
+- ✅ **Performance** - Optimized for React Native
+- ✅ **Documentation** - Excellent docs and examples
+
+**What We Keep:**
+- Custom sliders (preserve UX for oyster ratings)
+- Custom attribute bars (unique to our app)
+- Brand colors and spacing
+- Existing animations
+
+---
+
+## Phase 1: Foundation & Setup
+
+### 1.1: Install React Native Paper (30 min)
 ```bash
-# Icon library (essential)
-npx expo install @expo/vector-icons
+cd mobile-app
 
-# Animation library (smooth interactions)
+# Core library
+npx expo install react-native-paper
+
+# Required dependencies
+npx expo install react-native-vector-icons
+npx expo install react-native-safe-area-context
+
+# Additional animation/gesture libraries
 npx expo install react-native-reanimated
-
-# Gesture handling
 npx expo install react-native-gesture-handler
 
-# Bottom sheets (modern modals)
-npm install @gorhom/bottom-sheet
-
-# Linear gradients (modern accents)
-npx expo install expo-linear-gradient
-
-# Blur effects (glassmorphism)
-npx expo install expo-blur
+# Optional enhancements
+npx expo install expo-linear-gradient  # For gradient accents
+npx expo install expo-blur             # For glassmorphism
 ```
+
+### 1.2: Configure PaperProvider (30 min)
+**File:** `mobile-app/App.tsx`
+
+```typescript
+import { PaperProvider, MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
+
+// Custom theme based on oyster brand
+const lightTheme = {
+  ...MD3LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    primary: '#FF6B35',           // Oyster orange
+    primaryContainer: '#FFE5DB',
+    secondary: '#004E89',         // Ocean blue
+    secondaryContainer: '#D4E6F1',
+    tertiary: '#4A7C59',          // Seaweed green
+    tertiaryContainer: '#D5E8DB',
+    surface: '#FFFFFF',
+    surfaceVariant: '#F5F5F5',
+    background: '#FAFAFA',
+    error: '#BA1A1A',
+    onPrimary: '#FFFFFF',
+    onSecondary: '#FFFFFF',
+    onSurface: '#1C1B1F',
+    outline: '#79747E',
+    shadow: '#000000',
+  },
+};
+
+const darkTheme = {
+  ...MD3DarkTheme,
+  colors: {
+    ...MD3DarkTheme.colors,
+    primary: '#FFB59A',           // Lighter orange for dark mode
+    primaryContainer: '#8B3A1F',
+    secondary: '#5DADE2',         // Brighter blue
+    secondaryContainer: '#00344D',
+    tertiary: '#7FAC8E',          // Lighter green
+    tertiaryContainer: '#2F4A38',
+    surface: '#1C1B1F',
+    surfaceVariant: '#2B2930',
+    background: '#121212',
+    error: '#FFB4AB',
+    onPrimary: '#5A1A00',
+    onSecondary: '#00344D',
+    onSurface: '#E6E1E5',
+    outline: '#938F99',
+    shadow: '#000000',
+  },
+};
+
+export default function App() {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const theme = isDarkMode ? darkTheme : lightTheme;
+
+  return (
+    <PaperProvider theme={theme}>
+      {/* Rest of app */}
+    </PaperProvider>
+  );
+}
+```
+
+### 1.3: Integrate with Existing Theme System (1 hour)
+- Connect Paper theme to existing `ThemeContext`
+- Ensure theme switching updates Paper theme
+- Persist theme preference (already implemented)
+- Test theme switching across all screens
 
 ---
 
-## Phase 2: Design System
+## Phase 2: Core Component Migration (8-10 hours)
 
-### Color Palette
-**Light Theme:**
-```typescript
-primary: '#3498db'      // Ocean blue
-secondary: '#2ecc71'    // Fresh green
-accent: '#f39c12'       // Warm orange
-background: '#f8f9fa'   // Soft white
-surface: '#ffffff'      // Pure white
-textPrimary: '#2c3e50'  // Deep blue-gray
-textSecondary: '#7f8c8d' // Medium gray
-```
+### Priority 1: Authentication Screens (2-3 hours)
 
-**Dark Theme:**
-```typescript
-primary: '#5dade2'      // Bright ocean blue
-secondary: '#58d68d'    // Bright green
-accent: '#f5b041'       // Bright orange
-background: '#121212'   // True dark
-surface: '#1e1e1e'      // Elevated dark
-textPrimary: '#ecf0f1'  // Bright white
-textSecondary: '#95a5a6' // Medium gray
-```
+#### LoginScreen.tsx
+**Replace:**
+- ❌ Custom TextInput → ✅ `TextInput` (Paper)
+- ❌ Custom Button → ✅ `Button` (Paper)
+- ❌ TouchableOpacity → ✅ `Button` mode="text"
 
-### Typography Scale
-```typescript
-hero: 32px / bold
-h1: 28px / bold
-h2: 24px / semibold
-h3: 20px / semibold
-body: 16px / regular
-caption: 14px / regular
-small: 12px / regular
-```
-
-### Spacing System
-```typescript
-xs: 4px
-sm: 8px
-md: 16px
-lg: 24px
-xl: 32px
-xxl: 48px
-```
-
-### Border Radius
-```typescript
-sm: 8px   // Buttons, inputs
-md: 12px  // Cards
-lg: 16px  // Modals
-xl: 24px  // Hero elements
-full: 9999px // Pills, avatars
-```
-
----
-
-## Phase 3: Modern UI Patterns
-
-### 1. Card Enhancements
-**Before:** Basic shadow, flat design
-**After:**
-- Elevated cards with soft shadows
-- Subtle border on light theme
-- Hover/press states with scale animation
-- Gradient overlays for featured items
-
-### 2. Glassmorphism Elements
-Apply to:
-- Modal backgrounds
-- Floating action buttons
-- Header bars (semi-transparent)
-- Sheet overlays
-
-**Properties:**
-```typescript
-backgroundColor: 'rgba(255, 255, 255, 0.1)'
-backdropFilter: 'blur(10px)'
-border: '1px solid rgba(255, 255, 255, 0.2)'
-```
-
-### 3. Gradient Accents
-Apply to:
-- Primary CTAs (Call-to-Action buttons)
-- Hero sections
-- Rating bars
-- Progress indicators
+**New Features:**
+- Built-in password visibility toggle
+- Automatic error states
+- Loading states on buttons
+- Better keyboard handling
 
 **Example:**
 ```typescript
-<LinearGradient
-  colors={['#3498db', '#2ecc71']}
-  start={{ x: 0, y: 0 }}
-  end={{ x: 1, y: 1 }}
->
+import { TextInput, Button, Card } from 'react-native-paper';
+
+<Card style={styles.loginCard}>
+  <Card.Content>
+    <TextInput
+      label="Email"
+      value={email}
+      onChangeText={setEmail}
+      mode="outlined"
+      keyboardType="email-address"
+      autoCapitalize="none"
+      error={emailError}
+    />
+
+    <TextInput
+      label="Password"
+      value={password}
+      onChangeText={setPassword}
+      mode="outlined"
+      secureTextEntry
+      right={<TextInput.Icon icon="eye" />}
+      error={passwordError}
+    />
+
+    <Button
+      mode="contained"
+      onPress={handleLogin}
+      loading={loading}
+      style={styles.loginButton}
+    >
+      Sign In
+    </Button>
+  </Card.Content>
+</Card>
 ```
 
-### 4. Micro-interactions
-- **Button Press:** Scale down to 0.96, bounce back
-- **Card Tap:** Slight elevation increase
-- **Pull to Refresh:** Custom animated indicator
-- **Loading States:** Skeleton screens with shimmer
-- **Success/Error:** Toast notifications with slide-in animation
+#### RegisterScreen.tsx
+- Same pattern as LoginScreen
+- Add form validation feedback
+- Use `HelperText` component for errors
 
-### 5. Bottom Sheets
-Replace standard modals with:
-- Smooth bottom sheet for Add Oyster form
-- Swipeable review creation
-- Filter/sort options sheet
-- User profile sheet
+### Priority 2: Settings & Profile (2-3 hours)
 
----
+#### SettingsScreen.tsx
+**Replace:**
+- ❌ Custom list items → ✅ `List.Item` with icons
+- ❌ Custom switches → ✅ `Switch` component
+- ❌ Custom dividers → ✅ `Divider` component
 
-## Phase 4: Screen-by-Screen Improvements
-
-### Home Screen
-- [ ] Hero section with gradient background
-- [ ] Animated welcome message
-- [ ] Modern card-based navigation
-- [ ] Featured oysters carousel
-- [ ] Quick stats with animated counters
-
-### Oyster List Screen
-- [ ] Pull-to-refresh with custom indicator
-- [ ] Skeleton loading cards
-- [ ] Smooth scroll animations
-- [ ] Floating search bar (sticky header)
-- [ ] Category pills with horizontal scroll
-- [ ] Enhanced card design with image placeholders
-- [ ] Swipe actions (favorite, share)
-
-### Oyster Detail Screen
-- [ ] Hero image with parallax scroll
-- [ ] Glassmorphism info cards
-- [ ] Animated rating bars
-- [ ] Gradient CTA buttons
-- [ ] Expandable description section
-- [ ] Related oysters carousel
-- [ ] Review cards with user avatars
-
-### Add/Edit Oyster Screen
-- [ ] Bottom sheet form
-- [ ] Floating labels on inputs
-- [ ] Custom slider for attributes
-- [ ] Image picker with preview
-- [ ] Progress indicator at top
-- [ ] Smooth validation feedback
-
-### Settings Screen
-- [ ] Profile header with gradient
-- [ ] Icon-enhanced menu items
-- [ ] Smooth section animations
-- [ ] Custom toggle switches
-- [ ] Haptic feedback on interactions
-
-### Login/Register Screens
-- [ ] Gradient hero section
-- [ ] Floating label inputs
-- [ ] Social login buttons with icons
-- [ ] Smooth transition animations
-- [ ] Illustrated empty states
-
----
-
-## Phase 5: Animation & Transitions
-
-### Screen Transitions
+**Example:**
 ```typescript
-// Fade with scale
-present: {
-  animation: 'spring',
-  config: {
-    stiffness: 1000,
-    damping: 500,
-    mass: 3,
+import { List, Switch, Divider } from 'react-native-paper';
+
+<List.Section>
+  <List.Subheader>Appearance</List.Subheader>
+
+  <List.Item
+    title="Dark Mode"
+    description="Use dark theme"
+    left={props => <List.Icon {...props} icon="theme-light-dark" />}
+    right={() => (
+      <Switch value={isDarkMode} onValueChange={toggleTheme} />
+    )}
+  />
+
+  <Divider />
+
+  <List.Item
+    title="Privacy Policy"
+    left={props => <List.Icon {...props} icon="shield-account" />}
+    right={props => <List.Icon {...props} icon="chevron-right" />}
+    onPress={openPrivacyPolicy}
+  />
+</List.Section>
+```
+
+#### ProfileScreen.tsx
+**Replace:**
+- ❌ Custom cards → ✅ `Card` component
+- ❌ Custom progress bars → ✅ `ProgressBar` component
+- ❌ Custom badges → ✅ `Chip` or `Badge` component
+
+**New Features:**
+- `Avatar` component for user profile
+- `DataTable` for stats (optional)
+- Consistent card elevations
+
+### Priority 3: Main Screens (3-4 hours)
+
+#### OysterListScreen.tsx
+**Replace:**
+- ❌ Custom search input → ✅ `Searchbar` component
+- ❌ Filter button → ✅ `FAB` (Floating Action Button)
+- ❌ Filter chips → ✅ `Chip` components
+- ❌ Custom cards → ✅ `Card` components
+
+**Example:**
+```typescript
+import { Searchbar, FAB, Chip, Card } from 'react-native-paper';
+
+<Searchbar
+  placeholder="Search oysters..."
+  onChangeText={setSearchQuery}
+  value={searchQuery}
+  icon="magnify"
+  clearIcon="close"
+/>
+
+{/* Active filters */}
+<ScrollView horizontal>
+  {selectedSpecies && (
+    <Chip
+      icon="filter"
+      onClose={() => setSelectedSpecies(null)}
+      style={styles.chip}
+    >
+      {selectedSpecies}
+    </Chip>
+  )}
+</ScrollView>
+
+{/* Oyster cards */}
+<Card mode="elevated" style={styles.oysterCard}>
+  <Card.Cover source={{ uri: oyster.imageUrl }} />
+  <Card.Title
+    title={oyster.name}
+    subtitle={`${oyster.origin} • ${oyster.species}`}
+  />
+  <Card.Content>
+    {/* Ratings */}
+  </Card.Content>
+  <Card.Actions>
+    <Button>Details</Button>
+    <Button icon="heart-outline">Favorite</Button>
+  </Card.Actions>
+</Card>
+
+{/* Floating filter button */}
+<FAB
+  icon="filter-variant"
+  label="Filters"
+  onPress={toggleFilters}
+  style={styles.fab}
+/>
+```
+
+#### OysterDetailScreen.tsx
+**Replace:**
+- ❌ Custom info sections → ✅ `Card` with `Card.Title` and `Card.Content`
+- ❌ Custom buttons → ✅ `Button` component
+- ❌ Custom attribute bars → ✅ Keep custom (preserve UX)
+
+#### AddReviewScreen.tsx
+**Replace:**
+- ❌ Custom text input → ✅ `TextInput` (multiline mode)
+- ❌ Custom rating selector → ✅ `RadioButton.Group`
+- ❌ Custom sliders → ✅ Keep custom (preserve UX)
+- ❌ Custom buttons → ✅ `Button` component
+
+**Example:**
+```typescript
+import { TextInput, RadioButton, Button } from 'react-native-paper';
+
+<TextInput
+  label="Review Notes"
+  value={notes}
+  onChangeText={setNotes}
+  mode="outlined"
+  multiline
+  numberOfLines={4}
+  placeholder="Share your tasting experience..."
+/>
+
+<RadioButton.Group onValueChange={setRating} value={rating}>
+  <RadioButton.Item label="🏆 Love It" value="LOVE_IT" />
+  <RadioButton.Item label="⭐ Like It" value="LIKE_IT" />
+  <RadioButton.Item label="😐 Meh" value="MEH" />
+  <RadioButton.Item label="🤷 Whatever" value="WHATEVER" />
+</RadioButton.Group>
+
+{/* Keep custom sliders */}
+<SliderWithLabel
+  label="Size"
+  value={size}
+  onValueChange={setSize}
+  min={1}
+  max={10}
+/>
+
+<Button mode="contained" onPress={handleSubmit} loading={submitting}>
+  Submit Review
+</Button>
+```
+
+---
+
+## Phase 3: Navigation & Chrome (3-4 hours)
+
+### 3.1: Header/AppBar
+**Replace custom headers with `Appbar`:**
+
+```typescript
+import { Appbar } from 'react-native-paper';
+
+<Appbar.Header>
+  <Appbar.BackAction onPress={goBack} />
+  <Appbar.Content title="Oyster Details" />
+  <Appbar.Action icon="share-variant" onPress={handleShare} />
+  <Appbar.Action icon="heart-outline" onPress={toggleFavorite} />
+</Appbar.Header>
+```
+
+### 3.2: Bottom Navigation (Optional)
+Consider replacing tab navigator with Paper's `BottomNavigation`:
+
+```typescript
+import { BottomNavigation } from 'react-native-paper';
+
+const [index, setIndex] = useState(0);
+const [routes] = useState([
+  { key: 'home', title: 'Home', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
+  { key: 'browse', title: 'Browse', focusedIcon: 'oyster', unfocusedIcon: 'oyster' },
+  { key: 'profile', title: 'Profile', focusedIcon: 'account', unfocusedIcon: 'account-outline' },
+]);
+
+<BottomNavigation
+  navigationState={{ index, routes }}
+  onIndexChange={setIndex}
+  renderScene={renderScene}
+/>
+```
+
+### 3.3: Navigation Theme
+Configure React Navigation to match Paper theme:
+
+```typescript
+import { useTheme } from 'react-native-paper';
+import { NavigationContainer } from '@react-navigation/native';
+
+const paperTheme = useTheme();
+const navigationTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: paperTheme.colors.primary,
+    background: paperTheme.colors.background,
+    card: paperTheme.colors.surface,
+    text: paperTheme.colors.onSurface,
+    border: paperTheme.colors.outline,
   },
-}
-
-// Slide from bottom
-modal: {
-  animation: 'timing',
-  config: {
-    duration: 300,
-    easing: Easing.out(Easing.poly(4)),
-  },
-}
-```
-
-### List Animations
-- Staggered fade-in on mount
-- Smooth delete with slide-out
-- Reorder with drag animations
-
-### Gesture Interactions
-- Swipe to delete reviews
-- Pull to refresh
-- Swipe between tabs
-- Pinch to zoom images
-
----
-
-## Phase 6: Component Library
-
-### Create Reusable Components:
-```
-src/components/ui/
-├── Button.tsx              // Primary, secondary, outline variants
-├── Card.tsx                // Elevated, flat, glassmorphism variants
-├── Input.tsx               // Floating label, validation states
-├── Avatar.tsx              // User profile images
-├── Badge.tsx               // Status indicators, counts
-├── Chip.tsx                // Categories, tags
-├── Slider.tsx              // Attribute ratings
-├── ProgressBar.tsx         // Loading, progress indicators
-├── Toast.tsx               // Success, error notifications
-├── BottomSheet.tsx         // Modal alternative
-├── Skeleton.tsx            // Loading placeholders
-├── Rating.tsx              // Star/score display
-└── GradientButton.tsx      // CTA buttons
+};
 ```
 
 ---
 
-## Phase 7: Performance Optimizations
+## Phase 4: Common Patterns & Components (4-6 hours)
 
-### Image Optimization
-- Lazy loading for list images
-- Image caching with expo-image
-- Blurhash placeholders
-- Optimized image sizes
+### 4.1: Dialogs & Modals
+**Replace `Alert` with `Dialog`:**
 
-### List Performance
-- FlatList optimization (getItemLayout)
-- Memoized components
-- Virtualized lists for long content
-- Windowing for heavy lists
+```typescript
+import { Dialog, Portal, Button } from 'react-native-paper';
 
-### Animation Performance
-- Use native driver where possible
-- Avoid layout animations on large lists
-- Throttle/debounce expensive operations
+<Portal>
+  <Dialog visible={visible} onDismiss={hideDialog}>
+    <Dialog.Title>Delete Review?</Dialog.Title>
+    <Dialog.Content>
+      <Text>This action cannot be undone.</Text>
+    </Dialog.Content>
+    <Dialog.Actions>
+      <Button onPress={hideDialog}>Cancel</Button>
+      <Button onPress={handleDelete}>Delete</Button>
+    </Dialog.Actions>
+  </Dialog>
+</Portal>
+```
+
+### 4.2: Snackbars for Feedback
+**Replace basic alerts with `Snackbar`:**
+
+```typescript
+import { Snackbar } from 'react-native-paper';
+
+<Snackbar
+  visible={visible}
+  onDismiss={onDismiss}
+  action={{
+    label: 'Undo',
+    onPress: handleUndo,
+  }}
+  duration={3000}
+>
+  Review submitted successfully!
+</Snackbar>
+```
+
+### 4.3: Loading States
+**Use `ActivityIndicator`:**
+
+```typescript
+import { ActivityIndicator } from 'react-native-paper';
+
+<ActivityIndicator animating={true} size="large" />
+```
+
+### 4.4: Empty States
+**Use `Text` with icons:**
+
+```typescript
+import { Text, Icon } from 'react-native-paper';
+
+<View style={styles.emptyState}>
+  <Icon source="oyster" size={64} color={theme.colors.outline} />
+  <Text variant="titleLarge">No oysters found</Text>
+  <Text variant="bodyMedium">Try adjusting your filters</Text>
+</View>
+```
+
+### 4.5: Badges & Chips
+**For credibility badges, filter tags:**
+
+```typescript
+import { Badge, Chip } from 'react-native-paper';
+
+{/* User badge */}
+<Badge style={styles.badge}>Expert</Badge>
+
+{/* Filter chips */}
+<Chip icon="close" onPress={removeFilter}>
+  Washington
+</Chip>
+```
 
 ---
 
-## Phase 8: Accessibility
+## Phase 5: Custom Components (3-4 hours)
 
-### WCAG 2.1 AA Compliance
-- [ ] Color contrast ratio > 4.5:1
-- [ ] Touch targets > 44x44 points
-- [ ] Screen reader support
-- [ ] Semantic labels
-- [ ] Keyboard navigation
-- [ ] Focus indicators
-- [ ] Dynamic text sizing
+### Create Hybrid Components
+**Combine Paper components with custom logic:**
+
+#### OysterCard.tsx
+```typescript
+import { Card, Button, Chip } from 'react-native-paper';
+
+export const OysterCard = ({ oyster, onPress, onFavorite }) => (
+  <Card mode="elevated" onPress={onPress} style={styles.card}>
+    <Card.Cover source={{ uri: oyster.imageUrl }} />
+    <Card.Title
+      title={oyster.name}
+      subtitle={`${oyster.origin} • ${oyster.species}`}
+      right={(props) => (
+        <IconButton
+          {...props}
+          icon={oyster.isFavorite ? 'heart' : 'heart-outline'}
+          onPress={onFavorite}
+        />
+      )}
+    />
+    <Card.Content>
+      <View style={styles.rating}>
+        <Icon source="star" size={16} />
+        <Text>{oyster.avgRating.toFixed(1)}</Text>
+      </View>
+      <View style={styles.chips}>
+        <Chip icon="resize" compact>Size: {oyster.size}</Chip>
+        <Chip icon="food" compact>Body: {oyster.body}</Chip>
+      </View>
+    </Card.Content>
+  </Card>
+);
+```
+
+#### ReviewCard.tsx
+```typescript
+import { Card, IconButton, Chip, Text } from 'react-native-paper';
+
+export const ReviewCard = ({ review, onVote }) => (
+  <Card mode="outlined" style={styles.reviewCard}>
+    <Card.Title
+      title={review.user.username}
+      subtitle={new Date(review.createdAt).toLocaleDateString()}
+      left={(props) => <Avatar.Text {...props} label={review.user.username[0]} />}
+      right={(props) => <Chip {...props}>{review.badge}</Chip>}
+    />
+    <Card.Content>
+      <Text variant="bodyLarge">{review.notes}</Text>
+
+      {/* Custom attribute bars - keep these */}
+      <AttributeBars attributes={review.attributes} />
+    </Card.Content>
+    <Card.Actions>
+      <IconButton
+        icon="thumb-up-outline"
+        onPress={() => onVote('agree')}
+      />
+      <Text>{review.agreeVotes}</Text>
+      <IconButton
+        icon="thumb-down-outline"
+        onPress={() => onVote('disagree')}
+      />
+      <Text>{review.disagreeVotes}</Text>
+    </Card.Actions>
+  </Card>
+);
+```
+
+#### SliderWithLabel.tsx
+```typescript
+// Keep existing custom slider, wrap with Paper theming
+import { Text, useTheme } from 'react-native-paper';
+
+export const SliderWithLabel = ({ label, value, onValueChange }) => {
+  const theme = useTheme();
+
+  return (
+    <View>
+      <Text variant="labelLarge">{label}</Text>
+      <Text variant="headlineLarge" style={{ color: theme.colors.primary }}>
+        {getAttributeDescriptor(label, value)}
+      </Text>
+      <Slider
+        value={value}
+        onValueChange={onValueChange}
+        minimumValue={1}
+        maximumValue={10}
+        minimumTrackTintColor={theme.colors.primary}
+        maximumTrackTintColor={theme.colors.surfaceVariant}
+        thumbTintColor={theme.colors.primary}
+      />
+    </View>
+  );
+};
+```
 
 ---
 
-## Implementation Order (Priority)
+## Phase 6: Modern UI Enhancements (Optional, 4-6 hours)
 
-### High Priority (Quick Wins)
-1. **Install icon library** - Immediate visual improvement
-2. **Update typography** - Better hierarchy
-3. **Enhance cards** - Modern look & feel
-4. **Add gradients to CTAs** - Eye-catching actions
-5. **Implement skeleton loading** - Better perceived performance
+### 6.1: Glassmorphism (Blur Effects)
+**For modals, floating elements:**
 
-### Medium Priority
-6. **Bottom sheets** - Modern modal alternative
-7. **Micro-interactions** - Button press, card tap
-8. **Glassmorphism accents** - Premium feel
-9. **Animated ratings** - Engaging visualizations
-10. **Pull-to-refresh** - Smooth data updates
+```typescript
+import { BlurView } from 'expo-blur';
 
-### Lower Priority (Polish)
-11. **Hero sections** - Marketing appeal
-12. **Parallax effects** - Delightful details
-13. **Gesture interactions** - Advanced UX
-14. **Custom illustrations** - Brand personality
-15. **Advanced animations** - Final polish
+<BlurView intensity={80} tint="light" style={styles.glassmorphism}>
+  <Card>
+    {/* Content */}
+  </Card>
+</BlurView>
+```
+
+### 6.2: Gradient Accents
+**For primary CTAs:**
+
+```typescript
+import { LinearGradient } from 'expo-linear-gradient';
+import { Button } from 'react-native-paper';
+
+<LinearGradient
+  colors={['#FF6B35', '#FF8C61']}
+  start={{ x: 0, y: 0 }}
+  end={{ x: 1, y: 0 }}
+  style={styles.gradientButton}
+>
+  <Button mode="contained" style={{ backgroundColor: 'transparent' }}>
+    Submit Review
+  </Button>
+</LinearGradient>
+```
+
+### 6.3: Micro-interactions
+**Add press animations:**
+
+```typescript
+import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
+
+const animatedStyle = useAnimatedStyle(() => ({
+  transform: [{ scale: withSpring(pressed ? 0.96 : 1) }],
+}));
+
+<Animated.View style={animatedStyle}>
+  <Card onPress={handlePress}>
+    {/* Content */}
+  </Card>
+</Animated.View>
+```
+
+### 6.4: Skeleton Loading
+**For loading states:**
+
+```typescript
+import { Card, Text } from 'react-native-paper';
+
+const SkeletonCard = () => (
+  <Card style={styles.skeleton}>
+    <Card.Content>
+      <View style={styles.shimmer} />
+    </Card.Content>
+  </Card>
+);
+```
 
 ---
 
-## Estimated Timeline
+## Phase 7: Testing & Polish (2-3 hours)
 
-- **Phase 1-2 (Foundation & Design System):** 2-3 hours
-- **Phase 3 (Modern UI Patterns):** 3-4 hours
-- **Phase 4 (Screen Improvements):** 6-8 hours
-- **Phase 5 (Animations):** 3-4 hours
-- **Phase 6 (Component Library):** 4-5 hours
-- **Phase 7 (Performance):** 2-3 hours
-- **Phase 8 (Accessibility):** 2-3 hours
+### 7.1: Visual Testing
+- [ ] Test all screens in light mode
+- [ ] Test all screens in dark mode
+- [ ] Verify theme switching (no flicker)
+- [ ] Check color contrast (WCAG AA)
+- [ ] Test on iOS and Android
+- [ ] Test on different screen sizes
 
-**Total:** 22-30 hours of development
+### 7.2: Accessibility
+- [ ] Add accessibility labels to all interactive elements
+- [ ] Test with screen reader (TalkBack/VoiceOver)
+- [ ] Verify keyboard navigation
+- [ ] Check touch target sizes (min 44x44)
+- [ ] Test dynamic text sizing
+
+### 7.3: Performance
+- [ ] Check FlatList performance with Paper cards
+- [ ] Verify smooth animations (60fps)
+- [ ] Test theme switching performance
+- [ ] Check bundle size impact (~500KB for Paper)
+
+---
+
+## Implementation Timeline
+
+### Week 1: Foundation (6-8 hours)
+- Day 1-2: Install dependencies, configure theming (3 hours)
+- Day 3-5: Migrate authentication screens (3-5 hours)
+
+### Week 2: Core Screens (10-12 hours)
+- Day 1-2: Settings & Profile screens (3-4 hours)
+- Day 3-4: OysterList & OysterDetail (4-5 hours)
+- Day 5: AddReview & Reviews (3-4 hours)
+
+### Week 3: Polish (6-8 hours)
+- Day 1-2: Navigation & common patterns (3-4 hours)
+- Day 3-4: Custom components (2-3 hours)
+- Day 5: Testing & accessibility (2-3 hours)
+
+### Optional Week 4: Enhancements (4-6 hours)
+- Glassmorphism, gradients, micro-interactions
+
+**Total Time:** 20-30 hours (base) + 4-6 hours (optional enhancements)
+
+---
+
+## Migration Strategy
+
+### Incremental Approach (Recommended)
+1. **Start small:** Settings screen (simplest)
+2. **Build confidence:** Profile, Auth screens
+3. **Tackle complex:** OysterList, OysterDetail
+4. **Finish strong:** AddReview, Reviews
+5. **Test at each step:** No big-bang releases
+
+### Rollback Safety
+- Migrate one screen per commit
+- Keep old styles commented for quick revert
+- Use feature flags if needed
+- Test incrementally before next screen
+
+### Team Workflow
+- Create branch: `feature/react-native-paper-migration`
+- Small PRs per screen (easier to review)
+- Deploy to preview channel for testing
+- Merge to main when batch complete
+
+---
+
+## Expected Improvements
+
+### Code Quality
+- **-30-40% custom styling code**
+- **+TypeScript type safety** for all components
+- **+Standardized patterns** across screens
+- **+Easier onboarding** for new developers
+
+### User Experience
+- **Modern Material Design 3** aesthetic
+- **Consistent interactions** across all screens
+- **Better accessibility** out of the box
+- **Smoother animations** with optimized components
+- **Professional polish** comparable to top apps
+
+### Maintenance
+- **Faster feature development** with pre-built components
+- **Easier theme customization** (one config file)
+- **Automatic updates** from Paper library
+- **Better documentation** (reference Paper docs)
 
 ---
 
 ## Success Metrics
 
-- **Visual Appeal:** Modern, premium aesthetic
-- **Performance:** 60fps animations, fast load times
-- **Usability:** Intuitive interactions, clear hierarchy
-- **Accessibility:** WCAG AA compliant
-- **Theme Support:** Seamless light/dark switching
-- **User Feedback:** Positive reviews on polish and design
+**Before Migration:**
+- Custom StyleSheet: ~2,000 lines
+- Theme switching: Manual updates across 10+ screens
+- Accessibility: Basic support
+- Development time: 2-4 hours per new screen
 
----
-
-## Reference Apps for Inspiration
-
-1. **Airbnb** - Card layouts, smooth animations
-2. **Instagram** - Story interactions, bottom sheets
-3. **Spotify** - Gradients, glassmorphism
-4. **Apple Music** - Typography, spacing
-5. **Dribbble** - Modern mobile UI trends
-6. **Behance** - Creative layouts
+**After Migration:**
+- Custom StyleSheet: ~1,200 lines (40% reduction)
+- Theme switching: Automatic via PaperProvider
+- Accessibility: WCAG AA compliant
+- Development time: 1-2 hours per new screen
 
 ---
 
 ## Next Steps
 
-Ready to start? I recommend:
+### Ready to Start?
 
-1. **Phase 1:** Install core dependencies (5 min)
-2. **Quick Win:** Add vector icons to navigation (15 min)
-3. **High Impact:** Enhance card design with shadows and gradients (30 min)
-4. **User Delight:** Add button press animations (20 min)
+**Quick Win (1 hour):**
+1. Install React Native Paper
+2. Configure PaperProvider with theme
+3. Migrate SettingsScreen (easiest)
+4. See immediate improvement!
 
-Let me know which phase you'd like to tackle first!
+**Full Migration (20-30 hours):**
+Follow the phases above, starting with Phase 1.
+
+### Questions to Consider:
+- Do we want to keep current color scheme or adopt Material You?
+- Should we use FAB for primary actions or stick with buttons?
+- Bottom Navigation vs Tab Navigator?
+- How aggressive on glassmorphism and gradients?
+
+---
+
+**Let me know when you're ready to begin, and which phase you'd like to tackle first!**

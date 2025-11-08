@@ -611,7 +611,168 @@ similarity = ((maxDistance - euclideanDistance) / maxDistance) * 100;
 - [ ] New oyster validation (require origin/species)
 - [ ] Navigation updates (conditional login button)
 
-### Phase 19: Social Features 📋
+### Phase 19: UI Modernization with React Native Paper 📋
+
+**Estimated Time:** 20-30 hours
+**Priority:** MEDIUM-HIGH
+**Status:** Planned
+
+**Overview:**
+Migrate from custom components to React Native Paper for a modern, consistent Material Design UI with built-in accessibility, theming, and responsive design.
+
+**Why React Native Paper:**
+- ✅ Material Design 3 components (modern, professional look)
+- ✅ Built-in theming system (light/dark mode already integrated)
+- ✅ Accessibility features (screen reader support, keyboard navigation)
+- ✅ Responsive design patterns
+- ✅ Well-maintained (active development, good TypeScript support)
+- ✅ Customizable to match brand identity
+- ✅ Reduces custom CSS/styling code significantly
+
+**Phase Breakdown:**
+
+#### 19.1: Setup & Configuration (2-3 hours)
+- [ ] Install react-native-paper and dependencies
+- [ ] Install react-native-vector-icons (icon library)
+- [ ] Configure Paper theme with custom colors (oyster brand palette)
+- [ ] Set up PaperProvider at app root
+- [ ] Integrate with existing dark mode system
+- [ ] Configure custom fonts (if needed)
+- [ ] Test theme switching works with Paper components
+
+**Theme Configuration:**
+```typescript
+const theme = {
+  ...MD3LightTheme,
+  colors: {
+    primary: '#FF6B35',      // Oyster orange
+    secondary: '#004E89',    // Ocean blue
+    tertiary: '#4A7C59',     // Seaweed green
+    surface: '#FFFFFF',
+    background: '#F5F5F5',
+    // ... customize all colors
+  },
+}
+```
+
+#### 19.2: Core Component Migration (8-10 hours)
+
+**High Priority Screens:**
+- [ ] **LoginScreen**:
+  - Replace custom inputs with TextInput (Paper)
+  - Replace buttons with Button component
+  - Add loading states with ActivityIndicator
+  - Use Card for form container
+- [ ] **RegisterScreen**:
+  - TextInput components with validation
+  - Password visibility toggle (built-in)
+  - Button components
+- [ ] **SettingsScreen**:
+  - List.Section and List.Item components
+  - Switch components for toggles
+  - Divider components
+- [ ] **ProfileScreen**:
+  - Card components for sections
+  - Avatar component for user profile
+  - ProgressBar for flavor profile
+  - Chip components for badges
+
+**Medium Priority Screens:**
+- [ ] **OysterListScreen**:
+  - Searchbar component (built-in search UI)
+  - Card components for oyster items
+  - FAB (Floating Action Button) for filters
+  - Chip components for active filters
+- [ ] **OysterDetailScreen**:
+  - Card for oyster info
+  - DataTable for attributes (optional)
+  - Button components for actions
+- [ ] **AddReviewScreen**:
+  - TextInput (multiline) for review text
+  - RadioButton group for rating
+  - Slider components (if available, or keep custom)
+  - Button components
+- [ ] **ReviewsScreen**:
+  - Card components for review items
+  - IconButton for vote buttons
+  - Badge components for credibility
+
+**Low Priority Screens:**
+- [ ] **HomeScreen**:
+  - Surface/Card for welcome section
+  - Button components
+- [ ] **TopOystersScreen**:
+  - DataTable or Card list
+  - Badge components for rankings
+
+#### 19.3: Navigation & Chrome (3-4 hours)
+- [ ] Replace header with Appbar.Header
+- [ ] Add Appbar.Action for icons (settings, filter, etc.)
+- [ ] Implement Appbar.Content for titles
+- [ ] Add bottom tab icons with proper theming
+- [ ] Configure navigation theme to match Paper
+- [ ] Add BottomNavigation component (optional alternative)
+
+#### 19.4: Common Components (4-6 hours)
+- [ ] **Buttons**: Replace all TouchableOpacity with Button/IconButton
+- [ ] **Input Fields**: Migrate to TextInput with proper modes (outlined/flat)
+- [ ] **Cards**: Standardize all card layouts with Card component
+- [ ] **Lists**: Use List.Item for consistent list UI
+- [ ] **Chips**: Add chip components for filters, tags, badges
+- [ ] **Dialogs**: Replace Alert with Dialog component
+- [ ] **Snackbars**: Add Snackbar for success/error messages
+- [ ] **Loading States**: Use ActivityIndicator throughout
+
+#### 19.5: Custom Components (3-4 hours)
+- [ ] Create custom SliderWithLabel wrapper (preserve current slider UX)
+- [ ] Create OysterCard component using Paper Card
+- [ ] Create ReviewCard component using Paper Card
+- [ ] Create RatingDisplay component with icons
+- [ ] Create AttributeBar component (progress bar + labels)
+- [ ] Ensure all custom components accept theme props
+
+#### 19.6: Testing & Polish (2-3 hours)
+- [ ] Test all screens in light mode
+- [ ] Test all screens in dark mode
+- [ ] Verify theme switching works correctly
+- [ ] Test on iOS and Android
+- [ ] Check accessibility features (screen reader)
+- [ ] Verify responsive behavior on different screen sizes
+- [ ] Update component tests (if any)
+- [ ] Fix any styling inconsistencies
+
+**Expected Improvements:**
+- 📱 Professional, polished Material Design look
+- 🎨 Consistent styling across all screens
+- ♿ Better accessibility out of the box
+- 🌓 Seamless light/dark mode integration
+- 📦 30-40% less custom styling code
+- 🚀 Faster development for future features
+- 🔧 Easier maintenance with standard components
+
+**Migration Strategy:**
+1. Start with smallest screens first (Settings, Profile)
+2. Move to authentication screens (Login, Register)
+3. Tackle main screens (OysterList, OysterDetail)
+4. Finish with complex screens (AddReview, Reviews)
+5. Test incrementally after each screen migration
+6. Keep UI functional throughout migration (no breaking changes)
+
+**Rollback Plan:**
+- Migrate one screen at a time (can revert individual screens)
+- Keep custom styles as fallback during transition
+- Use feature flags if needed for gradual rollout
+
+**Dependencies:**
+```json
+{
+  "react-native-paper": "^5.x",
+  "react-native-vector-icons": "^10.x",
+  "react-native-safe-area-context": "^4.x"
+}
+```
+
+### Phase 20: Social Features 📋
 
 - [ ] User profiles with review history
 - [ ] Follow/unfollow other users
