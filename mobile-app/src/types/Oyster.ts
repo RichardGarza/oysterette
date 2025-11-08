@@ -31,7 +31,7 @@
  *
  * Review Interface:
  * - id, userId, oysterId: Relations
- * - rating: ReviewRating enum (LOVE_IT, LIKE_IT, MEH, OKAY)
+ * - rating: ReviewRating enum (LOVE_IT, LIKE_IT, OKAY, MEH) - highest to lowest
  * - Attribute sliders: Optional 1-10 scores
  * - notes: Optional tasting notes
  * - Voting metrics: agreeCount, disagreeCount, netVoteScore, weightedScore
@@ -141,8 +141,8 @@ export interface Oyster {
   reviews?: Review[];
 }
 
-// Review rating enum
-export type ReviewRating = 'LOVE_IT' | 'LIKE_IT' | 'MEH' | 'OKAY';
+// Review rating enum (highest to lowest: LOVE_IT > LIKE_IT > OKAY > MEH)
+export type ReviewRating = 'LOVE_IT' | 'LIKE_IT' | 'OKAY' | 'MEH';
 
 // Review type
 export interface Review {

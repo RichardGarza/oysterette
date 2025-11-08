@@ -13,7 +13,7 @@
  * - Static styling (not theme-aware)
  *
  * Form Fields:
- * - Overall rating: LOVE_IT, LIKE_IT, MEH, WHATEVER (pre-selected)
+ * - Overall rating: LOVE_IT, LIKE_IT, OKAY, MEH (highest to lowest, pre-selected)
  * - Size slider: 1-10 (pre-filled)
  * - Body slider: 1-10 (pre-filled)
  * - Sweet/Brininess slider: 1-10 (pre-filled)
@@ -66,10 +66,10 @@ import { reviewApi } from '../services/api';
 import { ReviewRating, Review } from '../types/Oyster';
 
 const RATING_OPTIONS: { label: string; value: ReviewRating; emoji: string; color: string }[] = [
-  { label: 'Love It', value: 'LOVE_IT', emoji: '❤️', color: '#e74c3c' },
-  { label: 'Like It', value: 'LIKE_IT', emoji: '👍', color: '#27ae60' },
-  { label: 'Meh', value: 'MEH', emoji: '😐', color: '#f39c12' },
-  { label: 'Whatever', value: 'WHATEVER', emoji: '🤷', color: '#95a5a6' },
+  { label: 'Love It', value: 'LOVE_IT', emoji: '❤️', color: '#e74c3c' },  // Best
+  { label: 'Like It', value: 'LIKE_IT', emoji: '👍', color: '#27ae60' },  // Good
+  { label: 'Okay', value: 'OKAY', emoji: '👌', color: '#3498db' },        // Okay
+  { label: 'Meh', value: 'MEH', emoji: '😐', color: '#95a5a6' },          // Worst
 ];
 
 export default function EditReviewScreen() {

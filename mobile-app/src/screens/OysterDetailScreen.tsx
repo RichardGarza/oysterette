@@ -288,10 +288,10 @@ export default function OysterDetailScreen() {
       case 'recent':
         return reviews.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       case 'highest':
-        const ratingOrder = { LOVE_IT: 4, LIKE_IT: 3, MEH: 2, WHATEVER: 1 };
+        const ratingOrder = { LOVE_IT: 4, LIKE_IT: 3, OKAY: 2, MEH: 1 };
         return reviews.sort((a, b) => ratingOrder[b.rating] - ratingOrder[a.rating]);
       case 'lowest':
-        const ratingOrderLow = { LOVE_IT: 4, LIKE_IT: 3, MEH: 2, WHATEVER: 1 };
+        const ratingOrderLow = { LOVE_IT: 4, LIKE_IT: 3, OKAY: 2, MEH: 1 };
         return reviews.sort((a, b) => ratingOrderLow[a.rating] - ratingOrderLow[b.rating]);
       default:
         return reviews;
