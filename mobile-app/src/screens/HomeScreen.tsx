@@ -64,6 +64,7 @@ export default function HomeScreen() {
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [topRated, setTopRated] = useState<Oyster[]>([]);
   const [userStats, setUserStats] = useState({ reviews: 0, favorites: 0, oystersTried: 0 });
+  const [totalOysters, setTotalOysters] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const fadeAnim = useState(new Animated.Value(0))[0];
 
@@ -110,6 +111,7 @@ export default function HomeScreen() {
   const loadTopRated = useCallback(async () => {
     try {
       const data = await oysterApi.getAll();
+      setTotalOysters(data.length);
       const sorted = data
         .filter(oyster => oyster.totalReviews > 0)
         .sort((a, b) => b.overallScore - a.overallScore)
@@ -251,23 +253,30 @@ export default function HomeScreen() {
           style={styles.searchBar}
         />
 
-        {/* Quick Stats - Only show if logged in */}
-        {isLoggedIn && (
-          <View style={styles.statsContainer}>
-            <Surface style={styles.statCard} elevation={1}>
-              <Text variant="headlineSmall" style={styles.statNumber}>{userStats.reviews}</Text>
-              <Text variant="bodySmall" style={styles.statLabel}>Reviews</Text>
+        {/* Quick Stats */}
+        <View style={styles.statsContainer}>
+          {isLoggedIn ? (
+            <>
+              <Surface style={styles.statCard} elevation={1}>
+                <Text variant="headlineSmall" style={styles.statNumber}>{userStats.reviews}</Text>
+                <Text variant="bodySmall" style={styles.statLabel}>Reviews</Text>
+              </Surface>
+              <Surface style={styles.statCard} elevation={1}>
+                <Text variant="headlineSmall" style={styles.statNumber}>{userStats.favorites}</Text>
+                <Text variant="bodySmall" style={styles.statLabel}>Favorites</Text>
+              </Surface>
+              <Surface style={styles.statCard} elevation={1}>
+                <Text variant="headlineSmall" style={styles.statNumber}>{userStats.oystersTried}</Text>
+                <Text variant="bodySmall" style={styles.statLabel}>Tried</Text>
+              </Surface>
+            </>
+          ) : (
+            <Surface style={styles.statCardFull} elevation={1}>
+              <Text variant="displaySmall" style={styles.statNumber}>{totalOysters}</Text>
+              <Text variant="bodyMedium" style={styles.statLabel}>Oysters in Database</Text>
             </Surface>
-            <Surface style={styles.statCard} elevation={1}>
-              <Text variant="headlineSmall" style={styles.statNumber}>{userStats.favorites}</Text>
-              <Text variant="bodySmall" style={styles.statLabel}>Favorites</Text>
-            </Surface>
-            <Surface style={styles.statCard} elevation={1}>
-              <Text variant="headlineSmall" style={styles.statNumber}>{userStats.oystersTried}</Text>
-              <Text variant="bodySmall" style={styles.statLabel}>Tried</Text>
-            </Surface>
-          </View>
-        )}
+          )}
+        </View>
 
         {/* Recommendations Section - Only show if logged in */}
         {isLoggedIn && (
@@ -345,51 +354,48 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Quick Action Buttons */}
-        {isLoggedIn && (
-          <Button
-            mode="contained"
-            onPress={() => navigation.navigate('Profile')}
-            style={styles.button}
-            icon="account"
-            contentStyle={styles.buttonContent}
-          >
-            My Profile
-          </Button>
-        )}
+        {/* Quick Actions Grid */}
+        <View style={styles.quickActionsContainer}>
+          <Text variant="headlineSmall" style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.actionsGrid}>
+            <Card mode="elevated" style={styles.actionCard} onPress={handleBrowseOysters}>
+              <Card.Content style={styles.actionCardContent}>
+                <Text variant="headlineMedium" style={styles.actionIcon}>🔍</Text>
+                <Text variant="titleMedium" style={styles.actionTitle}>Browse All</Text>
+              </Card.Content>
+            </Card>
 
-        <Button
-          mode="contained"
-          onPress={handleBrowseOysters}
-          style={styles.button}
-          icon="magnify"
-          contentStyle={styles.buttonContent}
-        >
-          {isLoggedIn ? 'All Oysters' : 'Browse Oysters'}
-        </Button>
+            <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('TopOysters')}>
+              <Card.Content style={styles.actionCardContent}>
+                <Text variant="headlineMedium" style={styles.actionIcon}>🏆</Text>
+                <Text variant="titleMedium" style={styles.actionTitle}>Top Oysters</Text>
+              </Card.Content>
+            </Card>
 
-        <Button
-          mode="contained"
-          onPress={() => navigation.navigate('TopOysters')}
-          style={styles.topOystersButton}
-          icon="trophy"
-          contentStyle={styles.buttonContent}
-          buttonColor={paperTheme.colors.tertiary}
-        >
-          Top Oysters
-        </Button>
+            <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('AddOyster')}>
+              <Card.Content style={styles.actionCardContent}>
+                <Text variant="headlineMedium" style={styles.actionIcon}>➕</Text>
+                <Text variant="titleMedium" style={styles.actionTitle}>Add Oyster</Text>
+              </Card.Content>
+            </Card>
 
-        {!isLoggedIn && (
-          <Button
-            mode="outlined"
-            onPress={() => navigation.navigate('Login')}
-            style={styles.secondaryButton}
-            icon="login"
-            contentStyle={styles.buttonContent}
-          >
-            Log In
-          </Button>
-        )}
+            {isLoggedIn ? (
+              <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('Profile')}>
+                <Card.Content style={styles.actionCardContent}>
+                  <Text variant="headlineMedium" style={styles.actionIcon}>👤</Text>
+                  <Text variant="titleMedium" style={styles.actionTitle}>My Profile</Text>
+                </Card.Content>
+              </Card>
+            ) : (
+              <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('Login')}>
+                <Card.Content style={styles.actionCardContent}>
+                  <Text variant="headlineMedium" style={styles.actionIcon}>🔐</Text>
+                  <Text variant="titleMedium" style={styles.actionTitle}>Log In</Text>
+                </Card.Content>
+              </Card>
+            )}
+          </View>
+        </View>
 
 {!isLoggedIn && (
           <Card mode="outlined" style={styles.infoCard}>
@@ -471,6 +477,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
+  statCardFull: {
+    flex: 1,
+    padding: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
   statNumber: {
     fontWeight: 'bold',
     marginBottom: 4,
@@ -485,20 +497,33 @@ const styles = StyleSheet.create({
   topRatedList: {
     paddingRight: 12,
   },
-  button: {
-    marginBottom: 15,
-    minWidth: 200,
+  quickActionsContainer: {
+    width: '100%',
+    marginBottom: 24,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  actionCard: {
+    width: '48%',
+    minHeight: 100,
+  },
+  actionCardContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+  },
+  actionIcon: {
+    marginBottom: 8,
+  },
+  actionTitle: {
+    textAlign: 'center',
   },
   buttonContent: {
     paddingVertical: 8,
-  },
-  topOystersButton: {
-    marginBottom: 15,
-    minWidth: 200,
-  },
-  secondaryButton: {
-    marginBottom: 30,
-    minWidth: 200,
   },
   infoCard: {
     marginTop: 20,
