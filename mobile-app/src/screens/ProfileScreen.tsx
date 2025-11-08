@@ -89,6 +89,7 @@ import {
   ScrollView,
   SafeAreaView,
   RefreshControl,
+  Alert,
   Platform,
   Alert,
   Image,

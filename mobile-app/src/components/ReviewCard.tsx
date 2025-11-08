@@ -8,9 +8,8 @@ import React, { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import {
   View,
   StyleSheet,
-  Alert,
 } from 'react-native';
-import { Card, Text, IconButton, Chip, Button, ActivityIndicator } from 'react-native-paper';
+import { Card, Text, IconButton, Chip, Button, ActivityIndicator, Dialog, Portal, Snackbar } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
 import { Review } from '../types/Oyster';
 import { voteApi, reviewApi } from '../services/api';
@@ -97,6 +96,9 @@ export const ReviewCard = memo<ReviewCardProps>(({
   const [voting, setVoting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [credibilityBadge, setCredibilityBadge] = useState<CredibilityBadge | null>(null);
+  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const isOwnReview = useMemo(
     () => currentUserId !== undefined && review.userId === currentUserId,
@@ -137,37 +139,31 @@ export const ReviewCard = memo<ReviewCardProps>(({
       onVoteChange();
     } catch (error: any) {
       console.error('❌ [ReviewCard] Error voting:', error);
-      Alert.alert('Error', error.response?.data?.error || 'Failed to submit vote');
+      setSnackbarMessage(error.response?.data?.error || 'Failed to submit vote');
+      setSnackbarVisible(true);
     } finally {
       setVoting(false);
     }
   }, [currentVote, review.id, onVoteChange]);
 
-  const handleDelete = useCallback(() => {
-    Alert.alert(
-      'Delete Review',
-      'Are you sure you want to delete this review? This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setDeleting(true);
-              await reviewApi.delete(review.id);
-              Haptics.notificationAsync(HAPTICS.DELETE);
-              onDelete?.();
-            } catch (error: any) {
-              console.error('❌ [ReviewCard] Error deleting review:', error);
-              Alert.alert('Error', error.response?.data?.error || 'Failed to delete review');
-            } finally {
-              setDeleting(false);
-            }
-          },
-        },
-      ]
-    );
+  const handleDeletePress = useCallback(() => {
+    setDeleteDialogVisible(true);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    try {
+      setDeleteDialogVisible(false);
+      setDeleting(true);
+      await reviewApi.delete(review.id);
+      Haptics.notificationAsync(HAPTICS.DELETE);
+      onDelete?.();
+    } catch (error: any) {
+      console.error('❌ [ReviewCard] Error deleting review:', error);
+      setSnackbarMessage(error.response?.data?.error || 'Failed to delete review');
+      setSnackbarVisible(true);
+    } finally {
+      setDeleting(false);
+    }
   }, [review.id, onDelete]);
 
   const credibilityColor = credibilityBadge?.color || COLORS.DEFAULT_BADGE;
@@ -211,7 +207,7 @@ export const ReviewCard = memo<ReviewCardProps>(({
                   icon="delete"
                   size={16}
                   iconColor={theme.colors.error}
-                  onPress={handleDelete}
+                  onPress={handleDeletePress}
                   disabled={deleting}
                   loading={deleting}
                 />
@@ -256,6 +252,33 @@ export const ReviewCard = memo<ReviewCardProps>(({
           </View>
         </View>
       </Card.Content>
+
+      <Portal>
+        <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)}>
+          <Dialog.Title>Delete Review</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium">
+              Are you sure you want to delete this review? This action cannot be undone.
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setDeleteDialogVisible(false)}>Cancel</Button>
+            <Button onPress={handleDeleteConfirm} textColor={theme.colors.error}>Delete</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        action={{
+          label: 'OK',
+          onPress: () => setSnackbarVisible(false),
+        }}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </Card>
   );
 });
