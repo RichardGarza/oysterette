@@ -90,15 +90,36 @@ export default function AddReviewScreen() {
   const route = useRoute<AddReviewScreenRouteProp>();
   const navigation = useNavigation<AddReviewScreenNavigationProp>();
   const { paperTheme } = useTheme();
-  const { oysterId, oysterName, oysterOrigin, oysterSpecies, existingReview } = route.params;
+  const {
+    oysterId,
+    oysterName,
+    oysterOrigin,
+    oysterSpecies,
+    oysterAvgSize,
+    oysterAvgBody,
+    oysterAvgSweetBrininess,
+    oysterAvgFlavorfulness,
+    oysterAvgCreaminess,
+    existingReview
+  } = route.params;
   const isUpdateMode = !!existingReview;
 
   const [rating, setRating] = useState<ReviewRating | null>(existingReview?.rating || null);
-  const [size, setSize] = useState<number>(existingReview?.size || 5);
-  const [body, setBody] = useState<number>(existingReview?.body || 5);
-  const [sweetBrininess, setSweetBrininess] = useState<number>(existingReview?.sweetBrininess || 5);
-  const [flavorfulness, setFlavorfulness] = useState<number>(existingReview?.flavorfulness || 5);
-  const [creaminess, setCreaminess] = useState<number>(existingReview?.creaminess || 5);
+  const [size, setSize] = useState<number>(
+    existingReview?.size || oysterAvgSize || 5
+  );
+  const [body, setBody] = useState<number>(
+    existingReview?.body || oysterAvgBody || 5
+  );
+  const [sweetBrininess, setSweetBrininess] = useState<number>(
+    existingReview?.sweetBrininess || oysterAvgSweetBrininess || 5
+  );
+  const [flavorfulness, setFlavorfulness] = useState<number>(
+    existingReview?.flavorfulness || oysterAvgFlavorfulness || 5
+  );
+  const [creaminess, setCreaminess] = useState<number>(
+    existingReview?.creaminess || oysterAvgCreaminess || 5
+  );
   const [notes, setNotes] = useState(existingReview?.notes || '');
   const [contributedOrigin, setContributedOrigin] = useState('');
   const [contributedSpecies, setContributedSpecies] = useState('');
