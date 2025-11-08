@@ -30,7 +30,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import * as ImagePicker from 'expo-image-picker';
 import { AddReviewScreenRouteProp, AddReviewScreenNavigationProp } from '../navigation/types';
-import { reviewApi } from '../services/api';
+import { reviewApi, api } from '../services/api';
 import { authStorage } from '../services/auth';
 import { ReviewRating } from '../types/Oyster';
 import { getAttributeDescriptor } from '../utils/ratingUtils';
@@ -345,6 +345,39 @@ export default function AddReviewScreen() {
           photoUrls: photos.length > 0 ? photos : undefined,
         });
         console.log('✅ [AddReviewScreen] Review submitted successfully');
+      }
+
+      // Check for badge level up (only for new reviews)
+      if (!isUpdateMode && token) {
+        try {
+          const oldBadgeLevel = await authStorage.getBadgeLevel();
+          const profileResponse = await api.get('/users/profile', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const newBadgeLevel = profileResponse.data?.data?.stats?.badgeLevel;
+
+          if (newBadgeLevel && newBadgeLevel !== oldBadgeLevel) {
+            await authStorage.saveBadgeLevel(newBadgeLevel);
+
+            const messages = {
+              Trusted: 'You've earned the Trusted Badge! ⭐\nKeep reviewing to become an Expert.',
+              Expert: 'You've earned the Expert Badge! 🏆\nYou're now a recognized oyster authority!',
+            };
+
+            Alert.alert(
+              '🎉 Badge Upgrade!',
+              messages[newBadgeLevel as keyof typeof messages] || `You're now a ${newBadgeLevel}!`,
+              [{ text: 'Awesome!', onPress: () => navigation.goBack() }]
+            );
+            return;
+          } else if (newBadgeLevel) {
+            await authStorage.saveBadgeLevel(newBadgeLevel);
+          }
+        } catch (error) {
+          if (__DEV__) {
+            console.error('❌ [AddReviewScreen] Error checking badge level:', error);
+          }
+        }
       }
 
       Alert.alert(

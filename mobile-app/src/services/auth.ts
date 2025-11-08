@@ -14,6 +14,7 @@ import { User } from '../types/Oyster';
 const STORAGE_KEYS = {
   TOKEN: '@oysterette_token',
   USER: '@oysterette_user',
+  BADGE_LEVEL: '@oysterette_badge_level',
 } as const;
 
 // ============================================================================
@@ -123,9 +124,37 @@ export const authStorage = {
     await Promise.all([
       this.removeToken(),
       this.removeUser(),
+      AsyncStorage.removeItem(STORAGE_KEYS.BADGE_LEVEL),
     ]);
     if (__DEV__) {
       console.log('🧹 [AuthStorage] Auth cleared');
+    }
+  },
+
+  /**
+   * Save badge level
+   */
+  async saveBadgeLevel(badgeLevel: string): Promise<void> {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.BADGE_LEVEL, badgeLevel);
+    } catch (error) {
+      if (__DEV__) {
+        console.error('❌ [AuthStorage] Error saving badge level:', error);
+      }
+    }
+  },
+
+  /**
+   * Get badge level
+   */
+  async getBadgeLevel(): Promise<string | null> {
+    try {
+      return await AsyncStorage.getItem(STORAGE_KEYS.BADGE_LEVEL);
+    } catch (error) {
+      if (__DEV__) {
+        console.error('❌ [AuthStorage] Error getting badge level:', error);
+      }
+      return null;
     }
   },
 };

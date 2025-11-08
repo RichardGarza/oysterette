@@ -302,9 +302,9 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
  * - Membership duration
  *
  * Badge Levels:
- * - Expert: credibility ≥ 1.5
- * - Trusted: credibility ≥ 1.0
- * - Novice: credibility < 1.0
+ * - Expert: 50+ reviews AND credibility ≥ 1.5
+ * - Trusted: 10-49 reviews AND credibility ≥ 1.0
+ * - Novice: 0-9 reviews OR credibility < 1.0
  *
  * @route GET /api/users/profile
  * @requires Authentication
@@ -393,11 +393,13 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
       ? Object.entries(originCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
       : undefined;
 
-    // Determine badge level
+    // Determine badge level (based on review count AND credibility)
     let badgeLevel: 'Novice' | 'Trusted' | 'Expert' = 'Novice';
-    if (user.credibilityScore >= 1.5) {
+    const reviewCount = user._count.reviews;
+
+    if (reviewCount >= 50 && user.credibilityScore >= 1.5) {
       badgeLevel = 'Expert';
-    } else if (user.credibilityScore >= 1.0) {
+    } else if (reviewCount >= 10 && user.credibilityScore >= 1.0) {
       badgeLevel = 'Trusted';
     }
 
