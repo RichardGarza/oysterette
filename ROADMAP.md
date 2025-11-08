@@ -1426,27 +1426,40 @@ const theme = {
 
 ### Phase 20: AR Menu Scanner 🚧
 
-**Status:** Initial Setup Complete (15% - 1.5 hours)
+**Status:** Core Functionality Complete (60% - 4 hours)
 **Estimated Time:** 30-40 hours total
 **Priority:** HIGH (Consumer Delight Feature)
 **Platform:** Mobile (iOS/Android), Web PWA (with camera API)
 
-**Completed (Initial Setup):**
+**Completed:**
 - [x] Install expo-camera package
 - [x] Create ScanMenuScreen with camera preview
 - [x] Camera permission handling (request + error states)
 - [x] Scan area overlay with corner guides
 - [x] "Scan Menu" quick action added to HomeScreen
 - [x] Navigation integration (added to App.tsx + types)
+- [x] OCR integration (@react-native-ml-kit/text-recognition)
+- [x] Oyster name detection and parsing (ocrService.ts)
+- [x] Fuzzy matching with database (Fuse.js, 40% threshold)
+- [x] Results UI with match scores
+- [x] Color-coded scores (🟢 90%+, 🟡 70-89%, 🔴 <70%)
+- [x] Personalized scoring based on user flavor profile
+- [x] "View Details" navigation to OysterDetailScreen
 
-**In Progress:**
-- [ ] OCR integration (expo-text-recognition or Google ML Kit)
-- [ ] Oyster name detection and parsing
-- [ ] Fuzzy matching with database (using Fuse.js)
-- [ ] AR overlay with match scores
-- [ ] Color-coded results (🟢🟡🔴)
-- [ ] Flavor profile tooltips
-- [ ] "View Details" navigation
+**Current Implementation:**
+- Photo-based scanning (tap "Scan Now" → take photo → OCR → results)
+- Works offline after oyster data loaded
+- Fuzzy matching handles typos and variations
+- Scrollable results list with personalized scores
+
+**In Progress (40% remaining):**
+- [ ] Real-time AR overlay (live camera feed with overlays)
+- [ ] Bounding box detection (highlight oyster names on screen)
+- [ ] Live text detection during preview (no photo needed)
+- [ ] Performance optimizations (debounce, caching)
+- [ ] Flavor profile tooltips on tap
+- [ ] Session tracking ("Mark as Ordered")
+- [ ] Save scan history
 
 **Overview:**
 Revolutionize oyster menu navigation with augmented reality. Users point their phone camera at an oyster menu and instantly see personalized likelihood scores and flavor profiles overlaid on each oyster name.
