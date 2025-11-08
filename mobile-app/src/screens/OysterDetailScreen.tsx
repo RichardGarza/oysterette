@@ -92,7 +92,7 @@ import {
   SegmentedButtons,
 } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { OysterDetailScreenRouteProp, OysterDetailScreenNavigationProp } from '../navigation/types';
 import { oysterApi, voteApi, reviewApi } from '../services/api';
 import { authStorage } from '../services/auth';
@@ -127,6 +127,14 @@ export default function OysterDetailScreen() {
     loadFavoriteStatus();
     loadCurrentUser();
   }, [oysterId]);
+
+  // Auto-refresh when screen comes into focus (e.g., after adding/updating a review)
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchOyster();
+      loadFavoriteStatus();
+    }, [oysterId])
+  );
 
   const loadCurrentUser = async () => {
     const user = await authStorage.getUser();

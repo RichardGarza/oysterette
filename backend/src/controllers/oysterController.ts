@@ -23,67 +23,71 @@ import Fuse from 'fuse.js';
  * @route GET /api/oysters
  * @param req.query.sortBy - Sort by: rating | name | size | sweetness | creaminess | flavorfulness | body
  * @param req.query.sortDirection - Sort direction: asc | desc (default: desc for attributes, asc for name)
- * @param req.query.sweetness - Filter by sweetness: low (<4) | high (>6)
- * @param req.query.size - Filter by size: low (<4) | high (>6)
- * @param req.query.body - Filter by body: low (<4) | high (>6)
- * @param req.query.flavorfulness - Filter by flavorfulness: low (<4) | high (>6)
- * @param req.query.creaminess - Filter by creaminess: low (<4) | high (>6)
+ * @param req.query.sweetness - Filter by sweetness (fuzzy ±2): low (1-6) | high (4-10)
+ * @param req.query.size - Filter by size (fuzzy ±2): low (1-6) | high (4-10)
+ * @param req.query.body - Filter by body (fuzzy ±2): low (1-6) | high (4-10)
+ * @param req.query.flavorfulness - Filter by flavorfulness (fuzzy ±2): low (1-6) | high (4-10)
+ * @param req.query.creaminess - Filter by creaminess (fuzzy ±2): low (1-6) | high (4-10)
  * @returns 200 - Array of oysters with review counts
  * @returns 500 - Server error
  *
  * @example
- * GET /api/oysters?sweetness=low&sortBy=rating&sortDirection=desc
- * GET /api/oysters?size=high&body=high&sortBy=name&sortDirection=asc
+ * GET /api/oysters?sweetness=low&sortBy=rating&sortDirection=desc  // Returns oysters with sweetness 1-6
+ * GET /api/oysters?size=high&body=high&sortBy=name&sortDirection=asc  // Returns oysters with size 4-10 AND body 4-10
  */
 export const getAllOysters = async (req: Request, res: Response): Promise<void> => {
   try {
     const { sortBy, sortDirection, sweetness, size, body, flavorfulness, creaminess } = req.query;
 
     // Build where clause for attribute filtering
+    // Fuzzy matching: ±2 range for more flexible filtering
+    // - 'low' matches 1-6 (low end of spectrum)
+    // - 'high' matches 4-10 (high end of spectrum)
+    // - Overlap at 4-6 creates fuzzy matching
     const where: any = {};
 
-    // Sweetness filter (<4 is sweet/low, >6 is briny/high)
+    // Sweetness filter (±2 fuzzy range)
     if (sweetness && typeof sweetness === 'string') {
       if (sweetness === 'low') {
-        where.avgSweetBrininess = { lt: 4 };
+        where.avgSweetBrininess = { gte: 1, lte: 6 };
       } else if (sweetness === 'high') {
-        where.avgSweetBrininess = { gt: 6 };
+        where.avgSweetBrininess = { gte: 4, lte: 10 };
       }
     }
 
-    // Size filter
+    // Size filter (±2 fuzzy range)
     if (size && typeof size === 'string') {
       if (size === 'low') {
-        where.avgSize = { lt: 4 };
+        where.avgSize = { gte: 1, lte: 6 };
       } else if (size === 'high') {
-        where.avgSize = { gt: 6 };
+        where.avgSize = { gte: 4, lte: 10 };
       }
     }
 
-    // Body filter
+    // Body filter (±2 fuzzy range)
     if (body && typeof body === 'string') {
       if (body === 'low') {
-        where.avgBody = { lt: 4 };
+        where.avgBody = { gte: 1, lte: 6 };
       } else if (body === 'high') {
-        where.avgBody = { gt: 6 };
+        where.avgBody = { gte: 4, lte: 10 };
       }
     }
 
-    // Flavorfulness filter
+    // Flavorfulness filter (±2 fuzzy range)
     if (flavorfulness && typeof flavorfulness === 'string') {
       if (flavorfulness === 'low') {
-        where.avgFlavorfulness = { lt: 4 };
+        where.avgFlavorfulness = { gte: 1, lte: 6 };
       } else if (flavorfulness === 'high') {
-        where.avgFlavorfulness = { gt: 6 };
+        where.avgFlavorfulness = { gte: 4, lte: 10 };
       }
     }
 
-    // Creaminess filter
+    // Creaminess filter (±2 fuzzy range)
     if (creaminess && typeof creaminess === 'string') {
       if (creaminess === 'low') {
-        where.avgCreaminess = { lt: 4 };
+        where.avgCreaminess = { gte: 1, lte: 6 };
       } else if (creaminess === 'high') {
-        where.avgCreaminess = { gt: 6 };
+        where.avgCreaminess = { gte: 4, lte: 10 };
       }
     }
 

@@ -13,6 +13,8 @@
  * - Haptic feedback on favorite toggle
  * - Skeleton loading states
  * - Empty states for different scenarios (no favorites, no search results, etc.)
+ * - Auto-clear filters when searching (search overrides filters)
+ * - Back button navigation to Home (prevents app exit)
  * - Theme-aware styling via React Native Paper
  *
  * Material Design Components:
@@ -83,6 +85,7 @@ import {
   Platform,
   ScrollView,
   Image,
+  BackHandler,
 } from 'react-native';
 import {
   Text,
@@ -155,6 +158,16 @@ export default function OysterListScreen() {
     }, [])
   );
 
+  // Handle Android back button - navigate to Home instead of exiting app
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      navigation.navigate('Home');
+      return true; // Prevent default back behavior
+    });
+
+    return () => backHandler.remove();
+  }, [navigation]);
+
   const checkAuth = async () => {
     const token = await authStorage.getToken();
     setIsLoggedIn(!!token);
@@ -219,6 +232,16 @@ export default function OysterListScreen() {
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
+
+    // Clear all filters when user starts searching
+    if (query.trim() !== '') {
+      setSweetness('');
+      setSize('');
+      setBody('');
+      setFlavorfulness('');
+      setCreaminess('');
+    }
+
     if (query.trim() === '') {
       fetchOysters();
       return;

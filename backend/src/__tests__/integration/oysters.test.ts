@@ -74,6 +74,58 @@ describe('Oyster API Integration Tests', () => {
       expect(oyster).toHaveProperty('flavorfulness');
       expect(oyster).toHaveProperty('creaminess');
     });
+    it('should filter oysters with fuzzy matching (low range)', async () => {
+      const response = await request(app)
+        .get('/api/oysters?sweetness=low')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toBeInstanceOf(Array);
+
+      // Fuzzy low range: 1-6
+      response.body.data.forEach((oyster: any) => {
+        const sweetness = oyster.avgSweetBrininess || oyster.sweetBrininess;
+        expect(sweetness).toBeGreaterThanOrEqual(1);
+        expect(sweetness).toBeLessThanOrEqual(6);
+      });
+    });
+
+    it('should filter oysters with fuzzy matching (high range)', async () => {
+      const response = await request(app)
+        .get('/api/oysters?size=high')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toBeInstanceOf(Array);
+
+      // Fuzzy high range: 4-10
+      response.body.data.forEach((oyster: any) => {
+        const size = oyster.avgSize || oyster.size;
+        expect(size).toBeGreaterThanOrEqual(4);
+        expect(size).toBeLessThanOrEqual(10);
+      });
+    });
+
+    it('should allow overlap in fuzzy ranges', async () => {
+      // Get oysters with sweetness=low (1-6)
+      const lowResponse = await request(app)
+        .get('/api/oysters?sweetness=low')
+        .expect(200);
+
+      // Get oysters with sweetness=high (4-10)
+      const highResponse = await request(app)
+        .get('/api/oysters?sweetness=high')
+        .expect(200);
+
+      // Check that some oysters appear in both (overlap at 4-6)
+      const lowIds = new Set(lowResponse.body.data.map((o: any) => o.id));
+      const highIds = new Set(highResponse.body.data.map((o: any) => o.id));
+
+      const overlap = [...lowIds].filter(id => highIds.has(id));
+
+      // Should have overlap due to fuzzy ±2 range
+      expect(overlap.length).toBeGreaterThan(0);
+    });
   });
 
   describe('GET /api/oysters/:id', () => {

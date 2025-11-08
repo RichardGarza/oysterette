@@ -7,13 +7,16 @@
  * - Overall rating selection (Love It, Like It, Meh, Whatever) with color-coded buttons
  * - 5 attribute sliders with dynamic word labels and theme-aware colors
  * - Optional tasting notes text area with Paper TextInput
- * - Login prompt dialog (if not authenticated)
+ * - Anonymous review support (no login required)
+ * - Save review options dialog with 3 choices
+ * - Temporary review storage for login-later flow
  * - KeyboardAvoidingView for iOS keyboard handling
  * - Update mode support (pre-fills existing review data)
+ * - Pre-populated flavor attributes from oyster data
  * - Theme-aware styling via React Native Paper
  *
  * Material Design Components:
- * - Portal + Dialog: Login required modal
+ * - Portal + Dialog: Save review options modal
  * - Button: All action buttons (submit, add photo, modal buttons)
  * - TextInput: Notes and contribution inputs with outlined mode
  * - Text: Typography with variants
@@ -30,13 +33,25 @@
  * - Better accessibility
  *
  * Modes:
- * - Create: New review for oyster (requires auth)
- * - Update: Edit existing review (existingReview param provided)
+ * - Create: New review for oyster (login optional)
+ * - Update: Edit existing review (requires auth via existingReview param)
+ *
+ * Anonymous Review Flow:
+ * 1. User fills out review without logging in
+ * 2. User taps "Submit Review"
+ * 3. Dialog appears with 3 options:
+ *    - "Just Post Review": Submit anonymously (requires backend support)
+ *    - "Sign In to Save": Store in AsyncStorage, navigate to Login
+ *    - "Sign Up to Save": Store in AsyncStorage, navigate to Register
+ * 4. If user chooses to login later:
+ *    - Review saved to AsyncStorage via tempReviewsStorage
+ *    - After successful auth, review can be submitted with user credentials
  *
  * Sliders:
  * - Range: 1-10 (integer steps)
  * - Dynamic word label shown above slider
  * - Theme-aware track/thumb colors
+ * - Pre-populated with oyster's average attributes
  *
  * State:
  * - rating: Overall ReviewRating enum value
@@ -45,6 +60,7 @@
  * - submitting: Boolean for loading state
  * - showLoginPrompt: Dialog visibility toggle
  * - isUpdateMode: Determined by existingReview param presence
+ * - photos: Array of photo URLs (max 1)
  */
 
 import React, { useState, useEffect } from 'react';
@@ -78,6 +94,7 @@ import { authStorage } from '../services/auth';
 import { ReviewRating } from '../types/Oyster';
 import { getAttributeDescriptor } from '../utils/ratingUtils';
 import { useTheme } from '../context/ThemeContext';
+import { tempReviewsStorage } from '../services/tempReviews';
 
 const RATING_OPTIONS: { label: string; value: ReviewRating; emoji: string; color: string }[] = [
   { label: 'Love It', value: 'LOVE_IT', emoji: '❤️', color: '#e74c3c' },
@@ -205,19 +222,37 @@ export default function AddReviewScreen() {
         return;
       }
 
+      console.log('📸 [AddReviewScreen] Starting photo upload:', uri);
+
       // Create form data
       const formData = new FormData();
       const filename = uri.split('/').pop() || 'photo.jpg';
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
 
+      // Determine MIME type from file extension
+      let type = 'image/jpeg'; // default
+      const match = /\.(\w+)$/.exec(filename);
+      if (match) {
+        const ext = match[1].toLowerCase();
+        if (ext === 'png') type = 'image/png';
+        else if (ext === 'jpg' || ext === 'jpeg') type = 'image/jpeg';
+        else if (ext === 'heic' || ext === 'heif') type = 'image/heic';
+        else if (ext === 'webp') type = 'image/webp';
+      }
+
+      console.log('📸 [AddReviewScreen] File details:', { filename, type });
+
+      // Append image to form data
+      // React Native FormData expects this specific format
       formData.append('image', {
-        uri,
+        uri: Platform.OS === 'ios' ? uri.replace('file://', '') : uri,
         name: filename,
-        type,
+        type: type,
       } as any);
 
+      console.log('📸 [AddReviewScreen] Uploading to backend...');
+
       // Upload to backend
+      // Note: Do NOT set Content-Type header - let FormData set it automatically with boundary
       const response = await fetch('https://oysterette-production.up.railway.app/api/upload/image?folder=reviews', {
         method: 'POST',
         headers: {
@@ -226,16 +261,41 @@ export default function AddReviewScreen() {
         body: formData,
       });
 
-      const data = await response.json();
+      console.log('📸 [AddReviewScreen] Response status:', response.status);
 
-      if (data.success && data.data.url) {
+      const data = await response.json();
+      console.log('📸 [AddReviewScreen] Response data:', data);
+
+      if (data.success && data.data && data.data.url) {
+        console.log('✅ [AddReviewScreen] Photo uploaded successfully:', data.data.url);
         setPhotos([...photos, data.data.url]);
+        Alert.alert('Success', 'Photo uploaded successfully!');
       } else {
-        throw new Error('Upload failed');
+        const errorMsg = data.error || 'Upload failed - no URL returned';
+        console.error('❌ [AddReviewScreen] Upload failed:', errorMsg);
+        throw new Error(errorMsg);
       }
-    } catch (error) {
-      console.error('Error uploading photo:', error);
-      Alert.alert('Upload Failed', 'Failed to upload photo. Please try again.');
+    } catch (error: any) {
+      console.error('❌ [AddReviewScreen] Error uploading photo:', {
+        message: error.message,
+        error: error,
+      });
+
+      // Show user-friendly error message
+      let userMessage = 'Failed to upload photo. ';
+      if (error.message.includes('503')) {
+        userMessage += 'Image upload service is temporarily unavailable.';
+      } else if (error.message.includes('413')) {
+        userMessage += 'Image is too large (max 5MB).';
+      } else if (error.message.includes('400')) {
+        userMessage += 'Invalid image format. Please use JPEG, PNG, or HEIC.';
+      } else if (error.message.includes('401')) {
+        userMessage += 'Authentication failed. Please log in again.';
+      } else {
+        userMessage += 'Please try again or choose a different image.';
+      }
+
+      Alert.alert('Upload Failed', userMessage);
     } finally {
       setUploadingPhoto(false);
     }
@@ -267,24 +327,32 @@ export default function AddReviewScreen() {
   };
 
   const handleSubmit = async () => {
-    // Check if user is logged in
-    const token = await authStorage.getToken();
-    if (!token) {
-      setShowLoginPrompt(true);
-      return;
-    }
-
+    // Validate rating first
     if (!rating) {
       Alert.alert('Rating Required', 'Please select an overall rating for this oyster.');
       return;
     }
 
+    // Check if user is logged in
+    const token = await authStorage.getToken();
+
+    // If not logged in and not in update mode, show login options dialog
+    if (!token && !isUpdateMode) {
+      setShowLoginPrompt(true);
+      return;
+    }
+
+    // If logged in or updating, proceed with submission
+    await submitReview(token);
+  };
+
+  const submitReview = async (token: string | null) => {
     try {
       setSubmitting(true);
       console.log(`📝 [AddReviewScreen] ${isUpdateMode ? 'Updating' : 'Submitting'} review for oyster:`, oysterId);
 
       if (isUpdateMode && existingReview) {
-        // Update existing review
+        // Update existing review (requires auth)
         await reviewApi.update(existingReview.id, {
           rating,
           size,
@@ -297,7 +365,7 @@ export default function AddReviewScreen() {
         });
         console.log('✅ [AddReviewScreen] Review updated successfully');
       } else {
-        // Create new review (with optional origin/species contributions)
+        // Create new review
         await reviewApi.create({
           oysterId,
           rating,
@@ -346,34 +414,75 @@ export default function AddReviewScreen() {
     }
   };
 
+  const handleSaveToTempAndNavigate = async (destination: 'Login' | 'Register') => {
+    try {
+      // Store review temporarily
+      await tempReviewsStorage.store({
+        oysterId,
+        oysterName,
+        rating: rating!,
+        size,
+        body,
+        sweetBrininess,
+        flavorfulness,
+        creaminess,
+        notes: notes.trim() || undefined,
+        origin: contributedOrigin.trim() || undefined,
+        species: contributedSpecies.trim() || undefined,
+        photoUrls: photos.length > 0 ? photos : undefined,
+      });
+
+      console.log(`📝 [AddReviewScreen] Review saved temporarily, navigating to ${destination}`);
+
+      setShowLoginPrompt(false);
+      navigation.navigate(destination);
+    } catch (error) {
+      console.error('❌ [AddReviewScreen] Failed to save temp review:', error);
+      Alert.alert('Error', 'Failed to save review. Please try again.');
+    }
+  };
+
+  const handlePostAnonymously = async () => {
+    setShowLoginPrompt(false);
+    // TODO: Implement anonymous review submission when backend supports it
+    // For now, just submit without auth token (will fail until backend is updated)
+    await submitReview(null);
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
-      {/* Login Prompt Dialog */}
+      {/* Save Review Options Dialog */}
       <Portal>
         <Dialog visible={showLoginPrompt} onDismiss={() => setShowLoginPrompt(false)}>
-          <Dialog.Icon icon="account-alert" />
-          <Dialog.Title>Login Required</Dialog.Title>
+          <Dialog.Icon icon="heart" />
+          <Dialog.Title>Save Your Review?</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium">
-              You need to be logged in to submit a review. Sign up or log in now to share your tasting experience!
+              Want to save this review to your profile? Sign in to track all your oyster reviews and build your tasting history.
             </Text>
           </Dialog.Content>
-          <Dialog.Actions>
+          <Dialog.Actions style={styles.dialogActions}>
             <Button
-              onPress={() => {
-                setShowLoginPrompt(false);
-                navigation.navigate('Register');
-              }}
+              mode="outlined"
+              onPress={handlePostAnonymously}
+              style={styles.dialogButton}
             >
-              Sign Up
+              Just Post Review
             </Button>
             <Button
-              onPress={() => {
-                setShowLoginPrompt(false);
-                navigation.navigate('Login');
-              }}
+              mode="contained"
+              onPress={() => handleSaveToTempAndNavigate('Login')}
+              style={styles.dialogButton}
             >
-              Log In
+              Sign In to Save
+            </Button>
+            <Button
+              mode="contained"
+              onPress={() => handleSaveToTempAndNavigate('Register')}
+              style={styles.dialogButton}
+              buttonColor={paperTheme.colors.tertiary}
+            >
+              Sign Up to Save
             </Button>
           </Dialog.Actions>
         </Dialog>
@@ -564,7 +673,7 @@ export default function AddReviewScreen() {
 
         {/* Photos */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📸 Photos (Optional, max 5)</Text>
+          <Text style={styles.sectionTitle}>📸 Photo (Optional, max 1)</Text>
 
           {/* Photo Grid */}
           {photos.length > 0 && (
@@ -584,7 +693,7 @@ export default function AddReviewScreen() {
           )}
 
           {/* Add Photo Button */}
-          {photos.length < 5 && (
+          {photos.length < 1 && (
             <TouchableOpacity
               style={styles.addPhotoButton}
               onPress={showPhotoOptions}
@@ -595,9 +704,7 @@ export default function AddReviewScreen() {
               ) : (
                 <>
                   <Text style={styles.addPhotoIcon}>📷</Text>
-                  <Text style={styles.addPhotoText}>
-                    {photos.length === 0 ? 'Add Photos' : 'Add Another Photo'}
-                  </Text>
+                  <Text style={styles.addPhotoText}>Add Photo</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -836,5 +943,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#3498db',
     fontWeight: '600',
+  },
+  dialogActions: {
+    flexDirection: 'column',
+    gap: 8,
+    padding: 16,
+  },
+  dialogButton: {
+    width: '100%',
   },
 });

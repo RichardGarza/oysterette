@@ -12,6 +12,7 @@
  * - Dynamic button text based on auth state
  * - Loading screen with larger logo (384px)
  * - Back navigation disabled (prevents going back to loading)
+ * - Exit confirmation dialog on Android back button press
  * - Theme-aware styling via React Native Paper
  *
  * Material Design Components:
@@ -53,6 +54,8 @@ import {
   Animated,
   FlatList,
   ScrollView,
+  BackHandler,
+  Alert,
 } from 'react-native';
 import {
   Button,
@@ -91,6 +94,31 @@ export default function HomeScreen() {
     });
     return unsubscribe;
   }, [navigation]);
+
+  // Handle Android back button press - show exit confirmation
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      Alert.alert(
+        'Exit App?',
+        'Are you sure you want to exit Oysterette?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Exit',
+            onPress: () => BackHandler.exitApp(),
+            style: 'destructive',
+          },
+        ],
+        { cancelable: true }
+      );
+      return true; // Prevent default back button behavior
+    });
+
+    return () => backHandler.remove();
+  }, []);
 
   const checkAuth = async () => {
     try {

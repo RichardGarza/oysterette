@@ -9,6 +9,7 @@
  * - Filters out oysters with zero reviews
  * - Pull-to-refresh functionality
  * - Skeleton loading states
+ * - Numeric rating display (e.g., "8.5/10") + star visualization
  * - RatingDisplay component for scores
  * - Tappable cards navigate to detail view
  * - Theme-aware styling via React Native Paper
@@ -142,6 +143,10 @@ export default function TopOystersScreen() {
           <Text variant="bodySmall" style={styles.origin}>{item.origin}</Text>
 
           <View style={styles.ratingContainer}>
+            <Text variant="titleLarge" style={styles.scoreText}>
+              {item.overallScore.toFixed(1)}
+            </Text>
+            <Text variant="bodySmall" style={styles.scoreLabel}>/10</Text>
             <RatingDisplay
               overallScore={item.overallScore}
               totalReviews={item.totalReviews}
@@ -270,7 +275,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
     marginBottom: 8,
+    gap: 4,
+  },
+  scoreText: {
+    fontWeight: '700',
+    color: '#3498db',
+  },
+  scoreLabel: {
+    color: '#6b7280',
+    marginRight: 8,
   },
   notes: {
     fontStyle: 'italic',

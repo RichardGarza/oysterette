@@ -8,6 +8,7 @@
  * - Baseline updates automatically with each positive review (LIKE_IT, LOVE_IT)
  * - Negative reviews (MEH, WHATEVER) don't affect baseline
  * - Update formula: weighted average toward higher-rated flavors
+ * - Favorited oysters get 1.5x weight in profile calculation
  *
  * Recommendation Algorithm:
  * 1. Check if user has baseline profile
@@ -128,29 +129,49 @@ export const getUserAttributePreferences = async (
       return null;
     }
 
-    // Calculate averages from reviews
+    // Fetch user's favorited oysters for 1.5x weighting
+    const favorites = await prisma.favorite.findMany({
+      where: { userId },
+      select: { oysterId: true },
+    });
+
+    const favoriteOysterIds = new Set(favorites.map((f) => f.oysterId));
+
+    // Calculate weighted averages from reviews
+    // Favorited oysters get 1.5x weight
     let totalSize = 0;
     let totalBody = 0;
     let totalSweet = 0;
     let totalFlavor = 0;
     let totalCream = 0;
+    let totalWeight = 0;
 
     reviews.forEach((review) => {
-      totalSize += review.size || review.oyster.avgSize || review.oyster.size;
-      totalBody += review.body || review.oyster.avgBody || review.oyster.body;
-      totalSweet +=
+      // Weight: 1.5 for favorited oysters, 1.0 for others
+      const weight = favoriteOysterIds.has(review.oysterId) ? 1.5 : 1.0;
+
+      const size = review.size || review.oyster.avgSize || review.oyster.size;
+      const body = review.body || review.oyster.avgBody || review.oyster.body;
+      const sweet =
         review.sweetBrininess ||
         review.oyster.avgSweetBrininess ||
         review.oyster.sweetBrininess;
-      totalFlavor +=
+      const flavor =
         review.flavorfulness ||
         review.oyster.avgFlavorfulness ||
         review.oyster.flavorfulness;
-      totalCream +=
+      const cream =
         review.creaminess || review.oyster.avgCreaminess || review.oyster.creaminess;
+
+      totalSize += size * weight;
+      totalBody += body * weight;
+      totalSweet += sweet * weight;
+      totalFlavor += flavor * weight;
+      totalCream += cream * weight;
+      totalWeight += weight;
     });
 
-    const count = reviews.length;
+    const count = totalWeight; // Use total weight instead of review count
 
     return {
       avgSize: totalSize / count,
