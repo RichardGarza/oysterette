@@ -6,7 +6,7 @@
  * Baseline Flavor Profile System:
  * - Users can set a baseline profile before reviewing (ideal oyster attributes)
  * - Baseline updates automatically with each positive review (LIKE_IT, LOVE_IT)
- * - Negative reviews (MEH, WHATEVER) don't affect baseline
+ * - Negative reviews (MEH) don't affect baseline
  * - Update formula: weighted average toward higher-rated flavors
  * - Favorited oysters get 1.5x weight in profile calculation
  *

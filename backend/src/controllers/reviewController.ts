@@ -25,7 +25,7 @@ import { invalidateCache, updateBaselineWithReview } from '../services/recommend
  * @route POST /api/reviews
  * @requires Authentication
  * @param req.body.oysterId - UUID of oyster being reviewed
- * @param req.body.rating - Overall rating (LOVE_IT | LIKE_IT | MEH | WHATEVER)
+ * @param req.body.rating - Overall rating (LOVE_IT | LIKE_IT | OKAY | MEH)
  * @param req.body.size - Size rating 1-10 (optional)
  * @param req.body.body - Body rating 1-10 (optional)
  * @param req.body.sweetBrininess - Sweet/briny rating 1-10 (optional)

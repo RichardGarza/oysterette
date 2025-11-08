@@ -45,8 +45,8 @@ const RATING_CONFIG = {
  * Convert ReviewRating enum to numeric value (0-10 scale)
  * LOVE_IT → 9.0 (range 8.0-10.0)
  * LIKE_IT → 7.0 (range 6.0-7.9)
- * MEH → 4.95 (range 4.0-5.9)
- * WHATEVER → 2.5 (range 1.0-3.9)
+ * OKAY → 4.95 (range 4.0-5.9)
+ * MEH → 2.5 (range 1.0-3.9)
  */
 function ratingToNumber(rating: ReviewRating): number {
   return ratingToScore(rating);

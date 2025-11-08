@@ -42,7 +42,7 @@
  * - totalFavorites: Count of favorited oysters
  * - totalVotesGiven: Count of votes user has cast
  * - totalVotesReceived: Votes received on user's reviews
- * - avgRatingGiven: Average rating (1-4 scale mapped from WHATEVER to LOVE_IT)
+ * - avgRatingGiven: Average rating (1-4 scale mapped from MEH to LOVE_IT)
  * - credibilityScore: Reputation score based on voting patterns
  * - badgeLevel: Novice (0-0.9), Trusted (1.0-1.4), Expert (1.5+)
  * - reviewStreak: Days with consecutive reviews
