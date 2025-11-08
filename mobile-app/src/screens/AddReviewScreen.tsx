@@ -146,7 +146,7 @@ export default function AddReviewScreen() {
     }
   }, [photos]);
 
-  const pickImageFromLibrary = useCallback(async () => {
+  const pickImageFromLibrary = async () => {
     if (photos.length >= PHOTO_LIMITS.MAX_COUNT) {
       Alert.alert('Maximum Photos', `You can only add ${PHOTO_LIMITS.MAX_COUNT} photo per review.`);
       return;
@@ -170,7 +170,9 @@ export default function AddReviewScreen() {
         await uploadPhoto(result.assets[0].uri);
       }
     } catch (error) {
-      console.error('Error picking image from library:', error);
+      if (__DEV__) {
+        console.error('❌ [AddReviewScreen] Error picking image from library:', error);
+      }
       Alert.alert('Error', 'Failed to select photo. Please try again.');
     }
   };

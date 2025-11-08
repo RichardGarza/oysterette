@@ -89,18 +89,20 @@ export default function RecommendedOysterCard({ oyster, onPress }: RecommendedOy
           {oyster.species} • {oyster.origin}
         </Text>
 
-        {/* Overall Score */}
-        <View style={styles.scoreRow}>
-          <Text style={styles.scoreLabel}>Overall:</Text>
-          <Text style={styles.scoreValue}>{oyster.overallScore.toFixed(1)}</Text>
-          <Text style={styles.scoreStar}>★</Text>
-        </View>
-
-        {/* Review Count */}
-        {oyster.totalReviews > 0 && (
-          <Text style={styles.reviewCount}>
-            {oyster.totalReviews} {oyster.totalReviews === 1 ? 'review' : 'reviews'}
-          </Text>
+        {/* Overall Score - only show if oyster has reviews */}
+        {oyster.totalReviews > 0 ? (
+          <>
+            <View style={styles.scoreRow}>
+              <Text style={styles.scoreLabel}>Overall:</Text>
+              <Text style={styles.scoreValue}>{oyster.overallScore.toFixed(1)}</Text>
+              <Text style={styles.scoreStar}>★</Text>
+            </View>
+            <Text style={styles.reviewCount}>
+              {oyster.totalReviews} {oyster.totalReviews === 1 ? 'review' : 'reviews'}
+            </Text>
+          </>
+        ) : (
+          <Text style={styles.reviewCount}>No ratings yet</Text>
         )}
       </View>
     </TouchableOpacity>
