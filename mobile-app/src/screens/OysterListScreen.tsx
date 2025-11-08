@@ -1,5 +1,5 @@
 /**
- * OysterListScreen
+ * OysterListScreen - Migrated to React Native Paper
  *
  * Main oyster browsing screen with comprehensive filtering and search capabilities.
  *
@@ -13,7 +13,28 @@
  * - Haptic feedback on favorite toggle
  * - Skeleton loading states
  * - Empty states for different scenarios (no favorites, no search results, etc.)
- * - Theme-aware styling (light/dark mode)
+ * - Theme-aware styling via React Native Paper
+ *
+ * Material Design Components:
+ * - Card: Elevated oyster cards with onPress
+ * - Searchbar: Built-in search input with icon
+ * - SegmentedButtons: All/Favorites toggle
+ * - Chip: Sort option selectors with selected state
+ * - ToggleButton.Row: Binary attribute filters (Sweet/Briny, Small/Big, etc.)
+ * - IconButton: Filter toggle, favorite hearts, FAB
+ * - Badge: Active filter count indicator
+ * - Button: Clear all filters action
+ * - Banner: Error messages with retry action
+ * - Text: Typography with variants
+ *
+ * Migration Benefits:
+ * - ~50% less custom styling (Paper handles most UI)
+ * - Built-in theme integration (light/dark mode)
+ * - Material Design ripple effects
+ * - Better accessibility (screen readers, touch targets)
+ * - Consistent look with rest of app
+ * - Automatic elevation and shadows
+ * - Professional search bar with built-in icons
  *
  * Filters:
  * - Sort By: name, rating, size, sweetness, creaminess, flavorfulness, body
@@ -55,17 +76,27 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   SafeAreaView,
-  TextInput,
   Platform,
   ScrollView,
   Image,
 } from 'react-native';
+import {
+  Text,
+  Card,
+  Searchbar,
+  Chip,
+  SegmentedButtons,
+  IconButton,
+  Badge,
+  Button,
+  Banner,
+  ToggleButton,
+  ActivityIndicator,
+} from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { OysterListScreenNavigationProp } from '../navigation/types';
@@ -80,7 +111,7 @@ import { useTheme } from '../context/ThemeContext';
 
 export default function OysterListScreen() {
   const navigation = useNavigation<OysterListScreenNavigationProp>();
-  const { theme, isDark } = useTheme();
+  const { theme, isDark, paperTheme } = useTheme();
   const [oysters, setOysters] = useState<Oyster[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -263,34 +294,38 @@ export default function OysterListScreen() {
   const styles = createStyles(theme.colors, isDark);
 
   const renderOysterItem = ({ item }: { item: Oyster }) => (
-    <TouchableOpacity
+    <Card
+      mode="elevated"
       style={styles.card}
       onPress={() => navigation.navigate('OysterDetail', { oysterId: item.id })}
     >
-      <View style={styles.cardHeader}>
-        <Text style={styles.oysterName}>{item.name}</Text>
-        <View style={styles.headerRight}>
-          <TouchableOpacity
-            onPress={(e) => handleToggleFavorite(item.id, e)}
-            style={styles.favoriteButton}
-          >
-            <Text style={styles.favoriteIcon}>
-              {favorites.has(item.id) ? '❤️' : '🤍'}
-            </Text>
-          </TouchableOpacity>
-          {item.species && item.species !== 'Unknown' && (
-            <View style={styles.speciesContainer}>
-              <Text style={styles.species}>{item.species}</Text>
-            </View>
-          )}
+      <Card.Content>
+        <View style={styles.cardHeader}>
+          <Text variant="titleMedium" style={styles.oysterName} numberOfLines={1}>
+            {item.name}
+          </Text>
+          <View style={styles.headerRight}>
+            <IconButton
+              icon={favorites.has(item.id) ? 'heart' : 'heart-outline'}
+              iconColor={favorites.has(item.id) ? '#e74c3c' : undefined}
+              size={20}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleToggleFavorite(item.id, e);
+              }}
+              style={styles.favoriteButton}
+            />
+            {item.species && item.species !== 'Unknown' && (
+              <Chip mode="outlined" compact style={styles.speciesChip}>
+                {item.species}
+              </Chip>
+            )}
+          </View>
         </View>
-      </View>
 
-      {item.origin && item.origin !== 'Unknown' && (
-        <View style={styles.originContainer}>
-          <Text style={styles.origin}>{item.origin}</Text>
-        </View>
-      )}
+        {item.origin && item.origin !== 'Unknown' && (
+          <Text variant="bodySmall" style={styles.origin}>{item.origin}</Text>
+        )}
 
       <View style={styles.ratingContainer}>
         <RatingDisplay
@@ -301,40 +336,41 @@ export default function OysterListScreen() {
       </View>
 
       {item.standoutNotes && (
-        <Text style={styles.notes} numberOfLines={2}>
+        <Text variant="bodySmall" style={styles.notes} numberOfLines={2}>
           {item.standoutNotes}
         </Text>
       )}
 
       <View style={styles.attributesContainer}>
         <View style={styles.attributeItem}>
-          <Text style={styles.attributeLabel}>Size</Text>
-          <Text style={styles.attributeValue}>{item.size}/10</Text>
+          <Text variant="labelSmall" style={styles.attributeLabel}>Size</Text>
+          <Text variant="bodyMedium" style={styles.attributeValue}>{item.size}/10</Text>
         </View>
         <View style={styles.attributeItem}>
-          <Text style={styles.attributeLabel}>Body</Text>
-          <Text style={styles.attributeValue}>{item.body}/10</Text>
+          <Text variant="labelSmall" style={styles.attributeLabel}>Body</Text>
+          <Text variant="bodyMedium" style={styles.attributeValue}>{item.body}/10</Text>
         </View>
         <View style={styles.attributeItem}>
-          <Text style={styles.attributeLabel}>Sweet/Briny</Text>
-          <Text style={styles.attributeValue}>{item.sweetBrininess}/10</Text>
+          <Text variant="labelSmall" style={styles.attributeLabel}>Sweet/Briny</Text>
+          <Text variant="bodyMedium" style={styles.attributeValue}>{item.sweetBrininess}/10</Text>
         </View>
         <View style={styles.attributeItem}>
-          <Text style={styles.attributeLabel}>Flavor</Text>
-          <Text style={styles.attributeValue}>{item.flavorfulness}/10</Text>
+          <Text variant="labelSmall" style={styles.attributeLabel}>Flavor</Text>
+          <Text variant="bodyMedium" style={styles.attributeValue}>{item.flavorfulness}/10</Text>
         </View>
         <View style={styles.attributeItem}>
-          <Text style={styles.attributeLabel}>Creamy</Text>
-          <Text style={styles.attributeValue}>{item.creaminess}/10</Text>
+          <Text variant="labelSmall" style={styles.attributeLabel}>Creamy</Text>
+          <Text variant="bodyMedium" style={styles.attributeValue}>{item.creaminess}/10</Text>
         </View>
       </View>
 
-      {item._count && (
-        <Text style={styles.reviewCount}>
-          {item._count.reviews} {item._count.reviews === 1 ? 'review' : 'reviews'}
-        </Text>
-      )}
-    </TouchableOpacity>
+        {item._count && (
+          <Text variant="bodySmall" style={styles.reviewCount}>
+            {item._count.reviews} {item._count.reviews === 1 ? 'review' : 'reviews'}
+          </Text>
+        )}
+      </Card.Content>
+    </Card>
   );
 
 
@@ -348,43 +384,33 @@ export default function OysterListScreen() {
             resizeMode="contain"
           />
           <View style={styles.topRow}>
-            <View style={styles.filterTabs}>
-              <TouchableOpacity
-                style={[styles.filterTab, !showFavoritesOnly && styles.filterTabActive]}
-                onPress={() => setShowFavoritesOnly(false)}
-              >
-                <Text style={[styles.filterTabText, !showFavoritesOnly && styles.filterTabTextActive]}>
-                  All
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.filterTab, showFavoritesOnly && styles.filterTabActive]}
-                onPress={() => setShowFavoritesOnly(true)}
-              >
-                <Text style={[styles.filterTabText, showFavoritesOnly && styles.filterTabTextActive]}>
-                  ❤️ Favorites
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <SegmentedButtons
+              value={showFavoritesOnly ? 'favorites' : 'all'}
+              onValueChange={(value) => setShowFavoritesOnly(value === 'favorites')}
+              buttons={[
+                { value: 'all', label: 'All' },
+                { value: 'favorites', label: '❤️ Favorites' },
+              ]}
+              style={styles.segmentedButtons}
+            />
 
-            <TouchableOpacity
-              style={styles.filterButton}
+            <IconButton
+              icon="filter"
+              mode="contained"
+              size={20}
               onPress={() => setShowFilters(!showFilters)}
-            >
-              <Text style={styles.filterButtonText}>🔍 Filters</Text>
-              {getActiveFilterCount() > 0 && (
-                <View style={styles.filterBadge}>
-                  <Text style={styles.filterBadgeText}>{getActiveFilterCount()}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
+              style={styles.filterIconButton}
+            />
+            {getActiveFilterCount() > 0 && (
+              <Badge style={styles.filterBadge}>{getActiveFilterCount()}</Badge>
+            )}
           </View>
 
-          <TextInput
-            style={styles.searchInput}
+          <Searchbar
             placeholder="Search oysters..."
             value={searchQuery}
             onChangeText={handleSearch}
+            style={styles.searchBar}
           />
         </View>
         <View style={styles.listContainer}>
@@ -405,130 +431,101 @@ export default function OysterListScreen() {
           resizeMode="contain"
         />
         <View style={styles.topRow}>
-          <View style={styles.filterTabs}>
-            <TouchableOpacity
-              style={[styles.filterTab, !showFavoritesOnly && styles.filterTabActive]}
-              onPress={() => setShowFavoritesOnly(false)}
-            >
-              <Text style={[styles.filterTabText, !showFavoritesOnly && styles.filterTabTextActive]}>
-                All
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.filterTab, showFavoritesOnly && styles.filterTabActive]}
-              onPress={() => setShowFavoritesOnly(true)}
-            >
-              <Text style={[styles.filterTabText, showFavoritesOnly && styles.filterTabTextActive]}>
-                ❤️ Favorites
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <SegmentedButtons
+            value={showFavoritesOnly ? 'favorites' : 'all'}
+            onValueChange={(value) => setShowFavoritesOnly(value === 'favorites')}
+            buttons={[
+              { value: 'all', label: 'All' },
+              { value: 'favorites', label: '❤️ Favorites' },
+            ]}
+            style={styles.segmentedButtons}
+          />
 
-          <TouchableOpacity
-            style={styles.filterButton}
+          <IconButton
+            icon="filter"
+            mode="contained"
+            size={20}
             onPress={() => setShowFilters(!showFilters)}
-          >
-            <Text style={styles.filterButtonText}>🔍 Filters</Text>
-            {getActiveFilterCount() > 0 && (
-              <View style={styles.filterBadge}>
-                <Text style={styles.filterBadgeText}>{getActiveFilterCount()}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
+            style={styles.filterIconButton}
+          />
+          {getActiveFilterCount() > 0 && (
+            <Badge style={styles.filterBadge}>{getActiveFilterCount()}</Badge>
+          )}
         </View>
 
-        <TextInput
-          style={styles.searchInput}
+        <Searchbar
           placeholder="Search oysters..."
           value={searchQuery}
           onChangeText={handleSearch}
+          style={styles.searchBar}
         />
 
         {showFilters && (
           <View style={styles.filterSection}>
-            <Text style={styles.filterSectionTitle}>Sort By</Text>
+            <Text variant="titleSmall" style={styles.filterSectionTitle}>Sort By</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScrollView}>
               {sortOptions.map((option) => (
-                <TouchableOpacity
+                <Chip
                   key={option.value}
-                  style={[
-                    styles.filterChip,
-                    selectedSortBy === option.value && styles.filterChipActive,
-                  ]}
+                  mode={selectedSortBy === option.value ? 'flat' : 'outlined'}
+                  selected={selectedSortBy === option.value}
                   onPress={() => handleSortByClick(option.value)}
+                  style={styles.filterChip}
                 >
-                  <Text
-                    style={[
-                      styles.filterChipText,
-                      selectedSortBy === option.value && styles.filterChipTextActive,
-                    ]}
-                  >
-                    {option.label}
-                    {selectedSortBy === option.value && (
-                      <Text style={styles.sortArrow}> {sortDirection === 'asc' ? '↑' : '↓'}</Text>
-                    )}
-                  </Text>
-                </TouchableOpacity>
+                  {option.label}{selectedSortBy === option.value && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
+                </Chip>
               ))}
             </ScrollView>
 
             {attributeFilters.map((filter) => (
-              <View key={filter.key}>
-                <View style={styles.attributeFilterRow}>
-                  <TouchableOpacity
-                    style={[
-                      styles.attributeFilterButton,
-                      styles.attributeFilterButtonLeft,
-                      filter.state === 'low' && styles.attributeFilterButtonActive,
-                    ]}
-                    onPress={() => filter.setState(filter.state === 'low' ? '' : 'low')}
-                  >
-                    <Text
-                      style={[
-                        styles.attributeFilterText,
-                        filter.state === 'low' && styles.attributeFilterTextActive,
-                      ]}
-                    >
-                      {filter.low}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.attributeFilterButton,
-                      styles.attributeFilterButtonRight,
-                      filter.state === 'high' && styles.attributeFilterButtonActive,
-                    ]}
-                    onPress={() => filter.setState(filter.state === 'high' ? '' : 'high')}
-                  >
-                    <Text
-                      style={[
-                        styles.attributeFilterText,
-                        filter.state === 'high' && styles.attributeFilterTextActive,
-                      ]}
-                    >
-                      {filter.high}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+              <ToggleButton.Row
+                key={filter.key}
+                value={filter.state}
+                onValueChange={(value) => filter.setState(value === filter.state ? '' : value)}
+                style={styles.attributeFilterRow}
+              >
+                <ToggleButton
+                  icon={() => <Text variant="bodyMedium">{filter.low}</Text>}
+                  value="low"
+                  style={styles.attributeFilterButton}
+                />
+                <ToggleButton
+                  icon={() => <Text variant="bodyMedium">{filter.high}</Text>}
+                  value="high"
+                  style={styles.attributeFilterButton}
+                />
+              </ToggleButton.Row>
             ))}
 
             {getActiveFilterCount() > 0 && (
-              <TouchableOpacity style={styles.clearFiltersButton} onPress={clearAllFilters}>
-                <Text style={styles.clearFiltersText}>✕ Clear All Filters</Text>
-              </TouchableOpacity>
+              <Button
+                mode="outlined"
+                onPress={clearAllFilters}
+                icon="close"
+                style={styles.clearFiltersButton}
+                textColor={paperTheme.colors.error}
+              >
+                Clear All Filters
+              </Button>
             )}
           </View>
         )}
       </View>
 
       {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={() => fetchOysters()}>
-            <Text style={styles.retryText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
+        <Banner
+          visible={true}
+          icon="alert-circle"
+          actions={[
+            {
+              label: 'Retry',
+              onPress: () => fetchOysters(),
+            },
+          ]}
+          style={styles.errorBanner}
+        >
+          {error}
+        </Banner>
       )}
 
       <FlatList
@@ -568,12 +565,14 @@ export default function OysterListScreen() {
         }
       />
 
-      <TouchableOpacity
-        style={styles.fab}
+      <IconButton
+        icon="plus"
+        mode="contained"
+        size={28}
         onPress={() => navigation.navigate('AddOyster')}
-      >
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
+        style={styles.fab}
+        iconColor="#fff"
+      />
     </SafeAreaView>
   );
 }
@@ -607,60 +606,19 @@ const createStyles = (colors: any, isDark: boolean) =>
       gap: 10,
       alignItems: 'center',
     },
-    filterTabs: {
-      flexDirection: 'row',
+    segmentedButtons: {
       flex: 1,
-      gap: 10,
     },
-    filterTab: {
-      flex: 1,
-      paddingVertical: 10,
-      paddingHorizontal: 16,
-      backgroundColor: colors.inputBackground,
-      borderRadius: 8,
-      alignItems: 'center',
-      borderWidth: 2,
-      borderColor: 'transparent',
-    },
-    filterTabActive: {
-      backgroundColor: isDark ? '#3a5a7a' : '#e8f4f8',
-      borderColor: colors.primary,
-    },
-    filterTabText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      fontWeight: '500',
-    },
-    filterTabTextActive: {
-      color: colors.primary,
-      fontWeight: '600',
-    },
-    filterButton: {
-      backgroundColor: colors.primary,
-      paddingVertical: 10,
-      paddingHorizontal: 16,
-      borderRadius: 8,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-    },
-    filterButtonText: {
-      color: '#fff',
-      fontSize: 14,
-      fontWeight: '600',
+    filterIconButton: {
+      margin: 0,
     },
     filterBadge: {
-      backgroundColor: '#fff',
-      borderRadius: 10,
-      width: 20,
-      height: 20,
-      alignItems: 'center',
-      justifyContent: 'center',
+      position: 'absolute',
+      top: -4,
+      right: -4,
     },
-    filterBadgeText: {
-      color: colors.primary,
-      fontSize: 12,
-      fontWeight: 'bold',
+    searchBar: {
+      marginBottom: 0,
     },
     filterSection: {
       marginTop: 15,
@@ -679,87 +637,17 @@ const createStyles = (colors: any, isDark: boolean) =>
       marginBottom: 10,
     },
     filterChip: {
-      backgroundColor: colors.inputBackground,
-      paddingVertical: 8,
-      paddingHorizontal: 16,
-      borderRadius: 20,
       marginRight: 8,
-      borderWidth: 2,
-      borderColor: 'transparent',
-    },
-    filterChipActive: {
-      backgroundColor: isDark ? '#3a5a7a' : '#e8f4f8',
-      borderColor: colors.primary,
-    },
-    filterChipText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      fontWeight: '500',
-    },
-    filterChipTextActive: {
-      color: colors.primary,
-      fontWeight: '600',
     },
     clearFiltersButton: {
-      backgroundColor: isDark ? '#4a2020' : '#ffe5e5',
-      paddingVertical: 10,
-      paddingHorizontal: 16,
-      borderRadius: 8,
-      alignItems: 'center',
       marginTop: 10,
     },
-    clearFiltersText: {
-      color: colors.error,
-      fontSize: 14,
-      fontWeight: '600',
-    },
-    sortArrow: {
-      fontSize: 14,
-      fontWeight: '600',
-    },
     attributeFilterRow: {
-      flexDirection: 'row',
       marginBottom: 12,
-      gap: 8,
     },
     attributeFilterButton: {
       flex: 1,
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      backgroundColor: colors.inputBackground,
-      borderWidth: 2,
-      borderColor: 'transparent',
-      alignItems: 'center',
-      justifyContent: 'center',
     },
-    attributeFilterButtonLeft: {
-      borderTopLeftRadius: 8,
-      borderBottomLeftRadius: 8,
-    },
-    attributeFilterButtonRight: {
-      borderTopRightRadius: 8,
-      borderBottomRightRadius: 8,
-    },
-    attributeFilterButtonActive: {
-      backgroundColor: isDark ? '#3a5a7a' : '#e8f4f8',
-      borderColor: colors.primary,
-    },
-    attributeFilterText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      fontWeight: '500',
-    },
-    attributeFilterTextActive: {
-      color: colors.primary,
-      fontWeight: '600',
-    },
-  searchInput: {
-    backgroundColor: colors.inputBackground,
-    padding: 12,
-    borderRadius: 8,
-    fontSize: 16,
-    color: colors.text,
-  },
   listContainer: {
     padding: 15,
   },
@@ -801,23 +689,8 @@ const createStyles = (colors: any, isDark: boolean) =>
   favoriteButton: {
     padding: 4,
   },
-  favoriteIcon: {
-    fontSize: 20,
-  },
-  speciesContainer: {
-    backgroundColor: isDark ? '#2c3e50' : '#e8f4f8',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  species: {
-    fontSize: 12,
-    color: colors.primary,
-    fontWeight: '600',
-    fontStyle: 'italic',
-  },
-  originContainer: {
-    marginBottom: 8,
+  speciesChip: {
+    height: 24,
   },
   origin: {
     fontSize: 14,
@@ -869,37 +742,9 @@ const createStyles = (colors: any, isDark: boolean) =>
     fontSize: 16,
     color: colors.textSecondary,
   },
-  emptyContainer: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  errorContainer: {
-    backgroundColor: isDark ? '#4a2020' : '#ffe5e5',
-    padding: 15,
-    margin: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  errorText: {
-    color: colors.error,
-    fontSize: 14,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  retryButton: {
-    backgroundColor: colors.error,
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 5,
-  },
-  retryText: {
-    color: '#fff',
-    fontWeight: '600',
+  errorBanner: {
+    marginHorizontal: 15,
+    marginVertical: 10,
   },
   fab: {
     position: 'absolute',
@@ -909,23 +754,5 @@ const createStyles = (colors: any, isDark: boolean) =>
     height: 60,
     borderRadius: 30,
     backgroundColor: colors.success,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: colors.shadowColor,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: isDark ? 0.5 : 0.3,
-        shadowRadius: 5,
-      },
-      android: {
-        elevation: 8,
-      },
-    }),
   },
-  fabText: {
-    fontSize: 32,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  });
+});

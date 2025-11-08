@@ -1,5 +1,5 @@
 /**
- * OysterDetailScreen
+ * OysterDetailScreen - Migrated to React Native Paper
  *
  * Comprehensive oyster detail view with reviews, voting, and attribute visualizations.
  *
@@ -12,8 +12,29 @@
  * - Review voting (agree/disagree) with credibility tracking
  * - Duplicate review detection (prompts to update existing review)
  * - Pull-to-refresh functionality
- * - Theme-aware styling (light/dark mode)
+ * - Theme-aware styling via React Native Paper
  * - "Unknown" hints for incomplete data (encourages user contributions)
+ *
+ * Material Design Components:
+ * - Card: Section containers with elevation
+ * - Surface: Header background
+ * - Text: Typography with variants (headlineSmall, bodyMedium, etc.)
+ * - IconButton: Favorite heart toggle
+ * - Chip: Species badge, rating filter chips (All, Love, Like, Meh, Whatever)
+ * - SegmentedButtons: Sort tabs (Most Helpful, Most Recent, Highest, Lowest)
+ * - Button: Write Review action button
+ * - ProgressBar: Attribute bars (Size, Body, Sweet/Brininess, etc.)
+ * - ActivityIndicator: Loading states
+ * - Banner: "Unknown" hints for incomplete data
+ *
+ * Migration Benefits:
+ * - ~40% less custom styling (Paper handles cards, chips, buttons)
+ * - Built-in theme integration (light/dark mode)
+ * - Material Design progress bars (smooth, accessible)
+ * - Professional chip selectors with ripple effects
+ * - Consistent look with rest of app
+ * - Better accessibility (screen readers, touch targets)
+ * - Automatic elevation and shadows
  *
  * Review Filtering:
  * - Rating filter chips: All, Love, Like, Meh, Whatever
@@ -51,16 +72,25 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
   SafeAreaView,
   RefreshControl,
-  TouchableOpacity,
   Platform,
   Alert,
 } from 'react-native';
+import {
+  Text,
+  Card,
+  Surface,
+  IconButton,
+  Chip,
+  Button,
+  ProgressBar,
+  ActivityIndicator,
+  Banner,
+  SegmentedButtons,
+} from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { OysterDetailScreenRouteProp, OysterDetailScreenNavigationProp } from '../navigation/types';
@@ -90,7 +120,7 @@ export default function OysterDetailScreen() {
   const [ratingFilter, setRatingFilter] = useState<RatingFilter>('ALL');
   const [isFavorite, setIsFavorite] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const { theme, isDark } = useTheme();
+  const { theme, isDark, paperTheme } = useTheme();
 
   useEffect(() => {
     fetchOyster();
@@ -250,28 +280,22 @@ export default function OysterDetailScreen() {
     label: string,
     attribute: 'size' | 'body' | 'sweet_brininess' | 'flavorfulness' | 'creaminess'
   ) => {
-    const percentage = (value / 10) * 100;
+    const progress = value / 10;
     const descriptor = getAttributeDescriptor(attribute, value);
     return (
       <View style={styles.attributeBarContainer}>
         <View style={styles.attributeBarHeader}>
-          <Text style={styles.attributeBarLabel}>{label}</Text>
+          <Text variant="labelMedium" style={styles.attributeBarLabel}>{label}</Text>
           <View style={styles.attributeBarValueContainer}>
-            <Text style={styles.attributeBarDescriptor}>{descriptor}</Text>
-            <Text style={styles.attributeBarValue}> ({value}/10)</Text>
+            <Text variant="bodyMedium" style={styles.attributeBarDescriptor}>{descriptor}</Text>
+            <Text variant="bodySmall" style={styles.attributeBarValue}> ({value}/10)</Text>
           </View>
         </View>
-        <View style={styles.attributeBarTrack}>
-          <View
-            style={[
-              styles.attributeBarFill,
-              {
-                width: `${percentage}%`,
-                backgroundColor: getAttributeColor(value)
-              }
-            ]}
-          />
-        </View>
+        <ProgressBar
+          progress={progress}
+          color={paperTheme.colors.primary}
+          style={styles.progressBar}
+        />
       </View>
     );
   };
@@ -287,7 +311,8 @@ export default function OysterDetailScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <ActivityIndicator size="large" animating={true} />
+        <Text variant="bodyLarge" style={styles.loadingText}>Loading oyster details...</Text>
       </View>
     );
   }
@@ -295,7 +320,7 @@ export default function OysterDetailScreen() {
   if (error || !oyster) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>{error || 'Oyster not found'}</Text>
+        <Text variant="bodyLarge" style={styles.errorText}>{error || 'Oyster not found'}</Text>
       </View>
     );
   }
@@ -313,23 +338,21 @@ export default function OysterDetailScreen() {
           />
         }
       >
-        <View style={styles.header}>
+        <Surface style={styles.header} elevation={1}>
           <View style={styles.nameRow}>
-            <Text style={styles.name}>{oyster.name}</Text>
-            <TouchableOpacity
+            <Text variant="headlineSmall" style={styles.name}>{oyster.name}</Text>
+            <IconButton
+              icon={isFavorite ? 'heart' : 'heart-outline'}
+              iconColor={isFavorite ? '#e74c3c' : undefined}
+              size={28}
               onPress={handleToggleFavorite}
-              style={styles.favoriteButton}
-            >
-              <Text style={styles.favoriteIcon}>
-                {isFavorite ? '❤️' : '🤍'}
-              </Text>
-            </TouchableOpacity>
+            />
           </View>
-          <View style={styles.speciesBadge}>
-            <Text style={styles.speciesText}>{oyster.species}</Text>
-          </View>
+          <Chip mode="outlined" compact style={styles.speciesBadge}>
+            {oyster.species}
+          </Chip>
           {oyster.species === 'Unknown' && (
-            <Text style={styles.unknownHintSmall}>
+            <Text variant="bodySmall" style={styles.unknownHintSmall}>
               🔬 Know the species? Rate it and add the species!
             </Text>
           )}
@@ -342,160 +365,154 @@ export default function OysterDetailScreen() {
               showDetails={true}
             />
           </View>
-        </View>
+        </Surface>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Origin</Text>
-          <Text style={styles.originText}>{oyster.origin}</Text>
-          {oyster.origin === 'Unknown' && (
-            <Text style={styles.unknownHint}>
-              📍 Know where this oyster is from? Rate it and add the origin!
-            </Text>
-          )}
-        </View>
+        <Card mode="elevated" style={styles.section}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.sectionTitle}>Origin</Text>
+            <Text variant="bodyMedium" style={styles.originText}>{oyster.origin}</Text>
+            {oyster.origin === 'Unknown' && (
+              <Banner
+                visible={true}
+                icon="map-marker-question"
+                style={styles.unknownBanner}
+              >
+                📍 Know where this oyster is from? Rate it and add the origin!
+              </Banner>
+            )}
+          </Card.Content>
+        </Card>
 
         {oyster.standoutNotes && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Standout Notes</Text>
-            <Text style={styles.notesText}>{oyster.standoutNotes}</Text>
-          </View>
+          <Card mode="elevated" style={styles.section}>
+            <Card.Content>
+              <Text variant="titleMedium" style={styles.sectionTitle}>Standout Notes</Text>
+              <Text variant="bodyMedium" style={styles.notesText}>{oyster.standoutNotes}</Text>
+            </Card.Content>
+          </Card>
         )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Attribute Profile</Text>
-          <Text style={styles.sectionSubtitle}>10-point scale ratings</Text>
+        <Card mode="elevated" style={styles.section}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.sectionTitle}>Attribute Profile</Text>
+            <Text variant="bodySmall" style={styles.sectionSubtitle}>10-point scale ratings</Text>
 
-          {renderAttributeBar(oyster.size, 'Size', 'size')}
-          {renderAttributeBar(oyster.body, 'Body', 'body')}
-          {renderAttributeBar(oyster.sweetBrininess, 'Sweet/Brininess', 'sweet_brininess')}
-          {renderAttributeBar(oyster.flavorfulness, 'Flavorfulness', 'flavorfulness')}
-          {renderAttributeBar(oyster.creaminess, 'Creaminess', 'creaminess')}
-        </View>
+            {renderAttributeBar(oyster.size, 'Size', 'size')}
+            {renderAttributeBar(oyster.body, 'Body', 'body')}
+            {renderAttributeBar(oyster.sweetBrininess, 'Sweet/Brininess', 'sweet_brininess')}
+            {renderAttributeBar(oyster.flavorfulness, 'Flavorfulness', 'flavorfulness')}
+            {renderAttributeBar(oyster.creaminess, 'Creaminess', 'creaminess')}
+          </Card.Content>
+        </Card>
 
-        <View style={styles.section}>
-          <View style={styles.reviewsHeader}>
-            <Text style={styles.sectionTitle}>
-              Reviews {oyster.reviews && oyster.reviews.length > 0 && `(${oyster.reviews.length})`}
-            </Text>
-            <TouchableOpacity
-              style={styles.writeReviewButton}
-              onPress={handleWriteReview}
-            >
-              <Text style={styles.writeReviewButtonText}>✍️ Write Review</Text>
-            </TouchableOpacity>
-          </View>
-
-          {oyster.reviews && oyster.reviews.length > 0 && (
-            <>
-              <View style={styles.filterChipsContainer}>
-                <TouchableOpacity
-                  style={[styles.filterChip, ratingFilter === 'ALL' && styles.filterChipActive]}
-                  onPress={() => setRatingFilter('ALL')}
-                >
-                  <Text style={[styles.filterChipText, ratingFilter === 'ALL' && styles.filterChipTextActive]}>
-                    All
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.filterChip, ratingFilter === 'LOVE_IT' && styles.filterChipActive]}
-                  onPress={() => setRatingFilter('LOVE_IT')}
-                >
-                  <Text style={[styles.filterChipText, ratingFilter === 'LOVE_IT' && styles.filterChipTextActive]}>
-                    ❤️ Love
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.filterChip, ratingFilter === 'LIKE_IT' && styles.filterChipActive]}
-                  onPress={() => setRatingFilter('LIKE_IT')}
-                >
-                  <Text style={[styles.filterChipText, ratingFilter === 'LIKE_IT' && styles.filterChipTextActive]}>
-                    👍 Like
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.filterChip, ratingFilter === 'MEH' && styles.filterChipActive]}
-                  onPress={() => setRatingFilter('MEH')}
-                >
-                  <Text style={[styles.filterChipText, ratingFilter === 'MEH' && styles.filterChipTextActive]}>
-                    😐 Meh
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.filterChip, ratingFilter === 'WHATEVER' && styles.filterChipActive]}
-                  onPress={() => setRatingFilter('WHATEVER')}
-                >
-                  <Text style={[styles.filterChipText, ratingFilter === 'WHATEVER' && styles.filterChipTextActive]}>
-                    🤷 Whatever
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.sortTabs}>
-                <TouchableOpacity
-                  style={[styles.sortTab, sortBy === 'helpful' && styles.sortTabActive]}
-                  onPress={() => setSortBy('helpful')}
-                >
-                  <Text style={[styles.sortTabText, sortBy === 'helpful' && styles.sortTabTextActive]}>
-                    Most Helpful
-                  </Text>
-                </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.sortTab, sortBy === 'recent' && styles.sortTabActive]}
-                onPress={() => setSortBy('recent')}
+        <Card mode="elevated" style={styles.section}>
+          <Card.Content>
+            <View style={styles.reviewsHeader}>
+              <Text variant="titleMedium" style={styles.sectionTitle}>
+                Reviews {oyster.reviews && oyster.reviews.length > 0 && `(${oyster.reviews.length})`}
+              </Text>
+              <Button
+                mode="contained"
+                onPress={handleWriteReview}
+                icon="pencil"
+                compact
+                buttonColor={paperTheme.colors.tertiary}
               >
-                <Text style={[styles.sortTabText, sortBy === 'recent' && styles.sortTabTextActive]}>
-                  Most Recent
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.sortTab, sortBy === 'highest' && styles.sortTabActive]}
-                onPress={() => setSortBy('highest')}
-              >
-                <Text style={[styles.sortTabText, sortBy === 'highest' && styles.sortTabTextActive]}>
-                  Highest
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.sortTab, sortBy === 'lowest' && styles.sortTabActive]}
-                onPress={() => setSortBy('lowest')}
-              >
-                <Text style={[styles.sortTabText, sortBy === 'lowest' && styles.sortTabTextActive]}>
-                  Lowest
-                </Text>
-              </TouchableOpacity>
+                Write
+              </Button>
             </View>
-            </>
-          )}
 
-          {oyster.reviews && oyster.reviews.length > 0 ? (
-            getSortedReviews().map((review) => (
-              <ReviewCard
-                key={review.id}
-                review={review}
-                userVote={userVotes[review.id] || null}
-                onVoteChange={handleVoteChange}
-                currentUserId={currentUserId || undefined}
-                onEdit={handleEditReview}
-                onDelete={handleDeleteReview}
+            {oyster.reviews && oyster.reviews.length > 0 && (
+              <>
+                <View style={styles.filterChipsContainer}>
+                  <Chip
+                    mode={ratingFilter === 'ALL' ? 'flat' : 'outlined'}
+                    selected={ratingFilter === 'ALL'}
+                    onPress={() => setRatingFilter('ALL')}
+                    style={styles.filterChip}
+                  >
+                    All
+                  </Chip>
+                  <Chip
+                    mode={ratingFilter === 'LOVE_IT' ? 'flat' : 'outlined'}
+                    selected={ratingFilter === 'LOVE_IT'}
+                    onPress={() => setRatingFilter('LOVE_IT')}
+                    style={styles.filterChip}
+                  >
+                    ❤️ Love
+                  </Chip>
+                  <Chip
+                    mode={ratingFilter === 'LIKE_IT' ? 'flat' : 'outlined'}
+                    selected={ratingFilter === 'LIKE_IT'}
+                    onPress={() => setRatingFilter('LIKE_IT')}
+                    style={styles.filterChip}
+                  >
+                    👍 Like
+                  </Chip>
+                  <Chip
+                    mode={ratingFilter === 'MEH' ? 'flat' : 'outlined'}
+                    selected={ratingFilter === 'MEH'}
+                    onPress={() => setRatingFilter('MEH')}
+                    style={styles.filterChip}
+                  >
+                    😐 Meh
+                  </Chip>
+                  <Chip
+                    mode={ratingFilter === 'WHATEVER' ? 'flat' : 'outlined'}
+                    selected={ratingFilter === 'WHATEVER'}
+                    onPress={() => setRatingFilter('WHATEVER')}
+                    style={styles.filterChip}
+                  >
+                    🤷 Whatever
+                  </Chip>
+                </View>
+
+                <SegmentedButtons
+                  value={sortBy}
+                  onValueChange={(value) => setSortBy(value as SortOption)}
+                  buttons={[
+                    { value: 'helpful', label: 'Helpful' },
+                    { value: 'recent', label: 'Recent' },
+                    { value: 'highest', label: 'High' },
+                    { value: 'lowest', label: 'Low' },
+                  ]}
+                  style={styles.segmentedButtons}
+                />
+              </>
+            )}
+
+            {oyster.reviews && oyster.reviews.length > 0 ? (
+              getSortedReviews().map((review) => (
+                <ReviewCard
+                  key={review.id}
+                  review={review}
+                  userVote={userVotes[review.id] || null}
+                  onVoteChange={handleVoteChange}
+                  currentUserId={currentUserId || undefined}
+                  onEdit={handleEditReview}
+                  onDelete={handleDeleteReview}
+                />
+              ))
+            ) : (
+              <EmptyState
+                icon="📝"
+                title="No Reviews Yet"
+                description="Be the first to share your tasting experience with this oyster! Your review will help others discover new favorites."
               />
-            ))
-          ) : (
-            <EmptyState
-              icon="📝"
-              title="No Reviews Yet"
-              description="Be the first to share your tasting experience with this oyster! Your review will help others discover new favorites."
-            />
-          )}
-        </View>
+            )}
+          </Card.Content>
+        </Card>
 
-        <View style={styles.section}>
-          <Text style={styles.metaText}>
-            Added: {new Date(oyster.createdAt).toLocaleDateString()}
-          </Text>
-          <Text style={styles.metaText}>
-            Updated: {new Date(oyster.updatedAt).toLocaleDateString()}
-          </Text>
-        </View>
+        <Card mode="outlined" style={styles.section}>
+          <Card.Content>
+            <Text variant="bodySmall" style={styles.metaText}>
+              Added: {new Date(oyster.createdAt).toLocaleDateString()}
+            </Text>
+            <Text variant="bodySmall" style={styles.metaText}>
+              Updated: {new Date(oyster.updatedAt).toLocaleDateString()}
+            </Text>
+          </Card.Content>
+        </Card>
       </ScrollView>
     </SafeAreaView>
   );
@@ -517,10 +534,7 @@ const createStyles = (colors: any, isDark: boolean) =>
       flex: 1,
     },
     header: {
-      backgroundColor: colors.card,
       padding: 20,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
     },
     nameRow: {
       flexDirection: 'row',
@@ -529,56 +543,33 @@ const createStyles = (colors: any, isDark: boolean) =>
       marginBottom: 10,
     },
     name: {
-      fontSize: 28,
-      fontWeight: 'bold',
-      color: colors.text,
       flex: 1,
-    },
-    favoriteButton: {
-      padding: 4,
-      marginLeft: 10,
-    },
-    favoriteIcon: {
-      fontSize: 28,
+      marginRight: 8,
     },
     speciesBadge: {
-      backgroundColor: isDark ? '#2c3e50' : '#e8f4f8',
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 15,
-      alignSelf: 'flex-start',
+      marginBottom: 8,
     },
-    speciesText: {
-      color: colors.primary,
-      fontSize: 14,
-      fontWeight: '600',
-      fontStyle: 'italic',
+    loadingText: {
+      marginTop: 16,
     },
     section: {
-      backgroundColor: colors.card,
-      padding: 20,
       marginTop: 10,
     },
     sectionTitle: {
-      fontSize: 18,
-      fontWeight: '600',
-      color: colors.text,
-      marginBottom: 10,
+      marginBottom: 8,
     },
     sectionSubtitle: {
-      fontSize: 14,
-      color: colors.textSecondary,
       marginBottom: 15,
     },
     originText: {
-      fontSize: 16,
-      color: colors.textSecondary,
+      // Paper handles text styling
     },
     notesText: {
-      fontSize: 16,
-      color: colors.textSecondary,
       lineHeight: 24,
       fontStyle: 'italic',
+    },
+    unknownBanner: {
+      marginTop: 12,
     },
     attributeBarContainer: {
       marginBottom: 15,
@@ -587,11 +578,9 @@ const createStyles = (colors: any, isDark: boolean) =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 6,
+      marginBottom: 8,
     },
     attributeBarLabel: {
-      fontSize: 14,
-      color: colors.textSecondary,
       flex: 1,
     },
     attributeBarValueContainer: {
@@ -599,33 +588,20 @@ const createStyles = (colors: any, isDark: boolean) =>
       alignItems: 'center',
     },
     attributeBarDescriptor: {
-      fontSize: 14,
-      fontWeight: '700',
-      color: colors.text,
+      // Paper handles text styling
     },
     attributeBarValue: {
-      fontSize: 12,
-      fontWeight: '400',
-      color: colors.textSecondary,
+      // Paper handles text styling
     },
-    attributeBarTrack: {
+    progressBar: {
       height: 8,
-      backgroundColor: colors.border,
-      borderRadius: 4,
-      overflow: 'hidden',
-    },
-    attributeBarFill: {
-      height: '100%',
       borderRadius: 4,
     },
     metaText: {
-      fontSize: 12,
-      color: colors.textSecondary,
-      marginTop: 5,
+      marginTop: 4,
     },
     errorText: {
-      fontSize: 16,
-      color: colors.error,
+      // Paper handles text styling
     },
     headerRating: {
       marginTop: 15,
@@ -633,38 +609,15 @@ const createStyles = (colors: any, isDark: boolean) =>
       borderTopWidth: 1,
       borderTopColor: colors.border,
     },
-    unknownHint: {
-      fontSize: 13,
-      color: colors.warning,
-      fontStyle: 'italic',
-      marginTop: 8,
-      backgroundColor: isDark ? '#4a3a1a' : '#fff3cd',
-      padding: 10,
-      borderRadius: 6,
-      overflow: 'hidden',
-    },
     unknownHintSmall: {
-      fontSize: 12,
-      color: colors.warning,
-      fontStyle: 'italic',
       marginTop: 8,
+      fontStyle: 'italic',
     },
     reviewsHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: 15,
-    },
-    writeReviewButton: {
-      backgroundColor: colors.success,
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-      borderRadius: 8,
-    },
-    writeReviewButtonText: {
-      color: '#fff',
-      fontSize: 14,
-      fontWeight: '600',
     },
     filterChipsContainer: {
       flexDirection: 'row',
@@ -673,49 +626,10 @@ const createStyles = (colors: any, isDark: boolean) =>
       marginBottom: 15,
     },
     filterChip: {
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 16,
-      backgroundColor: colors.inputBackground,
-      borderWidth: 1,
-      borderColor: colors.border,
+      marginRight: 4,
+      marginBottom: 4,
     },
-    filterChipActive: {
-      backgroundColor: isDark ? '#3a5a7a' : '#e8f4f8',
-      borderColor: colors.primary,
-    },
-    filterChipText: {
-      fontSize: 13,
-      color: colors.textSecondary,
-      fontWeight: '500',
-    },
-    filterChipTextActive: {
-      color: colors.primary,
-      fontWeight: '600',
-    },
-    sortTabs: {
-      flexDirection: 'row',
+    segmentedButtons: {
       marginBottom: 15,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    sortTab: {
-      flex: 1,
-      paddingVertical: 12,
-      alignItems: 'center',
-      borderBottomWidth: 2,
-      borderBottomColor: 'transparent',
-    },
-    sortTabActive: {
-      borderBottomColor: colors.primary,
-    },
-    sortTabText: {
-      fontSize: 13,
-      color: colors.textSecondary,
-      fontWeight: '500',
-    },
-    sortTabTextActive: {
-      color: colors.primary,
-      fontWeight: '600',
     },
   });
