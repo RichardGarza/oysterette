@@ -12,20 +12,34 @@ interface OysterMatch {
   oyster: Oyster;
   score: number;
   detectedText: string;
+  position: number;
+}
+
+interface UnmatchedOyster {
+  detectedText: string;
+  position: number;
+}
+
+interface TextWithPosition {
+  text: string;
+  position: number;
 }
 
 /**
- * Extract text from image URI
+ * Extract text from image URI with position tracking
  */
-export const recognizeText = async (imageUri: string): Promise<string[]> => {
+export const recognizeText = async (imageUri: string): Promise<TextWithPosition[]> => {
   try {
     const result = await TextRecognition.recognize(imageUri);
 
-    // Extract all text blocks
-    const textLines: string[] = [];
-    result.blocks.forEach((block) => {
-      block.lines.forEach((line) => {
-        textLines.push(line.text);
+    // Extract all text blocks with position
+    const textLines: TextWithPosition[] = [];
+    result.blocks.forEach((block, blockIndex) => {
+      block.lines.forEach((line, lineIndex) => {
+        textLines.push({
+          text: line.text,
+          position: blockIndex * 100 + lineIndex, // Simple position tracking
+        });
       });
     });
 
@@ -42,9 +56,9 @@ export const recognizeText = async (imageUri: string): Promise<string[]> => {
  * Match detected text against oyster database
  */
 export const matchOysters = (
-  detectedTexts: string[],
+  detectedTexts: TextWithPosition[],
   oysters: Oyster[]
-): OysterMatch[] => {
+): { matches: OysterMatch[]; unmatched: UnmatchedOyster[] } => {
   const fuse = new Fuse(oysters, {
     keys: ['name', 'species', 'origin'],
     threshold: 0.4,
@@ -52,25 +66,42 @@ export const matchOysters = (
   });
 
   const matches: OysterMatch[] = [];
+  const unmatched: UnmatchedOyster[] = [];
   const matchedOysterIds = new Set<string>();
+  const processedTexts = new Set<string>();
 
-  detectedTexts.forEach((text) => {
-    const results = fuse.search(text);
+  detectedTexts.forEach((item) => {
+    const results = fuse.search(item.text);
 
+    let foundMatch = false;
     results.forEach((result: any) => {
       if (result.score && result.score < 0.4 && !matchedOysterIds.has(result.item.id)) {
         matches.push({
           oyster: result.item,
           score: 1 - result.score, // Convert to match percentage
-          detectedText: text,
+          detectedText: item.text,
+          position: item.position,
         });
         matchedOysterIds.add(result.item.id);
+        foundMatch = true;
       }
     });
+
+    // Track unmatched if text looks like an oyster name (3+ chars, not processed)
+    if (!foundMatch && item.text.length >= 3 && !processedTexts.has(item.text.toLowerCase())) {
+      unmatched.push({
+        detectedText: item.text,
+        position: item.position,
+      });
+      processedTexts.add(item.text.toLowerCase());
+    }
   });
 
-  // Sort by match score (highest first)
-  return matches.sort((a, b) => b.score - a.score);
+  // Sort by position to maintain menu order
+  matches.sort((a, b) => a.position - b.position);
+  unmatched.sort((a, b) => a.position - b.position);
+
+  return { matches, unmatched };
 };
 
 /**

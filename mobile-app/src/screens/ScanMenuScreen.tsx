@@ -20,6 +20,12 @@ interface MatchedOyster {
   score: number;
   personalizedScore: number;
   detectedText: string;
+  position: number;
+}
+
+interface UnmatchedOyster {
+  detectedText: string;
+  position: number;
 }
 
 export default function ScanMenuScreen() {
@@ -29,6 +35,7 @@ export default function ScanMenuScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanning, setScanning] = useState(false);
   const [matches, setMatches] = useState<MatchedOyster[]>([]);
+  const [unmatched, setUnmatched] = useState<UnmatchedOyster[]>([]);
   const [allOysters, setAllOysters] = useState<Oyster[]>([]);
 
   useEffect(() => {
@@ -59,6 +66,7 @@ export default function ScanMenuScreen() {
     try {
       setScanning(true);
       setMatches([]);
+      setUnmatched([]);
 
       // Take photo
       const photo = await cameraRef.current.takePictureAsync();
@@ -72,22 +80,24 @@ export default function ScanMenuScreen() {
       }
 
       // Match oysters
-      const ocrMatches = matchOysters(detectedTexts, allOysters);
+      const { matches: ocrMatches, unmatched: unmatchedItems } = matchOysters(detectedTexts, allOysters);
 
-      if (ocrMatches.length === 0) {
+      if (ocrMatches.length === 0 && unmatchedItems.length === 0) {
         Alert.alert('No Matches', 'No oysters found on this menu. Try another angle.');
         return;
       }
 
-      // Calculate personalized scores
+      // Calculate personalized scores for matched oysters
       const matchesWithScores: MatchedOyster[] = ocrMatches.map((match) => ({
         oyster: match.oyster,
         score: match.score,
         personalizedScore: calculatePersonalizedScore(match.oyster),
         detectedText: match.detectedText,
+        position: match.position,
       }));
 
       setMatches(matchesWithScores);
+      setUnmatched(unmatchedItems);
     } catch (error) {
       if (__DEV__) {
         console.error('❌ [ScanMenu] Scan error:', error);
@@ -155,7 +165,7 @@ export default function ScanMenuScreen() {
           </View>
 
           <View style={styles.bottomOverlay}>
-            {matches.length === 0 ? (
+            {matches.length === 0 && unmatched.length === 0 ? (
               <Button
                 mode="contained"
                 onPress={handleScan}
@@ -169,11 +179,16 @@ export default function ScanMenuScreen() {
             ) : (
               <ScrollView style={styles.resultsContainer}>
                 <Text variant="titleLarge" style={styles.resultsTitle}>
-                  Found {matches.length} Oyster{matches.length !== 1 ? 's' : ''}
+                  Found {matches.length + unmatched.length} Item{matches.length + unmatched.length !== 1 ? 's' : ''}
                 </Text>
+                <Text variant="bodyMedium" style={styles.resultsSubtitle}>
+                  {matches.length} in database • {unmatched.length} not found
+                </Text>
+
+                {/* Matched Oysters */}
                 {matches.map((match, index) => (
                   <Card
-                    key={index}
+                    key={`match-${index}`}
                     mode="elevated"
                     style={styles.resultCard}
                     onPress={() => navigation.navigate('OysterDetail', { oysterId: match.oyster.id })}
@@ -199,9 +214,42 @@ export default function ScanMenuScreen() {
                     </Card.Content>
                   </Card>
                 ))}
+
+                {/* Unmatched Oysters */}
+                {unmatched.map((item, index) => (
+                  <Card
+                    key={`unmatched-${index}`}
+                    mode="outlined"
+                    style={[styles.resultCard, styles.unmatchedCard]}
+                  >
+                    <Card.Content>
+                      <Text variant="titleMedium" style={styles.unmatchedName}>
+                        {item.detectedText}
+                      </Text>
+                      <Text variant="bodySmall" style={styles.unmatchedText}>
+                        Not in database
+                      </Text>
+                      <View style={styles.unmatchedActions}>
+                        <Button
+                          mode="contained"
+                          onPress={() => navigation.navigate('AddOyster')}
+                          style={styles.addButton}
+                          compact
+                          icon="plus"
+                        >
+                          Add to Database
+                        </Button>
+                      </View>
+                    </Card.Content>
+                  </Card>
+                ))}
+
                 <Button
                   mode="outlined"
-                  onPress={() => setMatches([])}
+                  onPress={() => {
+                    setMatches([]);
+                    setUnmatched([]);
+                  }}
                   style={styles.scanAgainButton}
                   icon="camera"
                 >
@@ -306,8 +354,14 @@ const styles = StyleSheet.create({
   },
   resultsTitle: {
     color: '#fff',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  resultsSubtitle: {
+    color: '#fff',
     marginBottom: 16,
     textAlign: 'center',
+    opacity: 0.8,
   },
   resultCard: {
     marginBottom: 12,
@@ -328,6 +382,24 @@ const styles = StyleSheet.create({
   },
   scoreChip: {
     height: 32,
+  },
+  unmatchedCard: {
+    borderColor: '#FFC107',
+    borderWidth: 2,
+  },
+  unmatchedName: {
+    marginBottom: 8,
+  },
+  unmatchedText: {
+    opacity: 0.7,
+    marginBottom: 12,
+  },
+  unmatchedActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  addButton: {
+    flex: 1,
   },
   scanAgainButton: {
     marginTop: 16,
