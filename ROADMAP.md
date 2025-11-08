@@ -772,7 +772,603 @@ const theme = {
 }
 ```
 
-### Phase 20: Social Features 📋
+### Phase 20: AR Menu Scanner 📋
+
+**Estimated Time:** 30-40 hours
+**Priority:** HIGH (Consumer Delight Feature)
+**Platform:** Mobile (iOS/Android), Web PWA (with camera API)
+
+**Overview:**
+Revolutionize oyster menu navigation with augmented reality. Users point their phone camera at an oyster menu and instantly see personalized likelihood scores and flavor profiles overlaid on each oyster name.
+
+**User Flow:**
+1. User taps "Scan Menu" button on HomeScreen or OysterList
+2. Camera view opens with AR overlay UI
+3. User points camera at printed/digital oyster menu
+4. App uses OCR (Optical Character Recognition) to detect oyster names
+5. For each detected oyster:
+   - Looks up oyster in database by fuzzy name matching
+   - Calculates personalized match score (based on user's flavor profile)
+   - Displays color-coded overlay: 🟢 90%+ (Love it!), 🟡 70-89% (Worth trying), 🔴 <70% (Not for you)
+6. User taps overlay on any oyster to see:
+   - Quick flavor profile tooltip (size, body, sweetness, etc.)
+   - "View Details" button → navigates to OysterDetailScreen
+   - "Mark as Ordered" → adds to session tracker
+7. Optional: Save menu scan session for later reference
+
+**Visual Design:**
+- **AR Overlay UI:**
+  - Translucent colored boxes over each oyster name
+  - Match score percentage in large, bold text
+  - Small flavor attribute icons (🦪 size, 🌊 brininess, etc.)
+  - Pulsing animation on high-match oysters (90%+)
+
+- **Color Coding:**
+  - 🟢 Green (90-100%): "You'll love this!" + sparkle effect
+  - 🟡 Yellow (70-89%): "Worth trying" + subtle glow
+  - 🔴 Red (<70%): "Not your style" + dimmed opacity
+
+- **Bottom Panel:**
+  - "Best Matches" quick list (top 3 from current view)
+  - "How it works" info button
+  - Flash toggle, zoom controls
+
+**Technical Implementation:**
+- **OCR Engine:** Google ML Kit (mobile) or Tesseract.js (web PWA)
+- **AR Framework:**
+  - React Native: react-native-vision-camera + react-native-reanimated
+  - Web PWA: WebRTC camera API + canvas overlays
+- **Fuzzy Matching:** Fuse.js (already in codebase) with high threshold
+- **Performance:** Cache OCR results, debounce overlay updates
+- **Offline Support:** Download user's favorite oysters for offline matching
+
+**Engagement Impact:**
+- ⭐ **High Novelty:** AR is still novel in food apps (Instagram-worthy feature)
+- 🎯 **Decision Friction Reduced:** No more paralysis when faced with 20+ oyster choices
+- 📸 **Shareability:** Users will share AR menu scans to social media ("Look at this cool app!")
+- 🔁 **Repeat Usage:** Creates habit of opening app before ordering (high retention)
+- 💡 **Trust Builder:** Shows app "understands" their taste (builds confidence in recommendations)
+
+**Minimum Viable Feature (Phase 1):**
+- [ ] Camera view with oyster name detection (OCR)
+- [ ] Basic overlay with match percentage
+- [ ] Tap to view details
+- [ ] Works with 80%+ accuracy on common menu formats
+
+**Future Enhancements (Phase 2):**
+- [ ] Multi-language support (French, Spanish menus)
+- [ ] Restaurant menu database (pre-loaded menus for popular spots)
+- [ ] "Menu History" - save scanned menus for repeat visits
+- [ ] Compare mode - scan multiple menus side-by-side
+- [ ] Social sharing - "I'm at [restaurant], here's what matches my taste!"
+
+---
+
+### Phase 21: Social Features & Paired Recommendations 📋
+
+**Estimated Time:** 25-35 hours
+**Priority:** HIGH (Engagement & Retention)
+**Platform:** Mobile (iOS/Android), Web PWA
+
+**Overview:**
+Transform Oysterette into a social discovery platform. Users can add friends, see their reviews, and get paired recommendations like "You and Sarah would both love this oyster!" based on shared taste preferences.
+
+**User Flow:**
+
+**Adding Friends:**
+1. User taps "Friends" tab in bottom navigation
+2. Search friends by username, email, or phone number
+3. Or share unique friend code via text/social media
+4. Friend receives notification → accepts/declines
+5. Friendship established (bidirectional)
+
+**Friend Activity Feed:**
+1. User opens Friends tab → sees activity feed
+2. Feed shows:
+   - Recent reviews from friends (past 7 days)
+   - New favorites added
+   - Badges earned
+   - Oyster discovery milestones
+3. User can react (👍 supportive, 😮 surprised) or comment
+4. Tap any activity → navigate to oyster detail or friend's profile
+
+**Paired Recommendations:**
+1. Algorithm runs daily: Find oysters that match BOTH users' preferences
+2. Notification: "You and [Friend] would both love Blue Point Oysters! 🦪"
+3. User taps notification → sees "Paired Match" screen:
+   - Oyster details
+   - Your match: 92%, Friend's match: 88%
+   - Side-by-side flavor preference comparison
+   - "Plan to Try Together" button → creates shared wishlist
+4. User can send in-app message: "Let's try this at [restaurant]!"
+
+**Friend Profile View:**
+1. Tap friend's name → see their public profile
+2. Shows:
+   - Their flavor profile (if public)
+   - Recent reviews (if public)
+   - Shared oysters (oysters both have reviewed)
+   - Compatibility score: "You have 73% taste overlap!"
+3. "Compare Tastes" button → side-by-side attribute comparison
+4. "Get Recommendations Together" → generates paired recs on demand
+
+**Visual Design:**
+- **Friends List:**
+  - Avatar, name, badge level, last active
+  - Taste compatibility percentage (color-coded: 🟢 80%+, 🟡 60-79%, 🔴 <60%)
+  - Quick stats: Reviews (12), Shared Oysters (5)
+
+- **Activity Feed:**
+  - Card-based layout with user avatars
+  - Activity type icons (⭐ review, ❤️ favorite, 🏆 badge)
+  - Time stamps ("2 hours ago")
+  - Inline preview of review/oyster
+
+- **Paired Recommendation Card:**
+  - Split-screen design (You | Friend)
+  - Overlapping flavor profile graphs
+  - Highlighted shared attributes ("You both love small, briny oysters!")
+  - Call-to-action buttons prominent
+
+**Technical Implementation:**
+- **Friend System:**
+  - `Friendship` table (userId, friendId, status, createdAt)
+  - Bidirectional relationships (auto-create inverse)
+  - Status enum: pending, accepted, declined, blocked
+
+- **Activity Feed:**
+  - `Activity` table (userId, type, metadata, createdAt)
+  - Real-time updates via polling (30s interval) or WebSockets (future)
+  - Pagination (20 items per page)
+
+- **Paired Recommendation Algorithm:**
+  ```typescript
+  // Pseudocode
+  for each friend pair:
+    userProfile = getUserFlavorProfile(userId)
+    friendProfile = getUserFlavorProfile(friendId)
+
+    oysters = getUnreviewedOysters([userId, friendId])
+
+    for each oyster:
+      userScore = calculateMatch(userProfile, oyster)
+      friendScore = calculateMatch(friendProfile, oyster)
+
+      if (userScore > 80 && friendScore > 80):
+        recommendations.push({
+          oyster,
+          userScore,
+          friendScore,
+          combinedScore: (userScore + friendScore) / 2
+        })
+
+    return top 5 recommendations
+  ```
+
+- **Privacy Controls:**
+  - Users can hide profile, reviews, activity from non-friends
+  - Block/unblock friends
+  - Disable paired recommendations
+
+**Engagement Impact:**
+- 🤝 **Social Proof:** Friends' reviews carry more weight than strangers
+- 🎉 **Shared Experiences:** Creates IRL meetup opportunities (restaurant visits)
+- 🔁 **Network Effects:** Each new user brings value to existing users
+- 📱 **Notifications:** Daily paired recs drive app opens (30-40% open rate expected)
+- 💬 **Content Creation:** Comments/reactions increase time in app
+- 🏅 **Competition:** Friendly competition to try more oysters, earn badges
+
+**Minimum Viable Feature (Phase 1):**
+- [ ] Add friends by username search
+- [ ] Friend activity feed (reviews only)
+- [ ] Basic paired recommendations (weekly digest)
+- [ ] Friend profile view with compatibility score
+
+**Future Enhancements (Phase 2):**
+- [ ] In-app messaging between friends
+- [ ] Group recommendations (3+ friends)
+- [ ] Friend leaderboards (most reviews, highest badge)
+- [ ] Event planning ("Oyster tasting on Saturday?")
+- [ ] Instagram/Facebook friend import
+
+---
+
+### Phase 22: Gamification & XP System 📋
+
+**Estimated Time:** 20-30 hours
+**Priority:** HIGH (Retention & Engagement)
+**Platform:** Mobile (iOS/Android), Web PWA
+
+**Overview:**
+Introduce a comprehensive XP (Experience Points) and achievement system that rewards users for exploring oysters, writing reviews, and building streaks. Features instant gratification moments, shareable badges, and progression milestones to drive habit formation.
+
+**User Flow:**
+
+**XP Earning Moments:**
+1. User completes action (review oyster, vote, add favorite, etc.)
+2. **Instant Reward Animation:**
+   - Screen briefly freezes (200ms)
+   - "+5 XP" toast appears from bottom with confetti burst
+   - New title unlocked: "You're now a Salinity Scout! 🧂"
+   - Progress bar fills toward next level
+3. User taps toast → sees XP breakdown modal
+4. If level up: Full-screen celebration with new badge animation
+
+**Milestone Achievements:**
+
+**10 Oysters Reviewed → "Taste Explorer" Badge:**
+1. User submits 10th review
+2. Confetti explosion + badge reveal animation
+3. "Share Your Achievement!" prompt with Instagram story template:
+   - Pre-designed graphic: Badge + username + "Reviewed 10 oysters!"
+   - Branded Oysterette logo in corner
+   - One-tap share to Instagram Stories
+4. Badge appears on profile with unlock date
+
+**5 Regions Explored → Regional Flag Pins:**
+1. User reviews oysters from 5 different regions (e.g., Pacific NW, East Coast, France, Japan, Australia)
+2. Profile map view unlocks (world map with flag pins)
+3. Each region shows:
+   - Flag emoji pin on map
+   - Count of oysters reviewed from that region
+   - Regional specialist badge (e.g., "Pacific NW Expert 🌲")
+4. Shareable graphic: "I've explored oysters from 5 regions! 🗺️"
+
+**30-Day Streak → "Iron Shell" Trophy:**
+1. User reviews at least 1 oyster for 30 consecutive days
+2. Epic trophy animation (3D spinning trophy)
+3. **In-App Reward Options:**
+   - Exclusive "Iron Shell" badge (platinum color, animated)
+   - Profile frame (special border around avatar)
+   - Early access to beta features
+   - **Future:** Partner discount codes (10% off at partner restaurants)
+4. Streak tracker on profile: "🔥 30-day streak active!"
+5. Daily reminder notification if streak at risk (23+ hours since last review)
+
+**Visual Design:**
+- **XP Toast Notification:**
+  - Small card slides up from bottom
+  - "+5 XP" in large, bold text
+  - Action description: "Reviewed Blue Point Oyster"
+  - New title in italic below: "Salinity Scout"
+  - Confetti particles (subtle, 2-3 colors)
+  - Auto-dismisses after 3s or tap to dismiss
+
+- **Progress Bar:**
+  - Persistent at top of profile screen
+  - Shows current level (e.g., "Level 5: Oyster Enthusiast")
+  - XP progress: "250 / 500 XP to Level 6"
+  - Color-coded by tier: Bronze (1-5), Silver (6-10), Gold (11-15), Platinum (16+)
+
+- **Badge Gallery:**
+  - Grid layout on profile
+  - Unlocked badges: Full color, animated on hover
+  - Locked badges: Grayscale silhouettes with lock icon
+  - Tap badge → see unlock requirements and progress
+
+- **Instagram Story Templates:**
+  - Portrait mode (1080x1920)
+  - Gradient background (ocean theme)
+  - Badge graphic (center, large)
+  - Username and achievement text
+  - Oysterette branding (bottom corner)
+  - Download as PNG or share directly
+
+**XP System Details:**
+
+**XP Sources:**
+| Action | XP Earned | Notes |
+|--------|-----------|-------|
+| Review an oyster | +10 XP | First review: +20 XP bonus |
+| Vote on review (agree/disagree) | +2 XP | Max 20 XP/day from voting |
+| Add oyster to favorites | +1 XP | Unlimited |
+| Complete profile | +25 XP | One-time |
+| Add profile photo | +15 XP | One-time |
+| Review oyster from new region | +15 XP | First oyster from each region |
+| Review rare oyster (< 5 reviews) | +20 XP | Encourages diversity |
+| Daily login | +3 XP | Max 1/day |
+| Maintain 7-day streak | +50 XP | Weekly bonus |
+| Friend reviews your recommendation | +5 XP | Social reward |
+
+**Levels & Titles:**
+- **Level 1-5 (Bronze):** Oyster Novice, Shell Seeker, Tide Taster, Brine Explorer, Salinity Scout
+- **Level 6-10 (Silver):** Ocean Aficionado, Pearl Hunter, Shellfish Sommelier, Maritime Master, Coastal Connoisseur
+- **Level 11-15 (Gold):** Oyster Guru, Aquatic Sage, Tidepool Legend, Mollusc Maestro, Marine Maven
+- **Level 16+ (Platinum):** Oyster Virtuoso, Neptune's Choice, Sea Emperor
+
+**XP Required Per Level:**
+- Level 1 → 2: 50 XP (5 reviews)
+- Level 2 → 3: 100 XP (10 reviews total)
+- Level 3 → 4: 200 XP (20 reviews total)
+- Level 4 → 5: 350 XP (35 reviews total)
+- Pattern continues with ~1.5x multiplier
+
+**Badges & Achievements:**
+
+**Milestone Badges:**
+- [ ] First Review (1 review)
+- [ ] Taste Explorer (10 reviews) - **Instagram sharable**
+- [ ] Shell Collector (25 reviews)
+- [ ] Century Club (100 reviews)
+- [ ] Regional Explorer (5 regions) - **Map pins unlocked**
+- [ ] World Traveler (10 regions)
+- [ ] Species Specialist (Review all 7 major species)
+- [ ] Origin Expert (Review 20+ origins)
+
+**Streak Badges:**
+- [ ] Weekender (7-day streak)
+- [ ] Committed (14-day streak)
+- [ ] Iron Shell (30-day streak) - **In-app reward**
+- [ ] Platinum Shell (90-day streak) - **Exclusive features**
+- [ ] Diamond Shell (365-day streak) - **Hall of Fame**
+
+**Community Badges:**
+- [ ] Helpful Voter (100 votes cast)
+- [ ] Trusted Reviewer (Credibility ≥ 1.3)
+- [ ] Expert Status (Credibility ≥ 1.5)
+- [ ] Friend Magnet (10+ friends)
+- [ ] Social Butterfly (50+ interactions)
+
+**Special Badges:**
+- [ ] Early Adopter (Registered in first 1000 users)
+- [ ] Beta Tester (Joined during beta)
+- [ ] Holiday Special (Reviewed on New Year's Day, etc.)
+- [ ] Rare Find (Reviewed oyster with <5 total reviews)
+
+**Technical Implementation:**
+- **Database Schema:**
+  ```typescript
+  // User XP fields
+  user.xp: number (total XP earned)
+  user.level: number (current level)
+  user.currentStreak: number (consecutive days)
+  user.longestStreak: number (personal record)
+  user.lastReviewDate: Date (for streak tracking)
+
+  // UserBadge table
+  id, userId, badgeId, unlockedAt, isShared
+
+  // Badge table
+  id, name, description, icon, category, requirement, xpReward
+  ```
+
+- **XP Calculation Service:**
+  ```typescript
+  function awardXP(userId: string, action: string, context: any) {
+    const xpAmount = XP_REWARDS[action]
+    const bonuses = calculateBonuses(userId, action, context)
+    const totalXP = xpAmount + bonuses
+
+    await updateUserXP(userId, totalXP)
+    await checkLevelUp(userId)
+    await checkBadgeUnlocks(userId)
+
+    return {
+      xp: totalXP,
+      levelUp: boolean,
+      badgesUnlocked: Badge[]
+    }
+  }
+  ```
+
+- **Streak Tracking:**
+  - Cron job runs daily at midnight
+  - Check each user's lastReviewDate
+  - If gap > 24 hours: Reset streak to 0
+  - If exactly 1 day: Increment streak
+  - Send notification if streak at risk (>20 hours since last review)
+
+**Engagement Impact:**
+- 🎮 **Instant Gratification:** XP toast provides dopamine hit after every action
+- 🏆 **Goals & Progression:** Clear milestones create sense of achievement
+- 📸 **Social Sharing:** Instagram templates drive organic marketing
+- 🔥 **Habit Formation:** Streaks encourage daily app usage (21-day habit loop)
+- 🎁 **Delayed Rewards:** Exclusive badges/features create long-term retention
+- 📊 **Measurable Progress:** Users can see themselves "leveling up" (quantified self)
+- 👥 **Competition:** Leaderboards and friend comparisons drive engagement
+- 💎 **Status Symbols:** Badges on profile create social proof
+
+**Minimum Viable Feature (Phase 1):**
+- [ ] XP system with 5 sources (review, vote, favorite, login, streak)
+- [ ] 10 levels with titles
+- [ ] 5 core badges (First Review, Taste Explorer, Weekender, Iron Shell, Helpful Voter)
+- [ ] XP toast notifications
+- [ ] Profile progress bar
+- [ ] Badge gallery on profile
+
+**Future Enhancements (Phase 2):**
+- [ ] Instagram story template generator
+- [ ] Regional map pins with interactive globe
+- [ ] Leaderboards (daily, weekly, all-time)
+- [ ] Seasonal badges (Summer Oyster Fest, etc.)
+- [ ] Partner rewards (restaurant discounts for high levels)
+- [ ] Custom badge frames (unlock via achievements)
+- [ ] Badge rarity tiers (common, rare, epic, legendary)
+
+---
+
+### Phase 23: Enhanced Flavor Profile Visualization (Range Display) 📋
+
+**Estimated Time:** 8-12 hours
+**Priority:** MEDIUM-HIGH (UX Improvement)
+**Platform:** Mobile (iOS/Android), Web PWA
+
+**Overview:**
+After a user has reviewed 5+ oysters, their flavor profile should display as a **range** (e.g., "Small to Medium") rather than a single point, reflecting the diversity of oysters they enjoy. This provides a more accurate and nuanced representation of taste preferences.
+
+**Current Behavior (Before 5 Reviews):**
+- User sets baseline flavor profile manually (single point: 1-10 scale)
+- Baseline updates with each LOVE_IT review (exponential moving average)
+- Profile shows 5 progress bars with single values (e.g., "Size: 7/10 - Huge")
+
+**New Behavior (After 5+ Reviews):**
+- System analyzes user's LIKE_IT and LOVE_IT reviews
+- Calculates min, max, and median for each attribute
+- Profile displays **range visualization** instead of single bar
+- Shows typical preference window (e.g., "Typically enjoys sizes 4-7")
+
+**User Flow:**
+1. User reviews their 5th oyster with LIKE_IT or LOVE_IT rating
+2. Profile automatically switches from "single point" to "range" display
+3. Each attribute now shows:
+   - **Shaded range bar** (gradient from min to max)
+   - **Median indicator** (dot or line in middle)
+   - **Descriptive label:** "Small to Medium" (instead of just "Medium")
+4. Hover/tap on attribute → tooltip shows:
+   - Range: "3 to 7 out of 10"
+   - Most common: "5 (50% of your liked oysters)"
+   - Recommendation: "We'll suggest oysters in this range"
+
+**Visual Design:**
+
+**Single Point Display (0-4 reviews):**
+```
+Size:  Huge
+[████████████████░░░░] 8/10
+```
+
+**Range Display (5+ reviews):**
+```
+Size:  Small to Medium
+[░░▓▓▓▓▓▓▓▓▓▓░░░░░░] 3-7/10
+     ●           ← Median: 5
+```
+
+**Detailed Range Visualization:**
+- **Gradient bar:** Light color at min, darker at max
+- **Median dot:** Placed on bar to show center of preference
+- **Label:** Dynamic text based on range width:
+  - Narrow range (1-2 points): "Consistently prefers [value]"
+  - Medium range (3-5 points): "[Low value] to [High value]"
+  - Wide range (6+ points): "Enjoys variety in [attribute]"
+- **Distribution indicator:** Optional - show concentration of reviews (heatmap on bar)
+
+**Example Scenarios:**
+
+**User A: Specialist (Narrow Range)**
+- Reviewed oysters with sizes: 3, 3, 4, 3, 4
+- Range: 3-4 (narrow)
+- Display: "Consistently prefers Small oysters"
+- Bar visualization: Tight gradient from 3-4
+- Recommendation engine: Focuses on size 3-4 oysters
+
+**User B: Explorer (Wide Range)**
+- Reviewed oysters with sizes: 2, 5, 7, 4, 9
+- Range: 2-9 (wide)
+- Display: "Enjoys variety in Size (Tiny to Huge)"
+- Bar visualization: Wide gradient across most of scale
+- Recommendation engine: Considers broader range
+
+**Technical Implementation:**
+
+**Database Query:**
+```typescript
+// Get user's liked oyster attributes
+const likedReviews = await prisma.review.findMany({
+  where: {
+    userId,
+    rating: { in: ['LIKE_IT', 'LOVE_IT'] }
+  },
+  include: { oyster: true }
+})
+
+// Calculate ranges for each attribute
+const sizeRange = {
+  min: Math.min(...likedReviews.map(r => r.oyster.size)),
+  max: Math.max(...likedReviews.map(r => r.oyster.size)),
+  median: calculateMedian(likedReviews.map(r => r.oyster.size)),
+  distribution: getDistribution(likedReviews.map(r => r.oyster.size))
+}
+```
+
+**Recommendation Engine Update:**
+```typescript
+// Old algorithm (single point)
+similarity = euclideanDistance(userBaseline, oysterAttributes)
+
+// New algorithm (range-based)
+function calculateRangeBasedSimilarity(userRanges, oysterAttributes) {
+  let score = 0
+
+  for (const attr of ATTRIBUTES) {
+    const userRange = userRanges[attr]
+    const oysterValue = oysterAttributes[attr]
+
+    // Oyster within user's preferred range: High score
+    if (oysterValue >= userRange.min && oysterValue <= userRange.max) {
+      score += 100 // Perfect match
+    }
+    // Oyster close to range edges: Moderate score
+    else {
+      const distanceFromRange = Math.min(
+        Math.abs(oysterValue - userRange.min),
+        Math.abs(oysterValue - userRange.max)
+      )
+      score += Math.max(0, 100 - (distanceFromRange * 15))
+    }
+  }
+
+  return score / ATTRIBUTES.length
+}
+```
+
+**Label Generation Logic:**
+```typescript
+function getAttributeRangeLabel(attribute: string, min: number, max: number) {
+  const range = max - min
+
+  if (range <= 1) {
+    // Narrow preference
+    const value = Math.round((min + max) / 2)
+    return `Consistently prefers ${getAttributeDescriptor(attribute, value)}`
+  } else if (range <= 5) {
+    // Medium range
+    const lowLabel = getAttributeDescriptor(attribute, min)
+    const highLabel = getAttributeDescriptor(attribute, max)
+    return `${lowLabel} to ${highLabel}`
+  } else {
+    // Wide range
+    return `Enjoys variety in ${attribute}`
+  }
+}
+```
+
+**Mobile UI Component:**
+```tsx
+<AttributeRangeBar
+  attribute="size"
+  min={3}
+  max={7}
+  median={5}
+  distribution={[0, 0, 1, 3, 2, 1, 0, 0, 0, 0]} // Histogram
+  label="Small to Medium"
+/>
+```
+
+**Engagement Impact:**
+- 🎯 **Personalization:** More accurate recommendations (users try more oysters)
+- 🧠 **Self-Discovery:** Users learn their own taste patterns ("I thought I only liked small, but I enjoy medium too!")
+- 📊 **Data Visualization:** Beautiful charts make profile feel premium
+- 🔍 **Transparency:** Users understand how recommendations are made
+- ⚡ **Dynamic Updates:** Profile evolves as user explores (encourages experimentation)
+
+**Minimum Viable Feature:**
+- [ ] Activate range display after 5 LIKE_IT/LOVE_IT reviews
+- [ ] Calculate min, max, median for each attribute
+- [ ] Display gradient bar with range
+- [ ] Show descriptive label (e.g., "Small to Medium")
+- [ ] Update recommendation algorithm to use ranges
+
+**Future Enhancements:**
+- [ ] Distribution heatmap on bar (show concentration)
+- [ ] Animated transition from single point to range (on 5th review)
+- [ ] "Expand your range" suggestions (encourage trying new sizes/flavors)
+- [ ] Comparative view: "You vs. Average User" (show how adventurous they are)
+- [ ] Time-based evolution: "Your taste has evolved toward bigger oysters over time"
+
+---
+
+### Phase 24: Social Features (Legacy) 📋
 
 - [ ] User profiles with review history
 - [ ] Follow/unfollow other users
@@ -780,7 +1376,7 @@ const theme = {
 - [ ] Review comments/replies
 - [ ] Share reviews externally
 
-### Phase 20: Advanced Features 📋
+### Phase 25: Advanced Features (Legacy) 📋
 
 - [ ] User badges and achievements
 - [ ] Oyster tasting challenges
