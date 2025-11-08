@@ -765,24 +765,21 @@ Credibility Score:
 
 ### 14.9: Navigation Menu Redesign 🍔
 
-**Time:** 2 hours
+**Status:** ✅ COMPLETE (November 8, 2025)
 **Priority:** MEDIUM
 
-**Issues Found:**
-- Settings gear icon should be hamburger menu
-- Need dropdown menu with: My Profile, Settings, Log Out
-- Homescreen needs "My Profile" link
-- Remove standalone "Log Out" button from homescreen
+**Completed Tasks:**
+- [x] Add hamburger menu to OysterListScreen header
+- [x] Implement Menu with 3 options (My Profile, Settings, Log Out)
+- [x] Add "My Profile" button to HomeScreen (when logged in)
+- [x] Remove standalone "Log Out" button from HomeScreen
+- [x] Keep "Log In" button for non-authenticated users
 
-**Tasks:**
-
-**Hamburger Menu Implementation:**
-- [ ] Replace settings gear IconButton with hamburger menu icon (☰)
-- [ ] Implement dropdown/modal menu with 3 options:
-  - "My Profile" → navigate to ProfileScreen
-  - "Settings" → navigate to SettingsScreen
-  - "Log Out" → show confirmation, then logout
-- [ ] Use React Native Paper Menu component:
+**Implementation:**
+- OysterListScreen: Menu component with hamburger icon
+- HomeScreen: My Profile button replaces Log Out
+- Menu provides access to Profile, Settings, and Logout
+- Conditional rendering based on auth state
   ```typescript
   <Menu
     visible={menuVisible}

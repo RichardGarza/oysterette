@@ -28,6 +28,8 @@ import {
   Banner,
   ToggleButton,
   ActivityIndicator,
+  Menu,
+  Divider,
 } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -118,6 +120,7 @@ export default function OysterListScreen() {
   const [flavorfulness, setFlavorfulness] = useState<'low' | 'high' | ''>('');
   const [creaminess, setCreaminess] = useState<'low' | 'high' | ''>('');
   const [showFilters, setShowFilters] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
 
   // Ref for scrolling to top when filters change
   const flatListRef = useRef<FlatList>(null);
@@ -216,6 +219,13 @@ export default function OysterListScreen() {
       });
     }
   }, []);
+
+  const handleLogout = useCallback(async () => {
+    setMenuVisible(false);
+    await authStorage.clearAuth();
+    setIsLoggedIn(false);
+    navigation.navigate('Home');
+  }, [navigation]);
 
   const handleSearch = useCallback(async (query: string) => {
     setSearchQuery(query);
@@ -464,6 +474,41 @@ export default function OysterListScreen() {
           {getActiveFilterCount > 0 && (
             <Badge style={styles.filterBadge}>{getActiveFilterCount}</Badge>
           )}
+
+          <Menu
+            visible={menuVisible}
+            onDismiss={() => setMenuVisible(false)}
+            anchor={
+              <IconButton
+                icon="menu"
+                size={SIZES.ICON_SMALL}
+                onPress={() => setMenuVisible(true)}
+              />
+            }
+          >
+            <Menu.Item
+              onPress={() => {
+                setMenuVisible(false);
+                navigation.navigate('Profile');
+              }}
+              title="My Profile"
+              leadingIcon="account"
+            />
+            <Menu.Item
+              onPress={() => {
+                setMenuVisible(false);
+                navigation.navigate('Settings');
+              }}
+              title="Settings"
+              leadingIcon="cog"
+            />
+            <Divider />
+            <Menu.Item
+              onPress={handleLogout}
+              title="Log Out"
+              leadingIcon="logout"
+            />
+          </Menu>
         </View>
 
         <Searchbar

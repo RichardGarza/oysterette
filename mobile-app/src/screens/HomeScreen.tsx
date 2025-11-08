@@ -247,6 +247,18 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {isLoggedIn && (
+          <Button
+            mode="contained"
+            onPress={() => navigation.navigate('Profile')}
+            style={styles.button}
+            icon="account"
+            contentStyle={styles.buttonContent}
+          >
+            My Profile
+          </Button>
+        )}
+
         <Button
           mode="contained"
           onPress={handleBrowseOysters}
@@ -268,17 +280,7 @@ export default function HomeScreen() {
           Top Oysters
         </Button>
 
-        {isLoggedIn ? (
-          <Button
-            mode="outlined"
-            onPress={handleLogout}
-            style={styles.secondaryButton}
-            icon="logout"
-            contentStyle={styles.buttonContent}
-          >
-            Log Out
-          </Button>
-        ) : (
+        {!isLoggedIn && (
           <Button
             mode="outlined"
             onPress={() => navigation.navigate('Login')}
