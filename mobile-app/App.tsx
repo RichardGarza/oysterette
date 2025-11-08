@@ -90,6 +90,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { TouchableOpacity, Text } from 'react-native';
+import { PaperProvider } from 'react-native-paper';
 import { RootStackParamList } from './src/navigation/types';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import HomeScreen from './src/screens/HomeScreen';
@@ -128,7 +129,7 @@ import SetFlavorProfileScreen from './src/screens/SetFlavorProfileScreen';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppNavigator() {
-  const { theme, isDark } = useTheme();
+  const { theme, isDark, paperTheme } = useTheme();
 
   // Settings button component for header
   const SettingsButton = ({ navigation }: any) => (
@@ -141,8 +142,9 @@ function AppNavigator() {
   );
 
   return (
-    <NavigationContainer>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
+    <PaperProvider theme={paperTheme}>
+      <NavigationContainer>
+        <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack.Navigator
         initialRouteName="Home"
         screenOptions={{
@@ -275,7 +277,8 @@ function AppNavigator() {
           })}
         />
       </Stack.Navigator>
-    </NavigationContainer>
+      </NavigationContainer>
+    </PaperProvider>
   );
 }
 

@@ -98,6 +98,7 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { Appearance, ColorSchemeName } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MD3LightTheme, MD3DarkTheme, MD3Theme } from 'react-native-paper';
 import { userApi } from '../services/api';
 import { authStorage } from '../services/auth';
 
@@ -157,10 +158,56 @@ const darkTheme: Theme = {
   },
 };
 
+// React Native Paper themes with brand colors
+export const paperLightTheme: MD3Theme = {
+  ...MD3LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    primary: '#FF6B35',           // Oyster orange
+    primaryContainer: '#FFE5DB',
+    secondary: '#004E89',         // Ocean blue
+    secondaryContainer: '#D4E6F1',
+    tertiary: '#4A7C59',          // Seaweed green
+    tertiaryContainer: '#D5E8DB',
+    surface: '#FFFFFF',
+    surfaceVariant: '#F5F5F5',
+    background: '#FAFAFA',
+    error: '#BA1A1A',
+    onPrimary: '#FFFFFF',
+    onSecondary: '#FFFFFF',
+    onSurface: '#1C1B1F',
+    outline: '#79747E',
+    shadow: '#000000',
+  },
+};
+
+export const paperDarkTheme: MD3Theme = {
+  ...MD3DarkTheme,
+  colors: {
+    ...MD3DarkTheme.colors,
+    primary: '#FFB59A',           // Lighter orange for dark mode
+    primaryContainer: '#8B3A1F',
+    secondary: '#5DADE2',         // Brighter blue
+    secondaryContainer: '#00344D',
+    tertiary: '#7FAC8E',          // Lighter green
+    tertiaryContainer: '#2F4A38',
+    surface: '#1C1B1F',
+    surfaceVariant: '#2B2930',
+    background: '#121212',
+    error: '#FFB4AB',
+    onPrimary: '#5A1A00',
+    onSecondary: '#00344D',
+    onSurface: '#E6E1E5',
+    outline: '#938F99',
+    shadow: '#000000',
+  },
+};
+
 interface ThemeContextType {
   theme: Theme;
   themeMode: ThemeMode;
   isDark: boolean;
+  paperTheme: MD3Theme;
   setThemeMode: (mode: ThemeMode) => void;
   loadUserTheme: (user: any) => void;
 }
@@ -243,11 +290,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const isDark =
     themeMode === 'dark' || (themeMode === 'system' && systemColorScheme === 'dark');
   const theme = isDark ? darkTheme : lightTheme;
+  const paperTheme = isDark ? paperDarkTheme : paperLightTheme;
 
   const value: ThemeContextType = {
     theme,
     themeMode,
     isDark,
+    paperTheme,
     setThemeMode,
     loadUserTheme,
   };
