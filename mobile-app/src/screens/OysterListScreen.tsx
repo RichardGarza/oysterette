@@ -28,6 +28,7 @@ import {
   Banner,
   ToggleButton,
   ActivityIndicator,
+  Appbar,
   Menu,
   Divider,
 } from 'react-native-paper';
@@ -484,9 +485,8 @@ export default function OysterListScreen() {
             visible={menuVisible}
             onDismiss={() => setMenuVisible(false)}
             anchor={
-              <IconButton
+              <Appbar.Action
                 icon="menu"
-                size={SIZES.ICON_SMALL}
                 onPress={() => setMenuVisible(true)}
               />
             }
@@ -514,6 +514,18 @@ export default function OysterListScreen() {
               leadingIcon="logout"
             />
           </Menu>
+        </Appbar.Header>
+
+        <View style={styles.segmentedContainer}>
+          <SegmentedButtons
+            value={showFavoritesOnly ? 'favorites' : 'all'}
+            onValueChange={(value) => setShowFavoritesOnly(value === 'favorites')}
+            buttons={[
+              { value: 'all', label: 'All' },
+              { value: 'favorites', label: '❤️ Favorites' },
+            ]}
+            style={styles.segmentedButtons}
+          />
         </View>
 
         <Searchbar

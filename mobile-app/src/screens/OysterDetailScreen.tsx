@@ -17,7 +17,7 @@ import {
 import {
   Text,
   Card,
-  Surface,
+  Appbar,
   IconButton,
   Chip,
   Button,
@@ -356,34 +356,31 @@ export default function OysterDetailScreen() {
           />
         }
       >
-        <Surface style={styles.header} elevation={1}>
-          <View style={styles.nameRow}>
-            <Text variant="headlineSmall" style={styles.name}>{oyster.name}</Text>
-            <IconButton
-              icon={isFavorite ? 'heart' : 'heart-outline'}
-              iconColor={isFavorite ? COLORS.FAVORITE_HEART : undefined}
-              size={SIZES.ICON_FAVORITE}
-              onPress={handleToggleFavorite}
-            />
-          </View>
-          <Chip mode="outlined" compact style={styles.speciesBadge}>
-            {oyster.species}
-          </Chip>
-          {oyster.species === 'Unknown' && (
-            <Text variant="bodySmall" style={styles.unknownHintSmall}>
-              🔬 Know the species? Rate it and add the species!
-            </Text>
-          )}
+        <Appbar.Header elevated>
+          <Appbar.BackAction onPress={() => navigation.goBack()} />
+          <Appbar.Content title={oyster.name} subtitle={oyster.species} />
+          <Appbar.Action
+            icon={isFavorite ? 'heart' : 'heart-outline'}
+            iconColor={isFavorite ? COLORS.FAVORITE_HEART : undefined}
+            onPress={handleToggleFavorite}
+          />
+        </Appbar.Header>
 
-          <View style={styles.headerRating}>
+        <Card mode="elevated" style={styles.headerRating}>
+          <Card.Content>
             <RatingDisplay
               overallScore={oyster.overallScore || 0}
               totalReviews={oyster.totalReviews || 0}
               size="medium"
               showDetails={true}
             />
-          </View>
-        </Surface>
+            {oyster.species === 'Unknown' && (
+              <Text variant="bodySmall" style={styles.unknownHintSmall}>
+                🔬 Know the species? Rate it and add the species!
+              </Text>
+            )}
+          </Card.Content>
+        </Card>
 
         <Card mode="elevated" style={styles.section}>
           <Card.Content>

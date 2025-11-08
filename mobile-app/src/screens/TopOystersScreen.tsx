@@ -18,7 +18,7 @@ import {
   Chip,
   Banner,
   Button,
-  Surface,
+  Appbar,
 } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { OysterListScreenNavigationProp } from '../navigation/types';
@@ -137,10 +137,9 @@ export default function TopOystersScreen() {
   if (loading && oysters.length === 0) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
-        <Surface style={styles.header} elevation={1}>
-          <Text variant="headlineMedium" style={styles.title}>Top Oysters</Text>
-          <Text variant="bodyMedium" style={styles.subtitle}>Highest-rated by the community</Text>
-        </Surface>
+        <Appbar.Header elevated>
+          <Appbar.Content title="Top Oysters" subtitle="Highest-rated by the community" />
+        </Appbar.Header>
         <View style={styles.listContainer}>
           {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
             <OysterCardSkeleton key={i} />
@@ -152,10 +151,9 @@ export default function TopOystersScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
-      <Surface style={styles.header} elevation={1}>
-        <Text variant="headlineMedium" style={styles.title}>Top Oysters</Text>
-        <Text variant="bodyMedium" style={styles.subtitle}>Highest-rated by the community</Text>
-      </Surface>
+      <Appbar.Header elevated>
+        <Appbar.Content title="Top Oysters" subtitle="Highest-rated by the community" />
+      </Appbar.Header>
 
       {error && (
         <Banner
