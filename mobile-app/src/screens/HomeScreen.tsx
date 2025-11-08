@@ -374,6 +374,7 @@ const styles = StyleSheet.create({
   recommendationsSection: {
     width: '100%',
     marginBottom: 24,
+    overflow: 'visible',
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -404,6 +405,7 @@ const styles = StyleSheet.create({
   },
   recommendationsList: {
     paddingRight: 12,
-    paddingBottom: 16, // Prevent shadow clipping at bottom of cards
+    paddingBottom: 20,
+    overflow: 'visible',
   },
 });

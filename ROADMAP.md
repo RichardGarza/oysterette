@@ -833,6 +833,41 @@ Credibility Score:
 
 ### 14.11: Email Verification System 📧
 
+**Status:** ⏸️ DEFERRED (Complex - Requires SMTP Setup)
+**Time:** 3-4 hours
+**Priority:** MEDIUM
+
+**Reason for Deferral:**
+- Requires external email service setup (SendGrid/Railway SMTP)
+- Database migration complexity
+- Lower ROI vs effort for MVP
+- Can be added post-launch
+
+---
+
+### 14.12: UI Polish & Visual Fixes 🎨
+
+**Status:** ✅ COMPLETE (November 8, 2025)
+**Time:** 1-2 hours
+**Priority:** LOW
+
+**Completed Tasks:**
+- [x] Fix RecommendedCard bottom shadow clipping
+  - Added overflow: 'visible' to recommendationsSection
+  - Increased paddingBottom from 16 to 20
+- [x] Verified no transition screen exists
+
+**Deferred Tasks:**
+- Heart icon replacement (current icon adequate)
+- Arrow consistency audit (low priority)
+
+**Files Modified:**
+- `mobile-app/src/screens/HomeScreen.tsx`
+
+---
+
+### Original 14.11: Email Verification System 📧 (DEFERRED)
+
 **Time:** 3-4 hours
 **Priority:** MEDIUM
 
