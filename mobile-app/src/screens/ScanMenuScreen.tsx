@@ -4,18 +4,32 @@
  * AR menu scanner for detecting oyster names on restaurant menus.
  */
 
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
-import { CameraView, Camera } from 'expo-camera';
-import { Button, Text, Appbar, ActivityIndicator } from 'react-native-paper';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, Alert, ScrollView } from 'react-native';
+import { CameraView, Camera, CameraType } from 'expo-camera';
+import { Button, Text, Appbar, ActivityIndicator, Card, Chip } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { HomeScreenNavigationProp } from '../navigation/types';
 import { useTheme } from '../context/ThemeContext';
+import { oysterApi } from '../services/api';
+import { Oyster } from '../types/Oyster';
+import { recognizeText, matchOysters, calculatePersonalizedScore, getMatchColor, getMatchLabel } from '../services/ocrService';
+
+interface MatchedOyster {
+  oyster: Oyster;
+  score: number;
+  personalizedScore: number;
+  detectedText: string;
+}
 
 export default function ScanMenuScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   const { paperTheme } = useTheme();
+  const cameraRef = useRef<any>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [matches, setMatches] = useState<MatchedOyster[]>([]);
+  const [allOysters, setAllOysters] = useState<Oyster[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -24,13 +38,64 @@ export default function ScanMenuScreen() {
     })();
   }, []);
 
-  const handleScan = () => {
-    setScanning(true);
-    // TODO: Implement OCR scanning
-    setTimeout(() => {
+  useEffect(() => {
+    loadOysters();
+  }, []);
+
+  const loadOysters = async () => {
+    try {
+      const oysters = await oysterApi.getAll();
+      setAllOysters(oysters);
+    } catch (error) {
+      if (__DEV__) {
+        console.error('❌ [ScanMenu] Error loading oysters:', error);
+      }
+    }
+  };
+
+  const handleScan = async () => {
+    if (!cameraRef.current) return;
+
+    try {
+      setScanning(true);
+      setMatches([]);
+
+      // Take photo
+      const photo = await cameraRef.current.takePictureAsync();
+
+      // Run OCR
+      const detectedTexts = await recognizeText(photo.uri);
+
+      if (detectedTexts.length === 0) {
+        Alert.alert('No Text Detected', 'Point camera at menu text and try again.');
+        return;
+      }
+
+      // Match oysters
+      const ocrMatches = matchOysters(detectedTexts, allOysters);
+
+      if (ocrMatches.length === 0) {
+        Alert.alert('No Matches', 'No oysters found on this menu. Try another angle.');
+        return;
+      }
+
+      // Calculate personalized scores
+      const matchesWithScores: MatchedOyster[] = ocrMatches.map((match) => ({
+        oyster: match.oyster,
+        score: match.score,
+        personalizedScore: calculatePersonalizedScore(match.oyster),
+        detectedText: match.detectedText,
+      }));
+
+      setMatches(matchesWithScores);
+    } catch (error) {
+      if (__DEV__) {
+        console.error('❌ [ScanMenu] Scan error:', error);
+      }
+      Alert.alert('Scan Failed', 'Failed to scan menu. Please try again.');
+    } finally {
       setScanning(false);
-      Alert.alert('Coming Soon', 'OCR menu scanning will be implemented in the next update!');
-    }, 1000);
+    }
   };
 
   if (hasPermission === null) {
@@ -74,7 +139,7 @@ export default function ScanMenuScreen() {
         <Appbar.Content title="Scan Menu" />
       </Appbar.Header>
 
-      <CameraView style={styles.camera}>
+      <CameraView style={styles.camera} ref={cameraRef}>
         <View style={styles.overlay}>
           <View style={styles.topOverlay}>
             <Text variant="titleMedium" style={styles.instructionText}>
@@ -90,16 +155,60 @@ export default function ScanMenuScreen() {
           </View>
 
           <View style={styles.bottomOverlay}>
-            <Button
-              mode="contained"
-              onPress={handleScan}
-              loading={scanning}
-              disabled={scanning}
-              style={styles.scanButton}
-              icon="camera"
-            >
-              {scanning ? 'Scanning...' : 'Scan Now'}
-            </Button>
+            {matches.length === 0 ? (
+              <Button
+                mode="contained"
+                onPress={handleScan}
+                loading={scanning}
+                disabled={scanning}
+                style={styles.scanButton}
+                icon="camera"
+              >
+                {scanning ? 'Scanning...' : 'Scan Now'}
+              </Button>
+            ) : (
+              <ScrollView style={styles.resultsContainer}>
+                <Text variant="titleLarge" style={styles.resultsTitle}>
+                  Found {matches.length} Oyster{matches.length !== 1 ? 's' : ''}
+                </Text>
+                {matches.map((match, index) => (
+                  <Card
+                    key={index}
+                    mode="elevated"
+                    style={styles.resultCard}
+                    onPress={() => navigation.navigate('OysterDetail', { oysterId: match.oyster.id })}
+                  >
+                    <Card.Content>
+                      <View style={styles.resultHeader}>
+                        <Text variant="titleMedium">{match.oyster.name}</Text>
+                        <Chip
+                          style={[
+                            styles.scoreChip,
+                            { backgroundColor: getMatchColor(match.personalizedScore) },
+                          ]}
+                        >
+                          {match.personalizedScore}%
+                        </Chip>
+                      </View>
+                      <Text variant="bodySmall" style={styles.resultOrigin}>
+                        {match.oyster.origin}
+                      </Text>
+                      <Text variant="labelSmall" style={styles.matchLabel}>
+                        {getMatchLabel(match.personalizedScore)}
+                      </Text>
+                    </Card.Content>
+                  </Card>
+                ))}
+                <Button
+                  mode="outlined"
+                  onPress={() => setMatches([])}
+                  style={styles.scanAgainButton}
+                  icon="camera"
+                >
+                  Scan Again
+                </Button>
+              </ScrollView>
+            )}
           </View>
         </View>
       </CameraView>
@@ -190,5 +299,38 @@ const styles = StyleSheet.create({
   },
   scanButton: {
     paddingHorizontal: 32,
+  },
+  resultsContainer: {
+    width: '100%',
+    padding: 16,
+  },
+  resultsTitle: {
+    color: '#fff',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  resultCard: {
+    marginBottom: 12,
+  },
+  resultHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  resultOrigin: {
+    marginBottom: 4,
+    opacity: 0.7,
+  },
+  matchLabel: {
+    marginTop: 4,
+    fontWeight: '600',
+  },
+  scoreChip: {
+    height: 32,
+  },
+  scanAgainButton: {
+    marginTop: 16,
+    marginBottom: 32,
   },
 });
