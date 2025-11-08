@@ -111,7 +111,7 @@ import {
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { authStorage } from '../services/auth';
-import { userApi, reviewApi } from '../services/api';
+import { userApi, reviewApi, uploadApi } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { Review, User } from '../types/Oyster';
 import { EmptyState } from '../components/EmptyState';
@@ -256,49 +256,21 @@ export default function ProfileScreen() {
   const uploadProfilePhoto = async (uri: string) => {
     try {
       setUploadingPhoto(true);
-      const token = await authStorage.getToken();
 
-      if (!token) {
-        Alert.alert('Authentication Required', 'Please log in to upload a profile photo.');
-        return;
-      }
+      // Upload to Cloudinary
+      const photoUrl = await uploadApi.uploadProfilePhoto(uri);
 
-      // Create form data
-      const formData = new FormData();
-      const filename = uri.split('/').pop() || 'photo.jpg';
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
+      // Update profile with new photo URL
+      await userApi.updateProfile(profileData?.user.name, profileData?.user.email, photoUrl);
 
-      formData.append('image', {
-        uri,
-        name: filename,
-        type,
-      } as any);
+      // Reload profile to show new photo
+      await loadProfile();
 
-      // Upload to backend
-      const response = await fetch('https://oysterette-production.up.railway.app/api/upload/image?folder=profiles', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.data.url) {
-        // Update profile with new photo URL
-        await userApi.updateProfile(profileData?.user.name, profileData?.user.email, data.data.url);
-
-        // Reload profile to show new photo
-        await loadProfile();
-
-        Alert.alert('Success', 'Profile photo updated successfully!');
-      } else {
-        throw new Error('Upload failed');
-      }
+      Alert.alert('Success', 'Profile photo updated successfully!');
     } catch (error) {
-      console.error('Error uploading profile photo:', error);
+      if (__DEV__) {
+        console.error('❌ [ProfileScreen] Error uploading profile photo:', error);
+      }
       Alert.alert('Upload Failed', 'Failed to upload profile photo. Please try again.');
     } finally {
       setUploadingPhoto(false);

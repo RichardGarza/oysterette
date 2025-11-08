@@ -528,4 +528,59 @@ export const recommendationApi = {
   },
 };
 
+// Upload API
+export const uploadApi = {
+  // Upload profile photo
+  uploadProfilePhoto: async (uri: string): Promise<string> => {
+    const formData = new FormData();
+    formData.append('image', {
+      uri,
+      type: 'image/jpeg',
+      name: 'profile.jpg',
+    } as any);
+
+    const response = await api.post<ApiResponse<{ url: string }>>(
+      '/upload/image?folder=profiles',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    if (!response.data.data?.url) {
+      throw new Error('Upload failed - no URL returned');
+    }
+
+    return response.data.data.url;
+  },
+
+  // Upload review photo
+  uploadReviewPhoto: async (uri: string): Promise<string> => {
+    const formData = new FormData();
+    formData.append('image', {
+      uri,
+      type: 'image/jpeg',
+      name: 'review.jpg',
+    } as any);
+
+    const response = await api.post<ApiResponse<{ url: string }>>(
+      '/upload/image?folder=reviews',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    if (!response.data.data?.url) {
+      throw new Error('Upload failed - no URL returned');
+    }
+
+    return response.data.data.url;
+  },
+};
+
 export default api;
