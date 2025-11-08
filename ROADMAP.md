@@ -1010,23 +1010,35 @@ Credibility Score:
 
 ---
 
-### Phase 15: Photo Upload System 📋
+### Phase 15: Photo Upload System 🚧
 
+**Status:** Backend Complete, Mobile In Progress
 **Estimated Time:** 20-30 hours
 **Priority:** MEDIUM
 
-**Features:**
-- [ ] User profile photos (upload, crop, resize)
-- [ ] Oyster photos (admin-uploaded, gallery view)
-- [ ] Review photos (up to 3 per review, carousel)
+**Backend Infrastructure ✅ COMPLETE:**
+- [x] Cloudinary SDK installed (cloudinary, multer packages)
+- [x] Database schema ready (User.profilePhotoUrl, Review.photoUrls)
+- [x] Upload service with compression/validation (uploadService.ts)
+- [x] Upload controller (uploadController.ts)
+- [x] Routes: POST /api/upload/image, /api/upload/images
+- [x] Environment variables documented (.env.example)
 
-**Implementation:**
-- [ ] Cloudinary setup (free tier: 25GB)
-- [ ] Image upload component with compression
-- [ ] Progress indicators
-- [ ] Photo gallery UI
-- [ ] Backend storage endpoints
-- [ ] Database schema updates
+**Upload Features:**
+- Profile photos: 400x400, 85% quality
+- Review photos: 1200x900, 80% quality
+- Validation: 5MB max, JPG/PNG/WebP only
+- Auto-format optimization (WebP when supported)
+
+**Mobile App Integration 📋 TODO:**
+- [ ] Image picker component (expo-image-picker)
+- [ ] Profile photo upload UI
+- [ ] Review photo upload UI (max 3 per review)
+- [ ] Image compression on mobile
+- [ ] Upload progress indicators
+- [ ] Photo gallery/carousel for reviews
+
+**Tests:** 244/244 passing ✅
 
 ### Phase 16: Advanced Recommendations (Collaborative Filtering) ✅
 
