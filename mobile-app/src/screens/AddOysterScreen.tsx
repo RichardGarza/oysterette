@@ -213,7 +213,7 @@ export default function AddOysterScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Add New Oyster</Text>
           <Text style={styles.subtitle}>
-            Only name and attribute profile are required. Species and origin can be added later by other users when they rate!
+            Help grow our database by adding oysters you discover!
           </Text>
         </View>
 
@@ -228,18 +228,18 @@ export default function AddOysterScreen() {
             onChangeText={(value) => updateField('name', value)}
           />
 
-          <Text style={styles.label}>Species (Optional)</Text>
+          <Text style={styles.label}>Species *</Text>
           <TextInput
             style={styles.input}
-            placeholder="e.g., Crassostrea gigas (leave blank if unknown)"
+            placeholder="e.g., Crassostrea gigas"
             value={formData.species}
             onChangeText={(value) => updateField('species', value)}
           />
 
-          <Text style={styles.label}>Origin (Optional)</Text>
+          <Text style={styles.label}>Origin *</Text>
           <TextInput
             style={styles.input}
-            placeholder="e.g., Hood Canal, Washington (leave blank if unknown)"
+            placeholder="e.g., Hood Canal, Washington"
             value={formData.origin}
             onChangeText={(value) => updateField('origin', value)}
           />
