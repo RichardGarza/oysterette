@@ -509,9 +509,21 @@ export const favoritesApi = {
 
 // Recommendation API
 export const recommendationApi = {
-  // Get personalized recommendations
+  // Get personalized recommendations (attribute-based)
   getRecommendations: async (limit: number = 10): Promise<Oyster[]> => {
     const response = await api.get<ApiResponse<Oyster[]>>(`/recommendations?limit=${limit}`);
+    return response.data.data || [];
+  },
+
+  // Get collaborative filtering recommendations
+  getCollaborative: async (limit: number = 10): Promise<Oyster[]> => {
+    const response = await api.get<ApiResponse<Oyster[]>>(`/recommendations/collaborative?limit=${limit}`);
+    return response.data.data || [];
+  },
+
+  // Get hybrid recommendations (60% attribute + 40% collaborative)
+  getHybrid: async (limit: number = 10): Promise<Oyster[]> => {
+    const response = await api.get<ApiResponse<Oyster[]>>(`/recommendations/hybrid?limit=${limit}`);
     return response.data.data || [];
   },
 };

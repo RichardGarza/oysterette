@@ -97,11 +97,21 @@ export default function HomeScreen() {
   const loadRecommendations = useCallback(async () => {
     try {
       setLoadingRecommendations(true);
-      const recs = await recommendationApi.getRecommendations(RECOMMENDATIONS_LIMIT);
+      // Use hybrid recommendations for best results (combines attribute + collaborative)
+      const recs = await recommendationApi.getHybrid(RECOMMENDATIONS_LIMIT);
       setRecommendations(recs);
     } catch (error) {
       if (__DEV__) {
         console.error('❌ [HomeScreen] Error loading recommendations:', error);
+      }
+      // Fallback to attribute-based if hybrid fails
+      try {
+        const fallbackRecs = await recommendationApi.getRecommendations(RECOMMENDATIONS_LIMIT);
+        setRecommendations(fallbackRecs);
+      } catch (fallbackError) {
+        if (__DEV__) {
+          console.error('❌ [HomeScreen] Fallback recommendations also failed:', fallbackError);
+        }
       }
     } finally {
       setLoadingRecommendations(false);
