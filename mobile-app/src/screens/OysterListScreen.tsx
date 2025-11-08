@@ -1,81 +1,10 @@
 /**
- * OysterListScreen - Migrated to React Native Paper
+ * OysterListScreen
  *
- * Main oyster browsing screen with comprehensive filtering and search capabilities.
- *
- * Features:
- * - Real-time fuzzy search with backend integration
- * - Advanced attribute-based filtering with binary choices
- * - Bidirectional sorting with visual indicators
- * - Expandable/collapsible filter section
- * - All/Favorites view toggle
- * - Pull-to-refresh functionality
- * - Haptic feedback on favorite toggle
- * - Skeleton loading states
- * - Empty states for different scenarios (no favorites, no search results, etc.)
- * - Auto-clear filters when searching (search overrides filters)
- * - Back button navigation to Home (prevents app exit)
- * - Theme-aware styling via React Native Paper
- *
- * Material Design Components:
- * - Card: Elevated oyster cards with onPress
- * - Searchbar: Built-in search input with icon
- * - SegmentedButtons: All/Favorites toggle
- * - Chip: Sort option selectors with selected state
- * - ToggleButton.Row: Binary attribute filters (Sweet/Briny, Small/Big, etc.)
- * - IconButton: Filter toggle, favorite hearts, FAB
- * - Badge: Active filter count indicator
- * - Button: Clear all filters action
- * - Banner: Error messages with retry action
- * - Text: Typography with variants
- *
- * Migration Benefits:
- * - ~50% less custom styling (Paper handles most UI)
- * - Built-in theme integration (light/dark mode)
- * - Material Design ripple effects
- * - Better accessibility (screen readers, touch targets)
- * - Consistent look with rest of app
- * - Automatic elevation and shadows
- * - Professional search bar with built-in icons
- *
- * Filters:
- * - Sort By: name, rating, size, sweetness, creaminess, flavorfulness, body
- * - Sort Direction: asc/desc with visual arrow indicators (↑/↓)
- * - Attribute Filters (binary low/high):
- *   - Sweetness: Sweet (<4) vs Briny (>6)
- *   - Size: Small (<4) vs Big (>6)
- *   - Body: Thin (<4) vs Fat (>6)
- *   - Flavorfulness: Mild (<4) vs Bold (>6)
- *   - Creaminess: No Cream (<4) vs All the Cream (>6)
- * - Active filter count badge on filter button
- * - Clear All Filters button (appears when filters active)
- *
- * State Management:
- * - oysters: Full list from backend (filtered by API params)
- * - favorites: Local set of favorited oyster IDs
- * - showFavoritesOnly: Client-side filter for favorites view
- * - selectedSortBy/sortDirection: Active sort values
- * - sweetness/size/body/flavorfulness/creaminess: Attribute filter values
- * - showFilters: Toggle for expandable filter section
- *
- * Flow:
- * 1. Loads oysters on mount
- * 2. Re-fetches oysters when filters change (useEffect)
- * 3. Checks auth status on screen focus
- * 4. Syncs favorites with local storage
- * 5. Client-side filtering for favorites view
- *
- * Card Display:
- * - Oyster name with favorite heart icon
- * - Species badge (if not "Unknown")
- * - Origin (if not "Unknown")
- * - RatingDisplay component with overall score
- * - Standout notes preview (2 lines max)
- * - 5 attribute scores (Size, Body, Sweet/Briny, Flavor, Creamy)
- * - Review count
+ * Main oyster browsing screen with search, filtering, and favorites.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -111,6 +40,62 @@ import { RatingDisplay } from '../components/RatingDisplay';
 import { EmptyState } from '../components/EmptyState';
 import { OysterCardSkeleton } from '../components/OysterCardSkeleton';
 import { useTheme } from '../context/ThemeContext';
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const COLORS = {
+  FAVORITE_HEART: '#e74c3c',
+} as const;
+
+const SIZES = {
+  ICON_SMALL: 20,
+  ICON_MEDIUM: 28,
+  LOGO_WIDTH: 150,
+  LOGO_HEIGHT: 40,
+} as const;
+
+const SPACING = {
+  PADDING_LARGE: 20,
+  PADDING_MEDIUM: 15,
+  PADDING_SMALL: 12,
+  MARGIN_BOTTOM_LARGE: 15,
+  MARGIN_BOTTOM_MEDIUM: 12,
+  MARGIN_BOTTOM_SMALL: 10,
+  MARGIN_TOP_MEDIUM: 15,
+  MARGIN_TOP_SMALL: 10,
+  MARGIN_RIGHT_SMALL: 8,
+  GAP_MEDIUM: 10,
+  BORDER_RADIUS: 12,
+  BADGE_TOP: -4,
+  BADGE_RIGHT: -4,
+} as const;
+
+const BORDERS = {
+  WIDTH: 1,
+} as const;
+
+const SCROLL = {
+  OFFSET_TOP: 0,
+} as const;
+
+const ATTRIBUTE_SCALE = {
+  MAX: 10,
+} as const;
+
+const SKELETON = {
+  COUNT: 5,
+} as const;
+
+const TEXT = {
+  MAX_LINES_TITLE: 1,
+  MAX_LINES_NOTES: 2,
+} as const;
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
 
 export default function OysterListScreen() {
   const navigation = useNavigation<OysterListScreenNavigationProp>();
@@ -168,17 +153,17 @@ export default function OysterListScreen() {
     return () => backHandler.remove();
   }, [navigation]);
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     const token = await authStorage.getToken();
     setIsLoggedIn(!!token);
-  };
+  }, []);
 
-  const loadFavorites = async () => {
+  const loadFavorites = useCallback(async () => {
     const favs = await favoritesStorage.getFavorites();
     setFavorites(new Set(favs));
-  };
+  }, []);
 
-  const fetchOysters = async (isRefreshing = false) => {
+  const fetchOysters = useCallback(async (isRefreshing = false) => {
     try {
       if (isRefreshing) {
         setRefreshing(true);
@@ -188,7 +173,7 @@ export default function OysterListScreen() {
       setError(null);
 
       // Build filter params
-      const params: any = {};
+      const params: Record<string, string> = {};
       if (selectedSortBy) params.sortBy = selectedSortBy;
       if (sortDirection) params.sortDirection = sortDirection;
       if (sweetness) params.sweetness = sweetness;
@@ -201,7 +186,9 @@ export default function OysterListScreen() {
       setOysters(data);
     } catch (err) {
       setError('Failed to load oysters. Please check your backend connection.');
-      console.error('Error fetching oysters:', err);
+      if (__DEV__) {
+        console.error('❌ [OysterListScreen] Error fetching oysters:', err);
+      }
     } finally {
       if (isRefreshing) {
         setRefreshing(false);
@@ -209,14 +196,14 @@ export default function OysterListScreen() {
         setLoading(false);
       }
     }
-  };
+  }, [selectedSortBy, sortDirection, sweetness, size, body, flavorfulness, creaminess]);
 
-  const onRefresh = () => {
+  const onRefresh = useCallback(() => {
     fetchOysters(true);
-  };
+  }, [fetchOysters]);
 
-  const handleToggleFavorite = async (oysterId: string, e: any) => {
-    e.stopPropagation(); // Prevent card navigation
+  const handleToggleFavorite = useCallback(async (oysterId: string, e: any) => {
+    e.stopPropagation();
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const newState = await favoritesStorage.toggleFavorite(oysterId);
     if (newState) {
@@ -228,9 +215,9 @@ export default function OysterListScreen() {
         return next;
       });
     }
-  };
+  }, []);
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = useCallback(async (query: string) => {
     setSearchQuery(query);
 
     // Clear all filters when user starts searching
@@ -252,20 +239,22 @@ export default function OysterListScreen() {
       const data = await oysterApi.search(query);
       setOysters(data);
     } catch (err) {
-      console.error('Error searching oysters:', err);
+      if (__DEV__) {
+        console.error('❌ [OysterListScreen] Error searching oysters:', err);
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchOysters]);
 
-  const getFilteredOysters = () => {
+  const getFilteredOysters = useMemo(() => {
     if (!showFavoritesOnly) {
       return oysters;
     }
     return oysters.filter(oyster => favorites.has(oyster.id));
-  };
+  }, [oysters, showFavoritesOnly, favorites]);
 
-  const getActiveFilterCount = () => {
+  const getActiveFilterCount = useMemo(() => {
     let count = 0;
     if (sweetness) count++;
     if (size) count++;
@@ -273,9 +262,9 @@ export default function OysterListScreen() {
     if (flavorfulness) count++;
     if (creaminess) count++;
     return count;
-  };
+  }, [sweetness, size, body, flavorfulness, creaminess]);
 
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     setSweetness('');
     setSize('');
     setBody('');
@@ -283,20 +272,18 @@ export default function OysterListScreen() {
     setCreaminess('');
     setSelectedSortBy('name');
     setSortDirection('asc');
-  };
+  }, []);
 
-  const handleSortByClick = (sortValue: string) => {
+  const handleSortByClick = useCallback((sortValue: string) => {
     if (selectedSortBy === sortValue) {
-      // Toggle direction if clicking same sort option
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
-      // New sort option - set default direction
       setSelectedSortBy(sortValue);
       setSortDirection(sortValue === 'name' ? 'asc' : 'desc');
     }
-  };
+  }, [selectedSortBy]);
 
-  const sortOptions = [
+  const sortOptions = useMemo(() => [
     { value: 'name', label: 'Name' },
     { value: 'rating', label: 'Rating' },
     { value: 'size', label: 'Size' },
@@ -304,19 +291,22 @@ export default function OysterListScreen() {
     { value: 'creaminess', label: 'Creaminess' },
     { value: 'flavorfulness', label: 'Flavor' },
     { value: 'body', label: 'Body' },
-  ];
+  ], []);
 
-  const attributeFilters = [
+  const attributeFilters = useMemo(() => [
     { key: 'sweetness', state: sweetness, setState: setSweetness, low: 'Sweet', high: 'Briny' },
     { key: 'size', state: size, setState: setSize, low: 'Small', high: 'Big' },
     { key: 'body', state: body, setState: setBody, low: 'Thin', high: 'Fat' },
     { key: 'flavorfulness', state: flavorfulness, setState: setFlavorfulness, low: 'Mild', high: 'Bold' },
     { key: 'creaminess', state: creaminess, setState: setCreaminess, low: 'No Cream', high: 'All the Cream' },
-  ];
+  ], [sweetness, size, body, flavorfulness, creaminess]);
 
-  const styles = createStyles(theme.colors, isDark);
+  const styles = useMemo(
+    () => createStyles(theme.colors, isDark),
+    [theme.colors, isDark]
+  );
 
-  const renderOysterItem = ({ item }: { item: Oyster }) => (
+  const renderOysterItem = useCallback(({ item }: { item: Oyster }) => (
     <Card
       mode="elevated"
       style={styles.card}
@@ -324,14 +314,14 @@ export default function OysterListScreen() {
     >
       <Card.Content>
         <View style={styles.cardHeader}>
-          <Text variant="titleMedium" style={styles.oysterName} numberOfLines={1}>
+          <Text variant="titleMedium" style={styles.oysterName} numberOfLines={TEXT.MAX_LINES_TITLE}>
             {item.name}
           </Text>
           <View style={styles.headerRight}>
             <IconButton
               icon={favorites.has(item.id) ? 'heart' : 'heart-outline'}
-              iconColor={favorites.has(item.id) ? '#e74c3c' : undefined}
-              size={20}
+              iconColor={favorites.has(item.id) ? COLORS.FAVORITE_HEART : undefined}
+              size={SIZES.ICON_SMALL}
               onPress={(e) => {
                 e.stopPropagation();
                 handleToggleFavorite(item.id, e);
@@ -359,7 +349,7 @@ export default function OysterListScreen() {
       </View>
 
       {item.standoutNotes && (
-        <Text variant="bodySmall" style={styles.notes} numberOfLines={2}>
+        <Text variant="bodySmall" style={styles.notes} numberOfLines={TEXT.MAX_LINES_NOTES}>
           {item.standoutNotes}
         </Text>
       )}
@@ -367,23 +357,23 @@ export default function OysterListScreen() {
       <View style={styles.attributesContainer}>
         <View style={styles.attributeItem}>
           <Text variant="labelSmall" style={styles.attributeLabel}>Size</Text>
-          <Text variant="bodyMedium" style={styles.attributeValue}>{item.size}/10</Text>
+          <Text variant="bodyMedium" style={styles.attributeValue}>{item.size}/{ATTRIBUTE_SCALE.MAX}</Text>
         </View>
         <View style={styles.attributeItem}>
           <Text variant="labelSmall" style={styles.attributeLabel}>Body</Text>
-          <Text variant="bodyMedium" style={styles.attributeValue}>{item.body}/10</Text>
+          <Text variant="bodyMedium" style={styles.attributeValue}>{item.body}/{ATTRIBUTE_SCALE.MAX}</Text>
         </View>
         <View style={styles.attributeItem}>
           <Text variant="labelSmall" style={styles.attributeLabel}>Sweet/Briny</Text>
-          <Text variant="bodyMedium" style={styles.attributeValue}>{item.sweetBrininess}/10</Text>
+          <Text variant="bodyMedium" style={styles.attributeValue}>{item.sweetBrininess}/{ATTRIBUTE_SCALE.MAX}</Text>
         </View>
         <View style={styles.attributeItem}>
           <Text variant="labelSmall" style={styles.attributeLabel}>Flavor</Text>
-          <Text variant="bodyMedium" style={styles.attributeValue}>{item.flavorfulness}/10</Text>
+          <Text variant="bodyMedium" style={styles.attributeValue}>{item.flavorfulness}/{ATTRIBUTE_SCALE.MAX}</Text>
         </View>
         <View style={styles.attributeItem}>
           <Text variant="labelSmall" style={styles.attributeLabel}>Creamy</Text>
-          <Text variant="bodyMedium" style={styles.attributeValue}>{item.creaminess}/10</Text>
+          <Text variant="bodyMedium" style={styles.attributeValue}>{item.creaminess}/{ATTRIBUTE_SCALE.MAX}</Text>
         </View>
       </View>
 
@@ -394,7 +384,7 @@ export default function OysterListScreen() {
         )}
       </Card.Content>
     </Card>
-  );
+  ), [navigation, favorites, handleToggleFavorite, styles]);
 
 
   if (loading && oysters.length === 0) {
@@ -420,12 +410,12 @@ export default function OysterListScreen() {
             <IconButton
               icon="filter"
               mode="contained"
-              size={20}
+              size={SIZES.ICON_SMALL}
               onPress={() => setShowFilters(!showFilters)}
               style={styles.filterIconButton}
             />
-            {getActiveFilterCount() > 0 && (
-              <Badge style={styles.filterBadge}>{getActiveFilterCount()}</Badge>
+            {getActiveFilterCount > 0 && (
+              <Badge style={styles.filterBadge}>{getActiveFilterCount}</Badge>
             )}
           </View>
 
@@ -437,7 +427,7 @@ export default function OysterListScreen() {
           />
         </View>
         <View style={styles.listContainer}>
-          {[1, 2, 3, 4, 5].map((i) => (
+          {Array.from({ length: SKELETON.COUNT }).map((_, i) => (
             <OysterCardSkeleton key={i} />
           ))}
         </View>
@@ -467,12 +457,12 @@ export default function OysterListScreen() {
           <IconButton
             icon="filter"
             mode="contained"
-            size={20}
+            size={SIZES.ICON_SMALL}
             onPress={() => setShowFilters(!showFilters)}
             style={styles.filterIconButton}
           />
-          {getActiveFilterCount() > 0 && (
-            <Badge style={styles.filterBadge}>{getActiveFilterCount()}</Badge>
+          {getActiveFilterCount > 0 && (
+            <Badge style={styles.filterBadge}>{getActiveFilterCount}</Badge>
           )}
         </View>
 
@@ -520,7 +510,7 @@ export default function OysterListScreen() {
               </ToggleButton.Row>
             ))}
 
-            {getActiveFilterCount() > 0 && (
+            {getActiveFilterCount > 0 && (
               <Button
                 mode="outlined"
                 onPress={clearAllFilters}
@@ -553,7 +543,7 @@ export default function OysterListScreen() {
 
       <FlatList
         ref={flatListRef}
-        data={getFilteredOysters()}
+        data={getFilteredOysters}
         renderItem={renderOysterItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
@@ -591,16 +581,16 @@ export default function OysterListScreen() {
       <IconButton
         icon="plus"
         mode="contained"
-        size={28}
+        size={SIZES.ICON_MEDIUM}
         onPress={() => navigation.navigate('AddOyster')}
         style={styles.fab}
-        iconColor="#fff"
+        iconColor={paperTheme.colors.onPrimary}
       />
     </SafeAreaView>
   );
 }
 
-const createStyles = (colors: any, isDark: boolean) =>
+const createStyles = (colors: typeof import('../context/ThemeContext').Theme['colors'], isDark: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -613,20 +603,20 @@ const createStyles = (colors: any, isDark: boolean) =>
     },
     header: {
       backgroundColor: colors.card,
-      padding: 20,
-      borderBottomWidth: 1,
+      padding: SPACING.PADDING_LARGE,
+      borderBottomWidth: BORDERS.WIDTH,
       borderBottomColor: colors.border,
     },
     logo: {
-      width: 150,
-      height: 40,
+      width: SIZES.LOGO_WIDTH,
+      height: SIZES.LOGO_HEIGHT,
       alignSelf: 'center',
-      marginBottom: 15,
+      marginBottom: SPACING.MARGIN_BOTTOM_LARGE,
     },
     topRow: {
       flexDirection: 'row',
-      marginBottom: 15,
-      gap: 10,
+      marginBottom: SPACING.MARGIN_BOTTOM_LARGE,
+      gap: SPACING.GAP_MEDIUM,
       alignItems: 'center',
     },
     segmentedButtons: {
@@ -637,48 +627,48 @@ const createStyles = (colors: any, isDark: boolean) =>
     },
     filterBadge: {
       position: 'absolute',
-      top: -4,
-      right: -4,
+      top: SPACING.BADGE_TOP,
+      right: SPACING.BADGE_RIGHT,
     },
     searchBar: {
       marginBottom: 0,
     },
     filterSection: {
-      marginTop: 15,
-      paddingTop: 15,
-      borderTopWidth: 1,
+      marginTop: SPACING.MARGIN_TOP_MEDIUM,
+      paddingTop: SPACING.MARGIN_TOP_MEDIUM,
+      borderTopWidth: BORDERS.WIDTH,
       borderTopColor: colors.border,
     },
     filterSectionTitle: {
       fontSize: 14,
       fontWeight: '600',
       color: colors.text,
-      marginBottom: 10,
-      marginTop: 10,
+      marginBottom: SPACING.MARGIN_BOTTOM_SMALL,
+      marginTop: SPACING.MARGIN_TOP_SMALL,
     },
     chipScrollView: {
-      marginBottom: 10,
+      marginBottom: SPACING.MARGIN_BOTTOM_SMALL,
     },
     filterChip: {
-      marginRight: 8,
+      marginRight: SPACING.MARGIN_RIGHT_SMALL,
     },
     clearFiltersButton: {
-      marginTop: 10,
+      marginTop: SPACING.MARGIN_TOP_SMALL,
     },
     attributeFilterRow: {
-      marginBottom: 12,
+      marginBottom: SPACING.MARGIN_BOTTOM_MEDIUM,
     },
     attributeFilterButton: {
       flex: 1,
     },
   listContainer: {
-    padding: 15,
+    padding: SPACING.PADDING_MEDIUM,
   },
   card: {
     backgroundColor: colors.cardBackground,
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
+    borderRadius: SPACING.BORDER_RADIUS,
+    padding: SPACING.PADDING_MEDIUM,
+    marginBottom: SPACING.MARGIN_BOTTOM_LARGE,
     ...Platform.select({
       ios: {
         shadowColor: colors.shadowColor,

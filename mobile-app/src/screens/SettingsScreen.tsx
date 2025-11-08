@@ -1,42 +1,10 @@
 /**
- * SettingsScreen - Migrated to React Native Paper
+ * SettingsScreen
  *
- * App-wide settings and configuration hub accessible from global navigation gear icon.
- *
- * Features:
- * - Profile quick view (name, email) with "View Full Profile" link
- * - Auth buttons for non-logged-in users (Log In / Sign Up)
- * - Theme switcher (Light / Dark / System) with live preview
- * - Share app functionality (native share sheet)
- * - App version display
- * - Legal links (Privacy Policy, Terms of Service) - opens in browser
- * - Logout button (logged-in users only)
- * - Delete account button (logged-in users only, placeholder)
- * - Theme-aware styling via React Native Paper
- * - Redirects to auth after logout
- *
- * Material Design Components:
- * - List.Section: Grouped settings sections
- * - List.Item: Individual setting items with icons
- * - List.Subheader: Section titles
- * - Divider: Visual separators
- * - Button: Primary and outlined buttons for auth/actions
- * - SegmentedButtons: Theme selection
- * - Dialog: Logout/delete confirmation
- * - ActivityIndicator: Loading state
- * - Surface: Card-like containers
- *
- * Migration Benefits:
- * - 40% less custom styling code
- * - Consistent Material Design look
- * - Built-in accessibility
- * - Automatic theme integration
- * - Better touch targets (44x44 minimum)
- * - Ripple effects on Android
- * - Icon support via MaterialCommunityIcons
+ * App configuration hub with profile, theme, sharing, and account management.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, ScrollView, Share, Linking, StyleSheet } from 'react-native';
 import {
   List,
@@ -52,6 +20,26 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme, ThemeMode } from '../context/ThemeContext';
 import { authStorage } from '../services/auth';
 
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const APP_VERSION = '1.0.0';
+
+const LEGAL_URLS = {
+  PRIVACY_POLICY: 'https://richardgarza.github.io/oysterette/privacy-policy.html',
+  TERMS_OF_SERVICE: 'https://richardgarza.github.io/oysterette/terms-of-service.html',
+} as const;
+
+const SHARE_MESSAGE = {
+  message: 'Check out Oysterette - The ultimate oyster discovery app! 🦪',
+  title: 'Oysterette',
+} as const;
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
+
 export default function SettingsScreen() {
   const navigation = useNavigation();
   const { theme, themeMode, setThemeMode, isDark, paperTheme } = useTheme();
@@ -62,11 +50,7 @@ export default function SettingsScreen() {
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
-  useEffect(() => {
-    loadUserData();
-  }, []);
-
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
     try {
       const user = await authStorage.getUser();
       if (user) {
@@ -77,14 +61,20 @@ export default function SettingsScreen() {
         setIsLoggedIn(false);
       }
     } catch (error) {
-      console.error('Error loading user data:', error);
+      if (__DEV__) {
+        console.error('❌ [SettingsScreen] Error loading user data:', error);
+      }
       setIsLoggedIn(false);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleLogout = async () => {
+  useEffect(() => {
+    loadUserData();
+  }, [loadUserData]);
+
+  const handleLogout = useCallback(async () => {
     try {
       await authStorage.clearAuth();
       setIsLoggedIn(false);
@@ -93,27 +83,28 @@ export default function SettingsScreen() {
       setLogoutDialogVisible(false);
       navigation.navigate('Home' as never);
     } catch (error) {
-      console.error('Error logging out:', error);
+      if (__DEV__) {
+        console.error('❌ [SettingsScreen] Error logging out:', error);
+      }
     }
-  };
+  }, [navigation]);
 
-  const handleShareApp = async () => {
+  const handleShareApp = useCallback(async () => {
     try {
-      await Share.share({
-        message: 'Check out Oysterette - The ultimate oyster discovery app! 🦪',
-        title: 'Oysterette',
-      });
+      await Share.share(SHARE_MESSAGE);
     } catch (error) {
-      console.error('Error sharing:', error);
+      if (__DEV__) {
+        console.error('❌ [SettingsScreen] Error sharing:', error);
+      }
     }
-  };
+  }, []);
 
-  const getThemeDescription = (): string => {
+  const themeDescription = useMemo((): string => {
     if (themeMode === 'system') {
       return `System (${isDark ? 'Dark' : 'Light'})`;
     }
     return themeMode === 'light' ? 'Light' : 'Dark';
-  };
+  }, [themeMode, isDark]);
 
   if (loading) {
     return (
@@ -125,7 +116,6 @@ export default function SettingsScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
-      {/* Profile Section */}
       <List.Section>
         <List.Subheader>Profile</List.Subheader>
         {isLoggedIn ? (
@@ -179,12 +169,11 @@ export default function SettingsScreen() {
         )}
       </List.Section>
 
-      {/* Appearance Section */}
       <List.Section>
         <List.Subheader>Appearance</List.Subheader>
         <List.Item
           title="Theme"
-          description={getThemeDescription()}
+          description={themeDescription}
           left={(props) => <List.Icon {...props} icon="theme-light-dark" />}
         />
         <View style={styles.themeSegmentContainer}>
@@ -212,7 +201,6 @@ export default function SettingsScreen() {
         </View>
       </List.Section>
 
-      {/* Share Section */}
       <List.Section>
         <List.Subheader>Share</List.Subheader>
         <List.Item
@@ -224,35 +212,32 @@ export default function SettingsScreen() {
         />
       </List.Section>
 
-      {/* About Section */}
       <List.Section>
         <List.Subheader>About</List.Subheader>
         <List.Item
           title="Version"
-          description="1.0.0"
+          description={APP_VERSION}
           left={(props) => <List.Icon {...props} icon="information" />}
         />
       </List.Section>
 
-      {/* Legal Section */}
       <List.Section>
         <List.Subheader>Legal</List.Subheader>
         <List.Item
           title="Privacy Policy"
           left={(props) => <List.Icon {...props} icon="shield-account" />}
           right={(props) => <List.Icon {...props} icon="open-in-new" />}
-          onPress={() => Linking.openURL('https://richardgarza.github.io/oysterette/privacy-policy.html')}
+          onPress={() => Linking.openURL(LEGAL_URLS.PRIVACY_POLICY)}
         />
         <Divider />
         <List.Item
           title="Terms of Service"
           left={(props) => <List.Icon {...props} icon="file-document" />}
           right={(props) => <List.Icon {...props} icon="open-in-new" />}
-          onPress={() => Linking.openURL('https://richardgarza.github.io/oysterette/terms-of-service.html')}
+          onPress={() => Linking.openURL(LEGAL_URLS.TERMS_OF_SERVICE)}
         />
       </List.Section>
 
-      {/* Account Actions */}
       {isLoggedIn && (
         <View style={styles.accountActionsContainer}>
           <Button
@@ -276,14 +261,12 @@ export default function SettingsScreen() {
         </View>
       )}
 
-      {/* Footer */}
       <View style={styles.footer}>
         <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
           Made with ❤️ for oyster lovers
         </Text>
       </View>
 
-      {/* Logout Confirmation Dialog */}
       <Portal>
         <Dialog visible={logoutDialogVisible} onDismiss={() => setLogoutDialogVisible(false)}>
           <Dialog.Icon icon="logout" />
@@ -298,7 +281,6 @@ export default function SettingsScreen() {
         </Dialog>
       </Portal>
 
-      {/* Delete Account Confirmation Dialog */}
       <Portal>
         <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)}>
           <Dialog.Icon icon="alert" />
@@ -347,7 +329,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   logoutButton: {
-    marginBottom: 32, // Extra spacing to prevent accidental delete clicks
+    marginBottom: 32,
   },
   deleteButton: {
     marginBottom: 16,

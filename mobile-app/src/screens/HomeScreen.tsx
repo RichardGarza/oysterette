@@ -1,51 +1,10 @@
 /**
- * HomeScreen - Migrated to React Native Paper
+ * HomeScreen
  *
- * App entry point and landing screen with authentication check.
- *
- * Features:
- * - Animated logo display with dual-logo transition (900ms fade)
- * - Automatic authentication check on mount and focus
- * - Auto-login via stored JWT token
- * - Theme loading from user preferences
- * - Favorites sync after successful login
- * - Dynamic button text based on auth state
- * - Loading screen with larger logo (384px)
- * - Back navigation disabled (prevents going back to loading)
- * - Exit confirmation dialog on Android back button press
- * - Theme-aware styling via React Native Paper
- *
- * Material Design Components:
- * - Button: Primary (contained) and secondary (outlined) buttons
- * - Text: Typography with variants (bodyLarge, headlineMedium, etc.)
- * - ActivityIndicator: Loading states
- * - Card: Recommendations empty state and info container
- * - Surface: Elevated card backgrounds
- *
- * Migration Benefits:
- * - Material Design ripple effects on buttons
- * - Consistent typography and spacing
- * - Built-in elevation for cards
- * - Better accessibility
- * - Icon support on buttons
- * - Automatic theme integration
- *
- * Flow:
- * 1. Shows loading screen with logo
- * 2. Checks for stored auth token
- * 3. Auto-logs in if valid token exists
- * 4. Loads user theme preferences
- * 5. Syncs favorites from server
- * 6. Shows "Browse Oysters" or "All Oysters" button based on auth
- *
- * State:
- * - checking: Initial auth check in progress
- * - isLoggedIn: User authentication status
- * - showLoading: Transition loading state
- * - fadeAnim: Animated value for logo transitions
+ * Landing screen with auth check, personalized recommendations, and logo transitions.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -73,6 +32,26 @@ import { recommendationApi } from '../services/api';
 import { Oyster } from '../types/Oyster';
 import RecommendedOysterCard from '../components/RecommendedOysterCard';
 
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const ANIMATION_CONFIG = {
+  FADE_DURATION: 300,
+  TRANSITION_DELAY: 900,
+} as const;
+
+const LOGO_SIZES = {
+  NORMAL: 256,
+  LOADING: 384,
+} as const;
+
+const RECOMMENDATIONS_LIMIT = 5;
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
+
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { theme, loadUserTheme, paperTheme } = useTheme();
@@ -85,15 +64,12 @@ export default function HomeScreen() {
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
-  // Re-check auth when screen comes into focus
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      checkAuth();
-    });
+    const unsubscribe = navigation.addListener('focus', checkAuth);
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, checkAuth]);
 
   // Handle Android back button press - show exit confirmation
   useEffect(() => {
@@ -120,72 +96,69 @@ export default function HomeScreen() {
     return () => backHandler.remove();
   }, []);
 
-  const checkAuth = async () => {
+  const loadRecommendations = useCallback(async () => {
+    try {
+      setLoadingRecommendations(true);
+      const recs = await recommendationApi.getRecommendations(RECOMMENDATIONS_LIMIT);
+      setRecommendations(recs);
+    } catch (error) {
+      if (__DEV__) {
+        console.error('❌ [HomeScreen] Error loading recommendations:', error);
+      }
+    } finally {
+      setLoadingRecommendations(false);
+    }
+  }, []);
+
+  const checkAuth = useCallback(async () => {
     try {
       const token = await authStorage.getToken();
       const user = await authStorage.getUser();
 
       if (token && user) {
-        // User is logged in, load their theme
         loadUserTheme(user);
-        // Sync favorites on app start
         favoritesStorage.syncWithBackend();
         setIsLoggedIn(true);
         setChecking(false);
-        // Load recommendations
         loadRecommendations();
       } else {
-        // No auth, show home screen
         setIsLoggedIn(false);
         setChecking(false);
       }
     } catch (error) {
-      console.error('Error checking auth:', error);
+      if (__DEV__) {
+        console.error('❌ [HomeScreen] Error checking auth:', error);
+      }
       setIsLoggedIn(false);
       setChecking(false);
     }
-  };
+  }, [loadUserTheme, loadRecommendations]);
 
-  const loadRecommendations = async () => {
-    try {
-      setLoadingRecommendations(true);
-      const recs = await recommendationApi.getRecommendations(5);
-      setRecommendations(recs);
-    } catch (error) {
-      console.error('Error loading recommendations:', error);
-      // Silent fail - recommendations are optional
-    } finally {
-      setLoadingRecommendations(false);
-    }
-  };
-
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await authStorage.clearAuth();
     setIsLoggedIn(false);
-  };
+  }, []);
 
-  const handleBrowseOysters = () => {
+  const handleBrowseOysters = useCallback(() => {
     setShowLoading(true);
 
-    // Fade in animation
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 300,
+      duration: ANIMATION_CONFIG.FADE_DURATION,
       useNativeDriver: true,
     }).start();
 
-    // Navigate after 0.9 seconds with fade out
     setTimeout(() => {
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 300,
+        duration: ANIMATION_CONFIG.FADE_DURATION,
         useNativeDriver: true,
       }).start(() => {
         navigation.navigate('OysterList');
         setShowLoading(false);
       });
-    }, 900);
-  };
+    }, ANIMATION_CONFIG.TRANSITION_DELAY);
+  }, [fadeAnim, navigation]);
 
   if (checking) {
     return (
@@ -348,8 +321,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 256,
-    height: 256,
+    width: LOGO_SIZES.NORMAL,
+    height: LOGO_SIZES.NORMAL,
     marginBottom: 20,
   },
   loadingOverlay: {
@@ -363,8 +336,8 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   loadingLogo: {
-    width: 384,
-    height: 384,
+    width: LOGO_SIZES.LOADING,
+    height: LOGO_SIZES.LOADING,
   },
   loadingText: {
     marginTop: 20,

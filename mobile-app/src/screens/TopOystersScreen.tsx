@@ -1,54 +1,10 @@
 /**
- * TopOystersScreen - Migrated to React Native Paper
+ * TopOystersScreen
  *
- * Leaderboard display of highest-rated oysters by the community.
- *
- * Features:
- * - Top 50 oysters sorted by overallScore (descending)
- * - Rank badges (#1, #2, #3, etc.)
- * - Filters out oysters with zero reviews
- * - Pull-to-refresh functionality
- * - Skeleton loading states
- * - Numeric rating display (e.g., "8.5/10") + star visualization
- * - RatingDisplay component for scores
- * - Tappable cards navigate to detail view
- * - Theme-aware styling via React Native Paper
- * - Accessible via "🏆 Top Oysters" button on HomeScreen
- *
- * Material Design Components:
- * - Card: Elevated oyster cards with onPress
- * - Chip: Species badges
- * - Text: Typography with variants
- * - Banner: Error messages
- * - Button: Retry button in error banner
- * - Surface: Rank badges
- * - Divider: Section separators
- *
- * Migration Benefits:
- * - Theme awareness (light/dark mode support)
- * - Material Design cards with proper elevation
- * - Chip component for species badges (built-in styling)
- * - Banner for errors (dismissible, action button)
- * - Automatic theme colors
- * - ~40% less custom styling
- * - Better accessibility
- * - Ripple effects on cards
- *
- * Ranking Algorithm:
- * 1. Fetches all oysters from backend
- * 2. Filters to only oysters with totalReviews > 0
- * 3. Sorts by overallScore (highest first)
- * 4. Takes top 50 results
- * 5. Displays with rank badges (#1-#50)
- *
- * State:
- * - oysters: Top 50 oysters array
- * - loading: Initial fetch in progress
- * - refreshing: Pull-to-refresh in progress
- * - error: Error message string or null
+ * Leaderboard of top 50 highest-rated oysters with pull-to-refresh.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -72,6 +28,19 @@ import { RatingDisplay } from '../components/RatingDisplay';
 import { OysterCardSkeleton } from '../components/OysterCardSkeleton';
 import { useTheme } from '../context/ThemeContext';
 
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const TOP_OYSTERS_LIMIT = 50;
+const SKELETON_COUNT = 5;
+
+const RANK_BADGE_SIZE = 50;
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
+
 export default function TopOystersScreen() {
   const navigation = useNavigation<OysterListScreenNavigationProp>();
   const { paperTheme } = useTheme();
@@ -80,11 +49,7 @@ export default function TopOystersScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchTopOysters();
-  }, []);
-
-  const fetchTopOysters = async (isRefreshing = false) => {
+  const fetchTopOysters = useCallback(async (isRefreshing = false) => {
     try {
       if (isRefreshing) {
         setRefreshing(true);
@@ -93,17 +58,18 @@ export default function TopOystersScreen() {
       }
       setError(null);
 
-      // Fetch all oysters and sort by overallScore
       const data = await oysterApi.getAll();
       const sorted = data
-        .filter(oyster => oyster.totalReviews > 0) // Only show oysters with reviews
+        .filter(oyster => oyster.totalReviews > 0)
         .sort((a, b) => b.overallScore - a.overallScore)
-        .slice(0, 50); // Top 50
+        .slice(0, TOP_OYSTERS_LIMIT);
 
       setOysters(sorted);
     } catch (err) {
       setError('Failed to load top oysters');
-      console.error('Error fetching top oysters:', err);
+      if (__DEV__) {
+        console.error('❌ [TopOystersScreen] Error fetching top oysters:', err);
+      }
     } finally {
       if (isRefreshing) {
         setRefreshing(false);
@@ -111,13 +77,17 @@ export default function TopOystersScreen() {
         setLoading(false);
       }
     }
-  };
+  }, []);
 
-  const onRefresh = () => {
+  useEffect(() => {
+    fetchTopOysters();
+  }, [fetchTopOysters]);
+
+  const onRefresh = useCallback(() => {
     fetchTopOysters(true);
-  };
+  }, [fetchTopOysters]);
 
-  const renderOysterItem = ({ item, index }: { item: Oyster; index: number }) => (
+  const renderOysterItem = useCallback(({ item, index }: { item: Oyster; index: number }) => (
     <Card
       mode="elevated"
       style={styles.card}
@@ -162,7 +132,7 @@ export default function TopOystersScreen() {
         </View>
       </Card.Content>
     </Card>
-  );
+  ), [navigation, paperTheme]);
 
   if (loading && oysters.length === 0) {
     return (
@@ -172,7 +142,7 @@ export default function TopOystersScreen() {
           <Text variant="bodyMedium" style={styles.subtitle}>Highest-rated by the community</Text>
         </Surface>
         <View style={styles.listContainer}>
-          {[1, 2, 3, 4, 5].map((i) => (
+          {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
             <OysterCardSkeleton key={i} />
           ))}
         </View>
@@ -245,9 +215,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   rankBadge: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: RANK_BADGE_SIZE,
+    height: RANK_BADGE_SIZE,
+    borderRadius: RANK_BADGE_SIZE / 2,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -282,11 +252,9 @@ const styles = StyleSheet.create({
   },
   scoreText: {
     fontWeight: '700',
-    // Color applied dynamically via theme
   },
   scoreLabel: {
     marginRight: 8,
-    // Color applied dynamically via theme
   },
   notes: {
     fontStyle: 'italic',

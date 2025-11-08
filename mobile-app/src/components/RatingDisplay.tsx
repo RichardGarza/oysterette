@@ -8,7 +8,6 @@
 import React, { memo, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { scoreToVerdict, scoreToStars } from '../utils/ratingUtils';
-import { REVIEW_RATING_VALUES } from '../types/Oyster';
 
 // ============================================================================
 // CONSTANTS
@@ -37,9 +36,18 @@ const COLORS = {
   BAR_BACKGROUND: '#e5e7eb',
 } as const;
 
-const CONSTANTS = {
+const RATING_THRESHOLDS = {
+  LOVE_IT: 3.5,
+  LIKE_IT: 2.5,
+  OKAY: 1.5,
+} as const;
+
+const STAR_CONFIG = {
   MAX_STARS: 5,
-  HALF_STAR_THRESHOLD: 0.5,
+  HALF_THRESHOLD: 0.5,
+  STAR_FULL: '★',
+  STAR_HALF: '½',
+  STAR_EMPTY: '☆',
 } as const;
 
 // ============================================================================
@@ -78,16 +86,16 @@ interface RatingBarProps {
 // ============================================================================
 
 function getRatingLabel(value: number): string {
-  if (value >= 3.5) return 'Love It';
-  if (value >= 2.5) return 'Like It';
-  if (value >= 1.5) return 'Okay';
+  if (value >= RATING_THRESHOLDS.LOVE_IT) return 'Love It';
+  if (value >= RATING_THRESHOLDS.LIKE_IT) return 'Like It';
+  if (value >= RATING_THRESHOLDS.OKAY) return 'Okay';
   return 'Meh';
 }
 
 function getRatingColor(value: number): string {
-  if (value >= 3.5) return RATING_COLORS.LOVE_IT;
-  if (value >= 2.5) return RATING_COLORS.LIKE_IT;
-  if (value >= 1.5) return RATING_COLORS.OKAY;
+  if (value >= RATING_THRESHOLDS.LOVE_IT) return RATING_COLORS.LOVE_IT;
+  if (value >= RATING_THRESHOLDS.LIKE_IT) return RATING_COLORS.LIKE_IT;
+  if (value >= RATING_THRESHOLDS.OKAY) return RATING_COLORS.OKAY;
   return RATING_COLORS.MEH;
 }
 
@@ -103,12 +111,12 @@ export const RatingDisplay = memo<RatingDisplayProps>(({
 }) => {
   const currentSize = SIZE_CONFIG[size];
 
-  const stars = scoreToStars(overallScore);
-  const fullStars = Math.floor(stars);
-  const hasHalfStar = stars % 1 >= CONSTANTS.HALF_STAR_THRESHOLD;
-  const emptyStars = CONSTANTS.MAX_STARS - fullStars - (hasHalfStar ? 1 : 0);
+  const stars = useMemo(() => scoreToStars(overallScore), [overallScore]);
+  const fullStars = useMemo(() => Math.floor(stars), [stars]);
+  const hasHalfStar = useMemo(() => stars % 1 >= STAR_CONFIG.HALF_THRESHOLD, [stars]);
+  const emptyStars = useMemo(() => STAR_CONFIG.MAX_STARS - fullStars - (hasHalfStar ? 1 : 0), [fullStars, hasHalfStar]);
 
-  const verdict = scoreToVerdict(overallScore);
+  const verdict = useMemo(() => scoreToVerdict(overallScore), [overallScore]);
 
   if (totalReviews === 0) {
     return (
@@ -126,15 +134,15 @@ export const RatingDisplay = memo<RatingDisplayProps>(({
         <View style={styles.starsContainer}>
           {Array.from({ length: fullStars }).map((_, i) => (
             <Text key={`full-${i}`} style={[styles.star, { fontSize: currentSize.starSize }]}>
-              ★
+              {STAR_CONFIG.STAR_FULL}
             </Text>
           ))}
           {hasHalfStar && (
-            <Text style={[styles.star, { fontSize: currentSize.starSize }]}>½</Text>
+            <Text style={[styles.star, { fontSize: currentSize.starSize }]}>{STAR_CONFIG.STAR_HALF}</Text>
           )}
           {Array.from({ length: emptyStars }).map((_, i) => (
             <Text key={`empty-${i}`} style={[styles.starEmpty, { fontSize: currentSize.starSize }]}>
-              ☆
+              {STAR_CONFIG.STAR_EMPTY}
             </Text>
           ))}
         </View>

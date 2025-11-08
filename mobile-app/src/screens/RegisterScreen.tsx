@@ -1,44 +1,10 @@
 /**
- * RegisterScreen - Migrated to React Native Paper
+ * RegisterScreen
  *
- * User registration screen with email/password and Google OAuth options.
- *
- * Features:
- * - Email/password registration form with comprehensive validation
- * - Native Google Sign-In integration (Android)
- * - Auto-redirect if already logged in
- * - Favorites sync after successful registration
- * - Theme preference loading from new account
- * - KeyboardAvoidingView for iOS keyboard handling
- * - ScrollView for long forms
- * - Link to Login screen for existing users
- * - Theme-aware styling via React Native Paper
- *
- * Material Design Components:
- * - Card: Form container with elevation
- * - TextInput: All form inputs with icons and floating labels
- * - Button: Primary (contained) and secondary (outlined) buttons
- * - Divider: "OR" separator between auth methods
- * - Text: Typography with variants (headlineLarge, bodyMedium, etc.)
- * - HelperText: Password requirements hint
- *
- * Migration Benefits:
- * - Built-in password visibility toggles for both password fields
- * - Floating labels with smooth animations
- * - Helper text for password requirements (Material Design pattern)
- * - Icons for all inputs (account, email, lock)
- * - Automatic error states
- * - Better accessibility
- * - Consistent Material Design look
- *
- * Password Requirements (enforced by backend, validated in frontend):
- * - Minimum 8 characters
- * - At least 1 uppercase letter (A-Z)
- * - At least 1 lowercase letter (a-z)
- * - At least 1 number (0-9)
+ * Email/password registration and Google OAuth with comprehensive validation.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   SafeAreaView,
@@ -65,10 +31,33 @@ import { favoritesStorage } from '../services/favorites';
 import { useTheme } from '../context/ThemeContext';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const GOOGLE_WEB_CLIENT_ID = '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com';
+
+const PASSWORD_REQUIREMENTS = {
+  MIN_LENGTH: 8,
+  UPPERCASE_REGEX: /[A-Z]/,
+  LOWERCASE_REGEX: /[a-z]/,
+  NUMBER_REGEX: /[0-9]/,
+} as const;
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
 type RegisterScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'Register'
 >;
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
 
 export default function RegisterScreen() {
   const navigation = useNavigation<RegisterScreenNavigationProp>();
@@ -82,16 +71,16 @@ export default function RegisterScreen() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
-  // Configure Google Sign-In
   React.useEffect(() => {
     GoogleSignin.configure({
-      webClientId: '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com',
+      webClientId: GOOGLE_WEB_CLIENT_ID,
       offlineAccess: false,
     });
-    console.log('✅ Native Google Sign-In configured in RegisterScreen');
+    if (__DEV__) {
+      console.log('✅ [RegisterScreen] Google Sign-In configured');
+    }
   }, []);
 
-  // Redirect if already logged in
   React.useEffect(() => {
     const checkIfLoggedIn = async () => {
       const token = await authStorage.getToken();
@@ -105,23 +94,27 @@ export default function RegisterScreen() {
       }
     };
     checkIfLoggedIn();
-  }, []);
+  }, [navigation]);
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = useCallback(async () => {
     try {
       setGoogleLoading(true);
-      console.log('🔵 Starting native Google Sign-In...');
+      if (__DEV__) {
+        console.log('🔵 [RegisterScreen] Starting Google Sign-In');
+      }
 
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-      console.log('✅ Google Sign-In successful, user:', userInfo.data?.user?.email);
+
+      if (__DEV__) {
+        console.log('✅ [RegisterScreen] Google Sign-In successful:', userInfo.data?.user?.email);
+      }
 
       const idToken = userInfo.data?.idToken;
       if (!idToken) {
         throw new Error('No ID token received from Google');
       }
 
-      console.log('🔵 Sending ID token to backend...');
       const authResponse = await authApi.googleAuth(idToken);
 
       await authStorage.saveToken(authResponse.token);
@@ -130,7 +123,9 @@ export default function RegisterScreen() {
       loadUserTheme(authResponse.user);
       await favoritesStorage.syncWithBackend();
 
-      console.log('✅ Authentication complete, navigating to OysterList');
+      if (__DEV__) {
+        console.log('✅ [RegisterScreen] Authentication complete');
+      }
 
       navigation.dispatch(
         CommonActions.reset({
@@ -139,10 +134,14 @@ export default function RegisterScreen() {
         })
       );
     } catch (error: any) {
-      console.error('❌ Google Sign-In error:', error);
+      if (__DEV__) {
+        console.error('❌ [RegisterScreen] Google Sign-In error:', error);
+      }
 
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log('User cancelled Google Sign-In');
+        if (__DEV__) {
+          console.log('ℹ️ [RegisterScreen] User cancelled Google Sign-In');
+        }
       } else if (error.code === statusCodes.IN_PROGRESS) {
         Alert.alert('Sign-In In Progress', 'Google Sign-In is already in progress');
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
@@ -159,9 +158,9 @@ export default function RegisterScreen() {
     } finally {
       setGoogleLoading(false);
     }
-  };
+  }, [loadUserTheme, navigation]);
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     if (!name.trim()) {
       Alert.alert('Validation Error', 'Please enter your name');
       return false;
@@ -172,18 +171,17 @@ export default function RegisterScreen() {
       return false;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!EMAIL_REGEX.test(email)) {
       Alert.alert('Validation Error', 'Please enter a valid email address');
       return false;
     }
 
-    if (password.length < 8) {
-      Alert.alert('Password Too Short', 'Password must be at least 8 characters long');
+    if (password.length < PASSWORD_REQUIREMENTS.MIN_LENGTH) {
+      Alert.alert('Password Too Short', `Password must be at least ${PASSWORD_REQUIREMENTS.MIN_LENGTH} characters long`);
       return false;
     }
 
-    if (!/[A-Z]/.test(password)) {
+    if (!PASSWORD_REQUIREMENTS.UPPERCASE_REGEX.test(password)) {
       Alert.alert(
         'Password Missing Uppercase',
         'Password must contain at least one uppercase letter (A-Z)'
@@ -191,7 +189,7 @@ export default function RegisterScreen() {
       return false;
     }
 
-    if (!/[a-z]/.test(password)) {
+    if (!PASSWORD_REQUIREMENTS.LOWERCASE_REGEX.test(password)) {
       Alert.alert(
         'Password Missing Lowercase',
         'Password must contain at least one lowercase letter (a-z)'
@@ -199,7 +197,7 @@ export default function RegisterScreen() {
       return false;
     }
 
-    if (!/[0-9]/.test(password)) {
+    if (!PASSWORD_REQUIREMENTS.NUMBER_REGEX.test(password)) {
       Alert.alert(
         'Password Missing Number',
         'Password must contain at least one number (0-9)'
@@ -213,23 +211,27 @@ export default function RegisterScreen() {
     }
 
     return true;
-  };
+  }, [name, email, password, confirmPassword]);
 
-  const handleRegister = async () => {
+  const handleRegister = useCallback(async () => {
     if (!validateForm()) return;
 
     try {
       setLoading(true);
 
-      console.log('📤 Registration attempt:', {
-        email: email.trim(),
-        name: name.trim(),
-        passwordLength: password.length,
-      });
+      if (__DEV__) {
+        console.log('📤 [RegisterScreen] Registration attempt:', {
+          email: email.trim(),
+          name: name.trim(),
+          passwordLength: password.length,
+        });
+      }
 
       const response = await authApi.register(email.trim(), name.trim(), password);
 
-      console.log('✅ Registration successful');
+      if (__DEV__) {
+        console.log('✅ [RegisterScreen] Registration successful');
+      }
 
       await authStorage.saveToken(response.token);
       await authStorage.saveUser(response.user);
@@ -250,33 +252,17 @@ export default function RegisterScreen() {
         },
       ]);
     } catch (error: any) {
-      console.error('❌ Registration error:', error);
-
-      const errorData = error?.response?.data;
-
-      if (errorData?.details && Array.isArray(errorData.details)) {
-        const errorMessages = errorData.details
-          .map((detail: any) => {
-            const field = detail.field || 'Unknown';
-            const message = detail.message || 'Invalid';
-            return `• ${field}: ${message}`;
-          })
-          .join('\n');
-
-        Alert.alert('Registration Error', `Please fix the following:\n\n${errorMessages}`);
-      } else if (errorData?.error) {
-        Alert.alert('Registration Failed', errorData.error);
-      } else {
-        const statusCode = error?.response?.status || 'Unknown';
-        Alert.alert(
-          'Registration Failed',
-          `Failed to create account.\n\nError code: ${statusCode}\n\nPlease check your internet connection and try again.`
-        );
+      if (__DEV__) {
+        console.error('❌ [RegisterScreen] Registration error:', error);
       }
+      Alert.alert(
+        'Registration Failed',
+        error?.response?.data?.error || 'Failed to create account. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [validateForm, email, name, password, loadUserTheme, navigation]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
@@ -293,7 +279,7 @@ export default function RegisterScreen() {
               Create Account
             </Text>
             <Text variant="bodyLarge" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-              Join Oysterette today
+              Join Oysterette today!
             </Text>
           </View>
 
@@ -305,6 +291,7 @@ export default function RegisterScreen() {
                 onChangeText={setName}
                 mode="outlined"
                 autoCapitalize="words"
+                autoComplete="name"
                 disabled={loading || googleLoading}
                 left={<TextInput.Icon icon="account" />}
                 style={styles.input}
@@ -340,8 +327,9 @@ export default function RegisterScreen() {
                 }
                 style={styles.input}
               />
+
               <HelperText type="info" visible={true}>
-                Must be 8+ characters with uppercase, lowercase, and a number
+                At least 8 characters, 1 uppercase, 1 lowercase, 1 number
               </HelperText>
 
               <TextInput
@@ -352,7 +340,7 @@ export default function RegisterScreen() {
                 secureTextEntry={!confirmPasswordVisible}
                 autoCapitalize="none"
                 disabled={loading || googleLoading}
-                left={<TextInput.Icon icon="lock-check" />}
+                left={<TextInput.Icon icon="lock" />}
                 right={
                   <TextInput.Icon
                     icon={confirmPasswordVisible ? 'eye-off' : 'eye'}
@@ -367,10 +355,10 @@ export default function RegisterScreen() {
                 onPress={handleRegister}
                 loading={loading}
                 disabled={loading || googleLoading}
-                style={styles.signUpButton}
+                style={styles.registerButton}
                 icon="account-plus"
               >
-                Sign Up
+                Create Account
               </Button>
 
               <View style={styles.dividerContainer}>
@@ -438,7 +426,7 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 8,
   },
-  signUpButton: {
+  registerButton: {
     marginTop: 16,
     marginBottom: 16,
   },

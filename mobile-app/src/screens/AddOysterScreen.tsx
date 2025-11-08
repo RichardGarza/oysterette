@@ -1,73 +1,10 @@
 /**
  * AddOysterScreen
  *
- * Community oyster database contribution form with minimal required fields.
- *
- * Features:
- * - Lightweight form requiring only name and attribute profile
- * - Species and origin optional (defaults to "Unknown")
- * - 5 attribute sliders with scale indicators
- * - Validation for name and attribute ranges
- * - KeyboardAvoidingView for iOS keyboard handling
- * - Cancel and submit buttons
- * - Static styling (not theme-aware)
- * - Accessible via FAB on OysterListScreen
- *
- * Form Fields:
- * - Name: Required text input
- * - Species: Optional (defaults to "Unknown" if blank)
- * - Origin: Optional (defaults to "Unknown" if blank)
- * - Standout Notes: Optional multiline text area
- * - Size slider: 1-10 (default 5)
- * - Body slider: 1-10 (default 5)
- * - Sweet/Brininess slider: 1-10 (default 5)
- * - Flavorfulness slider: 1-10 (default 5)
- * - Creaminess slider: 1-10 (default 5)
- *
- * Validation:
- * - Name: Must not be empty (trimmed)
- * - All attributes: Must be integers between 1-10
- * - Shows alert for validation failures
- *
- * Submit Flow:
- * 1. Validates form (name required, attributes 1-10)
- * 2. Trims all text inputs
- * 3. Converts empty species/origin to "Unknown"
- * 4. Converts attribute strings to integers
- * 5. Calls oysterApi.create() with oyster data
- * 6. Shows success alert
- * 7. Navigates back to OysterList
- *
- * Design Philosophy:
- * - Encourages community contributions with minimal friction
- * - Species and origin can be crowd-sourced later
- * - Attribute profile required to enable recommendations
- * - Standout notes optional for initial data entry
- *
- * Slider Component:
- * - Custom renderSlider function for consistency
- * - Shows value (e.g., "5/10") next to label
- * - Description text below label (e.g., "1 = Tiny → 10 = Huge")
- * - Scale indicators below slider (1, 5, 10)
- * - Integer steps only
- *
- * Error Handling:
- * - Validation errors: Shows specific field and requirement
- * - API errors: Shows backend error message or generic failure
- * - Loading state: Disables buttons and shows spinner
- *
- * Navigation:
- * - Cancel button: Calls navigation.goBack()
- * - Success: Alert with OK button navigates to OysterList
- * - Usually accessed from FAB (+ button) on OysterListScreen
- *
- * State:
- * - formData: Object with all form fields (strings for text, numbers for sliders)
- * - loading: Boolean for submit in progress
- * - updateField: Helper function to update formData immutably
+ * Community contribution form for adding oysters to database.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -87,59 +24,118 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { oysterApi } from '../services/api';
 
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const SLIDER_CONFIG = {
+  MIN_VALUE: 1,
+  MAX_VALUE: 10,
+  STEP: 1,
+  DEFAULT_VALUE: '5',
+  HEIGHT: 40,
+  MIN_TRACK_COLOR: '#3498db',
+  MAX_TRACK_COLOR: '#e0e0e0',
+  THUMB_COLOR: '#3498db',
+} as const;
+
+const COLORS = {
+  BACKGROUND: '#f5f5f5',
+  WHITE: '#fff',
+  BORDER: '#e0e0e0',
+  TEXT_PRIMARY: '#2c3e50',
+  TEXT_SECONDARY: '#7f8c8d',
+  TEXT_LABEL: '#555',
+  INPUT_BG: '#f8f9fa',
+  PRIMARY: '#3498db',
+  SCALE_TEXT: '#95a5a6',
+} as const;
+
+const DEFAULTS = {
+  SPECIES: 'Unknown',
+  ORIGIN: 'Unknown',
+} as const;
+
+const ATTRIBUTE_LABELS = {
+  size: { label: 'Size', description: '1 = Tiny → 10 = Huge' },
+  body: { label: 'Body', description: '1 = Thin → 10 = Extremely Fat' },
+  sweetBrininess: { label: 'Sweet/Brininess', description: '1 = Very Sweet → 10 = Very Salty' },
+  flavorfulness: { label: 'Flavorfulness', description: '1 = Boring → 10 = Extremely Bold' },
+  creaminess: { label: 'Creaminess', description: '1 = None → 10 = Nothing But Cream' },
+} as const;
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
 type AddOysterScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'AddOyster'
 >;
 
+interface FormData {
+  name: string;
+  species: string;
+  origin: string;
+  standoutNotes: string;
+  size: string;
+  body: string;
+  sweetBrininess: string;
+  flavorfulness: string;
+  creaminess: string;
+}
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
+
 export default function AddOysterScreen() {
   const navigation = useNavigation<AddOysterScreenNavigationProp>();
   const [loading, setLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     species: '',
     origin: '',
     standoutNotes: '',
-    size: '5',
-    body: '5',
-    sweetBrininess: '5',
-    flavorfulness: '5',
-    creaminess: '5',
+    size: SLIDER_CONFIG.DEFAULT_VALUE,
+    body: SLIDER_CONFIG.DEFAULT_VALUE,
+    sweetBrininess: SLIDER_CONFIG.DEFAULT_VALUE,
+    flavorfulness: SLIDER_CONFIG.DEFAULT_VALUE,
+    creaminess: SLIDER_CONFIG.DEFAULT_VALUE,
   });
 
-  const updateField = (field: string, value: string) => {
+  const updateField = useCallback((field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
-  const validateForm = () => {
+  const validateForm = useCallback((): boolean => {
     if (!formData.name.trim()) {
       Alert.alert('Validation Error', 'Oyster name is required');
       return false;
     }
 
-    // Validate all attribute values are between 1-10
-    const attributes = ['size', 'body', 'sweetBrininess', 'flavorfulness', 'creaminess'];
+    const attributes: Array<keyof FormData> = ['size', 'body', 'sweetBrininess', 'flavorfulness', 'creaminess'];
     for (const attr of attributes) {
-      const value = parseInt(formData[attr as keyof typeof formData]);
-      if (isNaN(value) || value < 1 || value > 10) {
-        Alert.alert('Validation Error', `${attr} must be between 1 and 10`);
+      const value = parseInt(formData[attr]);
+      if (isNaN(value) || value < SLIDER_CONFIG.MIN_VALUE || value > SLIDER_CONFIG.MAX_VALUE) {
+        Alert.alert('Validation Error', `${attr} must be between ${SLIDER_CONFIG.MIN_VALUE} and ${SLIDER_CONFIG.MAX_VALUE}`);
         return false;
       }
     }
 
     return true;
-  };
+  }, [formData]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!validateForm()) return;
 
     try {
       setLoading(true);
       const oysterData = {
         name: formData.name.trim(),
-        species: formData.species.trim() || 'Unknown',
-        origin: formData.origin.trim() || 'Unknown',
+        species: formData.species.trim() || DEFAULTS.SPECIES,
+        origin: formData.origin.trim() || DEFAULTS.ORIGIN,
         standoutNotes: formData.standoutNotes.trim() || undefined,
         size: parseInt(formData.size),
         body: parseInt(formData.body),
@@ -156,6 +152,9 @@ export default function AddOysterScreen() {
         },
       ]);
     } catch (error: any) {
+      if (__DEV__) {
+        console.error('❌ [AddOysterScreen] Error adding oyster:', error);
+      }
       Alert.alert(
         'Error',
         error?.response?.data?.error || 'Failed to add oyster. Please try again.'
@@ -163,43 +162,46 @@ export default function AddOysterScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [validateForm, formData, navigation]);
 
-  const renderSlider = (
-    label: string,
-    field: keyof typeof formData,
-    description: string
-  ) => (
-    <View style={styles.sliderContainer}>
-      <View style={styles.sliderHeader}>
-        <Text style={styles.sliderLabel}>{label}</Text>
-        <Text style={styles.sliderValue}>{formData[field]}/10</Text>
+  const renderSlider = useCallback((
+    field: keyof FormData,
+  ) => {
+    const config = ATTRIBUTE_LABELS[field as keyof typeof ATTRIBUTE_LABELS];
+    if (!config) return null;
+
+    return (
+      <View style={styles.sliderContainer}>
+        <View style={styles.sliderHeader}>
+          <Text style={styles.sliderLabel}>{config.label}</Text>
+          <Text style={styles.sliderValue}>{formData[field]}/10</Text>
+        </View>
+        <Text style={styles.sliderDescription}>{config.description}</Text>
+        <Slider
+          style={styles.slider}
+          minimumValue={SLIDER_CONFIG.MIN_VALUE}
+          maximumValue={SLIDER_CONFIG.MAX_VALUE}
+          step={SLIDER_CONFIG.STEP}
+          value={parseInt(formData[field])}
+          onValueChange={(value) => updateField(field, Math.round(value).toString())}
+          minimumTrackTintColor={SLIDER_CONFIG.MIN_TRACK_COLOR}
+          maximumTrackTintColor={SLIDER_CONFIG.MAX_TRACK_COLOR}
+          thumbTintColor={SLIDER_CONFIG.THUMB_COLOR}
+        />
+        <View style={styles.scaleIndicator}>
+          <Text style={styles.scaleText}>1</Text>
+          <Text style={styles.scaleText}>5</Text>
+          <Text style={styles.scaleText}>10</Text>
+        </View>
       </View>
-      <Text style={styles.sliderDescription}>{description}</Text>
-      <Slider
-        style={styles.slider}
-        minimumValue={1}
-        maximumValue={10}
-        step={1}
-        value={parseInt(formData[field])}
-        onValueChange={(value) => updateField(field, Math.round(value).toString())}
-        minimumTrackTintColor="#3498db"
-        maximumTrackTintColor="#e0e0e0"
-        thumbTintColor="#3498db"
-      />
-      <View style={styles.scaleIndicator}>
-        <Text style={styles.scaleText}>1</Text>
-        <Text style={styles.scaleText}>5</Text>
-        <Text style={styles.scaleText}>10</Text>
-      </View>
-    </View>
-  );
+    );
+  }, [formData, updateField]);
 
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
+        style={styles.keyboardView}
       >
         <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
@@ -250,11 +252,11 @@ export default function AddOysterScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Attribute Profile (1-10 Scale)</Text>
 
-          {renderSlider('Size', 'size', '1 = Tiny → 10 = Huge')}
-          {renderSlider('Body', 'body', '1 = Thin → 10 = Extremely Fat')}
-          {renderSlider('Sweet/Brininess', 'sweetBrininess', '1 = Very Sweet → 10 = Very Salty')}
-          {renderSlider('Flavorfulness', 'flavorfulness', '1 = Boring → 10 = Extremely Bold')}
-          {renderSlider('Creaminess', 'creaminess', '1 = None → 10 = Nothing But Cream')}
+          {renderSlider('size')}
+          {renderSlider('body')}
+          {renderSlider('sweetBrininess')}
+          {renderSlider('flavorfulness')}
+          {renderSlider('creaminess')}
         </View>
 
         <View style={styles.buttonContainer}>
@@ -272,7 +274,7 @@ export default function AddOysterScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={COLORS.WHITE} />
             ) : (
               <Text style={styles.submitButtonText}>Add Oyster</Text>
             )}
@@ -287,54 +289,57 @@ export default function AddOysterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.BACKGROUND,
+  },
+  keyboardView: {
+    flex: 1,
   },
   scrollView: {
     flex: 1,
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.WHITE,
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: COLORS.BORDER,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#2c3e50',
+    color: COLORS.TEXT_PRIMARY,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: '#7f8c8d',
+    color: COLORS.TEXT_SECONDARY,
     lineHeight: 20,
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.WHITE,
     padding: 20,
     marginTop: 10,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#2c3e50',
+    color: COLORS.TEXT_PRIMARY,
     marginBottom: 15,
   },
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#555',
+    color: COLORS.TEXT_LABEL,
     marginBottom: 8,
     marginTop: 12,
   },
   input: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: COLORS.INPUT_BG,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: COLORS.BORDER,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    color: '#2c3e50',
+    color: COLORS.TEXT_PRIMARY,
   },
   textArea: {
     minHeight: 80,
@@ -352,21 +357,21 @@ const styles = StyleSheet.create({
   sliderLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#555',
+    color: COLORS.TEXT_LABEL,
   },
   sliderValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#3498db',
+    color: COLORS.PRIMARY,
   },
   sliderDescription: {
     fontSize: 12,
-    color: '#7f8c8d',
+    color: COLORS.TEXT_SECONDARY,
     marginBottom: 10,
   },
   slider: {
     width: '100%',
-    height: 40,
+    height: SLIDER_CONFIG.HEIGHT,
   },
   scaleIndicator: {
     flexDirection: 'row',
@@ -376,7 +381,7 @@ const styles = StyleSheet.create({
   },
   scaleText: {
     fontSize: 12,
-    color: '#95a5a6',
+    color: COLORS.SCALE_TEXT,
     fontWeight: '500',
   },
   buttonContainer: {
@@ -392,20 +397,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cancelButton: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.WHITE,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: COLORS.BORDER,
   },
   cancelButtonText: {
-    color: '#555',
+    color: COLORS.TEXT_LABEL,
     fontSize: 16,
     fontWeight: '600',
   },
   submitButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: COLORS.PRIMARY,
   },
   submitButtonText: {
-    color: '#fff',
+    color: COLORS.WHITE,
     fontSize: 16,
     fontWeight: '600',
   },

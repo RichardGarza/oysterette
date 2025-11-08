@@ -1,65 +1,10 @@
 /**
- * PrivacySettingsScreen - Migrated to React Native Paper
+ * PrivacySettingsScreen
  *
- * User privacy and profile visibility configuration screen.
- *
- * Features:
- * - Profile visibility level (Public, Friends Only, Private)
- * - Display preferences for profile sections (toggles)
- * - Saves settings to backend and local storage
- * - Theme-aware styling via React Native Paper
- * - Loading state while fetching current settings
- * - Success alert with auto-redirect after save
- *
- * Material Design Components:
- * - RadioButton.Group: Profile visibility selection
- * - RadioButton.Item: Individual visibility options
- * - List.Item: Display preference toggles with integrated switches
- * - Button: Save button with loading state
- * - Text: Typography with variants
- * - ActivityIndicator: Loading states
- * - Banner: Privacy notice
- * - Divider: Section separators
- *
- * Migration Benefits:
- * - Built-in RadioButton components with proper accessibility
- * - Integrated switches in List.Item (no custom layout needed)
- * - Automatic theme colors and styling
- * - Material Design ripple effects
- * - ~70% less custom styling code
- * - Better screen reader support
- * - Consistent look with rest of app
- *
- * Profile Visibility Levels:
- * - Public: Anyone can view profile (default)
- * - Friends Only: Coming soon (UI only, not implemented)
- * - Private: Only user can view their own profile
- *
- * Display Preferences:
- * - Show Review History: Display reviews on profile (default: true)
- * - Show Favorites: Display favorite oysters on profile (default: true)
- * - Show Statistics: Display stats and badge on profile (default: true)
- *
- * Settings Flow:
- * 1. Loads current user from authStorage on mount
- * 2. Pre-populates form with user's existing privacy settings
- * 3. User modifies settings via radio buttons and switches
- * 4. User taps "Save Privacy Settings" button
- * 5. Calls userApi.updatePrivacySettings() with new values
- * 6. Updates local authStorage with new user data
- * 7. Shows success alert
- * 8. Navigates back to ProfileScreen
- *
- * State:
- * - profileVisibility: 'public' | 'friends' | 'private'
- * - showReviewHistory: boolean
- * - showFavorites: boolean
- * - showStatistics: boolean
- * - loading: Initial data fetch in progress
- * - saving: Save operation in progress
+ * Profile visibility and display preferences configuration.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -81,23 +26,22 @@ import { authStorage } from '../services/auth';
 import { userApi } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 
+// ============================================================================
+// COMPONENT
+// ============================================================================
+
 export default function PrivacySettingsScreen() {
   const navigation = useNavigation();
   const { paperTheme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Privacy settings state
   const [profileVisibility, setProfileVisibility] = useState<'public' | 'friends' | 'private'>('public');
   const [showReviewHistory, setShowReviewHistory] = useState(true);
   const [showFavorites, setShowFavorites] = useState(true);
   const [showStatistics, setShowStatistics] = useState(true);
 
-  useEffect(() => {
-    loadPrivacySettings();
-  }, []);
-
-  const loadPrivacySettings = async () => {
+  const loadPrivacySettings = useCallback(async () => {
     try {
       setLoading(true);
       const user = await authStorage.getUser();
@@ -106,20 +50,25 @@ export default function PrivacySettingsScreen() {
         return;
       }
 
-      // Set current privacy settings from user data
       setProfileVisibility(user.profileVisibility || 'public');
       setShowReviewHistory(user.showReviewHistory ?? true);
       setShowFavorites(user.showFavorites ?? true);
       setShowStatistics(user.showStatistics ?? true);
     } catch (error) {
-      console.error('Error loading privacy settings:', error);
+      if (__DEV__) {
+        console.error('❌ [PrivacySettingsScreen] Error loading settings:', error);
+      }
       Alert.alert('Error', 'Failed to load privacy settings');
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigation]);
 
-  const handleSave = async () => {
+  useEffect(() => {
+    loadPrivacySettings();
+  }, [loadPrivacySettings]);
+
+  const handleSave = useCallback(async () => {
     try {
       setSaving(true);
 
@@ -132,7 +81,6 @@ export default function PrivacySettingsScreen() {
 
       await userApi.updatePrivacySettings(settings);
 
-      // Update local user data
       const user = await authStorage.getUser();
       if (user) {
         const updatedUser = {
@@ -146,12 +94,14 @@ export default function PrivacySettingsScreen() {
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (error: any) {
-      console.error('Error saving privacy settings:', error);
+      if (__DEV__) {
+        console.error('❌ [PrivacySettingsScreen] Error saving settings:', error);
+      }
       Alert.alert('Error', error.response?.data?.error || 'Failed to update privacy settings');
     } finally {
       setSaving(false);
     }
-  };
+  }, [profileVisibility, showReviewHistory, showFavorites, showStatistics, navigation]);
 
   if (loading) {
     return (
@@ -165,7 +115,6 @@ export default function PrivacySettingsScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
-          {/* Header */}
           <View style={styles.header}>
             <Text variant="headlineMedium" style={styles.title}>Privacy Settings</Text>
             <Text variant="bodyMedium" style={styles.subtitle}>
@@ -173,7 +122,6 @@ export default function PrivacySettingsScreen() {
             </Text>
           </View>
 
-          {/* Profile Visibility Section */}
           <List.Section>
             <List.Subheader>Profile Visibility</List.Subheader>
             <Text variant="bodySmall" style={styles.sectionDescription}>
@@ -221,7 +169,6 @@ export default function PrivacySettingsScreen() {
             </RadioButton.Group>
           </List.Section>
 
-          {/* Display Preferences Section */}
           <List.Section>
             <List.Subheader>Display Preferences</List.Subheader>
             <Text variant="bodySmall" style={styles.sectionDescription}>
@@ -270,7 +217,6 @@ export default function PrivacySettingsScreen() {
             />
           </List.Section>
 
-          {/* Privacy Notice */}
           <Banner
             visible={true}
             icon="information"
@@ -282,7 +228,6 @@ export default function PrivacySettingsScreen() {
             </Text>
           </Banner>
 
-          {/* Save Button */}
           <Button
             mode="contained"
             onPress={handleSave}

@@ -1,49 +1,10 @@
 /**
- * SetFlavorProfileScreen - Migrated to React Native Paper
+ * SetFlavorProfileScreen
  *
- * Allows users to set their baseline flavor preferences for recommendations.
- *
- * Features:
- * - 5 attribute sliders (size, body, sweetness, flavor, creaminess)
- * - Dynamic word labels above each slider (e.g., "Huge", "Baddy McFatty")
- * - Save button with loading state
- * - Theme-aware styling via React Native Paper
- * - Auto-navigation on success
- * - Can be accessed before any reviews
- *
- * Material Design Components:
- * - Card: Section containers with elevation
- * - Text: Typography with variants (headlineSmall, titleMedium, bodyMedium, etc.)
- * - Button: Save action with loading state
- * - Surface: Info box background
- *
- * Migration Benefits:
- * - ~30% less custom styling (Paper handles cards, buttons, text)
- * - Built-in theme integration (light/dark mode)
- * - Material Design cards with proper elevation
- * - Professional button with loading state
- * - Consistent look with rest of app
- * - Better accessibility
- *
- * Purpose:
- * - Helps users get personalized recommendations immediately
- * - No need to review oysters first
- * - Baseline updates automatically with each positive review (LIKE_IT, LOVE_IT)
- *
- * Flow:
- * 1. User adjusts 5 sliders to describe their ideal oyster
- * 2. Taps "Save Flavor Profile"
- * 3. Sends to backend: PUT /api/users/flavor-profile
- * 4. Backend stores baseline in user record
- * 5. Recommendations now use this baseline
- * 6. Navigate back to HomeScreen
- *
- * State:
- * - size, body, sweetBrininess, flavorfulness, creaminess (all 1-10)
- * - saving: Loading state during API call
+ * User preference sliders for personalized oyster recommendations.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -63,20 +24,35 @@ import { useTheme } from '../context/ThemeContext';
 import { userApi } from '../services/api';
 import { getAttributeDescriptor } from '../utils/ratingUtils';
 
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const SLIDER_CONFIG = {
+  MIN_VALUE: 1,
+  MAX_VALUE: 10,
+  STEP: 1,
+  DEFAULT_VALUE: 5,
+  HEIGHT: 50,
+} as const;
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
+
 export default function SetFlavorProfileScreen() {
   const navigation = useNavigation();
   const { theme, paperTheme } = useTheme();
-  const styles = createStyles(theme.colors);
+  const styles = useStyles(theme.colors);
 
-  // Attribute states (default to middle value: 5)
-  const [size, setSize] = useState(5);
-  const [body, setBody] = useState(5);
-  const [sweetBrininess, setSweetBrininess] = useState(5);
-  const [flavorfulness, setFlavorfulness] = useState(5);
-  const [creaminess, setCreaminess] = useState(5);
+  const [size, setSize] = useState(SLIDER_CONFIG.DEFAULT_VALUE);
+  const [body, setBody] = useState(SLIDER_CONFIG.DEFAULT_VALUE);
+  const [sweetBrininess, setSweetBrininess] = useState(SLIDER_CONFIG.DEFAULT_VALUE);
+  const [flavorfulness, setFlavorfulness] = useState(SLIDER_CONFIG.DEFAULT_VALUE);
+  const [creaminess, setCreaminess] = useState(SLIDER_CONFIG.DEFAULT_VALUE);
   const [saving, setSaving] = useState(false);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     try {
       setSaving(true);
 
@@ -92,17 +68,18 @@ export default function SetFlavorProfileScreen() {
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (error: any) {
-      console.error('Error saving flavor profile:', error);
+      if (__DEV__) {
+        console.error('❌ [SetFlavorProfileScreen] Error saving flavor profile:', error);
+      }
       Alert.alert('Error', error.response?.data?.error || 'Failed to save flavor profile');
     } finally {
       setSaving(false);
     }
-  };
+  }, [size, body, sweetBrininess, flavorfulness, creaminess, navigation]);
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
         <View style={styles.header}>
           <Text variant="headlineSmall" style={styles.title}>Set Your Flavor Profile</Text>
           <Text variant="bodyMedium" style={styles.subtitle}>
@@ -110,16 +87,15 @@ export default function SetFlavorProfileScreen() {
           </Text>
         </View>
 
-        {/* Size Slider */}
         <Card mode="elevated" style={styles.sliderCard}>
           <Card.Content>
             <Text variant="titleMedium" style={styles.sliderLabel}>Preferred Size</Text>
             <Text variant="headlineSmall" style={styles.sliderValue}>{getAttributeDescriptor('size', size)}</Text>
             <Slider
               style={styles.slider}
-              minimumValue={1}
-              maximumValue={10}
-              step={1}
+              minimumValue={SLIDER_CONFIG.MIN_VALUE}
+              maximumValue={SLIDER_CONFIG.MAX_VALUE}
+              step={SLIDER_CONFIG.STEP}
               value={size}
               onValueChange={setSize}
               minimumTrackTintColor={paperTheme.colors.primary}
@@ -133,16 +109,15 @@ export default function SetFlavorProfileScreen() {
           </Card.Content>
         </Card>
 
-        {/* Body Slider */}
         <Card mode="elevated" style={styles.sliderCard}>
           <Card.Content>
             <Text variant="titleMedium" style={styles.sliderLabel}>Preferred Body</Text>
             <Text variant="headlineSmall" style={styles.sliderValue}>{getAttributeDescriptor('body', body)}</Text>
             <Slider
               style={styles.slider}
-              minimumValue={1}
-              maximumValue={10}
-              step={1}
+              minimumValue={SLIDER_CONFIG.MIN_VALUE}
+              maximumValue={SLIDER_CONFIG.MAX_VALUE}
+              step={SLIDER_CONFIG.STEP}
               value={body}
               onValueChange={setBody}
               minimumTrackTintColor={paperTheme.colors.primary}
@@ -156,16 +131,15 @@ export default function SetFlavorProfileScreen() {
           </Card.Content>
         </Card>
 
-        {/* Sweet/Brininess Slider */}
         <Card mode="elevated" style={styles.sliderCard}>
           <Card.Content>
             <Text variant="titleMedium" style={styles.sliderLabel}>Preferred Sweet/Brininess</Text>
             <Text variant="headlineSmall" style={styles.sliderValue}>{getAttributeDescriptor('sweetBrininess', sweetBrininess)}</Text>
             <Slider
               style={styles.slider}
-              minimumValue={1}
-              maximumValue={10}
-              step={1}
+              minimumValue={SLIDER_CONFIG.MIN_VALUE}
+              maximumValue={SLIDER_CONFIG.MAX_VALUE}
+              step={SLIDER_CONFIG.STEP}
               value={sweetBrininess}
               onValueChange={setSweetBrininess}
               minimumTrackTintColor={paperTheme.colors.primary}
@@ -179,16 +153,15 @@ export default function SetFlavorProfileScreen() {
           </Card.Content>
         </Card>
 
-        {/* Flavorfulness Slider */}
         <Card mode="elevated" style={styles.sliderCard}>
           <Card.Content>
             <Text variant="titleMedium" style={styles.sliderLabel}>Preferred Flavorfulness</Text>
             <Text variant="headlineSmall" style={styles.sliderValue}>{getAttributeDescriptor('flavorfulness', flavorfulness)}</Text>
             <Slider
               style={styles.slider}
-              minimumValue={1}
-              maximumValue={10}
-              step={1}
+              minimumValue={SLIDER_CONFIG.MIN_VALUE}
+              maximumValue={SLIDER_CONFIG.MAX_VALUE}
+              step={SLIDER_CONFIG.STEP}
               value={flavorfulness}
               onValueChange={setFlavorfulness}
               minimumTrackTintColor={paperTheme.colors.primary}
@@ -202,16 +175,15 @@ export default function SetFlavorProfileScreen() {
           </Card.Content>
         </Card>
 
-        {/* Creaminess Slider */}
         <Card mode="elevated" style={styles.sliderCard}>
           <Card.Content>
             <Text variant="titleMedium" style={styles.sliderLabel}>Preferred Creaminess</Text>
             <Text variant="headlineSmall" style={styles.sliderValue}>{getAttributeDescriptor('creaminess', creaminess)}</Text>
             <Slider
               style={styles.slider}
-              minimumValue={1}
-              maximumValue={10}
-              step={1}
+              minimumValue={SLIDER_CONFIG.MIN_VALUE}
+              maximumValue={SLIDER_CONFIG.MAX_VALUE}
+              step={SLIDER_CONFIG.STEP}
               value={creaminess}
               onValueChange={setCreaminess}
               minimumTrackTintColor={paperTheme.colors.primary}
@@ -225,7 +197,6 @@ export default function SetFlavorProfileScreen() {
           </Card.Content>
         </Card>
 
-        {/* Save Button */}
         <Button
           mode="contained"
           onPress={handleSave}
@@ -238,7 +209,6 @@ export default function SetFlavorProfileScreen() {
           Save Flavor Profile
         </Button>
 
-        {/* Info */}
         <Card mode="outlined" style={styles.infoCard}>
           <Card.Content>
             <Text variant="bodyMedium" style={styles.infoText}>
@@ -252,8 +222,8 @@ export default function SetFlavorProfileScreen() {
   );
 }
 
-const createStyles = (colors: any) =>
-  StyleSheet.create({
+const useStyles = (colors: typeof import('../context/ThemeContext').Theme['colors']) =>
+  useMemo(() => StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.background,
@@ -282,11 +252,11 @@ const createStyles = (colors: any) =>
     },
     sliderValue: {
       marginBottom: 12,
-      height: 50,
+      height: SLIDER_CONFIG.HEIGHT,
     },
     slider: {
       width: '100%',
-      height: 50,
+      height: SLIDER_CONFIG.HEIGHT,
     },
     sliderLabels: {
       flexDirection: 'row',
@@ -306,4 +276,4 @@ const createStyles = (colors: any) =>
     infoText: {
       lineHeight: 20,
     },
-  });
+  }), [colors]);

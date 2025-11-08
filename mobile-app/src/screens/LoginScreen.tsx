@@ -1,57 +1,10 @@
 /**
- * LoginScreen - Migrated to React Native Paper
+ * LoginScreen
  *
- * Authentication screen supporting email/password and Google OAuth sign-in.
- *
- * Features:
- * - Email/password login form with validation
- * - Native Google Sign-In integration (Android)
- * - Auto-redirect if already logged in
- * - Favorites sync after successful login
- * - Theme preference loading from user account
- * - KeyboardAvoidingView for iOS keyboard handling
- * - "Continue as Guest" option
- * - Link to Register screen
- * - Theme-aware styling via React Native Paper
- *
- * Material Design Components:
- * - Card: Form container with elevation
- * - TextInput: Email and password inputs with icons
- * - Button: Primary (contained) and secondary (outlined) buttons
- * - Divider: "OR" separator between auth methods
- * - Text: Typography with variants (headlineLarge, bodyMedium, etc.)
- * - ActivityIndicator: Built-in loading states in Button
- *
- * Migration Benefits:
- * - Built-in password visibility toggle (eye icon)
- * - Floating labels with smooth animations
- * - Automatic error states and helper text
- * - Better accessibility (labels, hints, error announcements)
- * - Consistent Material Design look
- * - Icons integrated into inputs
- * - Loading states handled by Button component
- *
- * Login Flow (Email/Password):
- * 1. Validates email and password not empty
- * 2. Calls authApi.login() with credentials
- * 3. Saves JWT token and user data to storage
- * 4. Loads user's theme preference (light/dark/system)
- * 5. Syncs favorites with backend
- * 6. Resets navigation stack to OysterList
- *
- * Google Sign-In Flow:
- * 1. Configures GoogleSignin with web client ID
- * 2. Checks Google Play Services availability
- * 3. Initiates native Google Sign-In UI
- * 4. Extracts ID token from sign-in result
- * 5. Sends ID token to backend for verification
- * 6. Backend verifies token with Google API
- * 7. Saves JWT token and user data to storage
- * 8. Loads theme and syncs favorites
- * 9. Resets navigation stack to OysterList
+ * Email/password and Google OAuth authentication with auto-redirect.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   SafeAreaView,
@@ -77,13 +30,29 @@ import { favoritesStorage } from '../services/favorites';
 import { useTheme } from '../context/ThemeContext';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const GOOGLE_WEB_CLIENT_ID = '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com';
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'Login'
 >;
 
+// ============================================================================
+// COMPONENT
+// ============================================================================
+
 export default function LoginScreen() {
-  console.log('🔵 LoginScreen: Component rendering START');
+  if (__DEV__) {
+    console.log('🔵 [LoginScreen] Component rendering');
+  }
 
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const [email, setEmail] = useState('');
@@ -93,18 +62,16 @@ export default function LoginScreen() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const { paperTheme, loadUserTheme } = useTheme();
 
-  console.log('🔵 LoginScreen: State initialized');
-
-  // Configure Google Sign-In
   React.useEffect(() => {
     GoogleSignin.configure({
-      webClientId: '578059352307-osnf9gtai7o1g9h40bp0f997e286uit0.apps.googleusercontent.com',
+      webClientId: GOOGLE_WEB_CLIENT_ID,
       offlineAccess: false,
     });
-    console.log('✅ Native Google Sign-In configured');
+    if (__DEV__) {
+      console.log('✅ [LoginScreen] Google Sign-In configured');
+    }
   }, []);
 
-  // Redirect if already logged in
   React.useEffect(() => {
     const checkIfLoggedIn = async () => {
       const token = await authStorage.getToken();
@@ -118,32 +85,36 @@ export default function LoginScreen() {
       }
     };
     checkIfLoggedIn();
-  }, []);
+  }, [navigation]);
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = useCallback(async () => {
     try {
       setGoogleLoading(true);
-      console.log('🔵 Starting native Google Sign-In...');
+      if (__DEV__) {
+        console.log('🔵 [LoginScreen] Starting Google Sign-In');
+      }
 
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-      console.log('✅ Google Sign-In successful, user:', userInfo.data?.user?.email);
+
+      if (__DEV__) {
+        console.log('✅ [LoginScreen] Google Sign-In successful:', userInfo.data?.user?.email);
+      }
 
       const idToken = userInfo.data?.idToken;
       if (!idToken) {
         throw new Error('No ID token received from Google');
       }
 
-      console.log('🔵 Sending ID token to backend...');
       const authResponse = await authApi.googleAuth(idToken);
 
-      console.log('📦 [LoginScreen] Auth response received:', {
-        hasToken: !!authResponse.token,
-        tokenLength: authResponse.token?.length,
-        tokenPreview: authResponse.token?.substring(0, 20) + '...',
-        hasUser: !!authResponse.user,
-        userId: authResponse.user?.id
-      });
+      if (__DEV__) {
+        console.log('📦 [LoginScreen] Auth response received:', {
+          hasToken: !!authResponse.token,
+          hasUser: !!authResponse.user,
+          userId: authResponse.user?.id
+        });
+      }
 
       if (!authResponse.token || typeof authResponse.token !== 'string' || authResponse.token.length === 0) {
         throw new Error('Invalid token received from backend');
@@ -152,13 +123,12 @@ export default function LoginScreen() {
       await authStorage.saveToken(authResponse.token);
       await authStorage.saveUser(authResponse.user);
 
-      const savedToken = await authStorage.getToken();
-      console.log('✅ [LoginScreen] Token saved and verified:', savedToken ? savedToken.substring(0, 20) + '...' : 'NULL');
-
       loadUserTheme(authResponse.user);
       await favoritesStorage.syncWithBackend();
 
-      console.log('✅ Authentication complete, navigating to OysterList');
+      if (__DEV__) {
+        console.log('✅ [LoginScreen] Authentication complete');
+      }
 
       navigation.dispatch(
         CommonActions.reset({
@@ -167,10 +137,14 @@ export default function LoginScreen() {
         })
       );
     } catch (error: any) {
-      console.error('❌ Google Sign-In error:', error);
+      if (__DEV__) {
+        console.error('❌ [LoginScreen] Google Sign-In error:', error);
+      }
 
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log('User cancelled Google Sign-In');
+        if (__DEV__) {
+          console.log('ℹ️ [LoginScreen] User cancelled Google Sign-In');
+        }
       } else if (error.code === statusCodes.IN_PROGRESS) {
         Alert.alert('Sign-In In Progress', 'Google Sign-In is already in progress');
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
@@ -187,9 +161,9 @@ export default function LoginScreen() {
     } finally {
       setGoogleLoading(false);
     }
-  };
+  }, [loadUserTheme, navigation]);
 
-  const handleLogin = async () => {
+  const handleLogin = useCallback(async () => {
     if (!email.trim() || !password.trim()) {
       Alert.alert('Validation Error', 'Please enter both email and password');
       return;
@@ -219,7 +193,7 @@ export default function LoginScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [email, password, loadUserTheme, navigation]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>

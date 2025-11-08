@@ -1,75 +1,10 @@
 /**
- * OysterDetailScreen - Migrated to React Native Paper
+ * OysterDetailScreen
  *
  * Comprehensive oyster detail view with reviews, voting, and attribute visualizations.
- *
- * Features:
- * - Full oyster information (name, species, origin, standout notes)
- * - Visual attribute bars with descriptive labels
- * - Favorite toggle with haptic feedback
- * - RatingDisplay with overall community score
- * - Review list with filtering and sorting
- * - Review voting (agree/disagree) with credibility tracking
- * - Duplicate review detection (prompts to update existing review)
- * - Pull-to-refresh functionality
- * - Theme-aware styling via React Native Paper
- * - "Unknown" hints for incomplete data (encourages user contributions)
- *
- * Material Design Components:
- * - Card: Section containers with elevation
- * - Surface: Header background
- * - Text: Typography with variants (headlineSmall, bodyMedium, etc.)
- * - IconButton: Favorite heart toggle
- * - Chip: Species badge, rating filter chips (All, Love, Like, Meh, Whatever)
- * - SegmentedButtons: Sort tabs (Most Helpful, Most Recent, Highest, Lowest)
- * - Button: Write Review action button
- * - ProgressBar: Attribute bars (Size, Body, Sweet/Brininess, etc.)
- * - ActivityIndicator: Loading states
- * - Banner: "Unknown" hints for incomplete data
- *
- * Migration Benefits:
- * - ~40% less custom styling (Paper handles cards, chips, buttons)
- * - Built-in theme integration (light/dark mode)
- * - Material Design progress bars (smooth, accessible)
- * - Professional chip selectors with ripple effects
- * - Consistent look with rest of app
- * - Better accessibility (screen readers, touch targets)
- * - Automatic elevation and shadows
- *
- * Review Filtering:
- * - Rating filter chips: All, Love, Like, Meh, Whatever
- * - Sort tabs: Most Helpful (netVoteScore), Most Recent, Highest Rating, Lowest Rating
- * - Real-time filtering and sorting
- *
- * Attribute Bars:
- * - 5 visual progress bars (Size, Body, Sweet/Brininess, Flavorfulness, Creaminess)
- * - Dynamic word labels from getAttributeDescriptor() (e.g., "Huge", "Baddy McFatty")
- * - Primary color fill (non-judgmental, descriptive only)
- * - Shows value out of 10
- *
- * Review Flow:
- * 1. User taps "Write Review" button
- * 2. Checks for existing review via reviewApi.checkExisting()
- * 3. If exists: Alert with "Update Existing Review?" prompt
- * 4. If not: Navigate to AddReview screen normally
- * 5. After review created/updated: Refresh oyster data
- *
- * Voting:
- * - Fetches user votes for all reviews on mount
- * - ReviewCard handles voting UI and API calls
- * - Refreshes data after vote change to show updated scores
- * - Voting affects review credibility and "Most Helpful" sort
- *
- * State:
- * - oyster: Full oyster details with nested reviews
- * - userVotes: Record of user's votes by reviewId
- * - sortBy: 'helpful' | 'recent' | 'highest' | 'lowest'
- * - ratingFilter: 'ALL' | 'LOVE_IT' | 'LIKE_IT' | 'MEH' | 'WHATEVER'
- * - isFavorite: Boolean for heart icon state
- * - currentUserId: For showing edit/delete on user's own reviews
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -104,8 +39,69 @@ import { RatingDisplay } from '../components/RatingDisplay';
 import { ReviewCard } from '../components/ReviewCard';
 import { getAttributeDescriptor } from '../utils/ratingUtils';
 
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const RATING_ORDER = {
+  LOVE_IT: 4,
+  LIKE_IT: 3,
+  OKAY: 2,
+  MEH: 1,
+} as const;
+
+const COLORS = {
+  FAVORITE_HEART: '#e74c3c',
+} as const;
+
+const SIZES = {
+  ICON_FAVORITE: 28,
+  PROGRESS_BAR_HEIGHT: 8,
+  PROGRESS_BAR_RADIUS: 4,
+} as const;
+
+const SPACING = {
+  HEADER_PADDING: 20,
+  SECTION_TOP: 10,
+  SECTION_TITLE_BOTTOM: 8,
+  SECTION_SUBTITLE_BOTTOM: 15,
+  ATTRIBUTE_BAR_BOTTOM: 15,
+  HEADER_VALUE_BOTTOM: 8,
+  REVIEWS_HEADER_BOTTOM: 15,
+  FILTER_CHIP_GAP: 8,
+  FILTER_CHIP_RIGHT: 4,
+  FILTER_CHIP_BOTTOM: 4,
+  SEGMENTED_BOTTOM: 15,
+  HEADER_RATING_TOP: 15,
+  HEADER_RATING_PADDING: 15,
+  SPECIES_BADGE_BOTTOM: 8,
+  UNKNOWN_HINT_TOP: 8,
+  UNKNOWN_BANNER_TOP: 12,
+  LOADING_TEXT_TOP: 16,
+  META_TEXT_TOP: 4,
+  NAME_ROW_BOTTOM: 10,
+  NAME_RIGHT: 8,
+} as const;
+
+const ATTRIBUTE_SCALE = {
+  MIN: 0,
+  MAX: 10,
+} as const;
+
+const BORDERS = {
+  HEADER_RATING_WIDTH: 1,
+} as const;
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
 type SortOption = 'helpful' | 'recent' | 'highest' | 'lowest';
-type RatingFilter = 'ALL' | 'LOVE_IT' | 'LIKE_IT' | 'MEH' | 'WHATEVER';
+type RatingFilter = 'ALL' | 'LOVE_IT' | 'LIKE_IT' | 'OKAY' | 'MEH';
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
 
 export default function OysterDetailScreen() {
   const route = useRoute<OysterDetailScreenRouteProp>();
@@ -136,17 +132,17 @@ export default function OysterDetailScreen() {
     }, [oysterId])
   );
 
-  const loadCurrentUser = async () => {
+  const loadCurrentUser = useCallback(async () => {
     const user = await authStorage.getUser();
     setCurrentUserId(user?.id || null);
-  };
+  }, []);
 
-  const loadFavoriteStatus = async () => {
+  const loadFavoriteStatus = useCallback(async () => {
     const favorited = await favoritesStorage.isFavorite(oysterId);
     setIsFavorite(favorited);
-  };
+  }, [oysterId]);
 
-  const fetchOyster = async (isRefreshing = false) => {
+  const fetchOyster = useCallback(async (isRefreshing = false) => {
     try {
       if (isRefreshing) {
         setRefreshing(true);
@@ -164,13 +160,17 @@ export default function OysterDetailScreen() {
           const votes = await voteApi.getUserVotes(reviewIds);
           setUserVotes(votes);
         } catch (voteError) {
-          console.error('Error fetching votes:', voteError);
+          if (__DEV__) {
+            console.error('❌ [OysterDetailScreen] Error fetching votes:', voteError);
+          }
           // Continue even if votes fail
         }
       }
     } catch (err) {
       setError('Failed to load oyster details');
-      console.error('Error fetching oyster:', err);
+      if (__DEV__) {
+        console.error('❌ [OysterDetailScreen] Error fetching oyster:', err);
+      }
     } finally {
       if (isRefreshing) {
         setRefreshing(false);
@@ -178,33 +178,31 @@ export default function OysterDetailScreen() {
         setLoading(false);
       }
     }
-  };
+  }, [oysterId]);
 
-  const onRefresh = () => {
+  const onRefresh = useCallback(() => {
     fetchOyster(true);
-  };
+  }, [fetchOyster]);
 
-  const handleVoteChange = () => {
-    // Refresh oyster data when a vote changes
+  const handleVoteChange = useCallback(() => {
     fetchOyster(true);
-  };
+  }, [fetchOyster]);
 
-  const handleToggleFavorite = async () => {
+  const handleToggleFavorite = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const newState = await favoritesStorage.toggleFavorite(oysterId);
     setIsFavorite(newState);
-  };
+  }, [oysterId]);
 
-  const handleEditReview = (review: Review) => {
+  const handleEditReview = useCallback((review: Review) => {
     navigation.navigate('EditReview', { review });
-  };
+  }, [navigation]);
 
-  const handleDeleteReview = () => {
-    // Refresh oyster data after review is deleted
+  const handleDeleteReview = useCallback(() => {
     fetchOyster(true);
-  };
+  }, [fetchOyster]);
 
-  const handleWriteReview = async () => {
+  const handleWriteReview = useCallback(async () => {
     if (!oyster) return;
 
     try {
@@ -255,7 +253,9 @@ export default function OysterDetailScreen() {
         });
       }
     } catch (error) {
-      console.error('Error checking for existing review:', error);
+      if (__DEV__) {
+        console.error('❌ [OysterDetailScreen] Error checking for existing review:', error);
+      }
       // If check fails, just navigate to review screen
       navigation.navigate('AddReview', {
         oysterId: oyster.id,
@@ -269,9 +269,9 @@ export default function OysterDetailScreen() {
         oysterAvgCreaminess: oyster.avgCreaminess,
       });
     }
-  };
+  }, [oyster, navigation]);
 
-  const getSortedReviews = () => {
+  const getSortedReviews = useMemo(() => {
     if (!oyster?.reviews) return [];
 
     let reviews = [...oyster.reviews];
@@ -288,22 +288,20 @@ export default function OysterDetailScreen() {
       case 'recent':
         return reviews.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       case 'highest':
-        const ratingOrder = { LOVE_IT: 4, LIKE_IT: 3, OKAY: 2, MEH: 1 };
-        return reviews.sort((a, b) => ratingOrder[b.rating] - ratingOrder[a.rating]);
+        return reviews.sort((a, b) => RATING_ORDER[b.rating] - RATING_ORDER[a.rating]);
       case 'lowest':
-        const ratingOrderLow = { LOVE_IT: 4, LIKE_IT: 3, OKAY: 2, MEH: 1 };
-        return reviews.sort((a, b) => ratingOrderLow[a.rating] - ratingOrderLow[b.rating]);
+        return reviews.sort((a, b) => RATING_ORDER[a.rating] - RATING_ORDER[b.rating]);
       default:
         return reviews;
     }
-  };
+  }, [oyster?.reviews, ratingFilter, sortBy]);
 
-  const renderAttributeBar = (
+  const renderAttributeBar = useCallback((
     value: number,
     label: string,
     attribute: 'size' | 'body' | 'sweet_brininess' | 'flavorfulness' | 'creaminess'
   ) => {
-    const progress = value / 10;
+    const progress = value / ATTRIBUTE_SCALE.MAX;
     const descriptor = getAttributeDescriptor(attribute, value);
     return (
       <View style={styles.attributeBarContainer}>
@@ -311,7 +309,7 @@ export default function OysterDetailScreen() {
           <Text variant="labelMedium" style={styles.attributeBarLabel}>{label}</Text>
           <View style={styles.attributeBarValueContainer}>
             <Text variant="bodyMedium" style={styles.attributeBarDescriptor}>{descriptor}</Text>
-            <Text variant="bodySmall" style={styles.attributeBarValue}> ({value}/10)</Text>
+            <Text variant="bodySmall" style={styles.attributeBarValue}> ({value}/{ATTRIBUTE_SCALE.MAX})</Text>
           </View>
         </View>
         <ProgressBar
@@ -321,15 +319,12 @@ export default function OysterDetailScreen() {
         />
       </View>
     );
-  };
+  }, [paperTheme.colors.primary]);
 
-  const getAttributeColor = (value: number) => {
-    // Use primary color for all values - scores aren't good/bad, just descriptive
-    return theme.colors.primary;
-  };
-
-  // Create styles first, before any early returns
-  const styles = createStyles(theme.colors, isDark);
+  const styles = useMemo(
+    () => createStyles(theme.colors, isDark),
+    [theme.colors, isDark]
+  );
 
   if (loading) {
     return (
@@ -366,8 +361,8 @@ export default function OysterDetailScreen() {
             <Text variant="headlineSmall" style={styles.name}>{oyster.name}</Text>
             <IconButton
               icon={isFavorite ? 'heart' : 'heart-outline'}
-              iconColor={isFavorite ? '#e74c3c' : undefined}
-              size={28}
+              iconColor={isFavorite ? COLORS.FAVORITE_HEART : undefined}
+              size={SIZES.ICON_FAVORITE}
               onPress={handleToggleFavorite}
             />
           </View>
@@ -473,20 +468,20 @@ export default function OysterDetailScreen() {
                     👍 Like
                   </Chip>
                   <Chip
+                    mode={ratingFilter === 'OKAY' ? 'flat' : 'outlined'}
+                    selected={ratingFilter === 'OKAY'}
+                    onPress={() => setRatingFilter('OKAY')}
+                    style={styles.filterChip}
+                  >
+                    👌 Okay
+                  </Chip>
+                  <Chip
                     mode={ratingFilter === 'MEH' ? 'flat' : 'outlined'}
                     selected={ratingFilter === 'MEH'}
                     onPress={() => setRatingFilter('MEH')}
                     style={styles.filterChip}
                   >
                     😐 Meh
-                  </Chip>
-                  <Chip
-                    mode={ratingFilter === 'WHATEVER' ? 'flat' : 'outlined'}
-                    selected={ratingFilter === 'WHATEVER'}
-                    onPress={() => setRatingFilter('WHATEVER')}
-                    style={styles.filterChip}
-                  >
-                    🤷 Whatever
                   </Chip>
                 </View>
 
@@ -505,7 +500,7 @@ export default function OysterDetailScreen() {
             )}
 
             {oyster.reviews && oyster.reviews.length > 0 ? (
-              getSortedReviews().map((review) => (
+              getSortedReviews.map((review) => (
                 <ReviewCard
                   key={review.id}
                   review={review}
@@ -541,7 +536,7 @@ export default function OysterDetailScreen() {
   );
 }
 
-const createStyles = (colors: any, isDark: boolean) =>
+const createStyles = (colors: typeof import('../context/ThemeContext').Theme['colors'], isDark: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -557,32 +552,32 @@ const createStyles = (colors: any, isDark: boolean) =>
       flex: 1,
     },
     header: {
-      padding: 20,
+      padding: SPACING.HEADER_PADDING,
     },
     nameRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 10,
+      marginBottom: SPACING.NAME_ROW_BOTTOM,
     },
     name: {
       flex: 1,
-      marginRight: 8,
+      marginRight: SPACING.NAME_RIGHT,
     },
     speciesBadge: {
-      marginBottom: 8,
+      marginBottom: SPACING.SPECIES_BADGE_BOTTOM,
     },
     loadingText: {
-      marginTop: 16,
+      marginTop: SPACING.LOADING_TEXT_TOP,
     },
     section: {
-      marginTop: 10,
+      marginTop: SPACING.SECTION_TOP,
     },
     sectionTitle: {
-      marginBottom: 8,
+      marginBottom: SPACING.SECTION_TITLE_BOTTOM,
     },
     sectionSubtitle: {
-      marginBottom: 15,
+      marginBottom: SPACING.SECTION_SUBTITLE_BOTTOM,
     },
     originText: {
       // Paper handles text styling
@@ -592,16 +587,16 @@ const createStyles = (colors: any, isDark: boolean) =>
       fontStyle: 'italic',
     },
     unknownBanner: {
-      marginTop: 12,
+      marginTop: SPACING.UNKNOWN_BANNER_TOP,
     },
     attributeBarContainer: {
-      marginBottom: 15,
+      marginBottom: SPACING.ATTRIBUTE_BAR_BOTTOM,
     },
     attributeBarHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 8,
+      marginBottom: SPACING.HEADER_VALUE_BOTTOM,
     },
     attributeBarLabel: {
       flex: 1,
@@ -617,42 +612,42 @@ const createStyles = (colors: any, isDark: boolean) =>
       // Paper handles text styling
     },
     progressBar: {
-      height: 8,
-      borderRadius: 4,
+      height: SIZES.PROGRESS_BAR_HEIGHT,
+      borderRadius: SIZES.PROGRESS_BAR_RADIUS,
     },
     metaText: {
-      marginTop: 4,
+      marginTop: SPACING.META_TEXT_TOP,
     },
     errorText: {
       // Paper handles text styling
     },
     headerRating: {
-      marginTop: 15,
-      paddingTop: 15,
-      borderTopWidth: 1,
+      marginTop: SPACING.HEADER_RATING_TOP,
+      paddingTop: SPACING.HEADER_RATING_PADDING,
+      borderTopWidth: BORDERS.HEADER_RATING_WIDTH,
       borderTopColor: colors.border,
     },
     unknownHintSmall: {
-      marginTop: 8,
+      marginTop: SPACING.UNKNOWN_HINT_TOP,
       fontStyle: 'italic',
     },
     reviewsHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 15,
+      marginBottom: SPACING.REVIEWS_HEADER_BOTTOM,
     },
     filterChipsContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
-      marginBottom: 15,
+      gap: SPACING.FILTER_CHIP_GAP,
+      marginBottom: SPACING.SECTION_SUBTITLE_BOTTOM,
     },
     filterChip: {
-      marginRight: 4,
-      marginBottom: 4,
+      marginRight: SPACING.FILTER_CHIP_RIGHT,
+      marginBottom: SPACING.FILTER_CHIP_BOTTOM,
     },
     segmentedButtons: {
-      marginBottom: 15,
+      marginBottom: SPACING.SEGMENTED_BOTTOM,
     },
   });

@@ -1,69 +1,10 @@
 /**
- * AddReviewScreen - Migrated to React Native Paper
+ * AddReviewScreen
  *
- * Review creation and update form with 5 attribute sliders and rating selection.
- *
- * Features:
- * - Overall rating selection (Love It, Like It, Meh, Whatever) with color-coded buttons
- * - 5 attribute sliders with dynamic word labels and theme-aware colors
- * - Optional tasting notes text area with Paper TextInput
- * - Anonymous review support (no login required)
- * - Save review options dialog with 3 choices
- * - Temporary review storage for login-later flow
- * - KeyboardAvoidingView for iOS keyboard handling
- * - Update mode support (pre-fills existing review data)
- * - Pre-populated flavor attributes from oyster data
- * - Theme-aware styling via React Native Paper
- *
- * Material Design Components:
- * - Portal + Dialog: Save review options modal
- * - Button: All action buttons (submit, add photo, modal buttons)
- * - TextInput: Notes and contribution inputs with outlined mode
- * - Text: Typography with variants
- * - Chip: Rating option buttons
- * - Surface: Section containers
- * - ActivityIndicator: Loading states
- *
- * Migration Benefits:
- * - Proper Material Design dialog (replaces custom modal)
- * - Paper TextInput with floating labels
- * - Theme-aware colors for sliders and UI
- * - Button components with loading states
- * - ~30% less custom styling
- * - Better accessibility
- *
- * Modes:
- * - Create: New review for oyster (login optional)
- * - Update: Edit existing review (requires auth via existingReview param)
- *
- * Anonymous Review Flow:
- * 1. User fills out review without logging in
- * 2. User taps "Submit Review"
- * 3. Dialog appears with 3 options:
- *    - "Just Post Review": Submit anonymously (requires backend support)
- *    - "Sign In to Save": Store in AsyncStorage, navigate to Login
- *    - "Sign Up to Save": Store in AsyncStorage, navigate to Register
- * 4. If user chooses to login later:
- *    - Review saved to AsyncStorage via tempReviewsStorage
- *    - After successful auth, review can be submitted with user credentials
- *
- * Sliders:
- * - Range: 1-10 (integer steps)
- * - Dynamic word label shown above slider
- * - Theme-aware track/thumb colors
- * - Pre-populated with oyster's average attributes
- *
- * State:
- * - rating: Overall ReviewRating enum value
- * - size, body, sweetBrininess, flavorfulness, creaminess: 1-10 integers
- * - notes: Optional string
- * - submitting: Boolean for loading state
- * - showLoginPrompt: Dialog visibility toggle
- * - isUpdateMode: Determined by existingReview param presence
- * - photos: Array of photo URLs (max 1)
+ * Review creation and update form with rating selection and attribute sliders.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -96,12 +37,32 @@ import { getAttributeDescriptor } from '../utils/ratingUtils';
 import { useTheme } from '../context/ThemeContext';
 import { tempReviewsStorage } from '../services/tempReviews';
 
-const RATING_OPTIONS: { label: string; value: ReviewRating; emoji: string; color: string }[] = [
-  { label: 'Love It', value: 'LOVE_IT', emoji: '❤️', color: '#e74c3c' },  // Best
-  { label: 'Like It', value: 'LIKE_IT', emoji: '👍', color: '#27ae60' },  // Good
-  { label: 'Okay', value: 'OKAY', emoji: '👌', color: '#3498db' },        // Okay
-  { label: 'Meh', value: 'MEH', emoji: '😐', color: '#95a5a6' },          // Worst
-];
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const RATING_OPTIONS: ReadonlyArray<{ label: string; value: ReviewRating; emoji: string; color: string }> = [
+  { label: 'Love It', value: 'LOVE_IT', emoji: '❤️', color: '#e74c3c' },
+  { label: 'Like It', value: 'LIKE_IT', emoji: '👍', color: '#27ae60' },
+  { label: 'Okay', value: 'OKAY', emoji: '👌', color: '#3498db' },
+  { label: 'Meh', value: 'MEH', emoji: '😐', color: '#95a5a6' },
+] as const;
+
+const SLIDER_CONFIG = {
+  MIN_VALUE: 1,
+  MAX_VALUE: 10,
+  STEP: 1,
+  DEFAULT_VALUE: 5,
+  HEIGHT: 50,
+} as const;
+
+const PHOTO_LIMITS = {
+  MAX_COUNT: 1,
+} as const;
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
 
 export default function AddReviewScreen() {
   const route = useRoute<AddReviewScreenRouteProp>();
@@ -123,19 +84,19 @@ export default function AddReviewScreen() {
 
   const [rating, setRating] = useState<ReviewRating | null>(existingReview?.rating || null);
   const [size, setSize] = useState<number>(
-    existingReview?.size || oysterAvgSize || 5
+    existingReview?.size || oysterAvgSize || SLIDER_CONFIG.DEFAULT_VALUE
   );
   const [body, setBody] = useState<number>(
-    existingReview?.body || oysterAvgBody || 5
+    existingReview?.body || oysterAvgBody || SLIDER_CONFIG.DEFAULT_VALUE
   );
   const [sweetBrininess, setSweetBrininess] = useState<number>(
-    existingReview?.sweetBrininess || oysterAvgSweetBrininess || 5
+    existingReview?.sweetBrininess || oysterAvgSweetBrininess || SLIDER_CONFIG.DEFAULT_VALUE
   );
   const [flavorfulness, setFlavorfulness] = useState<number>(
-    existingReview?.flavorfulness || oysterAvgFlavorfulness || 5
+    existingReview?.flavorfulness || oysterAvgFlavorfulness || SLIDER_CONFIG.DEFAULT_VALUE
   );
   const [creaminess, setCreaminess] = useState<number>(
-    existingReview?.creaminess || oysterAvgCreaminess || 5
+    existingReview?.creaminess || oysterAvgCreaminess || SLIDER_CONFIG.DEFAULT_VALUE
   );
   const [notes, setNotes] = useState(existingReview?.notes || '');
   const [contributedOrigin, setContributedOrigin] = useState('');
@@ -154,9 +115,9 @@ export default function AddReviewScreen() {
   // Note: Camera permissions are now requested only when user taps Add Photo button
   // This prevents the intrusive permission prompt on screen load
 
-  const pickImageFromCamera = async () => {
-    if (photos.length >= 1) {
-      Alert.alert('Maximum Photos', 'You can only add 1 photo per review.');
+  const pickImageFromCamera = useCallback(async () => {
+    if (photos.length >= PHOTO_LIMITS.MAX_COUNT) {
+      Alert.alert('Maximum Photos', `You can only add ${PHOTO_LIMITS.MAX_COUNT} photo per review.`);
       return;
     }
 
@@ -178,14 +139,16 @@ export default function AddReviewScreen() {
         await uploadPhoto(result.assets[0].uri);
       }
     } catch (error) {
-      console.error('Error picking image from camera:', error);
+      if (__DEV__) {
+        console.error('❌ [AddReviewScreen] Error picking image from camera:', error);
+      }
       Alert.alert('Error', 'Failed to take photo. Please try again.');
     }
-  };
+  }, [photos]);
 
-  const pickImageFromLibrary = async () => {
-    if (photos.length >= 1) {
-      Alert.alert('Maximum Photos', 'You can only add 1 photo per review.');
+  const pickImageFromLibrary = useCallback(async () => {
+    if (photos.length >= PHOTO_LIMITS.MAX_COUNT) {
+      Alert.alert('Maximum Photos', `You can only add ${PHOTO_LIMITS.MAX_COUNT} photo per review.`);
       return;
     }
 

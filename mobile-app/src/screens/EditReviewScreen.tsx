@@ -1,54 +1,10 @@
 /**
  * EditReviewScreen
  *
- * Standalone review edit screen (accessed via ReviewCard edit action).
- *
- * Features:
- * - Pre-fills all form fields with existing review data
- * - Same UI as AddReviewScreen (rating buttons + 5 sliders + notes)
- * - Updates existing review via reviewApi.update()
- * - No duplicate detection (already editing existing review)
- * - Shows success alert after update
- * - Navigates back to detail screen
- * - Static styling (not theme-aware)
- *
- * Form Fields:
- * - Overall rating: LOVE_IT, LIKE_IT, OKAY, MEH (highest to lowest, pre-selected)
- * - Size slider: 1-10 (pre-filled)
- * - Body slider: 1-10 (pre-filled)
- * - Sweet/Brininess slider: 1-10 (pre-filled)
- * - Flavorfulness slider: 1-10 (pre-filled)
- * - Creaminess slider: 1-10 (pre-filled)
- * - Notes textarea: Optional (pre-filled)
- *
- * Update Flow:
- * 1. Receives review object from route params
- * 2. Pre-populates all state with review data
- * 3. User modifies fields
- * 4. Validates overall rating selected
- * 5. Calls reviewApi.update(reviewId, updatedData)
- * 6. Shows success alert
- * 7. Navigates back (goes to OysterDetailScreen)
- * 8. OysterDetailScreen re-fetches data automatically
- *
- * Differences from AddReviewScreen:
- * - No theme support (uses static colors)
- * - No login prompt modal (assumes authenticated)
- * - No existingReview/isUpdateMode logic (always update mode)
- * - Button text: "Update Review" (not conditional)
- * - No dynamic word labels above sliders (missing getAttributeDescriptor)
- * - Smaller slider height (40px vs 50px)
- *
- * State:
- * - rating, size, body, sweetBrininess, flavorfulness, creaminess, notes: Pre-filled from review object
- * - submitting: Boolean for loading state
- *
- * Navigation:
- * - Passed review object from ProfileScreen or OysterDetailScreen
- * - Uses navigation.goBack() after successful update
+ * Review edit form with pre-filled data and update functionality.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -60,33 +16,70 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Slider from '@react-native-community/slider';
 import { reviewApi } from '../services/api';
 import { ReviewRating, Review } from '../types/Oyster';
+import { RootStackParamList } from '../navigation/types';
 
-const RATING_OPTIONS: { label: string; value: ReviewRating; emoji: string; color: string }[] = [
-  { label: 'Love It', value: 'LOVE_IT', emoji: '❤️', color: '#e74c3c' },  // Best
-  { label: 'Like It', value: 'LIKE_IT', emoji: '👍', color: '#27ae60' },  // Good
-  { label: 'Okay', value: 'OKAY', emoji: '👌', color: '#3498db' },        // Okay
-  { label: 'Meh', value: 'MEH', emoji: '😐', color: '#95a5a6' },          // Worst
-];
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const RATING_OPTIONS: ReadonlyArray<{ label: string; value: ReviewRating; emoji: string; color: string }> = [
+  { label: 'Love It', value: 'LOVE_IT', emoji: '❤️', color: '#e74c3c' },
+  { label: 'Like It', value: 'LIKE_IT', emoji: '👍', color: '#27ae60' },
+  { label: 'Okay', value: 'OKAY', emoji: '👌', color: '#3498db' },
+  { label: 'Meh', value: 'MEH', emoji: '😐', color: '#95a5a6' },
+] as const;
+
+const SLIDER_CONFIG = {
+  MIN_VALUE: 1,
+  MAX_VALUE: 10,
+  STEP: 1,
+  DEFAULT_VALUE: 5,
+  HEIGHT: 40,
+  MIN_TRACK_COLOR: '#3498db',
+  MAX_TRACK_COLOR: '#e0e0e0',
+} as const;
+
+const COLORS = {
+  BACKGROUND: '#f5f5f5',
+  WHITE: '#fff',
+  BORDER: '#e0e0e0',
+  TEXT_PRIMARY: '#2c3e50',
+  TEXT_SECONDARY: '#7f8c8d',
+  PRIMARY: '#3498db',
+  DISABLED: '#95a5a6',
+} as const;
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
+type EditReviewScreenRouteProp = RouteProp<RootStackParamList, 'EditReview'>;
+type EditReviewScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'EditReview'>;
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
 
 export default function EditReviewScreen() {
-  const route = useRoute<any>();
-  const navigation = useNavigation<any>();
-  const { review } = route.params as { review: Review };
+  const route = useRoute<EditReviewScreenRouteProp>();
+  const navigation = useNavigation<EditReviewScreenNavigationProp>();
+  const { review } = route.params;
 
   const [rating, setRating] = useState<ReviewRating>(review.rating);
-  const [size, setSize] = useState<number>(review.size || 5);
-  const [body, setBody] = useState<number>(review.body || 5);
-  const [sweetBrininess, setSweetBrininess] = useState<number>(review.sweetBrininess || 5);
-  const [flavorfulness, setFlavorfulness] = useState<number>(review.flavorfulness || 5);
-  const [creaminess, setCreaminess] = useState<number>(review.creaminess || 5);
+  const [size, setSize] = useState<number>(review.size || SLIDER_CONFIG.DEFAULT_VALUE);
+  const [body, setBody] = useState<number>(review.body || SLIDER_CONFIG.DEFAULT_VALUE);
+  const [sweetBrininess, setSweetBrininess] = useState<number>(review.sweetBrininess || SLIDER_CONFIG.DEFAULT_VALUE);
+  const [flavorfulness, setFlavorfulness] = useState<number>(review.flavorfulness || SLIDER_CONFIG.DEFAULT_VALUE);
+  const [creaminess, setCreaminess] = useState<number>(review.creaminess || SLIDER_CONFIG.DEFAULT_VALUE);
   const [notes, setNotes] = useState(review.notes || '');
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!rating) {
       Alert.alert('Rating Required', 'Please select an overall rating for this oyster.');
       return;
@@ -116,7 +109,9 @@ export default function EditReviewScreen() {
         ]
       );
     } catch (error: any) {
-      console.error('Error updating review:', error);
+      if (__DEV__) {
+        console.error('❌ [EditReviewScreen] Error updating review:', error);
+      }
       Alert.alert(
         'Update Failed',
         error.response?.data?.error || 'Failed to update review. Please try again.'
@@ -124,7 +119,7 @@ export default function EditReviewScreen() {
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [rating, size, body, sweetBrininess, flavorfulness, creaminess, notes, review.id, navigation]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -134,7 +129,6 @@ export default function EditReviewScreen() {
           <Text style={styles.oysterName}>{review.oyster?.name || 'Unknown Oyster'}</Text>
         </View>
 
-        {/* Overall Rating */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Overall Rating *</Text>
           <View style={styles.ratingOptions}>
@@ -164,14 +158,12 @@ export default function EditReviewScreen() {
           </View>
         </View>
 
-        {/* Attribute Ratings */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Attribute Ratings (Optional)</Text>
           <Text style={styles.sectionSubtitle}>
             Rate on a scale of 1-10
           </Text>
 
-          {/* Size */}
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
               <Text style={styles.sliderLabel}>Size</Text>
@@ -183,17 +175,16 @@ export default function EditReviewScreen() {
             </View>
             <Slider
               style={styles.slider}
-              minimumValue={1}
-              maximumValue={10}
-              step={1}
+              minimumValue={SLIDER_CONFIG.MIN_VALUE}
+              maximumValue={SLIDER_CONFIG.MAX_VALUE}
+              step={SLIDER_CONFIG.STEP}
               value={size}
               onValueChange={setSize}
-              minimumTrackTintColor="#3498db"
-              maximumTrackTintColor="#e0e0e0"
+              minimumTrackTintColor={SLIDER_CONFIG.MIN_TRACK_COLOR}
+              maximumTrackTintColor={SLIDER_CONFIG.MAX_TRACK_COLOR}
             />
           </View>
 
-          {/* Body */}
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
               <Text style={styles.sliderLabel}>Body</Text>
@@ -205,17 +196,16 @@ export default function EditReviewScreen() {
             </View>
             <Slider
               style={styles.slider}
-              minimumValue={1}
-              maximumValue={10}
-              step={1}
+              minimumValue={SLIDER_CONFIG.MIN_VALUE}
+              maximumValue={SLIDER_CONFIG.MAX_VALUE}
+              step={SLIDER_CONFIG.STEP}
               value={body}
               onValueChange={setBody}
-              minimumTrackTintColor="#3498db"
-              maximumTrackTintColor="#e0e0e0"
+              minimumTrackTintColor={SLIDER_CONFIG.MIN_TRACK_COLOR}
+              maximumTrackTintColor={SLIDER_CONFIG.MAX_TRACK_COLOR}
             />
           </View>
 
-          {/* Sweet/Brininess */}
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
               <Text style={styles.sliderLabel}>Sweet/Brininess</Text>
@@ -227,17 +217,16 @@ export default function EditReviewScreen() {
             </View>
             <Slider
               style={styles.slider}
-              minimumValue={1}
-              maximumValue={10}
-              step={1}
+              minimumValue={SLIDER_CONFIG.MIN_VALUE}
+              maximumValue={SLIDER_CONFIG.MAX_VALUE}
+              step={SLIDER_CONFIG.STEP}
               value={sweetBrininess}
               onValueChange={setSweetBrininess}
-              minimumTrackTintColor="#3498db"
-              maximumTrackTintColor="#e0e0e0"
+              minimumTrackTintColor={SLIDER_CONFIG.MIN_TRACK_COLOR}
+              maximumTrackTintColor={SLIDER_CONFIG.MAX_TRACK_COLOR}
             />
           </View>
 
-          {/* Flavorfulness */}
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
               <Text style={styles.sliderLabel}>Flavorfulness</Text>
@@ -249,17 +238,16 @@ export default function EditReviewScreen() {
             </View>
             <Slider
               style={styles.slider}
-              minimumValue={1}
-              maximumValue={10}
-              step={1}
+              minimumValue={SLIDER_CONFIG.MIN_VALUE}
+              maximumValue={SLIDER_CONFIG.MAX_VALUE}
+              step={SLIDER_CONFIG.STEP}
               value={flavorfulness}
               onValueChange={setFlavorfulness}
-              minimumTrackTintColor="#3498db"
-              maximumTrackTintColor="#e0e0e0"
+              minimumTrackTintColor={SLIDER_CONFIG.MIN_TRACK_COLOR}
+              maximumTrackTintColor={SLIDER_CONFIG.MAX_TRACK_COLOR}
             />
           </View>
 
-          {/* Creaminess */}
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
               <Text style={styles.sliderLabel}>Creaminess</Text>
@@ -271,18 +259,17 @@ export default function EditReviewScreen() {
             </View>
             <Slider
               style={styles.slider}
-              minimumValue={1}
-              maximumValue={10}
-              step={1}
+              minimumValue={SLIDER_CONFIG.MIN_VALUE}
+              maximumValue={SLIDER_CONFIG.MAX_VALUE}
+              step={SLIDER_CONFIG.STEP}
               value={creaminess}
               onValueChange={setCreaminess}
-              minimumTrackTintColor="#3498db"
-              maximumTrackTintColor="#e0e0e0"
+              minimumTrackTintColor={SLIDER_CONFIG.MIN_TRACK_COLOR}
+              maximumTrackTintColor={SLIDER_CONFIG.MAX_TRACK_COLOR}
             />
           </View>
         </View>
 
-        {/* Notes */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Tasting Notes (Optional)</Text>
           <TextInput
@@ -296,14 +283,13 @@ export default function EditReviewScreen() {
           />
         </View>
 
-        {/* Submit Button */}
         <TouchableOpacity
           style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
           onPress={handleSubmit}
           disabled={submitting}
         >
           {submitting ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={COLORS.WHITE} />
           ) : (
             <Text style={styles.submitButtonText}>Update Review</Text>
           )}
@@ -316,7 +302,7 @@ export default function EditReviewScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.BACKGROUND,
   },
   scrollView: {
     flex: 1,
@@ -325,35 +311,35 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.WHITE,
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: COLORS.BORDER,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#2c3e50',
+    color: COLORS.TEXT_PRIMARY,
     marginBottom: 5,
   },
   oysterName: {
     fontSize: 18,
-    color: '#7f8c8d',
+    color: COLORS.TEXT_SECONDARY,
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.WHITE,
     padding: 20,
     marginTop: 10,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#2c3e50',
+    color: COLORS.TEXT_PRIMARY,
     marginBottom: 10,
   },
   sectionSubtitle: {
     fontSize: 14,
-    color: '#7f8c8d',
+    color: COLORS.TEXT_SECONDARY,
     marginBottom: 15,
   },
   ratingOptions: {
@@ -368,8 +354,8 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e0e0e0',
-    backgroundColor: '#f5f5f5',
+    borderColor: COLORS.BORDER,
+    backgroundColor: COLORS.BACKGROUND,
   },
   ratingEmoji: {
     fontSize: 32,
@@ -378,10 +364,10 @@ const styles = StyleSheet.create({
   ratingLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#2c3e50',
+    color: COLORS.TEXT_PRIMARY,
   },
   ratingLabelActive: {
-    color: '#fff',
+    color: COLORS.WHITE,
   },
   sliderContainer: {
     marginBottom: 20,
@@ -395,12 +381,12 @@ const styles = StyleSheet.create({
   sliderLabel: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#2c3e50',
+    color: COLORS.TEXT_PRIMARY,
   },
   sliderValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#3498db',
+    color: COLORS.PRIMARY,
   },
   sliderLabels: {
     flexDirection: 'row',
@@ -409,27 +395,27 @@ const styles = StyleSheet.create({
   },
   sliderMin: {
     fontSize: 12,
-    color: '#7f8c8d',
+    color: COLORS.TEXT_SECONDARY,
   },
   sliderMax: {
     fontSize: 12,
-    color: '#7f8c8d',
+    color: COLORS.TEXT_SECONDARY,
   },
   slider: {
     width: '100%',
-    height: 40,
+    height: SLIDER_CONFIG.HEIGHT,
   },
   notesInput: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: COLORS.BORDER,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
     minHeight: 100,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.BACKGROUND,
   },
   submitButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: COLORS.PRIMARY,
     padding: 16,
     borderRadius: 25,
     alignItems: 'center',
@@ -437,10 +423,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   submitButtonDisabled: {
-    backgroundColor: '#95a5a6',
+    backgroundColor: COLORS.DISABLED,
   },
   submitButtonText: {
-    color: '#fff',
+    color: COLORS.WHITE,
     fontSize: 18,
     fontWeight: 'bold',
   },
