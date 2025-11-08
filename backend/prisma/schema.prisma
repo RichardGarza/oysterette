@@ -101,9 +101,9 @@ model Oyster {
 model Review {
   id       String       @id @default(uuid())
 
-  // Relations
-  userId   String
-  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Relations (userId optional for anonymous reviews)
+  userId   String?
+  user     User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   oysterId String
   oyster   Oyster       @relation(fields: [oysterId], references: [id], onDelete: Cascade)

@@ -407,8 +407,6 @@ export default function AddReviewScreen() {
 
   const handlePostAnonymously = async () => {
     setShowLoginPrompt(false);
-    // TODO: Implement anonymous review submission when backend supports it
-    // For now, just submit without auth token (will fail until backend is updated)
     await submitReview(null);
   };
 

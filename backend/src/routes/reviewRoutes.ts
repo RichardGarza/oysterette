@@ -28,7 +28,7 @@ import {
   deleteReview,
   checkExistingReview,
 } from '../controllers/reviewController';
-import { authenticate } from '../middleware/auth';
+import { authenticate, optionalAuthenticate } from '../middleware/auth';
 import { validateBody, validateParams } from '../middleware/validate';
 import {
   createReviewSchema,
@@ -42,8 +42,8 @@ const router = express.Router();
 // Public routes
 router.get('/oyster/:oysterId', validateParams(oysterIdParamSchema), getOysterReviews);
 
-// Protected routes (require authentication)
-router.post('/', authenticate, validateBody(createReviewSchema), createReview);
+// Protected routes (optional authentication - allows anonymous reviews)
+router.post('/', optionalAuthenticate, validateBody(createReviewSchema), createReview);
 router.get('/user', authenticate, getUserReviews);
 router.get('/check/:oysterId', authenticate, validateParams(oysterIdParamSchema), checkExistingReview);
 router.put('/:reviewId', authenticate, validateParams(reviewIdParamSchema), validateBody(updateReviewSchema), updateReview);

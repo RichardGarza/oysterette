@@ -41,13 +41,7 @@ import { invalidateCache, updateBaselineWithReview } from '../services/recommend
  */
 export const createReview = async (req: Request, res: Response): Promise<void> => {
   try {
-    if (!req.userId) {
-      res.status(401).json({
-        success: false,
-        error: 'Not authenticated',
-      });
-      return;
-    }
+    // Allow anonymous reviews (userId can be null)
 
     const {
       oysterId,
@@ -103,22 +97,24 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
       logger.info(`Oyster ${oysterId} updated with crowd-sourced data:`, oysterUpdates);
     }
 
-    // Check if user already reviewed this oyster
-    const existingReview = await prisma.review.findUnique({
-      where: {
-        userId_oysterId: {
-          userId: req.userId,
-          oysterId,
+    // Check if authenticated user already reviewed this oyster
+    if (req.userId) {
+      const existingReview = await prisma.review.findUnique({
+        where: {
+          userId_oysterId: {
+            userId: req.userId,
+            oysterId,
+          },
         },
-      },
-    });
-
-    if (existingReview) {
-      res.status(400).json({
-        success: false,
-        error: 'You have already reviewed this oyster',
       });
-      return;
+
+      if (existingReview) {
+        res.status(400).json({
+          success: false,
+          error: 'You have already reviewed this oyster',
+        });
+        return;
+      }
     }
 
     // Create review
@@ -154,17 +150,19 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
     // Recalculate oyster ratings after creating review
     await recalculateOysterRatings(oysterId);
 
-    // Update user's baseline profile if this is a positive review
-    await updateBaselineWithReview(req.userId, rating, {
-      size,
-      body,
-      sweetBrininess,
-      flavorfulness,
-      creaminess,
-    });
+    // Update user's baseline profile if this is a positive review (only for authenticated users)
+    if (req.userId) {
+      await updateBaselineWithReview(req.userId, rating, {
+        size,
+        body,
+        sweetBrininess,
+        flavorfulness,
+        creaminess,
+      });
 
-    // Invalidate recommendation cache since user's preferences changed
-    invalidateCache(req.userId);
+      // Invalidate recommendation cache since user's preferences changed
+      invalidateCache(req.userId);
+    }
 
     res.status(201).json({
       success: true,

@@ -107,7 +107,8 @@ export async function voteOnReview(
     throw new Error('Review not found');
   }
 
-  if (review.userId === userId) {
+  // Cannot vote on own review (skip check for anonymous reviews)
+  if (review.userId && review.userId === userId) {
     throw new Error('Cannot vote on your own review');
   }
 
@@ -133,14 +134,16 @@ export async function voteOnReview(
           },
         });
 
-        // Update reviewer's totals
-        await tx.user.update({
-          where: { id: review.userId },
-          data: {
-            totalAgrees: { increment: agreeChange },
-            totalDisagrees: { increment: disagreeChange },
-          },
-        });
+        // Update reviewer's totals (only for authenticated reviews)
+        if (review.userId) {
+          await tx.user.update({
+            where: { id: review.userId },
+            data: {
+              totalAgrees: { increment: agreeChange },
+              totalDisagrees: { increment: disagreeChange },
+            },
+          });
+        }
       }
       // If vote didn't change, do nothing
     } else {
@@ -162,22 +165,26 @@ export async function voteOnReview(
         },
       });
 
-      // Update reviewer's totals
-      await tx.user.update({
-        where: { id: review.userId },
-        data: {
-          totalAgrees: isAgree ? { increment: 1 } : undefined,
-          totalDisagrees: !isAgree ? { increment: 1 } : undefined,
-        },
-      });
+      // Update reviewer's totals (only for authenticated reviews)
+      if (review.userId) {
+        await tx.user.update({
+          where: { id: review.userId },
+          data: {
+            totalAgrees: isAgree ? { increment: 1 } : undefined,
+            totalDisagrees: !isAgree ? { increment: 1 } : undefined,
+          },
+        });
+      }
     }
   });
 
   // Recalculate review weighted score
   await recalculateReviewScore(reviewId);
 
-  // Recalculate reviewer credibility
-  await recalculateUserCredibility(review.userId);
+  // Recalculate reviewer credibility (only for authenticated reviews)
+  if (review.userId) {
+    await recalculateUserCredibility(review.userId);
+  }
 }
 
 /**
@@ -216,21 +223,25 @@ export async function removeVote(userId: string, reviewId: string): Promise<void
       },
     });
 
-    // Update reviewer's totals
-    await tx.user.update({
-      where: { id: vote.review.userId },
-      data: {
-        totalAgrees: vote.isAgree ? { decrement: 1 } : undefined,
-        totalDisagrees: !vote.isAgree ? { decrement: 1 } : undefined,
-      },
-    });
+    // Update reviewer's totals (only for authenticated reviews)
+    if (vote.review.userId) {
+      await tx.user.update({
+        where: { id: vote.review.userId },
+        data: {
+          totalAgrees: vote.isAgree ? { decrement: 1 } : undefined,
+          totalDisagrees: !vote.isAgree ? { decrement: 1 } : undefined,
+        },
+      });
+    }
   });
 
   // Recalculate review weighted score
   await recalculateReviewScore(reviewId);
 
-  // Recalculate reviewer credibility
-  await recalculateUserCredibility(vote.review.userId);
+  // Recalculate reviewer credibility (only for authenticated reviews)
+  if (vote.review.userId) {
+    await recalculateUserCredibility(vote.review.userId);
+  }
 }
 
 /**

@@ -155,7 +155,7 @@ export async function recalculateOysterRatings(oysterId: string): Promise<void> 
       for (const review of oyster.reviews) {
         const ratingValue = ratingToNumber(review.rating);
         const reviewWeight = review.weightedScore; // 0.4 to 1.5 based on community votes
-        const credibilityWeight = review.user.credibilityScore; // 0.5 to 1.5 based on reviewer reputation
+        const credibilityWeight = review.user?.credibilityScore ?? 1.0; // Default to 1.0 for anonymous
         const totalWeight = reviewWeight * credibilityWeight;
 
         weightedSum += ratingValue * totalWeight;
@@ -174,7 +174,7 @@ export async function recalculateOysterRatings(oysterId: string): Promise<void> 
       flavorfulness: r.flavorfulness,
       creaminess: r.creaminess,
       reviewWeight: r.weightedScore,
-      credibilityScore: r.user.credibilityScore,
+      credibilityScore: r.user?.credibilityScore ?? 1.0,
     }));
 
     const avgSize = calculateWeightedAttribute(
