@@ -75,6 +75,15 @@ model User {
   sentFriendRequests     Friendship[] @relation("FriendRequestSender")
   receivedFriendRequests Friendship[] @relation("FriendRequestReceiver")
 
+  // Gamification / XP System
+  xp             Int      @default(0)       // Total experience points earned
+  level          Int      @default(1)       // Current level (1-100)
+  currentStreak  Int      @default(0)       // Current consecutive review days
+  longestStreak  Int      @default(0)       // Longest streak achieved
+  lastReviewDate DateTime?                   // Last review submission date (for streak tracking)
+
+  achievements   UserAchievement[]
+
   @@map("users")
 }
 
@@ -231,6 +240,38 @@ model ReviewVote {
 
   @@unique([userId, reviewId])  // One vote per user per review
   @@map("review_votes")
+}
+
+// Achievement Model (Badges/Milestones)
+model Achievement {
+  id          String   @id @default(uuid())
+  key         String   @unique  // e.g., "first_review", "10_reviews", "5_regions"
+  name        String               // e.g., "Taste Explorer"
+  description String               // e.g., "Reviewed 10 oysters"
+  icon        String               // Emoji or icon name
+  xpReward    Int                  // XP awarded when unlocked
+
+  users       UserAchievement[]
+
+  createdAt   DateTime @default(now())
+
+  @@map("achievements")
+}
+
+// User Achievement (Join table with unlock date)
+model UserAchievement {
+  id            String   @id @default(uuid())
+
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  unlockedAt    DateTime @default(now())
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
 }
 
 // Enum for Review Ratings (highest to lowest)

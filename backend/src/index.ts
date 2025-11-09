@@ -18,6 +18,7 @@ import recommendationRoutes from './routes/recommendationRoutes';
 import favoriteRoutes from './routes/favoriteRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import friendRoutes from './routes/friendRoutes';
+import xpRoutes from './routes/xpRoutes';
 import prisma from './lib/prisma';
 import logger from './utils/logger';
 import swaggerUi from 'swagger-ui-express';
@@ -93,6 +94,7 @@ app.use('/api/recommendations', apiLimiter, recommendationRoutes);
 app.use('/api/favorites', apiLimiter, favoriteRoutes);
 app.use('/api/upload', apiLimiter, uploadRoutes);
 app.use('/api/friends', apiLimiter, friendRoutes);
+app.use('/api/xp', apiLimiter, xpRoutes);
 app.use('/api', apiLimiter, voteRoutes);
 
 // API Documentation
