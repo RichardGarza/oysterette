@@ -140,6 +140,20 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 - Phase 21: Social Features (friend system, activity feed, paired matches)
 - Phase 20: AR Menu Scanner (OCR, fuzzy matching, unmatched detection)
 - Phase 23: Enhanced Flavor Profile Visualization (ranges, tooltips)
+- Bug Fixes Session (Nov 8): 11 critical fixes (photos, dark mode, XP page, UI improvements)
+
+**Latest Bug Fixes (Nov 8, 2025):**
+- ✅ Profile photos display immediately after upload
+- ✅ Review photos display in horizontal gallery
+- ✅ XP & Achievements page reloads on navigation
+- ✅ Dark mode persists after app close
+- ✅ Camera permissions only requested when needed
+- ✅ Review attributes pre-populate correctly in edit mode
+- ✅ Home screen shows logo (matches Browse screen)
+- ✅ Friends button hidden when not logged in
+- ✅ Stats cards clickable (Reviews → Profile, Favorites → List)
+- ✅ Empty states added to XP tabs
+- ✅ Debug logging added for troubleshooting
 
 **Next Tasks:** See ROADMAP.md for Phase 24 (Admin Dashboard) or Phase 25 (Push Notifications)
 
@@ -191,8 +205,9 @@ git push origin main               # Deploy (triggers Railway)
 
 ---
 
-**Last Updated:** November 8, 2025
+**Last Updated:** November 8, 2025 (Evening - Bug Fix Session)
 **Backend:** Live on Railway ✅
 **Database:** Live on Neon (131 unique oysters) ✅
 **Tests:** 293/293 passing ✅
-**Latest Version:** 2.0.0 (Phase 22 Complete - Gamification: XP, Levels, Achievements)
+**Latest Version:** 2.0.0 (Phase 22 + 11 Critical Bug Fixes)
+**Latest OTA Update:** Nov 8, 2025 - Bug fixes deployed to production
