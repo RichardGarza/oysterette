@@ -48,6 +48,8 @@ const LOGO_SIZES = {
 } as const;
 
 const RECOMMENDATIONS_LIMIT = 5;
+
+const LAST_UPDATED = '09:51 PM';
 const TOP_RATED_LIMIT = 5;
 
 // ============================================================================
@@ -425,6 +427,12 @@ export default function HomeScreen() {
             </Card.Content>
           </Card>
         )}
+
+        <View style={styles.timestampContainer}>
+          <Text variant="bodySmall" style={styles.timestamp}>
+            Last Updated: {LAST_UPDATED}
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -587,5 +595,13 @@ const styles = StyleSheet.create({
     paddingRight: 12,
     paddingBottom: 20,
     overflow: 'visible',
+  },
+  timestampContainer: {
+    width: '100%',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  timestamp: {
+    opacity: 0.6,
   },
 });
