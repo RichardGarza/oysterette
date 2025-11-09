@@ -66,7 +66,7 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 
 **Test Before Committing:**
 
-- Backend: All 229 tests must pass
+- Backend: All 268 tests must pass
 - Write tests FIRST for new endpoints/services
 - Test happy path, edge cases, error handling
 
@@ -126,18 +126,20 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 - Dark mode with persistence
 - Personalized recommendations
 - Baseline flavor profile with auto-learning
+- Social features (friends, activity feed, paired recommendations)
 
-**Quality:** 229/229 tests passing ✅
+**Quality:** 268/268 tests passing ✅
 
 **Compliance:**
 - Apple App Store: 95% ready
 - Google Play Store: 100% documentation-ready
 
 **Recent Completions:**
+- Phase 21: Social Features (friend system, activity feed, paired matches)
 - Phase 20: AR Menu Scanner (OCR, fuzzy matching, unmatched detection)
 - Phase 23: Enhanced Flavor Profile Visualization (ranges, tooltips)
 
-**Next Tasks:** See ROADMAP.md for Phase 21 (Social Features) or Phase 22 (Gamification)
+**Next Tasks:** See ROADMAP.md for Phase 22 (Gamification) or Phase 24 (Admin Dashboard)
 
 ---
 
@@ -176,16 +178,16 @@ git push origin main               # Deploy (triggers Railway)
 
 1. **Environment:** DATABASE_URL (Neon), JWT_SECRET (never default), SENTRY_DSN (optional)
 2. **API URL:** Production: `https://oysterette-production.up.railway.app/api`
-3. **Testing:** All 229 tests must pass before push
+3. **Testing:** All 268 tests must pass before push
 4. **Railway:** Auto-deploys from main, $5/month credit, auto-sleeps
 5. **Neon:** 3GB storage, auto-sleeps
 6. **Session Logs:** See SESSION_LOGS.md for detailed session history
-7. **Roadmap:** See ROADMAP.md for future feature planning and Phase 14 details
+7. **Roadmap:** See ROADMAP.md for future feature planning
 
 ---
 
 **Last Updated:** November 8, 2025
 **Backend:** Live on Railway ✅
 **Database:** Live on Neon (131 unique oysters) ✅
-**Tests:** 229/229 passing ✅
-**Latest Version:** 1.8.0 (Phase 20 & 23 Complete - AR Menu Scanner, Flavor Profile Ranges)
+**Tests:** 268/268 passing ✅
+**Latest Version:** 1.9.0 (Phase 21 Complete - Social Features: Friends, Activity Feed, Paired Recommendations)
