@@ -20,6 +20,8 @@ import uploadRoutes from './routes/uploadRoutes';
 import friendRoutes from './routes/friendRoutes';
 import prisma from './lib/prisma';
 import logger from './utils/logger';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 import {
   getSentryRequestHandler,
   getSentryTracingHandler,
@@ -68,6 +70,7 @@ app.get('/', (req: Request, res: Response) => {
   res.json({
     message: 'Oysterette API Server',
     version: '2.0.0',
+    documentation: '/api-docs',
     endpoints: {
       auth: '/api/auth',
       oysters: '/api/oysters',
@@ -77,6 +80,7 @@ app.get('/', (req: Request, res: Response) => {
       recommendations: '/api/recommendations',
       favorites: '/api/favorites',
       upload: '/api/upload',
+      friends: '/api/friends',
     },
   });
 });
@@ -90,6 +94,9 @@ app.use('/api/favorites', apiLimiter, favoriteRoutes);
 app.use('/api/upload', apiLimiter, uploadRoutes);
 app.use('/api/friends', apiLimiter, friendRoutes);
 app.use('/api', apiLimiter, voteRoutes);
+
+// API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Health check endpoint
 app.get('/health', async (req: Request, res: Response) => {
