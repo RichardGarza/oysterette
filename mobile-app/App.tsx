@@ -90,7 +90,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { TouchableOpacity, Text } from 'react-native';
+import { TouchableOpacity, Text, Image } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
 import { RootStackParamList } from './src/navigation/types';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
@@ -197,9 +197,11 @@ function AppNavigator() {
           options={({ navigation }) => ({
             headerTitle: () => (
               <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-                <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>
-                  Oysterette
-                </Text>
+                <Image
+                  source={require('./assets/logo.png')}
+                  style={{ width: 150, height: 40 }}
+                  resizeMode="contain"
+                />
               </TouchableOpacity>
             ),
             headerLeft: () => (
