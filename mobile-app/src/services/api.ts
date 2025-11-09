@@ -319,11 +319,11 @@ export const reviewApi = {
   create: async (review: {
     oysterId: string;
     rating: ReviewRating;
-    size?: number;
-    body?: number;
-    sweetBrininess?: number;
-    flavorfulness?: number;
-    creaminess?: number;
+    size: number;
+    body: number;
+    sweetBrininess: number;
+    flavorfulness: number;
+    creaminess: number;
     notes?: string;
     origin?: string;
     species?: string;
