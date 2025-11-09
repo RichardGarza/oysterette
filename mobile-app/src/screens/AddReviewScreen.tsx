@@ -37,6 +37,7 @@ import { getAttributeDescriptor } from '../utils/ratingUtils';
 import { useTheme } from '../context/ThemeContext';
 import { tempReviewsStorage } from '../services/tempReviews';
 import { useXPNotification } from '../context/XPNotificationContext';
+import { getXPStats } from '../services/api';
 
 // ============================================================================
 // CONSTANTS
@@ -69,7 +70,7 @@ export default function AddReviewScreen() {
   const route = useRoute<AddReviewScreenRouteProp>();
   const navigation = useNavigation<AddReviewScreenNavigationProp>();
   const { paperTheme } = useTheme();
-  const { showXPGain } = useXPNotification();
+  const { showXPGain, showAchievement, showLevelUp } = useXPNotification();
   const {
     oysterId,
     oysterName,
@@ -358,9 +359,41 @@ export default function AddReviewScreen() {
         });
         console.log('✅ [AddReviewScreen] Review submitted successfully');
 
-        // Show XP notification for new reviews
+        // Fetch XP stats and check for achievements/level-ups
         if (token) {
-          showXPGain(10, 'Review submitted');
+          try {
+            const xpStats = await getXPStats();
+            const oldLevel = await authStorage.getItem('lastLevel');
+            const newLevel = xpStats.level;
+
+            // Check for level up
+            if (oldLevel && parseInt(oldLevel) < newLevel) {
+              showLevelUp(newLevel);
+              await authStorage.setItem('lastLevel', newLevel.toString());
+            } else if (!oldLevel) {
+              await authStorage.setItem('lastLevel', newLevel.toString());
+            }
+
+            // Check for new achievements (show most recent)
+            if (xpStats.achievements && xpStats.achievements.length > 0) {
+              const lastAchievement = xpStats.achievements[xpStats.achievements.length - 1];
+              const shownAchievements = await authStorage.getItem('shownAchievements') || '[]';
+              const shown = JSON.parse(shownAchievements);
+
+              if (!shown.includes(lastAchievement.key)) {
+                showAchievement(lastAchievement.name, lastAchievement.xpReward);
+                shown.push(lastAchievement.key);
+                await authStorage.setItem('shownAchievements', JSON.stringify(shown));
+              }
+            }
+
+            showXPGain(10, 'Review submitted');
+          } catch (error) {
+            if (__DEV__) {
+              console.error('❌ [AddReviewScreen] Error fetching XP stats:', error);
+            }
+            showXPGain(10, 'Review submitted');
+          }
         }
       }
 

@@ -12,9 +12,10 @@ import {
 import { Card, Text, IconButton, Chip, Button, ActivityIndicator, Dialog, Portal, Snackbar } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
 import { Review } from '../types/Oyster';
-import { voteApi, reviewApi } from '../services/api';
+import { voteApi, reviewApi, getXPStats } from '../services/api';
 import { useTheme, Theme } from '../context/ThemeContext';
 import { useXPNotification } from '../context/XPNotificationContext';
+import { authStorage } from '../services/auth';
 
 // ============================================================================
 // CONSTANTS
@@ -93,7 +94,7 @@ export const ReviewCard = memo<ReviewCardProps>(({
   onDelete,
 }) => {
   const { theme, isDark } = useTheme();
-  const { showXPGain } = useXPNotification();
+  const { showXPGain, showLevelUp } = useXPNotification();
   const [currentVote, setCurrentVote] = useState<boolean | null>(userVote);
   const [voting, setVoting] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -136,6 +137,25 @@ export const ReviewCard = memo<ReviewCardProps>(({
       } else {
         await voteApi.vote(review.id, isAgree);
         setCurrentVote(isAgree);
+
+        // Check for level up after voting
+        try {
+          const xpStats = await getXPStats();
+          const oldLevel = await authStorage.getItem('lastLevel');
+          const newLevel = xpStats.level;
+
+          if (oldLevel && parseInt(oldLevel) < newLevel) {
+            showLevelUp(newLevel);
+            await authStorage.setItem('lastLevel', newLevel.toString());
+          } else if (!oldLevel) {
+            await authStorage.setItem('lastLevel', newLevel.toString());
+          }
+        } catch (error) {
+          if (__DEV__) {
+            console.error('❌ [ReviewCard] Error checking level up:', error);
+          }
+        }
+
         showXPGain(2, 'Vote on review');
       }
 
