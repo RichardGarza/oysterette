@@ -110,6 +110,7 @@ export type RootStackParamList = {
   SetFlavorProfile: undefined;
   ScanMenu: undefined;
   Friends: undefined;
+  XPStats: undefined;
   PairedMatches: {
     friendName: string;
     matches: Array<{

@@ -638,4 +638,20 @@ export const friendApi = {
   },
 };
 
+// XP API
+export const getXPStats = async (): Promise<any> => {
+  const response = await api.get<ApiResponse<any>>('/xp/stats');
+  return response.data.data;
+};
+
+export const getAchievements = async (): Promise<any[]> => {
+  const response = await api.get<ApiResponse<any[]>>('/xp/achievements');
+  return response.data.data || [];
+};
+
+export const getLeaderboard = async (limit: number = 10): Promise<any[]> => {
+  const response = await api.get<ApiResponse<any[]>>(`/xp/leaderboard?limit=${limit}`);
+  return response.data.data || [];
+};
+
 export default api;

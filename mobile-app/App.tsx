@@ -110,6 +110,7 @@ import SetFlavorProfileScreen from './src/screens/SetFlavorProfileScreen';
 import ScanMenuScreen from './src/screens/ScanMenuScreen';
 import FriendsScreen from './src/screens/FriendsScreen';
 import PairedMatchesScreen from './src/screens/PairedMatchesScreen';
+import XPStatsScreen from './src/screens/XPStatsScreen';
 
 /**
  * TO REPLACE "Oysterette" TEXT WITH LOGO:
@@ -301,6 +302,14 @@ function AppNavigator() {
           options={{
             headerShown: false,
           }}
+        />
+        <Stack.Screen
+          name="XPStats"
+          component={XPStatsScreen}
+          options={({ navigation }) => ({
+            title: 'XP & Achievements',
+            headerRight: () => <SettingsButton navigation={navigation} />,
+          })}
         />
       </Stack.Navigator>
       </NavigationContainer>

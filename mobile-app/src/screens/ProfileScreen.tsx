@@ -111,11 +111,12 @@ import {
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { authStorage } from '../services/auth';
-import { userApi, reviewApi, uploadApi } from '../services/api';
+import { userApi, reviewApi, uploadApi, getXPStats } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { Review, User } from '../types/Oyster';
 import { EmptyState } from '../components/EmptyState';
 import { getRangeLabel, getAttributeLabel } from '../utils/flavorLabels';
+import { XPBadge } from '../components/XPBadge';
 
 interface ProfileStats {
   totalReviews: number;
@@ -143,6 +144,7 @@ export default function ProfileScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [xpData, setXpData] = useState<any>(null);
 
   // Edit Profile Modal
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -209,6 +211,10 @@ export default function ProfileScreen() {
       // Fetch user's reviews (paginated, showing first 20)
       const reviewHistory = await userApi.getMyReviews({ page: 1, limit: 20, sortBy: 'createdAt' });
       setReviews(reviewHistory.reviews);
+
+      // Fetch XP stats
+      const xp = await getXPStats();
+      setXpData(xp);
     } catch (error) {
       console.error('Error loading profile:', error);
       Alert.alert('Error', 'Failed to load profile. Please try again.');
@@ -528,7 +534,22 @@ export default function ProfileScreen() {
             >
               Privacy Settings
             </Button>
+            <Button
+              mode="outlined"
+              onPress={() => navigation.navigate('XPStats')}
+              style={styles.actionButton}
+              compact
+            >
+              XP & Achievements
+            </Button>
           </View>
+
+          {/* XP Badge */}
+          {xpData && (
+            <View style={styles.xpContainer}>
+              <XPBadge xp={xpData.xp} level={xpData.level} />
+            </View>
+          )}
         </View>
 
         {/* Stats Cards */}
@@ -1201,6 +1222,9 @@ const createStyles = (colors: any, isDark: boolean) =>
     },
     actionButton: {
       // Paper Button handles styling
+    },
+    xpContainer: {
+      marginTop: 16,
     },
     statsGrid: {
       flexDirection: 'row',
