@@ -67,6 +67,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Simple health check for Railway
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).send('OK');
+});
+
 // Health check routes (no rate limiting for monitoring)
 app.use('/api/health', healthRoutes);
 
