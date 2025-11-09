@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, FlatList, RefreshControl, SafeAreaView } from 'react-native';
+import { View, StyleSheet, FlatList, RefreshControl, SafeAreaView, Alert } from 'react-native';
 import { Card, Text, Button, Appbar, SegmentedButtons, Avatar, Searchbar, Snackbar } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';

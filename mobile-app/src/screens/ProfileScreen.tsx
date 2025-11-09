@@ -108,7 +108,7 @@ import {
   ActivityIndicator,
   Surface,
 } from 'react-native-paper';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { authStorage } from '../services/auth';
 import { userApi, reviewApi, uploadApi, getXPStats } from '../services/api';

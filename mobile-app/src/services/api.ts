@@ -104,9 +104,10 @@ axiosRetry(api, {
   retryDelay: axiosRetry.exponentialDelay, // 1s, 2s, 4s
   retryCondition: (error) => {
     // Retry on network errors and 5xx server errors
+    const status = error.response?.status;
     return (
       axiosRetry.isNetworkOrIdempotentRequestError(error) ||
-      (error.response?.status >= 500 && error.response?.status < 600)
+      (status !== undefined && status >= 500 && status < 600)
     );
   },
   onRetry: (retryCount, error, requestConfig) => {
