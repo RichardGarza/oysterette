@@ -2580,8 +2580,11 @@ Comprehensive bug fix session addressing 11 critical issues affecting user exper
 
 ### 26.5: AR Menu Scanner Fixes 📷
 
+**Status:** 📋 PLANNED - DEFERRED FOR REFINEMENT
 **Time:** 4-6 hours
 **Priority:** MEDIUM-HIGH
+
+**Note:** Initial fixes applied (crop overlay removed Nov 9, 2025). Feature needs comprehensive refinement pass later - deferred to focus on critical fixes first.
 
 #### Viewfinder Crop Issue
 **Issue:** Weird crop overlay on camera viewfinder
