@@ -7,6 +7,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import logger from '../utils/logger';
+import { getUserAttributePreferences } from '../services/recommendationService';
 
 /**
  * Send friend request
@@ -345,15 +346,21 @@ export const getPairedRecommendations = async (req: Request, res: Response): Pro
       return;
     }
 
+    const userId = req.userId; // Type assertion
     const { friendId } = req.params;
+
+    if (!friendId) {
+      res.status(400).json({ success: false, error: 'Friend ID required' });
+      return;
+    }
 
     // Verify friendship exists
     const friendship = await prisma.friendship.findFirst({
       where: {
         status: 'accepted',
         OR: [
-          { senderId: req.userId, receiverId: friendId },
-          { senderId: friendId, receiverId: req.userId },
+          { senderId: userId, receiverId: friendId },
+          { senderId: friendId, receiverId: userId },
         ],
       },
     });
@@ -363,33 +370,15 @@ export const getPairedRecommendations = async (req: Request, res: Response): Pro
       return;
     }
 
-    // Get both users' flavor profiles
-    const [user, friend] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: req.userId },
-        select: {
-          baselineSize: true,
-          baselineBody: true,
-          baselineSweetBrininess: true,
-          baselineFlavorfulness: true,
-          baselineCreaminess: true,
-        },
-      }),
-      prisma.user.findUnique({
-        where: { id: friendId },
-        select: {
-          baselineSize: true,
-          baselineBody: true,
-          baselineSweetBrininess: true,
-          baselineFlavorfulness: true,
-          baselineCreaminess: true,
-        },
-      }),
+    // Get both users' flavor profiles (baseline or from reviews)
+    const [userProfile, friendProfile] = await Promise.all([
+      getUserAttributePreferences(userId),
+      getUserAttributePreferences(friendId),
     ]);
 
     // Check which user is missing flavor profile
-    const userHasProfile = user?.baselineSize !== null;
-    const friendHasProfile = friend?.baselineSize !== null;
+    const userHasProfile = userProfile !== null;
+    const friendHasProfile = friendProfile !== null;
 
     if (!userHasProfile && !friendHasProfile) {
       res.status(400).json({ success: false, error: 'both_missing', message: 'Both users need flavor profiles' });
@@ -423,8 +412,8 @@ export const getPairedRecommendations = async (req: Request, res: Response): Pro
 
     // Calculate match scores for both users
     const pairedMatches = oysters.map((oyster) => {
-      const userMatch = calculateMatchScore(user, oyster);
-      const friendMatch = calculateMatchScore(friend, oyster);
+      const userMatch = calculateMatchScore(userProfile, oyster);
+      const friendMatch = calculateMatchScore(friendProfile, oyster);
       const combinedScore = (userMatch + friendMatch) / 2;
 
       return {
@@ -453,11 +442,11 @@ export const getPairedRecommendations = async (req: Request, res: Response): Pro
  */
 function calculateMatchScore(
   profile: {
-    baselineSize: number | null;
-    baselineBody: number | null;
-    baselineSweetBrininess: number | null;
-    baselineFlavorfulness: number | null;
-    baselineCreaminess: number | null;
+    avgSize: number;
+    avgBody: number;
+    avgSweetBrininess: number;
+    avgFlavorfulness: number;
+    avgCreaminess: number;
   },
   oyster: {
     avgSize: number | null;
@@ -469,20 +458,20 @@ function calculateMatchScore(
 ): number {
   const matches: number[] = [];
 
-  if (profile.baselineSize && oyster.avgSize) {
-    matches.push(1 - Math.abs(profile.baselineSize - oyster.avgSize) / 10);
+  if (profile.avgSize && oyster.avgSize) {
+    matches.push(1 - Math.abs(profile.avgSize - oyster.avgSize) / 10);
   }
-  if (profile.baselineBody && oyster.avgBody) {
-    matches.push(1 - Math.abs(profile.baselineBody - oyster.avgBody) / 10);
+  if (profile.avgBody && oyster.avgBody) {
+    matches.push(1 - Math.abs(profile.avgBody - oyster.avgBody) / 10);
   }
-  if (profile.baselineSweetBrininess && oyster.avgSweetBrininess) {
-    matches.push(1 - Math.abs(profile.baselineSweetBrininess - oyster.avgSweetBrininess) / 10);
+  if (profile.avgSweetBrininess && oyster.avgSweetBrininess) {
+    matches.push(1 - Math.abs(profile.avgSweetBrininess - oyster.avgSweetBrininess) / 10);
   }
-  if (profile.baselineFlavorfulness && oyster.avgFlavorfulness) {
-    matches.push(1 - Math.abs(profile.baselineFlavorfulness - oyster.avgFlavorfulness) / 10);
+  if (profile.avgFlavorfulness && oyster.avgFlavorfulness) {
+    matches.push(1 - Math.abs(profile.avgFlavorfulness - oyster.avgFlavorfulness) / 10);
   }
-  if (profile.baselineCreaminess && oyster.avgCreaminess) {
-    matches.push(1 - Math.abs(profile.baselineCreaminess - oyster.avgCreaminess) / 10);
+  if (profile.avgCreaminess && oyster.avgCreaminess) {
+    matches.push(1 - Math.abs(profile.avgCreaminess - oyster.avgCreaminess) / 10);
   }
 
   if (matches.length === 0) return 0;
