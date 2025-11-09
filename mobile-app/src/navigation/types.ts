@@ -109,6 +109,7 @@ export type RootStackParamList = {
   PrivacySettings: undefined;
   SetFlavorProfile: undefined;
   ScanMenu: undefined;
+  Friends: undefined;
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<

@@ -583,4 +583,40 @@ export const uploadApi = {
   },
 };
 
+export const friendApi = {
+  // Send friend request
+  sendRequest: async (receiverId: string): Promise<any> => {
+    const response = await api.post<ApiResponse<any>>('/friends/request', { receiverId });
+    return response.data.data;
+  },
+
+  // Accept friend request
+  acceptRequest: async (friendshipId: string): Promise<any> => {
+    const response = await api.put<ApiResponse<any>>(`/friends/accept/${friendshipId}`);
+    return response.data.data;
+  },
+
+  // Reject friend request
+  rejectRequest: async (friendshipId: string): Promise<void> => {
+    await api.put<ApiResponse<any>>(`/friends/reject/${friendshipId}`);
+  },
+
+  // Get friends list
+  getFriends: async (): Promise<any[]> => {
+    const response = await api.get<ApiResponse<any[]>>('/friends');
+    return response.data.data || [];
+  },
+
+  // Get pending requests (sent and received)
+  getPendingRequests: async (): Promise<{ sent: any[]; received: any[] }> => {
+    const response = await api.get<ApiResponse<{ sent: any[]; received: any[] }>>('/friends/pending');
+    return response.data.data || { sent: [], received: [] };
+  },
+
+  // Remove friend
+  removeFriend: async (friendshipId: string): Promise<void> => {
+    await api.delete<ApiResponse<any>>(`/friends/${friendshipId}`);
+  },
+};
+
 export default api;

@@ -107,6 +107,7 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import PrivacySettingsScreen from './src/screens/PrivacySettingsScreen';
 import SetFlavorProfileScreen from './src/screens/SetFlavorProfileScreen';
 import ScanMenuScreen from './src/screens/ScanMenuScreen';
+import FriendsScreen from './src/screens/FriendsScreen';
 
 /**
  * TO REPLACE "Oysterette" TEXT WITH LOGO:
@@ -282,6 +283,13 @@ function AppNavigator() {
           component={ScanMenuScreen}
           options={{
             title: 'Scan Menu',
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="Friends"
+          component={FriendsScreen}
+          options={{
             headerShown: false,
           }}
         />
