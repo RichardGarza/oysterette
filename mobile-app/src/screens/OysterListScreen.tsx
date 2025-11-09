@@ -119,8 +119,6 @@ export default function OysterListScreen() {
   const [sweetness, setSweetness] = useState<'low' | 'high' | ''>('');
   const [size, setSize] = useState<'low' | 'high' | ''>('');
   const [body, setBody] = useState<'low' | 'high' | ''>('');
-  const [flavorfulness, setFlavorfulness] = useState<'low' | 'high' | ''>('');
-  const [creaminess, setCreaminess] = useState<'low' | 'high' | ''>('');
   const [showFilters, setShowFilters] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -145,7 +143,7 @@ export default function OysterListScreen() {
       // Scroll to top of list when filters change
       flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
     }
-  }, [selectedSortBy, sortDirection, sweetness, size, body, flavorfulness, creaminess]);
+  }, [selectedSortBy, sortDirection, sweetness, size, body]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -189,8 +187,6 @@ export default function OysterListScreen() {
       if (sweetness) params.sweetness = sweetness;
       if (size) params.size = size;
       if (body) params.body = body;
-      if (flavorfulness) params.flavorfulness = flavorfulness;
-      if (creaminess) params.creaminess = creaminess;
 
       if (__DEV__) {
         console.log('🔍 [OysterList] Filter params:', JSON.stringify(params, null, 2));
@@ -250,8 +246,6 @@ export default function OysterListScreen() {
       setSweetness('');
       setSize('');
       setBody('');
-      setFlavorfulness('');
-      setCreaminess('');
     }
 
     if (query.trim() === '') {
@@ -284,17 +278,13 @@ export default function OysterListScreen() {
     if (sweetness) count++;
     if (size) count++;
     if (body) count++;
-    if (flavorfulness) count++;
-    if (creaminess) count++;
     return count;
-  }, [sweetness, size, body, flavorfulness, creaminess]);
+  }, [sweetness, size, body]);
 
   const clearAllFilters = useCallback(() => {
     setSweetness('');
     setSize('');
     setBody('');
-    setFlavorfulness('');
-    setCreaminess('');
     setSelectedSortBy('name');
     setSortDirection('asc');
   }, []);
@@ -322,9 +312,7 @@ export default function OysterListScreen() {
     { key: 'size', state: size, setState: setSize, low: 'Small', high: 'Big' },
     { key: 'body', state: body, setState: setBody, low: 'Thin', high: 'Fat' },
     { key: 'sweetness', state: sweetness, setState: setSweetness, low: 'Sweet', high: 'Briny' },
-    { key: 'flavorfulness', state: flavorfulness, setState: setFlavorfulness, low: 'Mild', high: 'Bold' },
-    { key: 'creaminess', state: creaminess, setState: setCreaminess, low: 'No Cream', high: 'All the Cream' },
-  ], [size, body, sweetness, flavorfulness, creaminess]);
+  ], [size, body, sweetness]);
 
   const styles = useMemo(
     () => createStyles(theme.colors, isDark),
