@@ -7,18 +7,25 @@
 import Redis, { RedisOptions } from 'ioredis';
 import logger from '../utils/logger';
 
+const REDIS_ENABLED = process.env.REDIS_HOST ? true : false;
+
 const REDIS_CONFIG: RedisOptions = {
   host: process.env.REDIS_HOST || 'localhost',
   port: parseInt(process.env.REDIS_PORT || '6379'),
   password: process.env.REDIS_PASSWORD,
   maxRetriesPerRequest: 3,
   retryStrategy: (times: number) => {
-    const delay = Math.min(times * 50, 2000);
-    logger.info(`Redis retry attempt ${times}, waiting ${delay}ms`);
+    // Stop retrying after 3 attempts
+    if (times > 3) {
+      logger.warn('Redis connection failed after 3 attempts, giving up');
+      return null;
+    }
+    const delay = Math.min(times * 200, 1000);
     return delay;
   },
-  enableOfflineQueue: true,
+  enableOfflineQueue: false,
   lazyConnect: true,
+  connectTimeout: 2000,
 };
 
 class RedisClient {
@@ -26,6 +33,11 @@ class RedisClient {
   private static connecting = false;
 
   static async getInstance(): Promise<Redis | null> {
+    // If Redis not configured, return null immediately
+    if (!REDIS_ENABLED) {
+      return null;
+    }
+
     if (this.instance && this.instance.status === 'ready') {
       return this.instance;
     }
@@ -50,23 +62,24 @@ class RedisClient {
           logger.info('✅ Redis ready');
         });
 
-        this.instance.on('error', (error) => {
-          logger.error('❌ Redis error:', error);
+        this.instance.on('error', () => {
+          // Silent - errors logged at connection level
         });
 
         this.instance.on('close', () => {
-          logger.warn('⚠️ Redis connection closed');
+          // Silent - expected when Redis unavailable
         });
 
         this.instance.on('reconnecting', () => {
-          logger.info('🔄 Redis reconnecting...');
+          // Silent - stop spam
         });
       }
 
       await this.instance.connect();
       return this.instance;
     } catch (error) {
-      logger.error('❌ Failed to connect to Redis:', error);
+      logger.warn('Redis not available, using in-memory cache only');
+      this.instance = null;
       return null;
     } finally {
       this.connecting = false;
