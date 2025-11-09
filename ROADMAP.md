@@ -2104,6 +2104,617 @@ function getAttributeRangeLabel(attribute: string, min: number, max: number) {
 
 ---
 
+## 📱 Phase 26: Production Testing Fixes (v2.0.0 User Testing)
+
+**Status:** 🚧 PLANNED
+**Estimated Time:** 20-30 hours
+**Priority:** CRITICAL (Production Deployment Blockers)
+**Test Date:** November 8, 2025
+**Build Version:** 2.0.0
+
+**Context:** Issues discovered during production build testing. These must be addressed systematically before public release.
+
+---
+
+### 26.1: UI Display & Layout Fixes 🎨
+
+**Time:** 4-6 hours
+**Priority:** HIGH
+
+#### Species Name Display Issue
+**Issue:** Species name shows only top half (bottom cut off) on Browse Oysters and search results pages
+
+**Root Cause:** Insufficient height allocation for species text
+
+**Tasks:**
+- [ ] Investigate OysterCard/OysterListItem species text container height
+- [ ] Move species text below oyster name, above origin
+- [ ] Use same styling as origin text (same font size, color, spacing)
+- [ ] Ensure proper vertical spacing: Name → Species → Origin
+- [ ] Test with long species names (e.g., "Pacific Oyster (Crassostrea gigas)")
+- [ ] Verify on both iOS and Android
+
+**Files to Modify:**
+- `mobile-app/src/components/OysterCard.tsx` (or equivalent list item component)
+- `mobile-app/src/screens/OysterListScreen.tsx`
+
+---
+
+#### Long Oyster Names Truncation
+**Issue:** Oyster names like "Naked Cowboy" show as "Naked C…"
+
+**Tasks:**
+- [ ] Increase name text container width
+- [ ] Consider multi-line text with numberOfLines={2}
+- [ ] Adjust card layout to accommodate longer names
+- [ ] Test with longest oyster names in database
+- [ ] Ensure proper ellipsis placement if still needed
+
+**Files to Modify:**
+- `mobile-app/src/components/OysterCard.tsx`
+
+---
+
+#### Top Rated Oysters Cards Cut Off
+**Issue:** Top Rated Oysters section on homepage shows cards with bottom portion cut off
+
+**Tasks:**
+- [ ] Inspect FlatList/ScrollView height in TopOystersSection
+- [ ] Increase card container height or adjust content padding
+- [ ] Verify horizontal scroll works properly
+- [ ] Compare with "Recommended for You" section (which looks correct)
+- [ ] Test with varying content (long names, ratings, etc.)
+
+**Files to Modify:**
+- `mobile-app/src/screens/HomeScreen.tsx`
+- `mobile-app/src/components/OysterCard.tsx` (if using shared component)
+
+---
+
+#### Add Oyster Form Button Cutoff
+**Issue:** When scrolling in Add Oyster form, "Cancel" and "Add Oyster" buttons are cut off (can't scroll down enough)
+
+**Tasks:**
+- [ ] Add proper bottom padding to ScrollView contentContainerStyle
+- [ ] Ensure KeyboardAvoidingView works correctly
+- [ ] Add safe area bottom inset
+- [ ] Test on both iOS (notch) and Android
+- [ ] Verify with keyboard open/closed
+
+**Files to Modify:**
+- `mobile-app/src/screens/AddOysterScreen.tsx`
+
+---
+
+#### Browse Oysters Loading Transition
+**Issue:** Transition animation when loading Browse Oysters page should be removed
+
+**Tasks:**
+- [ ] Identify transition configuration in navigation
+- [ ] Set transitionSpec to instant or remove animation
+- [ ] Ensure no jarring flash when navigating
+- [ ] Test navigation from Home → OysterList
+
+**Files to Modify:**
+- `mobile-app/App.tsx` (navigation configuration)
+
+---
+
+### 26.2: Missing/Broken Features 🔧
+
+**Time:** 6-8 hours
+**Priority:** CRITICAL
+
+#### Filters Not Showing
+**Issue:** Filters completely missing from OysterList screen
+
+**Root Cause:** Unknown - need to investigate if removed accidentally or hidden
+
+**Tasks:**
+- [ ] Check OysterListScreen for filter UI code
+- [ ] Verify filterOptions API call is still functional
+- [ ] Inspect state management for filters (species, origin, sortBy)
+- [ ] Check if filters are conditionally hidden
+- [ ] Re-enable or re-implement filter chips/buttons
+- [ ] Test filter functionality (species, origin, sort options)
+- [ ] Verify filters reset properly
+
+**Files to Check:**
+- `mobile-app/src/screens/OysterListScreen.tsx`
+- `mobile-app/src/services/api.ts` (filterOptions endpoint)
+
+---
+
+#### Favorites Missing
+**Issue:** Favorites functionality completely gone - not on profile, not anywhere
+
+**Root Cause:** Unknown - investigate if removed or broken
+
+**Tasks:**
+- [ ] Check ProfileScreen for Favorites button/section
+- [ ] Verify OysterListScreen favorites tab
+- [ ] Inspect favoritesStorage service
+- [ ] Check API endpoints (POST/DELETE /api/favorites/:oysterId)
+- [ ] Verify heart icon on oyster cards
+- [ ] Test add/remove favorites flow
+- [ ] Ensure sync with backend after login
+- [ ] Verify favorites persist across sessions
+
+**Files to Check:**
+- `mobile-app/src/screens/ProfileScreen.tsx`
+- `mobile-app/src/screens/OysterListScreen.tsx`
+- `mobile-app/src/services/favorites.ts`
+- `mobile-app/src/components/OysterCard.tsx`
+
+---
+
+#### Review Attributes Not Pre-Populating
+**Issue:** When writing a review, flavor attributes default to 5/10 instead of oyster's existing values
+
+**Root Cause:** Previously working feature broke - investigate route params
+
+**Tasks:**
+- [ ] Verify OysterDetailScreen passes oyster attributes to AddReviewScreen
+- [ ] Check AddReviewScreen route params (oysterAvgSize, oysterAvgBody, etc.)
+- [ ] Inspect useState initialization for size, body, sweetBrininess, etc.
+- [ ] Ensure fallback logic: existingReview || oysterAvg || DEFAULT_VALUE
+- [ ] Test with oysters that have reviews vs. no reviews
+- [ ] Verify slider positions match expected values on load
+
+**Files to Check:**
+- `mobile-app/src/screens/AddReviewScreen.tsx` (lines 90-104)
+- `mobile-app/src/screens/OysterDetailScreen.tsx` (navigation params)
+
+**Reference:** Already implemented in AddReviewScreen.tsx:90-104, verify it's working
+
+---
+
+#### Photo Not Displaying After Upload
+**Issue:** Photo upload works, but uploaded photo doesn't show anywhere after review submission
+
+**Tasks:**
+- [ ] Verify photoUrls are saved to review in database
+- [ ] Check backend response includes photoUrls
+- [ ] Inspect ReviewCard component for photo rendering
+- [ ] Add Image component to display review.photoUrls[0]
+- [ ] Handle multiple photos (currently limited to 1)
+- [ ] Add loading placeholder for photos
+- [ ] Test photo display in:
+  - OysterDetailScreen review list
+  - ProfileScreen review history
+  - Review edit flow
+
+**Files to Modify:**
+- `mobile-app/src/components/ReviewCard.tsx`
+- `mobile-app/src/screens/OysterDetailScreen.tsx`
+
+---
+
+#### XP & Achievements Page Empty Initially
+**Issue:** XP & Achievements page shows nothing initially, even after earning badges
+
+**Root Cause:** Likely API loading issue or empty state shown incorrectly
+
+**Tasks:**
+- [ ] Check XP & Achievements screen data fetching
+- [ ] Verify loading state vs. error state vs. empty state
+- [ ] Ensure achievements API endpoint returns data
+- [ ] Add retry mechanism if initial load fails
+- [ ] Show earned badges immediately
+- [ ] Display progress toward next achievements
+- [ ] Test with user who has 0 achievements vs. multiple
+
+**Files to Check:**
+- `mobile-app/src/screens/XPAchievementsScreen.tsx` (or equivalent)
+- `mobile-app/src/services/api.ts` (achievements endpoint)
+
+---
+
+#### Dark Mode Reverts to Light Mode
+**Issue:** Switching to dark mode in settings, then exiting settings reverts theme to light mode
+
+**Root Cause:** Theme not persisting or being overwritten
+
+**Tasks:**
+- [ ] Verify theme is saved to AsyncStorage on change
+- [ ] Check ThemeContext state management
+- [ ] Inspect SettingsScreen theme toggle logic
+- [ ] Ensure theme persists across screen navigation
+- [ ] Verify theme loads from storage on app start
+- [ ] Test theme persistence after app restart
+- [ ] Check for conflicting theme state
+
+**Files to Check:**
+- `mobile-app/src/context/ThemeContext.tsx`
+- `mobile-app/src/screens/SettingsScreen.tsx`
+
+---
+
+### 26.3: Navigation Issues 🔙
+
+**Time:** 2-3 hours
+**Priority:** HIGH
+
+#### Swipe Back Exits App Everywhere
+**Issue:** Swipe-to-go-back gesture tries to exit app on all screens, not just homepage
+
+**Expected Behavior:**
+- Homepage: Swipe back → Exit confirmation dialog
+- All other screens: Swipe back → Navigate back in stack
+
+**Root Cause:** BackHandler registered on wrong screens or incorrectly
+
+**Tasks:**
+- [ ] Audit all screens for BackHandler.addEventListener
+- [ ] Remove BackHandler from non-Home screens
+- [ ] Keep BackHandler ONLY on HomeScreen with exit confirmation
+- [ ] Test swipe gesture on iOS (all screens)
+- [ ] Test hardware back button on Android (all screens)
+- [ ] Verify navigation stack works correctly
+- [ ] Ensure OysterList back button → Home (already implemented)
+
+**Files to Check:**
+- `mobile-app/src/screens/HomeScreen.tsx` (keep BackHandler here)
+- `mobile-app/src/screens/OysterListScreen.tsx` (verify BackHandler logic)
+- All other screens (remove BackHandler if present)
+
+**Reference:** HomeScreen already has exit confirmation (lines 72-92)
+
+---
+
+### 26.4: Add Oyster Form Improvements 📝
+
+**Time:** 2-3 hours
+**Priority:** MEDIUM
+
+#### Species & Origin Should Be Optional
+**Issue:** Species and origin are required fields, should default to "Unknown" if not provided
+
+**Tasks:**
+- [ ] Make species and origin inputs optional
+- [ ] Set backend default to "Unknown" if not provided
+- [ ] Update validation schema to allow empty strings
+- [ ] Update UI to show "(optional)" label
+- [ ] Test creating oyster with no species/origin
+- [ ] Verify "Unknown" displays correctly in listings
+
+**Files to Modify:**
+- `mobile-app/src/screens/AddOysterScreen.tsx`
+- `backend/src/validation/schemas.ts`
+- `backend/src/controllers/oysterController.ts`
+
+---
+
+#### Change "Add an oyster" to "Suggest a new oyster"
+**Issue:** Better wording for community contributions
+
+**Tasks:**
+- [ ] Update screen title
+- [ ] Update button text
+- [ ] Update navigation header
+- [ ] Update any references in UI
+
+**Files to Modify:**
+- `mobile-app/src/screens/AddOysterScreen.tsx`
+- `mobile-app/App.tsx` (navigation header title)
+
+---
+
+#### "No Token Provided" Error When Not Logged In
+**Issue:** Users get error when suggesting oyster without login
+
+**Expected Behavior:** Either require login upfront OR allow anonymous suggestions
+
+**Tasks:**
+- [ ] Decide: Require login for oyster suggestions (recommended for moderation)
+- [ ] Add auth check before showing AddOysterScreen
+- [ ] Show login dialog if not authenticated
+- [ ] OR: Implement anonymous oyster suggestions (less recommended)
+- [ ] Update error messaging to be user-friendly
+- [ ] Test logged in vs. logged out flows
+
+**Files to Modify:**
+- `mobile-app/src/screens/AddOysterScreen.tsx`
+- Backend route middleware (if allowing anonymous)
+
+---
+
+### 26.5: AR Menu Scanner Fixes 📷
+
+**Time:** 4-6 hours
+**Priority:** MEDIUM-HIGH
+
+#### Viewfinder Crop Issue
+**Issue:** Weird crop overlay on camera viewfinder
+
+**Tasks:**
+- [ ] Inspect Camera component aspect ratio
+- [ ] Remove or fix crop overlay styling
+- [ ] Ensure full screen camera view
+- [ ] Test on different screen sizes/ratios
+
+**Files to Modify:**
+- `mobile-app/src/screens/ScanMenuScreen.tsx`
+
+---
+
+#### Live Photo During Search
+**Issue:** After taking photo, viewfinder stays live during OCR search (confusing UX)
+
+**Expected Behavior:** Show captured photo still OR switch to results page
+
+**Tasks:**
+- [ ] Capture photo and store as static image
+- [ ] Display captured photo with loading overlay during OCR
+- [ ] OR: Navigate to results page immediately after capture
+- [ ] Add "Analyzing..." loading indicator
+- [ ] Disable camera during processing
+
+**Files to Modify:**
+- `mobile-app/src/screens/ScanMenuScreen.tsx`
+
+---
+
+#### Search Returns All Oysters
+**Issue:** OCR search returns entire database instead of relevant matches
+
+**Root Cause:** Likely searching every word including prices
+
+**Tasks:**
+- [ ] Filter OCR results to only oyster-relevant words
+- [ ] Exclude numbers/prices from search
+- [ ] Implement fuzzy matching with confidence threshold (>70%)
+- [ ] Return ONLY confirmed matches
+- [ ] Remove duplicate results (same oyster matched multiple times)
+- [ ] Sort results by match confidence
+- [ ] Limit to top 10-20 results
+- [ ] Add "No matches found" state
+
+**Algorithm Changes:**
+```typescript
+// Pseudo-code
+const ocrWords = extractedText.split(/\s+/);
+const oysterWords = ocrWords.filter(word => {
+  return isNaN(word) && // Not a number
+         word.length > 3 && // Long enough
+         !pricePatterns.test(word); // Not a price
+});
+
+const matches = oysterWords.map(word => {
+  return fuzzySearch(word, oysterDatabase, { threshold: 0.7 });
+}).flat();
+
+const uniqueMatches = removeDuplicates(matches);
+return uniqueMatches.slice(0, 20);
+```
+
+**Files to Modify:**
+- `mobile-app/src/screens/ScanMenuScreen.tsx`
+- `mobile-app/src/services/ocr.ts` (or equivalent)
+
+---
+
+### 26.6: Feature Requests ✨
+
+**Time:** 4-6 hours
+**Priority:** MEDIUM
+
+#### Username System
+**Issue:** Users want fun usernames to sign reviews instead of just email/name
+
+**Requirements:**
+- Profile should have "username" field
+- Usernames display on reviews instead of full name
+- Prompt user to pick username after signup
+- Username should be optional (fallback to name)
+- Fun, friendly username suggestions
+
+**Tasks:**
+- [ ] Add `username` field to User model (nullable)
+- [ ] Create username selection dialog after signup
+- [ ] Add username field to ProfileScreen (editable)
+- [ ] Display username on ReviewCard instead of name
+- [ ] Validate username (alphanumeric, 3-20 chars, unique)
+- [ ] Add username to backend validation schemas
+- [ ] Update review API to return username
+- [ ] Handle username conflicts
+- [ ] Add fun placeholder suggestions ("OysterEnthusiast123", etc.)
+
+**Database Migration:**
+```sql
+ALTER TABLE users ADD COLUMN username VARCHAR(50) UNIQUE;
+```
+
+**Files to Modify:**
+- `backend/prisma/schema.prisma`
+- `backend/src/validation/schemas.ts`
+- `mobile-app/src/screens/RegisterScreen.tsx`
+- `mobile-app/src/screens/ProfileScreen.tsx`
+- `mobile-app/src/components/ReviewCard.tsx`
+- `mobile-app/src/types/Oyster.ts`
+
+---
+
+### 26.7: Backend Reliability & Error Handling 🚨
+
+**Time:** 6-8 hours
+**Priority:** CRITICAL
+
+#### Intermittent Load Failures
+**Issues Observed:**
+- "Failed to Load Profile"
+- "Failed to load oysters"
+- "Failed to load XP"
+- 30-second wait required, then manual retry
+- Inconsistent behavior (works sometimes, fails others)
+
+**Root Cause Investigation:**
+- [ ] Check Railway hosting status/metrics
+- [ ] Inspect database connection pooling (Neon)
+- [ ] Review API response times
+- [ ] Check for timeout issues
+- [ ] Verify rate limiting isn't blocking requests
+- [ ] Review error logs in Railway/Sentry
+- [ ] Check cold start delays
+
+**Immediate Fixes:**
+- [ ] Add automatic retry logic (3 attempts with exponential backoff)
+- [ ] Implement proper loading states
+- [ ] Add user-friendly error messages
+- [ ] Add "Retry" button on all error states
+- [ ] Implement skeleton loaders instead of blank screens
+- [ ] Add offline detection
+- [ ] Cache recent data for offline fallback
+
+**Long-Term Solutions:**
+- [ ] Database connection pooling optimization
+- [ ] API response caching (Redis recommended)
+- [ ] Health check endpoints
+- [ ] Monitoring/alerting (Sentry integration)
+- [ ] Database query optimization
+- [ ] Consider Railway plan upgrade if resource-limited
+
+**Error Handling Pattern:**
+```typescript
+const fetchWithRetry = async (fn: () => Promise<any>, retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await delay(Math.pow(2, i) * 1000); // Exponential backoff
+    }
+  }
+};
+```
+
+**Files to Modify:**
+- `mobile-app/src/services/api.ts` (add retry logic)
+- All screens with data fetching (add error states)
+- `backend/src/config/database.ts` (connection pooling)
+
+**Monitoring:**
+- [ ] Set up Railway metrics dashboard
+- [ ] Configure Sentry error tracking
+- [ ] Add performance monitoring
+- [ ] Track API endpoint response times
+- [ ] Monitor database query performance
+
+---
+
+### 26.8: Content & Assets Updates 🎨
+
+**Time:** 1-2 hours
+**Priority:** LOW
+
+#### Remove "X Oysters in Database" Card
+**Issue:** Homepage shows database count - unnecessary information
+
+**Tasks:**
+- [ ] Remove database count card from HomeScreen
+- [ ] Adjust layout spacing after removal
+- [ ] Verify no errors from removal
+
+**Files to Modify:**
+- `mobile-app/src/screens/HomeScreen.tsx`
+
+---
+
+#### Replace Logo with Top-Bar-Oysterette-Name.png
+**Issue:** Current logo should be replaced with specific asset file
+
+**Tasks:**
+- [ ] Locate Top-Bar-Oysterette-Name.png in data folder
+- [ ] Move to mobile-app/assets/
+- [ ] Update App.tsx OysterList header to use new logo
+- [ ] Update HomeScreen header (if using logo)
+- [ ] Verify image dimensions and resize if needed
+- [ ] Test on both light and dark themes
+
+**Files to Modify:**
+- `mobile-app/App.tsx` (OysterList headerTitle)
+- `mobile-app/src/screens/HomeScreen.tsx` (if applicable)
+
+**Current Implementation:**
+```typescript
+// App.tsx:200-204
+headerTitle: () => (
+  <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+    <Image
+      source={require('./assets/logo.png')} // Change to Top-Bar-Oysterette-Name.png
+      style={{ width: 150, height: 40 }}
+```
+
+---
+
+### 26.9: Testing & Verification ✅
+
+**Time:** 4-6 hours
+**Priority:** CRITICAL
+
+#### Comprehensive Test Plan
+
+**Tasks:**
+- [ ] Test all fixes on iOS simulator
+- [ ] Test all fixes on Android emulator
+- [ ] Build new production APK
+- [ ] Test on physical device (Android)
+- [ ] Regression test all existing features
+- [ ] Verify performance improvements
+- [ ] Check error handling in poor network conditions
+- [ ] Verify dark mode works across all screens
+- [ ] Test with fresh user account
+- [ ] Test with existing user data
+- [ ] Verify all navigation flows
+- [ ] Test all CRUD operations
+- [ ] Verify photo uploads work end-to-end
+- [ ] Test anonymous vs. authenticated flows
+
+**Checklist:**
+```markdown
+UI/Layout:
+- [ ] Species name displays fully (not cut off)
+- [ ] Long oyster names display correctly
+- [ ] Top Rated cards not cut off
+- [ ] Add Oyster buttons accessible when scrolling
+- [ ] No loading transition on Browse Oysters
+
+Features:
+- [ ] Filters visible and functional
+- [ ] Favorites working (add/remove/view)
+- [ ] Review attributes pre-populate correctly
+- [ ] Photos display after upload
+- [ ] XP & Achievements show immediately
+- [ ] Dark mode persists
+
+Navigation:
+- [ ] Swipe back works correctly (not exit everywhere)
+- [ ] Exit confirmation only on homepage
+
+Add Oyster:
+- [ ] Species/origin optional
+- [ ] Says "Suggest a new oyster"
+- [ ] Works when logged in
+
+AR Scanner:
+- [ ] Viewfinder clean (no crop issues)
+- [ ] Shows captured photo during search
+- [ ] Only returns relevant matches
+- [ ] No duplicates
+
+Username:
+- [ ] Username prompt after signup
+- [ ] Username editable in profile
+- [ ] Username shows on reviews
+
+Reliability:
+- [ ] No "Failed to Load" errors
+- [ ] Automatic retry on failure
+- [ ] Fast load times (<2 seconds)
+```
+
+---
+
 ## 🏗️ Technical Debt & Maintenance
 
 ### Known Issues:
