@@ -160,12 +160,24 @@ export default function FriendsScreen() {
       const matches = await friendApi.getPairedRecommendations(friendId);
       navigation.navigate('PairedMatches', { friendName, matches });
     } catch (error: any) {
-      const errorMsg = error.response?.data?.error || error.message;
+      const errorCode = error.response?.data?.error;
 
-      if (errorMsg?.includes('flavor profile') || errorMsg?.includes('baseline')) {
+      if (errorCode === 'friend_missing') {
         Alert.alert(
-          'Flavor Profiles Required',
-          `To see paired matches, both you and ${friendName} need to set up your flavor profiles by:\n\n1. Reviewing at least one oyster with ratings, OR\n2. Setting your baseline preferences in Profile`,
+          'Flavor Preferences Missing',
+          `Your friend doesn't have flavor preferences yet! Once they rate an oyster, you can see your paired matches!`,
+          [{ text: 'Got It' }]
+        );
+      } else if (errorCode === 'user_missing') {
+        Alert.alert(
+          'Flavor Preferences Missing',
+          `You don't have flavor preferences yet! Rate an oyster to see your paired matches!`,
+          [{ text: 'Got It' }]
+        );
+      } else if (errorCode === 'both_missing') {
+        Alert.alert(
+          'Flavor Preferences Missing',
+          `You and your friend don't have flavor preferences yet! Start reviewing oysters to activate paired matches!`,
           [{ text: 'Got It' }]
         );
       } else {

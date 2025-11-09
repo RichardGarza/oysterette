@@ -43,7 +43,7 @@ const LOGO_SIZES = {
 
 const RECOMMENDATIONS_LIMIT = 5;
 
-const LAST_UPDATED = '02:28 PM';
+const LAST_UPDATED = '02:52 PM';
 const TOP_RATED_LIMIT = 5;
 
 // ============================================================================

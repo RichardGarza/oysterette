@@ -387,8 +387,22 @@ export const getPairedRecommendations = async (req: Request, res: Response): Pro
       }),
     ]);
 
-    if (!user?.baselineSize || !friend?.baselineSize) {
-      res.status(400).json({ success: false, error: 'Both users need flavor profiles' });
+    // Check which user is missing flavor profile
+    const userHasProfile = user?.baselineSize !== null;
+    const friendHasProfile = friend?.baselineSize !== null;
+
+    if (!userHasProfile && !friendHasProfile) {
+      res.status(400).json({ success: false, error: 'both_missing', message: 'Both users need flavor profiles' });
+      return;
+    }
+
+    if (!userHasProfile) {
+      res.status(400).json({ success: false, error: 'user_missing', message: 'You need a flavor profile' });
+      return;
+    }
+
+    if (!friendHasProfile) {
+      res.status(400).json({ success: false, error: 'friend_missing', message: 'Friend needs a flavor profile' });
       return;
     }
 
