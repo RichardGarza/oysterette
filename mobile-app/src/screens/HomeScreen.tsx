@@ -49,7 +49,7 @@ const LOGO_SIZES = {
 
 const RECOMMENDATIONS_LIMIT = 5;
 
-const LAST_UPDATED = '09:51 PM';
+const LAST_UPDATED = '09:55 PM';
 const TOP_RATED_LIMIT = 5;
 
 // ============================================================================

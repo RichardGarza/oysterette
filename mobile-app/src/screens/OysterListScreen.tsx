@@ -191,7 +191,15 @@ export default function OysterListScreen() {
       if (flavorfulness) params.flavorfulness = flavorfulness;
       if (creaminess) params.creaminess = creaminess;
 
+      if (__DEV__) {
+        console.log('🔍 [OysterList] Filter params:', JSON.stringify(params, null, 2));
+      }
+
       const data = await oysterApi.getAll(params);
+
+      if (__DEV__) {
+        console.log(`🦪 [OysterList] Received ${data.length} oysters`);
+      }
       setOysters(data);
     } catch (err) {
       setError('Failed to load oysters. Please check your backend connection.');
@@ -476,6 +484,9 @@ export default function OysterListScreen() {
 
         {showFilters && (
           <View style={styles.filterSection}>
+            <Text variant="bodySmall" style={styles.debugText}>
+              Debug: {getFilteredOysters.length} oysters | Filters: {getActiveFilterCount}
+            </Text>
             <Text variant="titleSmall" style={styles.filterSectionTitle}>Sort By</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScrollView}>
               {sortOptions.map((option) => (
@@ -653,6 +664,11 @@ const createStyles = (colors: any, isDark: boolean) =>
       paddingTop: SPACING.MARGIN_TOP_MEDIUM,
       borderTopWidth: BORDERS.WIDTH,
       borderTopColor: colors.border,
+    },
+    debugText: {
+      color: colors.error,
+      marginBottom: 8,
+      fontWeight: 'bold',
     },
     filterSectionTitle: {
       fontSize: 14,
