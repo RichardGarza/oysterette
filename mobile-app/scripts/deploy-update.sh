@@ -27,8 +27,8 @@ echo ""
 echo "📦 Publishing update: $UPDATE_MESSAGE"
 echo ""
 
-# Publish to preview channel (for testing with friends)
-echo "📤 Publishing to preview channel..."
+# Publish to production channel
+echo "📤 Publishing to production channel..."
 eas update --branch production --message "$UPDATE_MESSAGE"
 
 echo ""
