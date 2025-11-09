@@ -24,9 +24,10 @@ import {
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-import { authApi } from '../services/api';
+import { authApi, reviewApi } from '../services/api';
 import { authStorage } from '../services/auth';
 import { favoritesStorage } from '../services/favorites';
+import { tempReviewsStorage } from '../services/tempReviews';
 import { useTheme } from '../context/ThemeContext';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
@@ -178,6 +179,37 @@ export default function LoginScreen() {
 
       loadUserTheme(response.user);
       await favoritesStorage.syncWithBackend();
+
+      // Submit any pending reviews
+      const pendingReviews = await tempReviewsStorage.getAll();
+      const reviewCount = Object.keys(pendingReviews).length;
+
+      if (reviewCount > 0) {
+        try {
+          for (const [id, review] of Object.entries(pendingReviews)) {
+            await reviewApi.create({
+              oysterId: review.oysterId,
+              rating: review.rating,
+              size: review.size,
+              body: review.body,
+              sweetBrininess: review.sweetBrininess,
+              flavorfulness: review.flavorfulness,
+              creaminess: review.creaminess,
+              notes: review.notes,
+              origin: review.origin,
+              species: review.species,
+              photoUrls: review.photoUrls,
+            });
+            await tempReviewsStorage.remove(id);
+          }
+          Alert.alert(
+            'Success!',
+            `Your ${reviewCount === 1 ? 'review has' : `${reviewCount} reviews have`} been saved to your profile.`
+          );
+        } catch (error) {
+          console.error('❌ [LoginScreen] Failed to submit pending reviews:', error);
+        }
+      }
 
       navigation.dispatch(
         CommonActions.reset({
