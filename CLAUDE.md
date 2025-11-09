@@ -127,19 +127,21 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 - Personalized recommendations
 - Baseline flavor profile with auto-learning
 - Social features (friends, activity feed, paired recommendations)
+- Gamification (XP system, levels, achievements, leaderboard)
 
-**Quality:** 282/282 tests passing ✅
+**Quality:** 293/293 tests passing ✅
 
 **Compliance:**
 - Apple App Store: 95% ready
 - Google Play Store: 100% documentation-ready
 
 **Recent Completions:**
+- Phase 22: Gamification & XP System (XP, levels, achievements, notifications)
 - Phase 21: Social Features (friend system, activity feed, paired matches)
 - Phase 20: AR Menu Scanner (OCR, fuzzy matching, unmatched detection)
 - Phase 23: Enhanced Flavor Profile Visualization (ranges, tooltips)
 
-**Next Tasks:** See ROADMAP.md for Phase 22 (Gamification) or Phase 24 (Admin Dashboard)
+**Next Tasks:** See ROADMAP.md for Phase 24 (Admin Dashboard) or Phase 25 (Push Notifications)
 
 ---
 
