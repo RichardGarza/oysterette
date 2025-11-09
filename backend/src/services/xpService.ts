@@ -21,7 +21,7 @@ export const XP_REWARDS = {
 
 // Level progression (XP required for each level)
 export function getXPForLevel(level: number): number {
-  // Level 1: 0 XP, Level 2: 100 XP, Level 3: 250 XP, etc.
+  // Level 1: 0 XP, Level 2: 100 XP, Level 3: 282 XP, Level 10: 2700 XP
   return Math.floor(100 * Math.pow(level - 1, 1.5));
 }
 

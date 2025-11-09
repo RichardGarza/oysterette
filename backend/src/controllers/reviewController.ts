@@ -15,6 +15,7 @@ import prisma from '../lib/prisma';
 import { ReviewRating } from '@prisma/client';
 import { recalculateOysterRatings } from '../services/ratingService';
 import { invalidateCache, updateBaselineWithReview } from '../services/recommendationService';
+import { awardXP, updateStreak, XP_REWARDS } from '../services/xpService';
 
 /**
  * Create a new review for an oyster
@@ -150,8 +151,16 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
     // Recalculate oyster ratings after creating review
     await recalculateOysterRatings(oysterId);
 
-    // Update user's baseline profile if this is a positive review (only for authenticated users)
+    // Award XP and update streak (only for authenticated users)
     if (req.userId) {
+      const reviewCount = await prisma.review.count({ where: { userId: req.userId } });
+      const isFirstReview = reviewCount === 1;
+      const xpAmount = isFirstReview ? XP_REWARDS.FIRST_REVIEW : XP_REWARDS.REVIEW_OYSTER;
+
+      await awardXP(req.userId, xpAmount, isFirstReview ? 'First review' : 'Review oyster');
+      await updateStreak(req.userId);
+
+      // Update user's baseline profile if this is a positive review
       await updateBaselineWithReview(req.userId, rating, {
         size,
         body,

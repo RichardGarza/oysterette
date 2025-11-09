@@ -15,6 +15,7 @@
 import { Request, Response } from 'express';
 import logger from '../utils/logger';
 import * as votingService from '../services/votingService';
+import { awardXP, XP_REWARDS } from '../services/xpService';
 
 /**
  * Cast a vote on a review
@@ -45,6 +46,9 @@ export async function voteOnReview(req: Request, res: Response) {
     }
 
     await votingService.voteOnReview(req.userId!, reviewId!, isAgree);
+
+    // Award XP for voting
+    await awardXP(req.userId!, XP_REWARDS.VOTE, 'Vote on review');
 
     res.json({ message: 'Vote recorded successfully' });
   } catch (error: any) {
