@@ -39,71 +39,72 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
   try {
     const { sortBy, sortDirection, sweetness, size, body, flavorfulness, creaminess } = req.query;
 
-    // Build where clause for attribute filtering
-    // Non-overlapping ranges for precise filtering
-    // - 'low' matches 1-5 (low end of spectrum)
-    // - 'high' matches 6-10 (high end of spectrum)
-    const where: any = {};
+    // Build individual filter conditions for scoring
+    const filterConditions: any[] = [];
+    const activeFilters: string[] = [];
 
-    // Sweetness filter - check both avg and seed data
+    // Sweetness filter
     if (sweetness && typeof sweetness === 'string') {
       const range = sweetness === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
-      where.AND = where.AND || [];
-      where.AND.push({
+      filterConditions.push({
         OR: [
           { avgSweetBrininess: range },
           { AND: [{ avgSweetBrininess: null }, { sweetBrininess: range }] }
         ]
       });
+      activeFilters.push('sweetness');
     }
 
-    // Size filter - check both avg and seed data
+    // Size filter
     if (size && typeof size === 'string') {
       const range = size === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
-      where.AND = where.AND || [];
-      where.AND.push({
+      filterConditions.push({
         OR: [
           { avgSize: range },
           { AND: [{ avgSize: null }, { size: range }] }
         ]
       });
+      activeFilters.push('size');
     }
 
-    // Body filter - check both avg and seed data
+    // Body filter
     if (body && typeof body === 'string') {
       const range = body === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
-      where.AND = where.AND || [];
-      where.AND.push({
+      filterConditions.push({
         OR: [
           { avgBody: range },
           { AND: [{ avgBody: null }, { body: range }] }
         ]
       });
+      activeFilters.push('body');
     }
 
-    // Flavorfulness filter - check both avg and seed data
+    // Flavorfulness filter
     if (flavorfulness && typeof flavorfulness === 'string') {
       const range = flavorfulness === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
-      where.AND = where.AND || [];
-      where.AND.push({
+      filterConditions.push({
         OR: [
           { avgFlavorfulness: range },
           { AND: [{ avgFlavorfulness: null }, { flavorfulness: range }] }
         ]
       });
+      activeFilters.push('flavorfulness');
     }
 
-    // Creaminess filter - check both avg and seed data
+    // Creaminess filter
     if (creaminess && typeof creaminess === 'string') {
       const range = creaminess === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
-      where.AND = where.AND || [];
-      where.AND.push({
+      filterConditions.push({
         OR: [
           { avgCreaminess: range },
           { AND: [{ avgCreaminess: null }, { creaminess: range }] }
         ]
       });
+      activeFilters.push('creaminess');
     }
+
+    // Build where clause: if multiple filters, use OR to get all potential matches
+    const where: any = filterConditions.length > 0 ? { OR: filterConditions } : {};
 
     // Determine sort direction (default based on sort type)
     const direction = sortDirection === 'asc' || sortDirection === 'desc'
@@ -140,7 +141,7 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
       }
     }
 
-    const oysters = await prisma.oyster.findMany({
+    let oysters = await prisma.oyster.findMany({
       where,
       orderBy,
       include: {
@@ -149,6 +150,50 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
         },
       },
     });
+
+    // Calculate match score if multiple filters active
+    if (activeFilters.length > 0) {
+      const getFilterRanges = () => ({
+        sweetness: sweetness ? (sweetness === 'low' ? { min: 1, max: 5 } : { min: 6, max: 10 }) : null,
+        size: size ? (size === 'low' ? { min: 1, max: 5 } : { min: 6, max: 10 }) : null,
+        body: body ? (body === 'low' ? { min: 1, max: 5 } : { min: 6, max: 10 }) : null,
+        flavorfulness: flavorfulness ? (flavorfulness === 'low' ? { min: 1, max: 5 } : { min: 6, max: 10 }) : null,
+        creaminess: creaminess ? (creaminess === 'low' ? { min: 1, max: 5 } : { min: 6, max: 10 }) : null,
+      });
+
+      const ranges = getFilterRanges();
+
+      oysters = oysters.map((oyster: any) => {
+        let matchScore = 0;
+
+        // Check each filter and add to score if it matches
+        if (ranges.sweetness) {
+          const val = oyster.avgSweetBrininess ?? oyster.sweetBrininess;
+          if (val >= ranges.sweetness.min && val <= ranges.sweetness.max) matchScore++;
+        }
+        if (ranges.size) {
+          const val = oyster.avgSize ?? oyster.size;
+          if (val >= ranges.size.min && val <= ranges.size.max) matchScore++;
+        }
+        if (ranges.body) {
+          const val = oyster.avgBody ?? oyster.body;
+          if (val >= ranges.body.min && val <= ranges.body.max) matchScore++;
+        }
+        if (ranges.flavorfulness) {
+          const val = oyster.avgFlavorfulness ?? oyster.flavorfulness;
+          if (val >= ranges.flavorfulness.min && val <= ranges.flavorfulness.max) matchScore++;
+        }
+        if (ranges.creaminess) {
+          const val = oyster.avgCreaminess ?? oyster.creaminess;
+          if (val >= ranges.creaminess.min && val <= ranges.creaminess.max) matchScore++;
+        }
+
+        return { ...oyster, matchScore };
+      });
+
+      // Sort by match score descending (best matches first)
+      oysters.sort((a: any, b: any) => b.matchScore - a.matchScore);
+    }
 
     res.status(200).json({
       success: true,

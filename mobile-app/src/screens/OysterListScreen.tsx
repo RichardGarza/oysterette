@@ -137,25 +137,6 @@ export default function OysterListScreen() {
     checkAuth();
   }, []);
 
-  useEffect(() => {
-    // Auto-sort by active filter (priority: size > body > sweetness > flavor > creamy)
-    if (size) {
-      setSelectedSortBy('size');
-      setSortDirection(size === 'low' ? 'asc' : 'desc');
-    } else if (body) {
-      setSelectedSortBy('body');
-      setSortDirection(body === 'low' ? 'asc' : 'desc');
-    } else if (sweetness) {
-      setSelectedSortBy('sweetness');
-      setSortDirection(sweetness === 'low' ? 'asc' : 'desc');
-    } else if (flavorfulness) {
-      setSelectedSortBy('flavorfulness');
-      setSortDirection(flavorfulness === 'low' ? 'asc' : 'desc');
-    } else if (creaminess) {
-      setSelectedSortBy('creaminess');
-      setSortDirection(creaminess === 'low' ? 'asc' : 'desc');
-    }
-  }, [size, body, sweetness, flavorfulness, creaminess]);
 
   useEffect(() => {
     // Refetch when filters change and scroll to top
