@@ -139,7 +139,10 @@ interface ProfileData {
 
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const { theme, isDark, paperTheme } = useTheme();
+  const { userId: viewingUserId } = route.params || {};
+  const isViewingOwnProfile = !viewingUserId;
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -187,6 +190,17 @@ export default function ProfileScreen() {
         setRefreshing(true);
       } else {
         setLoading(true);
+      }
+
+      if (!isViewingOwnProfile) {
+        // Viewing friend's profile - show coming soon alert
+        Alert.alert(
+          'Coming Soon',
+          'Friend profiles are coming in the next update!',
+          [{ text: 'OK', onPress: () => navigation.goBack() }]
+        );
+        setLoading(false);
+        return;
       }
 
       const user = await authStorage.getUser();

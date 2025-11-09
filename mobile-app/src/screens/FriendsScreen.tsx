@@ -195,7 +195,7 @@ export default function FriendsScreen() {
   }, [navigation]);
 
   const renderFriend = ({ item }: { item: Friend }) => (
-    <Card mode="elevated" style={styles.card}>
+    <Card mode="elevated" style={styles.card} onPress={() => navigation.navigate('Profile', { userId: item.id })}>
       <Card.Content>
         <View style={styles.friendRow}>
           <Avatar.Text

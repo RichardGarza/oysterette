@@ -105,7 +105,7 @@ export type RootStackParamList = {
   EditReview: { review: Review };
   Settings: undefined;
   TopOysters: undefined;
-  Profile: undefined;
+  Profile: { userId?: string } | undefined;
   PrivacySettings: undefined;
   SetFlavorProfile: undefined;
   ScanMenu: undefined;
