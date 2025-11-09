@@ -159,6 +159,17 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 
 ---
 
+## 🚀 OTA UPDATE RULES - MANDATORY
+
+**CRITICAL: Every OTA update MUST:**
+1. **Deploy to `production` branch:** `eas update --branch production --message "msg"` (NOT preview)
+2. **Update homepage timestamp:** Edit `mobile-app/src/screens/HomeScreen.tsx` → `LAST_UPDATED` constant to current time (e.g., `'02:15 PM'`)
+3. **Include both in same update:** Timestamp change + feature changes in single deployment
+
+**Script:** `npm run deploy-update "message"` now auto-deploys to production branch
+
+---
+
 ## 🔧 QUICK COMMANDS
 
 **Backend:**
