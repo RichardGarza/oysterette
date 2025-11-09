@@ -210,7 +210,7 @@ export default function OysterListScreen() {
         setLoading(false);
       }
     }
-  }, [selectedSortBy, sortDirection, sweetness, size, body, flavorfulness, creaminess]);
+  }, [selectedSortBy, sortDirection, sweetness, size, body]);
 
   const onRefresh = useCallback(() => {
     fetchOysters(true);
