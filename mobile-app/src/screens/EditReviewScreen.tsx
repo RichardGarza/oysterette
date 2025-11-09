@@ -70,13 +70,23 @@ export default function EditReviewScreen() {
   const { theme } = useTheme();
 
   const [rating, setRating] = useState<ReviewRating>(review.rating);
-  const [size, setSize] = useState<number>(review.size || SLIDER_CONFIG.DEFAULT_VALUE);
-  const [body, setBody] = useState<number>(review.body || SLIDER_CONFIG.DEFAULT_VALUE);
-  const [sweetBrininess, setSweetBrininess] = useState<number>(review.sweetBrininess || SLIDER_CONFIG.DEFAULT_VALUE);
-  const [flavorfulness, setFlavorfulness] = useState<number>(review.flavorfulness || SLIDER_CONFIG.DEFAULT_VALUE);
-  const [creaminess, setCreaminess] = useState<number>(review.creaminess || SLIDER_CONFIG.DEFAULT_VALUE);
+  const [size, setSize] = useState<number>(review.size ?? SLIDER_CONFIG.DEFAULT_VALUE);
+  const [body, setBody] = useState<number>(review.body ?? SLIDER_CONFIG.DEFAULT_VALUE);
+  const [sweetBrininess, setSweetBrininess] = useState<number>(review.sweetBrininess ?? SLIDER_CONFIG.DEFAULT_VALUE);
+  const [flavorfulness, setFlavorfulness] = useState<number>(review.flavorfulness ?? SLIDER_CONFIG.DEFAULT_VALUE);
+  const [creaminess, setCreaminess] = useState<number>(review.creaminess ?? SLIDER_CONFIG.DEFAULT_VALUE);
   const [notes, setNotes] = useState(review.notes || '');
   const [submitting, setSubmitting] = useState(false);
+
+  if (__DEV__) {
+    console.log('🔍 [EditReview] Review data:', {
+      size: review.size,
+      body: review.body,
+      sweetBrininess: review.sweetBrininess,
+      flavorfulness: review.flavorfulness,
+      creaminess: review.creaminess,
+    });
+  }
 
   const handleSubmit = useCallback(async () => {
     if (!rating) {
