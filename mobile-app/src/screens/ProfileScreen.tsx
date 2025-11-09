@@ -160,6 +160,9 @@ export default function ProfileScreen() {
   // Profile Photo Upload
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
+  // Flavor Attribute Tooltip
+  const [tooltipAttribute, setTooltipAttribute] = useState<string | null>(null);
+
   useEffect(() => {
     loadProfile();
   }, []);
@@ -614,7 +617,11 @@ export default function ProfileScreen() {
               </Text>
             <View style={styles.flavorAttributesGrid}>
               {user.baselineSize && (
-                <View style={styles.flavorAttribute}>
+                <TouchableOpacity
+                  style={styles.flavorAttribute}
+                  onPress={() => setTooltipAttribute('size')}
+                  activeOpacity={0.7}
+                >
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Size</Text>
                   {user.rangeMinSize !== null && user.rangeMaxSize !== null ? (
                     <View style={styles.rangeContainer}>
@@ -640,10 +647,14 @@ export default function ProfileScreen() {
                       ? `${user.rangeMinSize.toFixed(0)}-${user.rangeMaxSize.toFixed(0)}/10 (${getRangeLabel('size', user.rangeMinSize, user.rangeMaxSize)})`
                       : `${user.baselineSize.toFixed(1)}/10 (${getAttributeLabel('size', user.baselineSize)})`}
                   </Text>
-                </View>
+                </TouchableOpacity>
               )}
               {user.baselineBody && (
-                <View style={styles.flavorAttribute}>
+                <TouchableOpacity
+                  style={styles.flavorAttribute}
+                  onPress={() => setTooltipAttribute('body')}
+                  activeOpacity={0.7}
+                >
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Body</Text>
                   {user.rangeMinBody !== null && user.rangeMaxBody !== null ? (
                     <View style={styles.rangeContainer}>
@@ -669,10 +680,14 @@ export default function ProfileScreen() {
                       ? `${user.rangeMinBody.toFixed(0)}-${user.rangeMaxBody.toFixed(0)}/10 (${getRangeLabel('body', user.rangeMinBody, user.rangeMaxBody)})`
                       : `${user.baselineBody.toFixed(1)}/10 (${getAttributeLabel('body', user.baselineBody)})`}
                   </Text>
-                </View>
+                </TouchableOpacity>
               )}
               {user.baselineSweetBrininess && (
-                <View style={styles.flavorAttribute}>
+                <TouchableOpacity
+                  style={styles.flavorAttribute}
+                  onPress={() => setTooltipAttribute('sweetBrininess')}
+                  activeOpacity={0.7}
+                >
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Sweet/Brininess</Text>
                   {user.rangeMinSweetBrininess !== null && user.rangeMaxSweetBrininess !== null ? (
                     <View style={styles.rangeContainer}>
@@ -698,10 +713,14 @@ export default function ProfileScreen() {
                       ? `${user.rangeMinSweetBrininess.toFixed(0)}-${user.rangeMaxSweetBrininess.toFixed(0)}/10 (${getRangeLabel('sweetBrininess', user.rangeMinSweetBrininess, user.rangeMaxSweetBrininess)})`
                       : `${user.baselineSweetBrininess.toFixed(1)}/10 (${getAttributeLabel('sweetBrininess', user.baselineSweetBrininess)})`}
                   </Text>
-                </View>
+                </TouchableOpacity>
               )}
               {user.baselineFlavorfulness && (
-                <View style={styles.flavorAttribute}>
+                <TouchableOpacity
+                  style={styles.flavorAttribute}
+                  onPress={() => setTooltipAttribute('flavorfulness')}
+                  activeOpacity={0.7}
+                >
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Flavorfulness</Text>
                   {user.rangeMinFlavorfulness !== null && user.rangeMaxFlavorfulness !== null ? (
                     <View style={styles.rangeContainer}>
@@ -727,10 +746,14 @@ export default function ProfileScreen() {
                       ? `${user.rangeMinFlavorfulness.toFixed(0)}-${user.rangeMaxFlavorfulness.toFixed(0)}/10 (${getRangeLabel('flavorfulness', user.rangeMinFlavorfulness, user.rangeMaxFlavorfulness)})`
                       : `${user.baselineFlavorfulness.toFixed(1)}/10 (${getAttributeLabel('flavorfulness', user.baselineFlavorfulness)})`}
                   </Text>
-                </View>
+                </TouchableOpacity>
               )}
               {user.baselineCreaminess && (
-                <View style={styles.flavorAttribute}>
+                <TouchableOpacity
+                  style={styles.flavorAttribute}
+                  onPress={() => setTooltipAttribute('creaminess')}
+                  activeOpacity={0.7}
+                >
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Creaminess</Text>
                   {user.rangeMinCreaminess !== null && user.rangeMaxCreaminess !== null ? (
                     <View style={styles.rangeContainer}>
@@ -756,7 +779,7 @@ export default function ProfileScreen() {
                       ? `${user.rangeMinCreaminess.toFixed(0)}-${user.rangeMaxCreaminess.toFixed(0)}/10 (${getRangeLabel('creaminess', user.rangeMinCreaminess, user.rangeMaxCreaminess)})`
                       : `${user.baselineCreaminess.toFixed(1)}/10 (${getAttributeLabel('creaminess', user.baselineCreaminess)})`}
                   </Text>
-                </View>
+                </TouchableOpacity>
               )}
             </View>
             </Card.Content>
@@ -908,6 +931,168 @@ export default function ProfileScreen() {
             <Button onPress={handleChangePassword} loading={passwordLoading} disabled={passwordLoading}>
               Change
             </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
+      {/* Flavor Attribute Tooltip */}
+      <Portal>
+        <Dialog visible={tooltipAttribute !== null} onDismiss={() => setTooltipAttribute(null)}>
+          <Dialog.Title>
+            {tooltipAttribute === 'size' && 'Size Preference'}
+            {tooltipAttribute === 'body' && 'Body Preference'}
+            {tooltipAttribute === 'sweetBrininess' && 'Sweet/Brininess Preference'}
+            {tooltipAttribute === 'flavorfulness' && 'Flavorfulness Preference'}
+            {tooltipAttribute === 'creaminess' && 'Creaminess Preference'}
+          </Dialog.Title>
+          <Dialog.Content>
+            {tooltipAttribute && user && (
+              <>
+                {tooltipAttribute === 'size' && user.rangeMinSize !== null && user.rangeMaxSize !== null ? (
+                  <>
+                    <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
+                      You typically enjoy oysters with sizes ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('size', user.rangeMinSize)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('size', user.rangeMaxSize)}</Text>.
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
+                      • Minimum: {user.rangeMinSize.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
+                      • Most common: {user.rangeMedianSize?.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 8 }}>
+                      • Maximum: {user.rangeMaxSize.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
+                      Based on {stats.totalReviews} reviews. We'll recommend oysters in this range.
+                    </Text>
+                  </>
+                ) : tooltipAttribute === 'size' && user.baselineSize ? (
+                  <>
+                    <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
+                      Your preferred size: <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('size', user.baselineSize)}</Text> ({user.baselineSize.toFixed(1)}/10)
+                    </Text>
+                    <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
+                      This will refine as you review more oysters (5+ reviews for range).
+                    </Text>
+                  </>
+                ) : null}
+                {tooltipAttribute === 'body' && user.rangeMinBody !== null && user.rangeMaxBody !== null ? (
+                  <>
+                    <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
+                      You typically enjoy oysters with body ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('body', user.rangeMinBody)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('body', user.rangeMaxBody)}</Text>.
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
+                      • Minimum: {user.rangeMinBody.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
+                      • Most common: {user.rangeMedianBody?.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 8 }}>
+                      • Maximum: {user.rangeMaxBody.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
+                      Based on {stats.totalReviews} reviews. We'll recommend oysters in this range.
+                    </Text>
+                  </>
+                ) : tooltipAttribute === 'body' && user.baselineBody ? (
+                  <>
+                    <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
+                      Your preferred body: <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('body', user.baselineBody)}</Text> ({user.baselineBody.toFixed(1)}/10)
+                    </Text>
+                    <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
+                      This will refine as you review more oysters (5+ reviews for range).
+                    </Text>
+                  </>
+                ) : null}
+                {tooltipAttribute === 'sweetBrininess' && user.rangeMinSweetBrininess !== null && user.rangeMaxSweetBrininess !== null ? (
+                  <>
+                    <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
+                      You typically enjoy oysters ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('sweetBrininess', user.rangeMinSweetBrininess)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('sweetBrininess', user.rangeMaxSweetBrininess)}</Text>.
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
+                      • Minimum: {user.rangeMinSweetBrininess.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
+                      • Most common: {user.rangeMedianSweetBrininess?.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 8 }}>
+                      • Maximum: {user.rangeMaxSweetBrininess.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
+                      Based on {stats.totalReviews} reviews. We'll recommend oysters in this range.
+                    </Text>
+                  </>
+                ) : tooltipAttribute === 'sweetBrininess' && user.baselineSweetBrininess ? (
+                  <>
+                    <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
+                      Your preferred sweet/brininess: <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('sweetBrininess', user.baselineSweetBrininess)}</Text> ({user.baselineSweetBrininess.toFixed(1)}/10)
+                    </Text>
+                    <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
+                      This will refine as you review more oysters (5+ reviews for range).
+                    </Text>
+                  </>
+                ) : null}
+                {tooltipAttribute === 'flavorfulness' && user.rangeMinFlavorfulness !== null && user.rangeMaxFlavorfulness !== null ? (
+                  <>
+                    <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
+                      You typically enjoy oysters with flavorfulness ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('flavorfulness', user.rangeMinFlavorfulness)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('flavorfulness', user.rangeMaxFlavorfulness)}</Text>.
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
+                      • Minimum: {user.rangeMinFlavorfulness.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
+                      • Most common: {user.rangeMedianFlavorfulness?.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 8 }}>
+                      • Maximum: {user.rangeMaxFlavorfulness.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
+                      Based on {stats.totalReviews} reviews. We'll recommend oysters in this range.
+                    </Text>
+                  </>
+                ) : tooltipAttribute === 'flavorfulness' && user.baselineFlavorfulness ? (
+                  <>
+                    <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
+                      Your preferred flavorfulness: <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('flavorfulness', user.baselineFlavorfulness)}</Text> ({user.baselineFlavorfulness.toFixed(1)}/10)
+                    </Text>
+                    <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
+                      This will refine as you review more oysters (5+ reviews for range).
+                    </Text>
+                  </>
+                ) : null}
+                {tooltipAttribute === 'creaminess' && user.rangeMinCreaminess !== null && user.rangeMaxCreaminess !== null ? (
+                  <>
+                    <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
+                      You typically enjoy oysters with creaminess ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('creaminess', user.rangeMinCreaminess)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('creaminess', user.rangeMaxCreaminess)}</Text>.
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
+                      • Minimum: {user.rangeMinCreaminess.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
+                      • Most common: {user.rangeMedianCreaminess?.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 8 }}>
+                      • Maximum: {user.rangeMaxCreaminess.toFixed(1)}/10
+                    </Text>
+                    <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
+                      Based on {stats.totalReviews} reviews. We'll recommend oysters in this range.
+                    </Text>
+                  </>
+                ) : tooltipAttribute === 'creaminess' && user.baselineCreaminess ? (
+                  <>
+                    <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
+                      Your preferred creaminess: <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('creaminess', user.baselineCreaminess)}</Text> ({user.baselineCreaminess.toFixed(1)}/10)
+                    </Text>
+                    <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
+                      This will refine as you review more oysters (5+ reviews for range).
+                    </Text>
+                  </>
+                ) : null}
+              </>
+            )}
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setTooltipAttribute(null)}>Close</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
