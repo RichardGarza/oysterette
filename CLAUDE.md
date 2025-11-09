@@ -160,11 +160,13 @@ npx prisma generate                # Regenerate Prisma client
 **Mobile:**
 
 ```bash
-npm start                          # Dev server
-npm run deploy-update "message"    # OTA update
-npm run build:android:prod         # Full APK build
-eas build --platform ios           # iOS build
+npm start                                                  # Dev server
+eas update --branch production --message "your message"    # OTA update (ALWAYS use production branch)
+npm run build:android:prod                                 # Full APK build
+eas build --platform ios                                   # iOS build
 ```
+
+🚨 **CRITICAL: Always deploy OTA updates to `production` branch for testing!**
 
 **Git:**
 
@@ -185,6 +187,7 @@ git push origin main               # Deploy (triggers Railway)
 5. **Neon:** 3GB storage, auto-sleeps
 6. **Session Logs:** See SESSION_LOGS.md for detailed session history
 7. **Roadmap:** See ROADMAP.md for future feature planning
+8. **OTA Updates:** ALWAYS deploy to `production` branch: `eas update --branch production --message "msg"`
 
 ---
 

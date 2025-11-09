@@ -452,12 +452,27 @@ export default function OysterListScreen() {
           />
         </View>
 
-        <Searchbar
-          placeholder="Search oysters..."
-          value={searchQuery}
-          onChangeText={handleSearch}
-          style={styles.searchBar}
-        />
+        <View style={styles.searchRow}>
+          <Searchbar
+            placeholder="Search oysters..."
+            value={searchQuery}
+            onChangeText={handleSearch}
+            style={styles.searchBar}
+          />
+          <View>
+            <IconButton
+              icon="filter-variant"
+              size={24}
+              onPress={() => setShowFilters(!showFilters)}
+              style={styles.filterIconButton}
+            />
+            {getActiveFilterCount > 0 && (
+              <Badge size={18} style={styles.filterBadge}>
+                {getActiveFilterCount}
+              </Badge>
+            )}
+          </View>
+        </View>
 
         {showFilters && (
           <View style={styles.filterSection}>
@@ -616,6 +631,11 @@ const createStyles = (colors: any, isDark: boolean) =>
     segmentedButtons: {
       flex: 1,
     },
+    searchRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
     filterIconButton: {
       margin: 0,
     },
@@ -625,6 +645,7 @@ const createStyles = (colors: any, isDark: boolean) =>
       right: SPACING.BADGE_RIGHT,
     },
     searchBar: {
+      flex: 1,
       marginBottom: 0,
     },
     filterSection: {
