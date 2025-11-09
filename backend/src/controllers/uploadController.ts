@@ -81,7 +81,8 @@ export const uploadImage = async (req: Request, res: Response): Promise<void> =>
         {
           folder,
           resource_type: 'image',
-          format: 'auto', // Auto-convert to optimal format
+          // Note: Don't use format: 'auto' - causes "Invalid extension" error
+          // Cloudinary auto-detects format from the file itself
           quality: 'auto', // Auto-optimize quality
         },
         (error, result) => {
@@ -146,7 +147,6 @@ export const uploadImages = async (req: Request, res: Response): Promise<void> =
           {
             folder,
             resource_type: 'image',
-            format: 'auto',
             quality: 'auto',
           },
           (error, result) => {
