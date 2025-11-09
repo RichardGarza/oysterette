@@ -17,6 +17,7 @@ import {
   Text,
 } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import Constants from 'expo-constants';
 import { useTheme, ThemeMode } from '../context/ThemeContext';
 import { authStorage } from '../services/auth';
 
@@ -24,7 +25,7 @@ import { authStorage } from '../services/auth';
 // CONSTANTS
 // ============================================================================
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = Constants.expoConfig?.version || '2.0.0';
 
 const LEGAL_URLS = {
   PRIVACY_POLICY: 'https://richardgarza.github.io/oysterette/privacy-policy.html',
