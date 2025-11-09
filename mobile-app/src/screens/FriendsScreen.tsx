@@ -6,10 +6,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl, SafeAreaView } from 'react-native';
-import { Card, Text, Button, Appbar, SegmentedButtons, Avatar } from 'react-native-paper';
+import { Card, Text, Button, Appbar, SegmentedButtons, Avatar, Searchbar } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
-import { friendApi } from '../services/api';
+import { friendApi, userApi } from '../services/api';
 
 interface Friend {
   id: string;
@@ -37,6 +37,9 @@ export default function FriendsScreen() {
   const [activeTab, setActiveTab] = useState('friends');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [pendingRequests, setPendingRequests] = useState<{ sent: PendingRequest[]; received: PendingRequest[] }>({
     sent: [],
@@ -99,6 +102,38 @@ export default function FriendsScreen() {
     } catch (error) {
       if (__DEV__) {
         console.error('❌ [FriendsScreen] Error removing friend:', error);
+      }
+    }
+  }, [loadData]);
+
+  const handleSearch = useCallback(async (query: string) => {
+    setSearchQuery(query);
+    if (query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    try {
+      setSearching(true);
+      const results = await userApi.searchUsers(query);
+      setSearchResults(results);
+    } catch (error) {
+      if (__DEV__) {
+        console.error('❌ [FriendsScreen] Error searching users:', error);
+      }
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
+  const handleSendRequest = useCallback(async (userId: string) => {
+    try {
+      await friendApi.sendRequest(userId);
+      loadData();
+      setSearchQuery('');
+      setSearchResults([]);
+    } catch (error) {
+      if (__DEV__) {
+        console.error('❌ [FriendsScreen] Error sending request:', error);
       }
     }
   }, [loadData]);
@@ -168,6 +203,27 @@ export default function FriendsScreen() {
     </Card>
   );
 
+  const renderSearchResult = ({ item }: { item: any }) => (
+    <Card mode="elevated" style={styles.card}>
+      <Card.Content>
+        <View style={styles.friendRow}>
+          <Avatar.Text
+            size={48}
+            label={item.name.charAt(0).toUpperCase()}
+            style={{ backgroundColor: paperTheme.colors.primary }}
+          />
+          <View style={styles.friendInfo}>
+            <Text variant="titleMedium">{item.name}</Text>
+            <Text variant="bodySmall" style={{ opacity: 0.7 }}>{item.email}</Text>
+          </View>
+          <Button mode="contained" onPress={() => handleSendRequest(item.id)} compact icon="account-plus">
+            Add
+          </Button>
+        </View>
+      </Card.Content>
+    </Card>
+  );
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
       <Appbar.Header>
@@ -175,7 +231,28 @@ export default function FriendsScreen() {
         <Appbar.Content title="Friends" />
       </Appbar.Header>
 
-      <SegmentedButtons
+      <Searchbar
+        placeholder="Search users by name or email"
+        onChangeText={handleSearch}
+        value={searchQuery}
+        style={styles.searchBar}
+        loading={searching}
+      />
+
+      {searchQuery.length >= 2 && searchResults.length > 0 ? (
+        <FlatList
+          data={searchResults}
+          renderItem={renderSearchResult}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+        />
+      ) : searchQuery.length >= 2 && !searching ? (
+        <View style={styles.empty}>
+          <Text variant="bodyLarge">No users found</Text>
+        </View>
+      ) : (
+        <>
+          <SegmentedButtons
         value={activeTab}
         onValueChange={setActiveTab}
         buttons={[
@@ -219,6 +296,8 @@ export default function FriendsScreen() {
           }
         />
       )}
+        </>
+      )}
     </SafeAreaView>
   );
 }
@@ -227,8 +306,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  searchBar: {
+    margin: 16,
+    marginBottom: 8,
+  },
   tabs: {
     margin: 16,
+    marginTop: 8,
   },
   list: {
     padding: 16,

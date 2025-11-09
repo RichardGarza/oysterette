@@ -367,6 +367,13 @@ export const voteApi = {
 
 // User API
 export const userApi = {
+  // Search users
+  searchUsers: async (query: string): Promise<any[]> => {
+    const response = await api.get<ApiResponse<any[]>>(`/users/search?q=${encodeURIComponent(query)}`);
+    return response.data.data || [];
+  },
+
+
   // Get user's top oysters
   getTopOysters: async (): Promise<UserTopOyster[]> => {
     const response = await api.get<ApiResponse<UserTopOyster[]>>('/users/top-oysters');

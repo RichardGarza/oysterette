@@ -759,6 +759,53 @@ export const updatePrivacySettings = async (req: Request, res: Response): Promis
  * @returns 401 - Not authenticated
  * @returns 500 - Server error
  */
+/**
+ * Search users by name or email
+ *
+ * @route GET /api/users/search?q=query
+ */
+export const searchUsers = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
+
+    const { q } = req.query;
+
+    if (!q || typeof q !== 'string' || q.length < 2) {
+      res.status(400).json({ success: false, error: 'Search query must be at least 2 characters' });
+      return;
+    }
+
+    const users = await prisma.user.findMany({
+      where: {
+        AND: [
+          { id: { not: req.userId } }, // Exclude self
+          {
+            OR: [
+              { name: { contains: q, mode: 'insensitive' } },
+              { email: { contains: q, mode: 'insensitive' } },
+            ],
+          },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        profilePhotoUrl: true,
+      },
+      take: 20,
+    });
+
+    res.status(200).json({ success: true, data: users });
+  } catch (error) {
+    logger.error('Search users error:', error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+};
+
 export const setFlavorProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {

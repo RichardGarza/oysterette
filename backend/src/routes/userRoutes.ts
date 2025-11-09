@@ -40,6 +40,7 @@ import {
   deleteAccount,
   updatePrivacySettings,
   setFlavorProfile,
+  searchUsers,
 } from '../controllers/userController';
 import { authenticate } from '../middleware/auth';
 import { validate } from '../middleware/validate';
@@ -76,6 +77,9 @@ router.put('/preferences', authenticate, updatePreferences);
 
 // Flavor profile (for recommendations)
 router.put('/flavor-profile', authenticate, setFlavorProfile);
+
+// Search users
+router.get('/search', authenticate, searchUsers);
 
 // Top oysters
 router.get('/top-oysters', authenticate, getTopOysters);
