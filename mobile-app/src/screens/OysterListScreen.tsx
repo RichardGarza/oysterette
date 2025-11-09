@@ -302,10 +302,8 @@ export default function OysterListScreen() {
     { value: 'name', label: 'Name' },
     { value: 'rating', label: 'Rating' },
     { value: 'size', label: 'Size' },
-    { value: 'sweetness', label: 'Sweetness' },
-    { value: 'creaminess', label: 'Creaminess' },
-    { value: 'flavorfulness', label: 'Flavor' },
     { value: 'body', label: 'Body' },
+    { value: 'sweetness', label: 'Sweetness' },
   ], []);
 
   const attributeFilters = useMemo(() => [
