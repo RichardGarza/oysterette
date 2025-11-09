@@ -227,9 +227,17 @@ export default function AddReviewScreen() {
       });
 
       console.log('📸 [AddReviewScreen] Response status:', response.status);
+      console.log('📸 [AddReviewScreen] Response headers:', JSON.stringify(response.headers));
+
+      // Check if response is OK (200-299)
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ [AddReviewScreen] HTTP Error:', response.status, errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
 
       const data = await response.json();
-      console.log('📸 [AddReviewScreen] Response data:', data);
+      console.log('📸 [AddReviewScreen] Response data:', JSON.stringify(data));
 
       if (data.success && data.data && data.data.url) {
         console.log('✅ [AddReviewScreen] Photo uploaded successfully:', data.data.url);
@@ -248,7 +256,9 @@ export default function AddReviewScreen() {
 
       // Show user-friendly error message
       let userMessage = 'Failed to upload photo. ';
-      if (error.message.includes('503')) {
+      if (error.message.includes('429')) {
+        userMessage += 'Too many requests. Please wait a moment and try again.';
+      } else if (error.message.includes('503')) {
         userMessage += 'Image upload service is temporarily unavailable.';
       } else if (error.message.includes('413')) {
         userMessage += 'Image is too large (max 5MB).';
@@ -257,7 +267,7 @@ export default function AddReviewScreen() {
       } else if (error.message.includes('401')) {
         userMessage += 'Authentication failed. Please log in again.';
       } else {
-        userMessage += 'Please try again or choose a different image.';
+        userMessage += `${error.message}\n\nPlease try again or choose a different image.`;
       }
 
       Alert.alert('Upload Failed', userMessage);

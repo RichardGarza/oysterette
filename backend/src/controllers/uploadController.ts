@@ -40,8 +40,15 @@ import { Readable } from 'stream';
  */
 export const uploadImage = async (req: Request, res: Response): Promise<void> => {
   try {
+    logger.info('Upload request received', {
+      hasFile: !!req.file,
+      folder: req.query.folder,
+      userId: req.userId,
+    });
+
     // Check if Cloudinary is configured
     if (!isCloudinaryConfigured) {
+      logger.error('Cloudinary not configured');
       res.status(503).json({
         success: false,
         error: 'Image upload service is not configured',
@@ -51,12 +58,19 @@ export const uploadImage = async (req: Request, res: Response): Promise<void> =>
 
     // Check if file was uploaded
     if (!req.file) {
+      logger.error('No file in request');
       res.status(400).json({
         success: false,
         error: 'No image file uploaded',
       });
       return;
     }
+
+    logger.info('File received', {
+      filename: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+    });
 
     // Get upload folder from query param (default: reviews)
     const folder = req.query.folder === 'profiles' ? 'oysterette/profiles' : 'oysterette/reviews';
