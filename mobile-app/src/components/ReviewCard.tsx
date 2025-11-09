@@ -8,6 +8,9 @@ import React, { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import {
   View,
   StyleSheet,
+  Image,
+  ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import { Card, Text, IconButton, Chip, Button, ActivityIndicator, Dialog, Portal, Snackbar } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
@@ -246,6 +249,25 @@ export const ReviewCard = memo<ReviewCardProps>(({
           </Text>
         )}
 
+        {review.photoUrls && review.photoUrls.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.photoScroll}
+            contentContainerStyle={styles.photoScrollContent}
+          >
+            {review.photoUrls.map((photoUrl, index) => (
+              <TouchableOpacity key={index} activeOpacity={0.8}>
+                <Image
+                  source={{ uri: photoUrl }}
+                  style={styles.photoThumbnail}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+
         <View style={styles.voteContainer}>
           <View style={styles.voteButtons}>
             <Button
@@ -335,6 +357,20 @@ const useStyles = (theme: Theme, isDark: boolean) => useMemo(() => StyleSheet.cr
     flexDirection: 'row',
     marginTop: -8,
     marginRight: -12,
+  },
+  photoScroll: {
+    marginTop: 12,
+    marginHorizontal: -STYLES_CONFIG.CARD_PADDING,
+  },
+  photoScrollContent: {
+    paddingHorizontal: STYLES_CONFIG.CARD_PADDING,
+    gap: 8,
+  },
+  photoThumbnail: {
+    width: 120,
+    height: 120,
+    borderRadius: 8,
+    marginRight: 8,
   },
   voteContainer: {
     borderTopWidth: 1,

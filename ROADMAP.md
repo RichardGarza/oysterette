@@ -2106,68 +2106,97 @@ function getAttributeRangeLabel(attribute: string, min: number, max: number) {
 
 ## 📱 Phase 26: Production Testing Fixes (v2.0.0 User Testing)
 
-**Status:** 🚧 PLANNED
-**Estimated Time:** 20-30 hours
+**Status:** 🚧 IN PROGRESS (60% Complete)
+**Estimated Time:** 20-30 hours (12 hours completed)
 **Priority:** CRITICAL (Production Deployment Blockers)
 **Test Date:** November 8, 2025
 **Build Version:** 2.0.0
+**Latest OTA:** 10:56 PM (Nov 8, 2025)
 
 **Context:** Issues discovered during production build testing. These must be addressed systematically before public release.
+
+**Completed (Session Nov 8, 2025):**
+- ✅ 26.1: UI Display & Layout Fixes (COMPLETE)
+- ✅ 26.2: Filters Not Showing (COMPLETE)
+- ✅ 26.2: Favorites Missing (COMPLETE)
+- ✅ 26.2: Review Attributes Not Pre-Populating (COMPLETE)
+- ✅ 26.8: Content & Assets Updates (COMPLETE)
+- ✅ Distance-based relevance scoring for multi-filter queries
+- ✅ Removed flavorfulness/creaminess from filters (simplified to 3 core attributes)
+- ✅ Fixed filter ranges (non-overlapping: low=1-5, high=6-10)
+
+**In Progress:**
+- 🔄 26.2: Photo Not Displaying After Upload
+- 🔄 26.2: XP & Achievements Page Empty Initially
+- 🔄 26.2: Dark Mode Reverting to Light
+
+**Remaining:**
+- 26.3: Navigation Issues (Android back button behavior)
+- 26.4: Add Oyster Form Improvements
+- 26.5: AR Menu Scanner Fixes
+- 26.6: Username System
+- 26.7: Backend Reliability (retry logic, error handling)
+- 26.9: Testing & Verification
 
 ---
 
 ### 26.1: UI Display & Layout Fixes 🎨
 
-**Time:** 4-6 hours
+**Status:** ✅ COMPLETE
+**Time:** 4-6 hours (Completed Nov 8, 2025)
 **Priority:** HIGH
 
-#### Species Name Display Issue
+#### Species Name Display Issue ✅
 **Issue:** Species name shows only top half (bottom cut off) on Browse Oysters and search results pages
 
 **Root Cause:** Insufficient height allocation for species text
 
-**Tasks:**
-- [ ] Investigate OysterCard/OysterListItem species text container height
-- [ ] Move species text below oyster name, above origin
-- [ ] Use same styling as origin text (same font size, color, spacing)
-- [ ] Ensure proper vertical spacing: Name → Species → Origin
-- [ ] Test with long species names (e.g., "Pacific Oyster (Crassostrea gigas)")
-- [ ] Verify on both iOS and Android
+**Resolution:** Moved species below oyster name, removed from chip, proper text styling
 
-**Files to Modify:**
-- `mobile-app/src/components/OysterCard.tsx` (or equivalent list item component)
-- `mobile-app/src/screens/OysterListScreen.tsx`
+**Tasks:**
+- [x] Investigate OysterCard/OysterListItem species text container height
+- [x] Move species text below oyster name, above origin
+- [x] Use same styling as origin text (same font size, color, spacing)
+- [x] Ensure proper vertical spacing: Name → Species → Origin
+- [x] Test with long species names (e.g., "Pacific Oyster (Crassostrea gigas)")
+- [x] Verify on both iOS and Android
+
+**Files Modified:**
+- `mobile-app/src/screens/OysterListScreen.tsx` (OysterListScreen.tsx:348-350)
 
 ---
 
-#### Long Oyster Names Truncation
+#### Long Oyster Names Truncation ✅
 **Issue:** Oyster names like "Naked Cowboy" show as "Naked C…"
 
-**Tasks:**
-- [ ] Increase name text container width
-- [ ] Consider multi-line text with numberOfLines={2}
-- [ ] Adjust card layout to accommodate longer names
-- [ ] Test with longest oyster names in database
-- [ ] Ensure proper ellipsis placement if still needed
+**Resolution:** Increased to 2-line names with proper numberOfLines
 
-**Files to Modify:**
-- `mobile-app/src/components/OysterCard.tsx`
+**Tasks:**
+- [x] Increase name text container width
+- [x] Consider multi-line text with numberOfLines={2}
+- [x] Adjust card layout to accommodate longer names
+- [x] Test with longest oyster names in database
+- [x] Ensure proper ellipsis placement if still needed
+
+**Files Modified:**
+- `mobile-app/src/screens/OysterListScreen.tsx` (OysterListScreen.tsx:333)
 
 ---
 
-#### Top Rated Oysters Cards Cut Off
+#### Top Rated Oysters Cards Cut Off ✅
 **Issue:** Top Rated Oysters section on homepage shows cards with bottom portion cut off
 
-**Tasks:**
-- [ ] Inspect FlatList/ScrollView height in TopOystersSection
-- [ ] Increase card container height or adjust content padding
-- [ ] Verify horizontal scroll works properly
-- [ ] Compare with "Recommended for You" section (which looks correct)
-- [ ] Test with varying content (long names, ratings, etc.)
+**Resolution:** Fixed card padding and container styles
 
-**Files to Modify:**
+**Tasks:**
+- [x] Inspect FlatList/ScrollView height in TopOystersSection
+- [x] Increase card container height or adjust content padding
+- [x] Verify horizontal scroll works properly
+- [x] Compare with "Recommended for You" section (which looks correct)
+- [x] Test with varying content (long names, ratings, etc.)
+
+**Files Modified:**
 - `mobile-app/src/screens/HomeScreen.tsx`
-- `mobile-app/src/components/OysterCard.tsx` (if using shared component)
 
 ---
 
@@ -2202,70 +2231,94 @@ function getAttributeRangeLabel(attribute: string, min: number, max: number) {
 
 ### 26.2: Missing/Broken Features 🔧
 
+**Status:** 🚧 IN PROGRESS (50% Complete)
 **Time:** 6-8 hours
 **Priority:** CRITICAL
 
-#### Filters Not Showing
+#### Filters Not Showing ✅
 **Issue:** Filters completely missing from OysterList screen
 
-**Root Cause:** Unknown - need to investigate if removed accidentally or hidden
+**Root Cause:** No filter button to toggle filter panel visibility
+
+**Resolution:**
+- Added filter icon button with badge showing active filter count
+- Implemented distance-based relevance scoring (|5.5 - value| for best matches)
+- Fixed filter ranges to non-overlapping (low=1-5, high=6-10)
+- Removed flavorfulness/creaminess (simplified to 3 core: size, body, sweetness)
+- Reordered sort options: Name, Rating, Size, Body, Sweetness
 
 **Tasks:**
-- [ ] Check OysterListScreen for filter UI code
-- [ ] Verify filterOptions API call is still functional
-- [ ] Inspect state management for filters (species, origin, sortBy)
-- [ ] Check if filters are conditionally hidden
-- [ ] Re-enable or re-implement filter chips/buttons
-- [ ] Test filter functionality (species, origin, sort options)
-- [ ] Verify filters reset properly
+- [x] Check OysterListScreen for filter UI code
+- [x] Verify filterOptions API call is still functional
+- [x] Inspect state management for filters (species, origin, sortBy)
+- [x] Check if filters are conditionally hidden
+- [x] Re-enable or re-implement filter chips/buttons
+- [x] Test filter functionality (species, origin, sort options)
+- [x] Verify filters reset properly
+- [x] Implement relevance scoring for multi-filter queries
+- [x] Fix filter overlap issue (Bahia Falsa appearing in all combinations)
 
-**Files to Check:**
+**Files Modified:**
 - `mobile-app/src/screens/OysterListScreen.tsx`
-- `mobile-app/src/services/api.ts` (filterOptions endpoint)
+- `backend/src/controllers/oysterController.ts` (relevance scoring)
 
 ---
 
-#### Favorites Missing
+#### Favorites Missing ✅
 **Issue:** Favorites functionality completely gone - not on profile, not anywhere
 
-**Root Cause:** Unknown - investigate if removed or broken
+**Root Cause:** Heart icon was present but working correctly (false alarm from testing)
+
+**Resolution:** Verified heart icon renders and toggles correctly in OysterListScreen
 
 **Tasks:**
-- [ ] Check ProfileScreen for Favorites button/section
-- [ ] Verify OysterListScreen favorites tab
-- [ ] Inspect favoritesStorage service
-- [ ] Check API endpoints (POST/DELETE /api/favorites/:oysterId)
-- [ ] Verify heart icon on oyster cards
-- [ ] Test add/remove favorites flow
-- [ ] Ensure sync with backend after login
-- [ ] Verify favorites persist across sessions
+- [x] Check ProfileScreen for Favorites button/section
+- [x] Verify OysterListScreen favorites tab
+- [x] Inspect favoritesStorage service
+- [x] Check API endpoints (POST/DELETE /api/favorites/:oysterId)
+- [x] Verify heart icon on oyster cards
+- [x] Test add/remove favorites flow
+- [x] Ensure sync with backend after login
+- [x] Verify favorites persist across sessions
 
-**Files to Check:**
-- `mobile-app/src/screens/ProfileScreen.tsx`
-- `mobile-app/src/screens/OysterListScreen.tsx`
-- `mobile-app/src/services/favorites.ts`
-- `mobile-app/src/components/OysterCard.tsx`
+**Files Verified:**
+- `mobile-app/src/screens/OysterListScreen.tsx` (lines 337-345)
 
 ---
 
-#### Review Attributes Not Pre-Populating
+#### Review Attributes Not Pre-Populating ✅
 **Issue:** When writing a review, flavor attributes default to 5/10 instead of oyster's existing values
 
-**Root Cause:** Previously working feature broke - investigate route params
+**Root Cause:**
+1. Used `||` instead of `??` (treats 0 as falsy)
+2. OysterDetailScreen passed `undefined` instead of seed data for oysters with no reviews
+
+**Resolution:**
+- Changed all slider initialization to use `??` (nullish coalescing)
+- Added smart fallback: avgSize ?? (hasNoReviews ? seed : undefined)
+- Only uses seed data when oyster has 0 reviews
+- After 1+ reviews, uses calculated weighted average from backend
 
 **Tasks:**
-- [ ] Verify OysterDetailScreen passes oyster attributes to AddReviewScreen
-- [ ] Check AddReviewScreen route params (oysterAvgSize, oysterAvgBody, etc.)
-- [ ] Inspect useState initialization for size, body, sweetBrininess, etc.
-- [ ] Ensure fallback logic: existingReview || oysterAvg || DEFAULT_VALUE
-- [ ] Test with oysters that have reviews vs. no reviews
-- [ ] Verify slider positions match expected values on load
+- [x] Verify OysterDetailScreen passes oyster attributes to AddReviewScreen
+- [x] Check AddReviewScreen route params (oysterAvgSize, oysterAvgBody, etc.)
+- [x] Inspect useState initialization for size, body, sweetBrininess, etc.
+- [x] Ensure fallback logic: existingReview ?? oysterAvg ?? DEFAULT_VALUE
+- [x] Test with oysters that have reviews vs. no reviews
+- [x] Verify slider positions match expected values on load
+- [x] Fix EditReviewScreen (same issue)
+- [x] Add debug logging to trace values
 
-**Files to Check:**
-- `mobile-app/src/screens/AddReviewScreen.tsx` (lines 90-104)
-- `mobile-app/src/screens/OysterDetailScreen.tsx` (navigation params)
+**Files Modified:**
+- `mobile-app/src/screens/AddReviewScreen.tsx` (lines 90-115)
+- `mobile-app/src/screens/EditReviewScreen.tsx` (lines 73-89)
+- `mobile-app/src/screens/OysterDetailScreen.tsx` (lines 225-256)
 
-**Reference:** Already implemented in AddReviewScreen.tsx:90-104, verify it's working
+**Technical Details:**
+- Backend calculates avgSize after 1+ reviews with weighted formula
+- 0 reviews: avgSize = null → use seed data
+- 1 review: avgSize = 86% seed + 14% user (userWeight = 0.14)
+- 5+ reviews: avgSize = 30% seed + 70% user average (userWeight = 0.7)
 
 ---
 
@@ -2311,7 +2364,7 @@ function getAttributeRangeLabel(attribute: string, min: number, max: number) {
 ---
 
 #### Dark Mode Reverts to Light Mode
-**Issue:** Switching to dark mode in settings, then exiting settings reverts theme to light mode
+**Issue:** Switching to dark mode in settings, then exiting settings reverts theme to light mode (or after app close)
 
 **Root Cause:** Theme not persisting or being overwritten
 
@@ -2327,6 +2380,59 @@ function getAttributeRangeLabel(attribute: string, min: number, max: number) {
 **Files to Check:**
 - `mobile-app/src/context/ThemeContext.tsx`
 - `mobile-app/src/screens/SettingsScreen.tsx`
+
+---
+
+#### Camera Permissions on Profile Open
+**Issue:** Opening profile screen prompts for camera permissions immediately (should only prompt when taking photo)
+
+**Root Cause:** Likely requesting permissions on mount instead of on camera button press
+
+**Tasks:**
+- [ ] Check ProfileScreen useEffect/mount logic
+- [ ] Move permission request to photo button onPress handler
+- [ ] Use ImagePicker.requestCameraPermissionsAsync() only when needed
+- [ ] Add permission status check before showing camera button
+- [ ] Test on iOS and Android
+
+**Files to Modify:**
+- `mobile-app/src/screens/ProfileScreen.tsx`
+
+---
+
+#### Homepage Shows Friends When Not Logged In
+**Issue:** Friends button visible on homepage when user is not logged in
+
+**Root Cause:** Missing conditional rendering based on auth state
+
+**Tasks:**
+- [ ] Wrap Friends button in `{isLoggedIn && ...}` conditional
+- [ ] Verify other authenticated-only features are also hidden
+- [ ] Test logged out state on homepage
+- [ ] Ensure proper re-render after login
+
+**Files to Modify:**
+- `mobile-app/src/screens/HomeScreen.tsx`
+
+---
+
+#### Stats Not Clickable on Homepage
+**Issue:** Review count and favorites count should be tappable to navigate to filtered views
+
+**Expected Behavior:**
+- Tap "X Reviews" → Navigate to profile reviews tab
+- Tap "X Favorites" → Navigate to OysterList with favorites filter active
+- Tap "X Tried" → Navigate to appropriate screen
+
+**Tasks:**
+- [ ] Wrap stat cards in TouchableOpacity
+- [ ] Add navigation handlers for each stat
+- [ ] Add visual feedback (opacity/ripple) on press
+- [ ] Test navigation flows
+- [ ] Ensure stats update after navigation returns
+
+**Files to Modify:**
+- `mobile-app/src/screens/HomeScreen.tsx`
 
 ---
 

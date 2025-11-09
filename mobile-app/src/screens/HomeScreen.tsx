@@ -157,7 +157,7 @@ export default function HomeScreen() {
       const user = await authStorage.getUser();
 
       if (token && user) {
-        loadUserTheme(user);
+        await loadUserTheme(user);
         favoritesStorage.syncWithBackend();
         setIsLoggedIn(true);
         setChecking(false);
@@ -268,14 +268,18 @@ export default function HomeScreen() {
         {/* Quick Stats */}
         {isLoggedIn && (
           <View style={styles.statsContainer}>
-            <Surface style={styles.statCard} elevation={1}>
-              <Text variant="headlineSmall" style={styles.statNumber}>{userStats.reviews}</Text>
-              <Text variant="bodySmall" style={styles.statLabel}>Reviews</Text>
-            </Surface>
-            <Surface style={styles.statCard} elevation={1}>
-              <Text variant="headlineSmall" style={styles.statNumber}>{userStats.favorites}</Text>
-              <Text variant="bodySmall" style={styles.statLabel}>Favorites</Text>
-            </Surface>
+            <TouchableOpacity onPress={() => navigation.navigate('Profile' as any)} activeOpacity={0.7}>
+              <Surface style={styles.statCard} elevation={1}>
+                <Text variant="headlineSmall" style={styles.statNumber}>{userStats.reviews}</Text>
+                <Text variant="bodySmall" style={styles.statLabel}>Reviews</Text>
+              </Surface>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('OysterList' as any)} activeOpacity={0.7}>
+              <Surface style={styles.statCard} elevation={1}>
+                <Text variant="headlineSmall" style={styles.statNumber}>{userStats.favorites}</Text>
+                <Text variant="bodySmall" style={styles.statLabel}>Favorites</Text>
+              </Surface>
+            </TouchableOpacity>
             <Surface style={styles.statCard} elevation={1}>
               <Text variant="headlineSmall" style={styles.statNumber}>{userStats.oystersTried}</Text>
               <Text variant="bodySmall" style={styles.statLabel}>Tried</Text>
@@ -377,12 +381,14 @@ export default function HomeScreen() {
               </Card.Content>
             </Card>
 
-            <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('Friends')}>
-              <Card.Content style={styles.actionCardContent}>
-                <Text variant="headlineMedium" style={styles.actionIcon}>👥</Text>
-                <Text variant="titleMedium" style={styles.actionTitle}>Friends</Text>
-              </Card.Content>
-            </Card>
+            {isLoggedIn && (
+              <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('Friends')}>
+                <Card.Content style={styles.actionCardContent}>
+                  <Text variant="headlineMedium" style={styles.actionIcon}>👥</Text>
+                  <Text variant="titleMedium" style={styles.actionTitle}>Friends</Text>
+                </Card.Content>
+              </Card>
+            )}
 
             <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('TopOysters')}>
               <Card.Content style={styles.actionCardContent}>

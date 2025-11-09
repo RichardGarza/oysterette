@@ -170,7 +170,13 @@ function AppNavigator() {
           name="Home"
           component={HomeScreen}
           options={({ navigation }) => ({
-            title: 'Oysterette',
+            headerTitle: () => (
+              <Image
+                source={require('./assets/Top-Bar-Oysterette-Name.png')}
+                style={{ width: 150, height: 40 }}
+                resizeMode="contain"
+              />
+            ),
             headerLeft: () => null,
             headerRight: () => <SettingsButton navigation={navigation} />,
           })}

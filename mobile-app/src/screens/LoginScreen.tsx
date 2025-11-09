@@ -124,7 +124,7 @@ export default function LoginScreen() {
       await authStorage.saveToken(authResponse.token);
       await authStorage.saveUser(authResponse.user);
 
-      loadUserTheme(authResponse.user);
+      await loadUserTheme(authResponse.user);
       await favoritesStorage.syncWithBackend();
 
       if (__DEV__) {
@@ -177,7 +177,7 @@ export default function LoginScreen() {
       await authStorage.saveToken(response.token);
       await authStorage.saveUser(response.user);
 
-      loadUserTheme(response.user);
+      await loadUserTheme(response.user);
       await favoritesStorage.syncWithBackend();
 
       // Submit any pending reviews

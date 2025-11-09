@@ -169,19 +169,6 @@ export default function ProfileScreen() {
     loadProfile();
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Camera permission not granted');
-      }
-      const mediaStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (mediaStatus.status !== 'granted') {
-        console.log('Media library permission not granted');
-      }
-    })();
-  }, []);
-
   useFocusEffect(
     React.useCallback(() => {
       loadProfile();
@@ -270,11 +257,26 @@ export default function ProfileScreen() {
       // Upload to Cloudinary
       const photoUrl = await uploadApi.uploadProfilePhoto(uri);
 
-      // Update profile with new photo URL
-      await userApi.updateProfile(profileData?.user.name, profileData?.user.email, photoUrl);
+      if (__DEV__) {
+        console.log('📷 [ProfileScreen] Photo uploaded to:', photoUrl);
+      }
 
-      // Reload profile to show new photo
-      await loadProfile();
+      // Update profile with new photo URL
+      const updatedUser = await userApi.updateProfile(profileData?.user.name, profileData?.user.email, photoUrl);
+
+      if (__DEV__) {
+        console.log('📷 [ProfileScreen] Updated user:', updatedUser);
+      }
+
+      // Update local storage and state immediately
+      if (updatedUser && profileData) {
+        await authStorage.saveUser(updatedUser);
+        setProfileData({ ...profileData, user: updatedUser });
+
+        if (__DEV__) {
+          console.log('✅ [ProfileScreen] State updated with photo URL:', updatedUser.profilePhotoUrl);
+        }
+      }
 
       Alert.alert('Success', 'Profile photo updated successfully!');
     } catch (error) {
