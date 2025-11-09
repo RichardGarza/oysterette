@@ -152,7 +152,12 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
     });
 
     // Calculate match score if multiple filters active
+    // Score = sum of distances from 5.5 (higher = better match)
+    // Example: Small filter (1-5), oyster size=1 → |5.5-1| = 4.5 (excellent)
+    //          Briny filter (6-10), oyster brine=10 → |5.5-10| = 4.5 (excellent)
     if (activeFilters.length > 0) {
+      const CENTER = 5.5;
+
       const getFilterRanges = () => ({
         sweetness: sweetness ? (sweetness === 'low' ? { min: 1, max: 5 } : { min: 6, max: 10 }) : null,
         size: size ? (size === 'low' ? { min: 1, max: 5 } : { min: 6, max: 10 }) : null,
@@ -166,32 +171,42 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
       oysters = oysters.map((oyster: any) => {
         let matchScore = 0;
 
-        // Check each filter and add to score if it matches
+        // Calculate distance-based score for each matching filter
         if (ranges.sweetness) {
           const val = oyster.avgSweetBrininess ?? oyster.sweetBrininess;
-          if (val >= ranges.sweetness.min && val <= ranges.sweetness.max) matchScore++;
+          if (val >= ranges.sweetness.min && val <= ranges.sweetness.max) {
+            matchScore += Math.abs(CENTER - val);
+          }
         }
         if (ranges.size) {
           const val = oyster.avgSize ?? oyster.size;
-          if (val >= ranges.size.min && val <= ranges.size.max) matchScore++;
+          if (val >= ranges.size.min && val <= ranges.size.max) {
+            matchScore += Math.abs(CENTER - val);
+          }
         }
         if (ranges.body) {
           const val = oyster.avgBody ?? oyster.body;
-          if (val >= ranges.body.min && val <= ranges.body.max) matchScore++;
+          if (val >= ranges.body.min && val <= ranges.body.max) {
+            matchScore += Math.abs(CENTER - val);
+          }
         }
         if (ranges.flavorfulness) {
           const val = oyster.avgFlavorfulness ?? oyster.flavorfulness;
-          if (val >= ranges.flavorfulness.min && val <= ranges.flavorfulness.max) matchScore++;
+          if (val >= ranges.flavorfulness.min && val <= ranges.flavorfulness.max) {
+            matchScore += Math.abs(CENTER - val);
+          }
         }
         if (ranges.creaminess) {
           const val = oyster.avgCreaminess ?? oyster.creaminess;
-          if (val >= ranges.creaminess.min && val <= ranges.creaminess.max) matchScore++;
+          if (val >= ranges.creaminess.min && val <= ranges.creaminess.max) {
+            matchScore += Math.abs(CENTER - val);
+          }
         }
 
         return { ...oyster, matchScore };
       });
 
-      // Sort by match score descending (best matches first)
+      // Sort by match score descending (higher score = better match)
       oysters.sort((a: any, b: any) => b.matchScore - a.matchScore);
     }
 
