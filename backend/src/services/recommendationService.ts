@@ -633,6 +633,85 @@ export const setBaselineProfile = async (
 };
 
 /**
+ * Calculate median value from sorted array
+ */
+function calculateMedian(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 0) {
+    const val1 = sorted[mid - 1];
+    const val2 = sorted[mid];
+    if (val1 === undefined || val2 === undefined) return 0;
+    return (val1 + val2) / 2;
+  }
+  return sorted[mid] ?? 0;
+}
+
+/**
+ * Update flavor profile ranges based on user's positive reviews
+ * Triggers automatically when user has 5+ LIKE_IT/LOVE_IT reviews
+ */
+export const updateFlavorProfileRanges = async (userId: string): Promise<void> => {
+  try {
+    // Get LIKE_IT and LOVE_IT reviews with attributes
+    const reviews = await prisma.review.findMany({
+      where: {
+        userId,
+        rating: { in: ['LIKE_IT', 'LOVE_IT'] },
+      },
+      select: {
+        size: true,
+        body: true,
+        sweetBrininess: true,
+        flavorfulness: true,
+        creaminess: true,
+      },
+    });
+
+    // Need at least 5 positive reviews to calculate ranges
+    if (reviews.length < 5) {
+      logger.info(`User ${userId} has ${reviews.length} positive reviews, need 5+ for ranges`);
+      return;
+    }
+
+    // Extract values for each attribute (filter out nulls)
+    const sizes = reviews.map(r => r.size).filter((v): v is number => v !== null);
+    const bodies = reviews.map(r => r.body).filter((v): v is number => v !== null);
+    const sweetBrininesses = reviews.map(r => r.sweetBrininess).filter((v): v is number => v !== null);
+    const flavorfulnesses = reviews.map(r => r.flavorfulness).filter((v): v is number => v !== null);
+    const creaminesses = reviews.map(r => r.creaminess).filter((v): v is number => v !== null);
+
+    // Calculate ranges
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        rangeMinSize: sizes.length > 0 ? Math.min(...sizes) : null,
+        rangeMaxSize: sizes.length > 0 ? Math.max(...sizes) : null,
+        rangeMedianSize: sizes.length > 0 ? calculateMedian(sizes) : null,
+        rangeMinBody: bodies.length > 0 ? Math.min(...bodies) : null,
+        rangeMaxBody: bodies.length > 0 ? Math.max(...bodies) : null,
+        rangeMedianBody: bodies.length > 0 ? calculateMedian(bodies) : null,
+        rangeMinSweetBrininess: sweetBrininesses.length > 0 ? Math.min(...sweetBrininesses) : null,
+        rangeMaxSweetBrininess: sweetBrininesses.length > 0 ? Math.max(...sweetBrininesses) : null,
+        rangeMedianSweetBrininess: sweetBrininesses.length > 0 ? calculateMedian(sweetBrininesses) : null,
+        rangeMinFlavorfulness: flavorfulnesses.length > 0 ? Math.min(...flavorfulnesses) : null,
+        rangeMaxFlavorfulness: flavorfulnesses.length > 0 ? Math.max(...flavorfulnesses) : null,
+        rangeMedianFlavorfulness: flavorfulnesses.length > 0 ? calculateMedian(flavorfulnesses) : null,
+        rangeMinCreaminess: creaminesses.length > 0 ? Math.min(...creaminesses) : null,
+        rangeMaxCreaminess: creaminesses.length > 0 ? Math.max(...creaminesses) : null,
+        rangeMedianCreaminess: creaminesses.length > 0 ? calculateMedian(creaminesses) : null,
+      },
+    });
+
+    logger.info(`Updated flavor profile ranges for user ${userId} (${reviews.length} positive reviews)`);
+  } catch (error) {
+    logger.error('Error updating flavor profile ranges:', error);
+    throw error;
+  }
+};
+
+/**
  * Update user's baseline profile with a new positive review
  *
  * Formula: newBaseline = (currentBaseline * 0.7) + (newAttributes * 0.3)
@@ -743,6 +822,9 @@ export const updateBaselineWithReview = async (
 
       logger.info(`Updated baseline profile for user ${userId} based on ${rating} review`);
     }
+
+    // Update flavor profile ranges if user has 5+ positive reviews
+    await updateFlavorProfileRanges(userId);
   } catch (error) {
     logger.error('Error updating baseline with review:', error);
     // Don't throw - this shouldn't block review creation

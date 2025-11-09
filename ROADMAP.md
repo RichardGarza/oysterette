@@ -1424,9 +1424,9 @@ const theme = {
 }
 ```
 
-### Phase 20: AR Menu Scanner 🚧
+### Phase 20: AR Menu Scanner ✅
 
-**Status:** Core Features Complete (75% - 5 hours)
+**Status:** Core Features Complete (100%)
 **Estimated Time:** 30-40 hours total
 **Priority:** HIGH (Consumer Delight Feature)
 **Platform:** Mobile (iOS/Android), Web PWA (with camera API)
@@ -1458,11 +1458,12 @@ const theme = {
 - Scrollable results: matched (elevated cards) + unmatched (outlined cards)
 - Summary stats: "X in database • Y not found"
 
-**Remaining (25%):**
+- [x] Pre-fill AddOyster name from unmatched detection
+
+**Future Enhancements (Optional):**
 - [ ] Real-time AR overlay (live camera feed with overlays)
 - [ ] Bounding box detection (highlight oyster names on screen)
 - [ ] Live text detection during preview (no photo needed)
-- [ ] Pre-fill AddOyster name from unmatched detection
 - [ ] Performance optimizations (debounce, caching)
 - [ ] Flavor profile tooltips on tap
 - [ ] Session tracking ("Mark as Ordered")
@@ -1877,11 +1878,21 @@ Introduce a comprehensive XP (Experience Points) and achievement system that rew
 
 ---
 
-### Phase 23: Enhanced Flavor Profile Visualization (Range Display) 📋
+### Phase 23: Enhanced Flavor Profile Visualization (Range Display) 🚧
 
+**Status:** In Progress (60% - 5 hours)
 **Estimated Time:** 8-12 hours
 **Priority:** MEDIUM-HIGH (UX Improvement)
 **Platform:** Mobile (iOS/Android), Web PWA
+
+**Completed:**
+- [x] Add range fields to User model (min/max/median for each attribute)
+- [x] Create calculateMedian helper function
+- [x] Create updateFlavorProfileRanges service function
+- [x] Trigger range calculation after review creation (5+ LIKE_IT/LOVE_IT)
+- [x] Update ProfileScreen to display range bars
+- [x] Show median indicator on range bars
+- [x] Display range format (e.g., "3-7/10" instead of "5.0/10")
 
 **Overview:**
 After a user has reviewed 5+ oysters, their flavor profile should display as a **range** (e.g., "Small to Medium") rather than a single point, reflecting the diversity of oysters they enjoy. This provides a more accurate and nuanced representation of taste preferences.

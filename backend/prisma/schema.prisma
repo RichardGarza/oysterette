@@ -45,6 +45,23 @@ model User {
   baselineFlavorfulness  Float?  // Preferred flavorfulness (1-10)
   baselineCreaminess     Float?  // Preferred creaminess (1-10)
 
+  // Flavor profile ranges (calculated from 5+ LIKE_IT/LOVE_IT reviews)
+  rangeMinSize           Float?  // Minimum size preference
+  rangeMaxSize           Float?  // Maximum size preference
+  rangeMedianSize        Float?  // Median size preference
+  rangeMinBody           Float?  // Minimum body preference
+  rangeMaxBody           Float?  // Maximum body preference
+  rangeMedianBody        Float?  // Median body preference
+  rangeMinSweetBrininess Float?  // Minimum sweet/brininess preference
+  rangeMaxSweetBrininess Float?  // Maximum sweet/brininess preference
+  rangeMedianSweetBrininess Float?  // Median sweet/brininess preference
+  rangeMinFlavorfulness  Float?  // Minimum flavorfulness preference
+  rangeMaxFlavorfulness  Float?  // Maximum flavorfulness preference
+  rangeMedianFlavorfulness Float?  // Median flavorfulness preference
+  rangeMinCreaminess     Float?  // Minimum creaminess preference
+  rangeMaxCreaminess     Float?  // Maximum creaminess preference
+  rangeMedianCreaminess  Float?  // Median creaminess preference
+
   // Relations
   reviews        Review[]
   topOysters     UserTopOyster[]

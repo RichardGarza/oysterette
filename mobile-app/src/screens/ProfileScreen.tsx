@@ -613,56 +613,146 @@ export default function ProfileScreen() {
               {user.baselineSize && (
                 <View style={styles.flavorAttribute}>
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Size</Text>
-                  <ProgressBar
-                    progress={user.baselineSize / 10}
-                    color={paperTheme.colors.primary}
-                    style={styles.flavorBar}
-                  />
-                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>{user.baselineSize.toFixed(1)}/10</Text>
+                  {user.rangeMinSize !== null && user.rangeMaxSize !== null ? (
+                    <View style={styles.rangeContainer}>
+                      <View style={[styles.rangeBar, {
+                        marginLeft: `${(user.rangeMinSize / 10) * 100}%`,
+                        width: `${((user.rangeMaxSize - user.rangeMinSize) / 10) * 100}%`,
+                        backgroundColor: paperTheme.colors.primary,
+                        opacity: 0.3
+                      }]} />
+                      {user.rangeMedianSize && (
+                        <View style={[styles.medianIndicator, { left: `${(user.rangeMedianSize / 10) * 100}%` }]} />
+                      )}
+                    </View>
+                  ) : (
+                    <ProgressBar
+                      progress={user.baselineSize / 10}
+                      color={paperTheme.colors.primary}
+                      style={styles.flavorBar}
+                    />
+                  )}
+                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>
+                    {user.rangeMinSize !== null && user.rangeMaxSize !== null
+                      ? `${user.rangeMinSize.toFixed(0)}-${user.rangeMaxSize.toFixed(0)}/10`
+                      : `${user.baselineSize.toFixed(1)}/10`}
+                  </Text>
                 </View>
               )}
               {user.baselineBody && (
                 <View style={styles.flavorAttribute}>
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Body</Text>
-                  <ProgressBar
-                    progress={user.baselineBody / 10}
-                    color={paperTheme.colors.primary}
-                    style={styles.flavorBar}
-                  />
-                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>{user.baselineBody.toFixed(1)}/10</Text>
+                  {user.rangeMinBody !== null && user.rangeMaxBody !== null ? (
+                    <View style={styles.rangeContainer}>
+                      <View style={[styles.rangeBar, {
+                        marginLeft: `${(user.rangeMinBody / 10) * 100}%`,
+                        width: `${((user.rangeMaxBody - user.rangeMinBody) / 10) * 100}%`,
+                        backgroundColor: paperTheme.colors.primary,
+                        opacity: 0.3
+                      }]} />
+                      {user.rangeMedianBody && (
+                        <View style={[styles.medianIndicator, { left: `${(user.rangeMedianBody / 10) * 100}%` }]} />
+                      )}
+                    </View>
+                  ) : (
+                    <ProgressBar
+                      progress={user.baselineBody / 10}
+                      color={paperTheme.colors.primary}
+                      style={styles.flavorBar}
+                    />
+                  )}
+                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>
+                    {user.rangeMinBody !== null && user.rangeMaxBody !== null
+                      ? `${user.rangeMinBody.toFixed(0)}-${user.rangeMaxBody.toFixed(0)}/10`
+                      : `${user.baselineBody.toFixed(1)}/10`}
+                  </Text>
                 </View>
               )}
               {user.baselineSweetBrininess && (
                 <View style={styles.flavorAttribute}>
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Sweet/Brininess</Text>
-                  <ProgressBar
-                    progress={user.baselineSweetBrininess / 10}
-                    color={paperTheme.colors.primary}
-                    style={styles.flavorBar}
-                  />
-                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>{user.baselineSweetBrininess.toFixed(1)}/10</Text>
+                  {user.rangeMinSweetBrininess !== null && user.rangeMaxSweetBrininess !== null ? (
+                    <View style={styles.rangeContainer}>
+                      <View style={[styles.rangeBar, {
+                        marginLeft: `${(user.rangeMinSweetBrininess / 10) * 100}%`,
+                        width: `${((user.rangeMaxSweetBrininess - user.rangeMinSweetBrininess) / 10) * 100}%`,
+                        backgroundColor: paperTheme.colors.primary,
+                        opacity: 0.3
+                      }]} />
+                      {user.rangeMedianSweetBrininess && (
+                        <View style={[styles.medianIndicator, { left: `${(user.rangeMedianSweetBrininess / 10) * 100}%` }]} />
+                      )}
+                    </View>
+                  ) : (
+                    <ProgressBar
+                      progress={user.baselineSweetBrininess / 10}
+                      color={paperTheme.colors.primary}
+                      style={styles.flavorBar}
+                    />
+                  )}
+                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>
+                    {user.rangeMinSweetBrininess !== null && user.rangeMaxSweetBrininess !== null
+                      ? `${user.rangeMinSweetBrininess.toFixed(0)}-${user.rangeMaxSweetBrininess.toFixed(0)}/10`
+                      : `${user.baselineSweetBrininess.toFixed(1)}/10`}
+                  </Text>
                 </View>
               )}
               {user.baselineFlavorfulness && (
                 <View style={styles.flavorAttribute}>
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Flavorfulness</Text>
-                  <ProgressBar
-                    progress={user.baselineFlavorfulness / 10}
-                    color={paperTheme.colors.primary}
-                    style={styles.flavorBar}
-                  />
-                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>{user.baselineFlavorfulness.toFixed(1)}/10</Text>
+                  {user.rangeMinFlavorfulness !== null && user.rangeMaxFlavorfulness !== null ? (
+                    <View style={styles.rangeContainer}>
+                      <View style={[styles.rangeBar, {
+                        marginLeft: `${(user.rangeMinFlavorfulness / 10) * 100}%`,
+                        width: `${((user.rangeMaxFlavorfulness - user.rangeMinFlavorfulness) / 10) * 100}%`,
+                        backgroundColor: paperTheme.colors.primary,
+                        opacity: 0.3
+                      }]} />
+                      {user.rangeMedianFlavorfulness && (
+                        <View style={[styles.medianIndicator, { left: `${(user.rangeMedianFlavorfulness / 10) * 100}%` }]} />
+                      )}
+                    </View>
+                  ) : (
+                    <ProgressBar
+                      progress={user.baselineFlavorfulness / 10}
+                      color={paperTheme.colors.primary}
+                      style={styles.flavorBar}
+                    />
+                  )}
+                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>
+                    {user.rangeMinFlavorfulness !== null && user.rangeMaxFlavorfulness !== null
+                      ? `${user.rangeMinFlavorfulness.toFixed(0)}-${user.rangeMaxFlavorfulness.toFixed(0)}/10`
+                      : `${user.baselineFlavorfulness.toFixed(1)}/10`}
+                  </Text>
                 </View>
               )}
               {user.baselineCreaminess && (
                 <View style={styles.flavorAttribute}>
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Creaminess</Text>
-                  <ProgressBar
-                    progress={user.baselineCreaminess / 10}
-                    color={paperTheme.colors.primary}
-                    style={styles.flavorBar}
-                  />
-                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>{user.baselineCreaminess.toFixed(1)}/10</Text>
+                  {user.rangeMinCreaminess !== null && user.rangeMaxCreaminess !== null ? (
+                    <View style={styles.rangeContainer}>
+                      <View style={[styles.rangeBar, {
+                        marginLeft: `${(user.rangeMinCreaminess / 10) * 100}%`,
+                        width: `${((user.rangeMaxCreaminess - user.rangeMinCreaminess) / 10) * 100}%`,
+                        backgroundColor: paperTheme.colors.primary,
+                        opacity: 0.3
+                      }]} />
+                      {user.rangeMedianCreaminess && (
+                        <View style={[styles.medianIndicator, { left: `${(user.rangeMedianCreaminess / 10) * 100}%` }]} />
+                      )}
+                    </View>
+                  ) : (
+                    <ProgressBar
+                      progress={user.baselineCreaminess / 10}
+                      color={paperTheme.colors.primary}
+                      style={styles.flavorBar}
+                    />
+                  )}
+                  <Text variant="bodySmall" style={styles.flavorAttributeValue}>
+                    {user.rangeMinCreaminess !== null && user.rangeMaxCreaminess !== null
+                      ? `${user.rangeMinCreaminess.toFixed(0)}-${user.rangeMaxCreaminess.toFixed(0)}/10`
+                      : `${user.baselineCreaminess.toFixed(1)}/10`}
+                  </Text>
                 </View>
               )}
             </View>
@@ -1000,6 +1090,27 @@ const createStyles = (colors: any, isDark: boolean) =>
     },
     flavorBar: {
       marginBottom: 4,
+    },
+    rangeContainer: {
+      height: 4,
+      backgroundColor: colors.border,
+      borderRadius: 2,
+      position: 'relative',
+      marginBottom: 4,
+    },
+    rangeBar: {
+      position: 'absolute',
+      height: '100%',
+      borderRadius: 2,
+    },
+    medianIndicator: {
+      position: 'absolute',
+      width: 3,
+      height: 12,
+      backgroundColor: colors.primary,
+      top: -4,
+      marginLeft: -1.5,
+      borderRadius: 1.5,
     },
     flavorAttributeValue: {
       fontSize: 12,
