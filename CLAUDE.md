@@ -66,7 +66,7 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 
 **Test Before Committing:**
 
-- Backend: All 268 tests must pass
+- Backend: All 273 tests must pass
 - Write tests FIRST for new endpoints/services
 - Test happy path, edge cases, error handling
 
@@ -128,7 +128,7 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 - Baseline flavor profile with auto-learning
 - Social features (friends, activity feed, paired recommendations)
 
-**Quality:** 268/268 tests passing ✅
+**Quality:** 273/273 tests passing ✅
 
 **Compliance:**
 - Apple App Store: 95% ready
@@ -178,7 +178,7 @@ git push origin main               # Deploy (triggers Railway)
 
 1. **Environment:** DATABASE_URL (Neon), JWT_SECRET (never default), SENTRY_DSN (optional)
 2. **API URL:** Production: `https://oysterette-production.up.railway.app/api`
-3. **Testing:** All 268 tests must pass before push
+3. **Testing:** All 273 tests must pass before push
 4. **Railway:** Auto-deploys from main, $5/month credit, auto-sleeps
 5. **Neon:** 3GB storage, auto-sleeps
 6. **Session Logs:** See SESSION_LOGS.md for detailed session history
@@ -189,5 +189,5 @@ git push origin main               # Deploy (triggers Railway)
 **Last Updated:** November 8, 2025
 **Backend:** Live on Railway ✅
 **Database:** Live on Neon (131 unique oysters) ✅
-**Tests:** 268/268 passing ✅
+**Tests:** 273/273 passing ✅
 **Latest Version:** 1.9.0 (Phase 21 Complete - Social Features: Friends, Activity Feed, Paired Recommendations)
