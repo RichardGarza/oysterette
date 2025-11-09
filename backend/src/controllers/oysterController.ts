@@ -40,15 +40,14 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
     const { sortBy, sortDirection, sweetness, size, body, flavorfulness, creaminess } = req.query;
 
     // Build where clause for attribute filtering
-    // Fuzzy matching: ±2 range for more flexible filtering
-    // - 'low' matches 1-6 (low end of spectrum)
-    // - 'high' matches 4-10 (high end of spectrum)
-    // - Overlap at 4-6 creates fuzzy matching
+    // Non-overlapping ranges for precise filtering
+    // - 'low' matches 1-5 (low end of spectrum)
+    // - 'high' matches 6-10 (high end of spectrum)
     const where: any = {};
 
-    // Sweetness filter (±2 fuzzy range) - check both avg and seed data
+    // Sweetness filter - check both avg and seed data
     if (sweetness && typeof sweetness === 'string') {
-      const range = sweetness === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
+      const range = sweetness === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
       where.AND = where.AND || [];
       where.AND.push({
         OR: [
@@ -58,9 +57,9 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
       });
     }
 
-    // Size filter (±2 fuzzy range) - check both avg and seed data
+    // Size filter - check both avg and seed data
     if (size && typeof size === 'string') {
-      const range = size === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
+      const range = size === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
       where.AND = where.AND || [];
       where.AND.push({
         OR: [
@@ -70,9 +69,9 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
       });
     }
 
-    // Body filter (±2 fuzzy range) - check both avg and seed data
+    // Body filter - check both avg and seed data
     if (body && typeof body === 'string') {
-      const range = body === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
+      const range = body === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
       where.AND = where.AND || [];
       where.AND.push({
         OR: [
@@ -82,9 +81,9 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
       });
     }
 
-    // Flavorfulness filter (±2 fuzzy range) - check both avg and seed data
+    // Flavorfulness filter - check both avg and seed data
     if (flavorfulness && typeof flavorfulness === 'string') {
-      const range = flavorfulness === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
+      const range = flavorfulness === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
       where.AND = where.AND || [];
       where.AND.push({
         OR: [
@@ -94,9 +93,9 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
       });
     }
 
-    // Creaminess filter (±2 fuzzy range) - check both avg and seed data
+    // Creaminess filter - check both avg and seed data
     if (creaminess && typeof creaminess === 'string') {
-      const range = creaminess === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
+      const range = creaminess === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
       where.AND = where.AND || [];
       where.AND.push({
         OR: [
