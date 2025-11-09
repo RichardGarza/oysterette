@@ -88,20 +88,31 @@ export default function AddReviewScreen() {
 
   const [rating, setRating] = useState<ReviewRating | null>(existingReview?.rating || null);
   const [size, setSize] = useState<number>(
-    existingReview?.size || oysterAvgSize || SLIDER_CONFIG.DEFAULT_VALUE
+    existingReview?.size ?? oysterAvgSize ?? SLIDER_CONFIG.DEFAULT_VALUE
   );
   const [body, setBody] = useState<number>(
-    existingReview?.body || oysterAvgBody || SLIDER_CONFIG.DEFAULT_VALUE
+    existingReview?.body ?? oysterAvgBody ?? SLIDER_CONFIG.DEFAULT_VALUE
   );
   const [sweetBrininess, setSweetBrininess] = useState<number>(
-    existingReview?.sweetBrininess || oysterAvgSweetBrininess || SLIDER_CONFIG.DEFAULT_VALUE
+    existingReview?.sweetBrininess ?? oysterAvgSweetBrininess ?? SLIDER_CONFIG.DEFAULT_VALUE
   );
   const [flavorfulness, setFlavorfulness] = useState<number>(
-    existingReview?.flavorfulness || oysterAvgFlavorfulness || SLIDER_CONFIG.DEFAULT_VALUE
+    existingReview?.flavorfulness ?? oysterAvgFlavorfulness ?? SLIDER_CONFIG.DEFAULT_VALUE
   );
   const [creaminess, setCreaminess] = useState<number>(
-    existingReview?.creaminess || oysterAvgCreaminess || SLIDER_CONFIG.DEFAULT_VALUE
+    existingReview?.creaminess ?? oysterAvgCreaminess ?? SLIDER_CONFIG.DEFAULT_VALUE
   );
+
+  if (__DEV__) {
+    console.log('🔍 [AddReview] Slider init values:', {
+      oysterAvgSize,
+      oysterAvgBody,
+      oysterAvgSweetBrininess,
+      finalSize: size,
+      finalBody: body,
+      finalSweetBrininess: sweetBrininess,
+    });
+  }
   const [notes, setNotes] = useState(existingReview?.notes || '');
   const [contributedOrigin, setContributedOrigin] = useState('');
   const [contributedSpecies, setContributedSpecies] = useState('');
