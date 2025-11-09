@@ -431,4 +431,95 @@ describe('User Flavor Profile & Recommendations Integration Tests', () => {
       await prisma.user.deleteMany({ where: { id: newUserId } });
     });
   });
+
+  describe('User Search', () => {
+    let searchToken: string;
+    let searchUser1Id: string;
+    let searchUser2Id: string;
+
+    beforeAll(async () => {
+      // Create test users for search
+      const user1 = await prisma.user.create({
+        data: {
+          name: 'Alice Smith',
+          email: `alice-search-${Date.now()}@test.com`,
+          password: 'hashedpass',
+        },
+      });
+
+      const user2 = await prisma.user.create({
+        data: {
+          name: 'Bob Johnson',
+          email: `bob-search-${Date.now()}@test.com`,
+          password: 'hashedpass',
+        },
+      });
+
+      searchUser1Id = user1.id;
+      searchUser2Id = user2.id;
+
+      // Use existing auth token
+      searchToken = authToken;
+    });
+
+    afterAll(async () => {
+      await prisma.user.deleteMany({
+        where: { id: { in: [searchUser1Id, searchUser2Id] } },
+      });
+    });
+
+    it('should search users by name', async () => {
+      const res = await request(app)
+        .get('/api/users/search?q=Alice')
+        .set('Authorization', `Bearer ${searchToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'Alice Smith' }),
+        ])
+      );
+    });
+
+    it('should search users by email', async () => {
+      const res = await request(app)
+        .get('/api/users/search?q=bob-search')
+        .set('Authorization', `Bearer ${searchToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'Bob Johnson' }),
+        ])
+      );
+    });
+
+    it('should require minimum 2 characters', async () => {
+      const res = await request(app)
+        .get('/api/users/search?q=A')
+        .set('Authorization', `Bearer ${searchToken}`);
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('at least 2 characters');
+    });
+
+    it('should exclude current user from results', async () => {
+      const res = await request(app)
+        .get('/api/users/search?q=Flavor')
+        .set('Authorization', `Bearer ${searchToken}`);
+
+      expect(res.status).toBe(200);
+      const userIds = res.body.data.map((u: any) => u.id);
+      expect(userIds).not.toContain(userId);
+    });
+
+    it('should require authentication', async () => {
+      const res = await request(app)
+        .get('/api/users/search?q=Alice');
+
+      expect(res.status).toBe(401);
+    });
+  });
 });
