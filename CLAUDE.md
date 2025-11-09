@@ -205,14 +205,19 @@ git push origin main               # Deploy (triggers Railway)
 
 ## 🚨 IMPORTANT NOTES
 
-1. **Environment:** DATABASE_URL (Neon), JWT_SECRET (never default), SENTRY_DSN (optional)
+1. **Environment:**
+   - DATABASE_URL (Neon) - REQUIRED
+   - JWT_SECRET - REQUIRED (never use default)
+   - REDIS_HOST - OPTIONAL (for caching, falls back to in-memory)
+   - SENTRY_DSN - OPTIONAL (error tracking)
 2. **API URL:** Production: `https://oysterette-production.up.railway.app/api`
-3. **Testing:** All 282 tests must pass before push
+3. **Testing:** All tests must pass before push
 4. **Railway:** Auto-deploys from main, $5/month credit, auto-sleeps
 5. **Neon:** 3GB storage, auto-sleeps
-6. **Session Logs:** See SESSION_LOGS.md for detailed session history
-7. **Roadmap:** See ROADMAP.md for future feature planning
-8. **OTA Updates:** ALWAYS deploy to `production` branch: `eas update --branch production --message "msg"`
+6. **Redis:** Optional (recommendations use in-memory cache if unavailable)
+7. **Session Logs:** See SESSION_LOGS.md for detailed session history
+8. **Roadmap:** See ROADMAP.md for future feature planning
+9. **OTA Updates:** ALWAYS deploy to `production` branch: `eas update --branch production --message "msg"`
 
 ---
 
