@@ -6,7 +6,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl, SafeAreaView } from 'react-native';
-import { Card, Text, Button, Appbar, SegmentedButtons, Avatar, Searchbar } from 'react-native-paper';
+import { Card, Text, Button, Appbar, SegmentedButtons, Avatar, Searchbar, Snackbar } from 'react-native-paper';
+import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../context/ThemeContext';
@@ -48,6 +49,9 @@ export default function FriendsScreen() {
     received: [],
   });
   const [activity, setActivity] = useState<any[]>([]);
+  const [sendingRequest, setSendingRequest] = useState<string | null>(null);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const loadData = useCallback(async () => {
     try {
@@ -132,14 +136,22 @@ export default function FriendsScreen() {
 
   const handleSendRequest = useCallback(async (userId: string) => {
     try {
+      setSendingRequest(userId);
       await friendApi.sendRequest(userId);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setSnackbarMessage('Friend request sent!');
+      setSnackbarVisible(true);
       loadData();
       setSearchQuery('');
       setSearchResults([]);
-    } catch (error) {
+    } catch (error: any) {
       if (__DEV__) {
         console.error('❌ [FriendsScreen] Error sending request:', error);
       }
+      setSnackbarMessage(error.response?.data?.error || 'Failed to send request');
+      setSnackbarVisible(true);
+    } finally {
+      setSendingRequest(null);
     }
   }, [loadData]);
 
@@ -230,26 +242,49 @@ export default function FriendsScreen() {
     </Card>
   );
 
-  const renderSearchResult = ({ item }: { item: any }) => (
-    <Card mode="elevated" style={styles.card}>
-      <Card.Content>
-        <View style={styles.friendRow}>
-          <Avatar.Text
-            size={48}
-            label={item.name.charAt(0).toUpperCase()}
-            style={{ backgroundColor: paperTheme.colors.primary }}
-          />
-          <View style={styles.friendInfo}>
-            <Text variant="titleMedium">{item.name}</Text>
-            <Text variant="bodySmall" style={{ opacity: 0.7 }}>{item.email}</Text>
+  const renderSearchResult = ({ item }: { item: any }) => {
+    const hasPendingRequest = pendingRequests.sent.some((req) => req.user.id === item.id);
+    const isAlreadyFriend = friends.some((f) => f.id === item.id);
+    const isSending = sendingRequest === item.id;
+
+    return (
+      <Card mode="elevated" style={styles.card}>
+        <Card.Content>
+          <View style={styles.friendRow}>
+            <Avatar.Text
+              size={48}
+              label={item.name.charAt(0).toUpperCase()}
+              style={{ backgroundColor: paperTheme.colors.primary }}
+            />
+            <View style={styles.friendInfo}>
+              <Text variant="titleMedium">{item.name}</Text>
+              <Text variant="bodySmall" style={{ opacity: 0.7 }}>{item.email}</Text>
+            </View>
+            {isAlreadyFriend ? (
+              <Button mode="outlined" disabled compact>
+                Friends ✓
+              </Button>
+            ) : hasPendingRequest ? (
+              <Button mode="outlined" disabled compact>
+                Pending
+              </Button>
+            ) : (
+              <Button
+                mode="contained"
+                onPress={() => handleSendRequest(item.id)}
+                compact
+                icon="account-plus"
+                loading={isSending}
+                disabled={isSending}
+              >
+                {isSending ? 'Sending...' : 'Add'}
+              </Button>
+            )}
           </View>
-          <Button mode="contained" onPress={() => handleSendRequest(item.id)} compact icon="account-plus">
-            Add
-          </Button>
-        </View>
-      </Card.Content>
-    </Card>
-  );
+        </Card.Content>
+      </Card>
+    );
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
@@ -374,6 +409,18 @@ export default function FriendsScreen() {
       )}
         </>
       )}
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        action={{
+          label: 'OK',
+          onPress: () => setSnackbarVisible(false),
+        }}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </SafeAreaView>
   );
 }

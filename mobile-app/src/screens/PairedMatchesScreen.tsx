@@ -6,7 +6,7 @@
 
 import React, { useCallback } from 'react';
 import { View, StyleSheet, FlatList, SafeAreaView } from 'react-native';
-import { Card, Text, Appbar, ProgressBar } from 'react-native-paper';
+import { Card, Text, Appbar, ProgressBar, IconButton } from 'react-native-paper';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../context/ThemeContext';
@@ -42,13 +42,20 @@ export default function PairedMatchesScreen() {
               {item.oyster.species} • {item.oyster.origin}
             </Text>
           </View>
-          <View style={styles.combinedScore}>
-            <Text variant="headlineSmall" style={{ color: paperTheme.colors.primary }}>
-              {Math.round(item.combinedScore)}%
-            </Text>
-            <Text variant="bodySmall" style={{ opacity: 0.7 }}>
-              Combined
-            </Text>
+          <View style={styles.scoreContainer}>
+            <View style={styles.combinedScore}>
+              <Text variant="headlineSmall" style={{ color: paperTheme.colors.primary }}>
+                {Math.round(item.combinedScore)}%
+              </Text>
+              <Text variant="bodySmall" style={{ opacity: 0.7 }}>
+                Combined
+              </Text>
+            </View>
+            <IconButton
+              icon="chevron-right"
+              size={24}
+              style={styles.chevron}
+            />
           </View>
         </View>
 
@@ -136,9 +143,15 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     marginTop: 4,
   },
+  scoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   combinedScore: {
     alignItems: 'center',
-    marginLeft: 12,
+  },
+  chevron: {
+    margin: 0,
   },
   matchesContainer: {
     gap: 8,

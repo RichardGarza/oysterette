@@ -33,6 +33,7 @@
 
 import prisma from '../lib/prisma';
 import logger from '../utils/logger';
+import RedisClient from '../lib/redis';
 
 interface UserAttributePreferences {
   avgSize: number;
@@ -49,9 +50,40 @@ interface RecommendationCache {
   timestamp: number;
 }
 
-// In-memory cache (24-hour TTL)
+// Cache TTL
+const REDIS_CACHE_TTL = 24 * 60 * 60; // 24 hours in seconds
+const FALLBACK_CACHE_KEY = 'fallback';
+
+// In-memory cache (24-hour TTL) - used as last resort fallback
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 const recommendationCache = new Map<string, RecommendationCache>();
+
+/**
+ * Retry a database operation with exponential backoff
+ */
+async function retryWithBackoff<T>(
+  operation: () => Promise<T>,
+  maxRetries = 3,
+  baseDelay = 100
+): Promise<T> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      lastError = error;
+
+      if (attempt < maxRetries) {
+        const delay = baseDelay * Math.pow(2, attempt);
+        logger.warn(`DB operation failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  throw lastError || new Error('All retry attempts failed');
+}
 
 /**
  * Get user's flavor preferences
@@ -501,6 +533,12 @@ export const getHybridRecommendations = async (
 /**
  * Get personalized oyster recommendations (attribute-based)
  *
+ * Resilient caching strategy:
+ * 1. Check Redis cache first (instant return)
+ * 2. If cache miss, retry DB with exponential backoff
+ * 3. If DB fails, return last known fallback cache
+ * 4. Store successful results in Redis
+ *
  * @param userId - User UUID
  * @param limit - Number of recommendations to return (default 10)
  * @returns Array of recommended oysters with similarity scores
@@ -509,86 +547,141 @@ export const getRecommendations = async (
   userId: string,
   limit: number = 10
 ): Promise<any[]> => {
+  const cacheKey = `recommendations:${userId}`;
+  const fallbackCacheKey = `${cacheKey}:${FALLBACK_CACHE_KEY}`;
+
   try {
-    // Check cache first
-    const cached = recommendationCache.get(userId);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      logger.info(`Returning cached recommendations for user ${userId}`);
-      return cached.recommendations.slice(0, limit);
+    // STEP 1: Check Redis cache first (instant return)
+    const redis = await RedisClient.getInstance();
+    if (redis) {
+      try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          const data = JSON.parse(cached);
+          logger.info(`✅ Returning cached recommendations for user ${userId} (Redis)`);
+          return data.slice(0, limit);
+        }
+      } catch (cacheError) {
+        logger.warn('⚠️ Redis read failed, continuing to DB:', cacheError);
+      }
     }
 
-    // Get user's attribute preferences (baseline or from reviews)
-    const preferences = await getUserAttributePreferences(userId);
+    // STEP 2: Cache miss - try DB with retry
+    let recommendations: any[];
+    try {
+      recommendations = await retryWithBackoff(async () => {
+        // Get user's attribute preferences (baseline or from reviews)
+        const preferences = await getUserAttributePreferences(userId);
 
-    // If no preferences, return top-rated oysters
-    if (!preferences) {
-      logger.info(`No preferences for user ${userId}, returning top-rated oysters`);
-      const topRated = await prisma.oyster.findMany({
-        where: {
-          totalReviews: {
-            gte: 1,
+        // If no preferences, return top-rated oysters
+        if (!preferences) {
+          logger.info(`No preferences for user ${userId}, returning top-rated oysters`);
+          const topRated = await prisma.oyster.findMany({
+            where: {
+              totalReviews: {
+                gte: 1,
+              },
+            },
+            orderBy: {
+              overallScore: 'desc',
+            },
+            take: limit,
+          });
+
+          return topRated.map((oyster) => ({
+            ...oyster,
+            similarity: null,
+            reason: 'top_rated',
+          }));
+        }
+
+        // Get all oysters NOT reviewed by this user
+        const reviewedOysterIds = await prisma.review
+          .findMany({
+            where: { userId },
+            select: { oysterId: true },
+          })
+          .then((reviews) => reviews.map((r) => r.oysterId));
+
+        const unreviewedOysters = await prisma.oyster.findMany({
+          where: {
+            id: {
+              notIn: reviewedOysterIds,
+            },
           },
-        },
-        orderBy: {
-          overallScore: 'desc',
-        },
-        take: limit,
+        });
+
+        // Calculate similarity scores for all unreviewed oysters
+        const scoredOysters = unreviewedOysters.map((oyster) => {
+          const similarity = calculateSimilarityScore(oyster, preferences);
+          return {
+            ...oyster,
+            similarity,
+            reason: preferences.source === 'baseline' ? 'baseline_match' : 'personalized',
+          };
+        });
+
+        // Sort by similarity (highest first)
+        scoredOysters.sort((a, b) => b.similarity - a.similarity);
+
+        // Take top N
+        return scoredOysters.slice(0, limit);
+      }, 3, 100);
+
+      // STEP 3: Store successful result in Redis
+      if (redis) {
+        try {
+          await redis.setex(cacheKey, REDIS_CACHE_TTL, JSON.stringify(recommendations));
+          await redis.setex(fallbackCacheKey, REDIS_CACHE_TTL * 7, JSON.stringify(recommendations)); // Fallback lasts 1 week
+          logger.info(`✅ Cached ${recommendations.length} recommendations for user ${userId}`);
+        } catch (cacheError) {
+          logger.warn('⚠️ Redis write failed:', cacheError);
+        }
+      }
+
+      // Also update in-memory cache
+      recommendationCache.set(userId, {
+        userId,
+        recommendations,
+        timestamp: Date.now(),
       });
 
-      return topRated.map((oyster) => ({
-        ...oyster,
-        similarity: null,
-        reason: 'top_rated',
-      }));
+      logger.info(
+        `Generated ${recommendations.length} recommendations for user ${userId} from DB`
+      );
+
+      return recommendations;
+    } catch (dbError) {
+      // STEP 4: DB failed after retries - try fallback cache
+      logger.error('❌ DB failed after retries:', dbError);
+
+      if (redis) {
+        try {
+          const fallbackData = await redis.get(fallbackCacheKey);
+          if (fallbackData) {
+            const data = JSON.parse(fallbackData);
+            logger.warn(`⚠️ Returning fallback cache for user ${userId} (${data.length} items)`);
+            return data.slice(0, limit);
+          }
+        } catch (fallbackError) {
+          logger.error('❌ Fallback cache read failed:', fallbackError);
+        }
+      }
+
+      // Check in-memory cache as last resort
+      const memCached = recommendationCache.get(userId);
+      if (memCached) {
+        logger.warn(`⚠️ Returning in-memory fallback for user ${userId}`);
+        return memCached.recommendations.slice(0, limit);
+      }
+
+      // No cache available - return empty array to avoid 500 error
+      logger.error(`❌ No cache available for user ${userId}, returning empty array`);
+      return [];
     }
-
-    // Get all oysters NOT reviewed by this user
-    const reviewedOysterIds = await prisma.review
-      .findMany({
-        where: { userId },
-        select: { oysterId: true },
-      })
-      .then((reviews) => reviews.map((r) => r.oysterId));
-
-    const unreviewedOysters = await prisma.oyster.findMany({
-      where: {
-        id: {
-          notIn: reviewedOysterIds,
-        },
-      },
-    });
-
-    // Calculate similarity scores for all unreviewed oysters
-    const scoredOysters = unreviewedOysters.map((oyster) => {
-      const similarity = calculateSimilarityScore(oyster, preferences);
-      return {
-        ...oyster,
-        similarity,
-        reason: preferences.source === 'baseline' ? 'baseline_match' : 'personalized',
-      };
-    });
-
-    // Sort by similarity (highest first)
-    scoredOysters.sort((a, b) => b.similarity - a.similarity);
-
-    // Take top N
-    const recommendations = scoredOysters.slice(0, limit);
-
-    // Cache results
-    recommendationCache.set(userId, {
-      userId,
-      recommendations,
-      timestamp: Date.now(),
-    });
-
-    logger.info(
-      `Generated ${recommendations.length} recommendations for user ${userId} (source: ${preferences.source})`
-    );
-
-    return recommendations;
   } catch (error) {
-    logger.error('Error generating recommendations:', error);
-    throw error;
+    logger.error('❌ Critical error in getRecommendations:', error);
+    return []; // Never throw - always return array (even if empty)
   }
 };
 
@@ -622,8 +715,10 @@ export const setBaselineProfile = async (
       },
     });
 
-    // Invalidate cache
-    invalidateCache(userId);
+    // Invalidate cache (fire and forget - don't block)
+    invalidateCache(userId).catch((error) => {
+      logger.error('Error invalidating cache:', error);
+    });
 
     logger.info(`Set baseline profile for user ${userId}`);
   } catch (error) {
@@ -817,8 +912,10 @@ export const updateBaselineWithReview = async (
         data: updates,
       });
 
-      // Invalidate cache
-      invalidateCache(userId);
+      // Invalidate cache (fire and forget - don't block)
+      invalidateCache(userId).catch((error) => {
+        logger.error('Error invalidating cache:', error);
+      });
 
       logger.info(`Updated baseline profile for user ${userId} based on ${rating} review`);
     }
@@ -836,9 +933,26 @@ export const updateBaselineWithReview = async (
  *
  * @param userId - User UUID
  */
-export const invalidateCache = (userId: string): void => {
+export const invalidateCache = async (userId: string): Promise<void> => {
+  // Clear in-memory cache
   recommendationCache.delete(userId);
-  logger.info(`Invalidated recommendation cache for user ${userId}`);
+
+  // Clear Redis cache
+  try {
+    const redis = await RedisClient.getInstance();
+    if (redis) {
+      const cacheKey = `recommendations:${userId}`;
+      const fallbackCacheKey = `${cacheKey}:${FALLBACK_CACHE_KEY}`;
+      await redis.del(cacheKey);
+      await redis.del(fallbackCacheKey);
+      logger.info(`✅ Invalidated recommendation cache for user ${userId} (Redis + memory)`);
+    } else {
+      logger.info(`Invalidated recommendation cache for user ${userId} (memory only)`);
+    }
+  } catch (error) {
+    logger.error('❌ Error invalidating Redis cache:', error);
+    logger.info(`Invalidated recommendation cache for user ${userId} (memory only)`);
+  }
 };
 
 /**

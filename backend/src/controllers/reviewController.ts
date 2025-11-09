@@ -169,8 +169,10 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
         creaminess,
       });
 
-      // Invalidate recommendation cache since user's preferences changed
-      invalidateCache(req.userId);
+      // Invalidate recommendation cache since user's preferences changed (fire and forget)
+      invalidateCache(req.userId).catch((error) => {
+        logger.error('Error invalidating cache:', error);
+      });
     }
 
     res.status(201).json({
@@ -418,8 +420,10 @@ export const updateReview = async (req: Request, res: Response): Promise<void> =
       creaminess: review.creaminess,
     });
 
-    // Invalidate recommendation cache since user's preferences changed
-    invalidateCache(req.userId);
+    // Invalidate recommendation cache since user's preferences changed (fire and forget)
+    invalidateCache(req.userId).catch((error) => {
+      logger.error('Error invalidating cache:', error);
+    });
 
     res.status(200).json({
       success: true,

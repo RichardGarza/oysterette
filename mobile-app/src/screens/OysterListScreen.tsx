@@ -14,7 +14,6 @@ import {
   Platform,
   ScrollView,
   Image,
-  BackHandler,
 } from 'react-native';
 import {
   Text,
@@ -43,6 +42,7 @@ import { RatingDisplay } from '../components/RatingDisplay';
 import { EmptyState } from '../components/EmptyState';
 import { OysterCardSkeleton } from '../components/OysterCardSkeleton';
 import { useTheme } from '../context/ThemeContext';
+// import * as Sentry from '@sentry/react-native';
 
 // ============================================================================
 // CONSTANTS
@@ -109,6 +109,7 @@ export default function OysterListScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<any>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -130,6 +131,9 @@ export default function OysterListScreen() {
     if (route.params?.searchQuery) {
       setSearchQuery(route.params.searchQuery);
     }
+    if (route.params?.showFavorites) {
+      setShowFavoritesOnly(true);
+    }
     fetchOysters();
     loadFavorites();
     checkAuth();
@@ -148,18 +152,10 @@ export default function OysterListScreen() {
   useFocusEffect(
     React.useCallback(() => {
       checkAuth();
+      fetchOysters();
+      loadFavorites();
     }, [])
   );
-
-  // Handle Android back button - navigate to Home instead of exiting app
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      navigation.navigate('Home');
-      return true; // Prevent default back behavior
-    });
-
-    return () => backHandler.remove();
-  }, [navigation]);
 
   const checkAuth = useCallback(async () => {
     const token = await authStorage.getToken();
@@ -198,10 +194,17 @@ export default function OysterListScreen() {
         console.log(`🦪 [OysterList] Received ${data.length} oysters`);
       }
       setOysters(data);
-    } catch (err) {
-      setError('Failed to load oysters. Please check your backend connection.');
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.error || err?.message || 'Unknown error';
+      const statusCode = err?.response?.status || 'No status';
+      const endpoint = 'GET /api/oysters';
+
+      setError(`Failed to load oysters. Status: ${statusCode} - ${errorMsg}`);
+      setErrorDetails({ err, statusCode, endpoint, errorMsg });
+
       if (__DEV__) {
         console.error('❌ [OysterListScreen] Error fetching oysters:', err);
+        console.error('Status:', statusCode, 'Message:', errorMsg);
       }
     } finally {
       if (isRefreshing) {
@@ -519,7 +522,23 @@ export default function OysterListScreen() {
           actions={[
             {
               label: 'Retry',
-              onPress: () => fetchOysters(),
+              onPress: () => {
+                // if (errorDetails) {
+                //   Sentry.captureException(errorDetails.err, {
+                //     tags: {
+                //       screen: 'OysterListScreen',
+                //       action: 'retry_fetch',
+                //     },
+                //     extra: {
+                //       endpoint: errorDetails.endpoint,
+                //       statusCode: errorDetails.statusCode,
+                //       errorMessage: errorDetails.errorMsg,
+                //       timestamp: new Date().toISOString(),
+                //     },
+                //   });
+                // }
+                fetchOysters();
+              },
             },
           ]}
           style={styles.errorBanner}

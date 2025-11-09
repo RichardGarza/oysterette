@@ -10,11 +10,11 @@ import {
   StyleSheet,
   SafeAreaView,
   Image,
-  Animated,
   FlatList,
   ScrollView,
   BackHandler,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import {
   Button,
@@ -37,19 +37,13 @@ import RecommendedOysterCard from '../components/RecommendedOysterCard';
 // CONSTANTS
 // ============================================================================
 
-const ANIMATION_CONFIG = {
-  FADE_DURATION: 300,
-  TRANSITION_DELAY: 900,
-} as const;
-
 const LOGO_SIZES = {
   NORMAL: 256,
-  LOADING: 384,
 } as const;
 
 const RECOMMENDATIONS_LIMIT = 5;
 
-const LAST_UPDATED = '10:56 PM';
+const LAST_UPDATED = '01:49 PM';
 const TOP_RATED_LIMIT = 5;
 
 // ============================================================================
@@ -61,14 +55,12 @@ export default function HomeScreen() {
   const { theme, loadUserTheme, paperTheme } = useTheme();
   const [checking, setChecking] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLoading, setShowLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<Oyster[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [topRated, setTopRated] = useState<Oyster[]>([]);
   const [userStats, setUserStats] = useState({ reviews: 0, favorites: 0, oystersTried: 0 });
   const [totalOysters, setTotalOysters] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const fadeAnim = useState(new Animated.Value(0))[0];
 
 
   // Handle Android back button press - show exit confirmation
@@ -199,25 +191,8 @@ export default function HomeScreen() {
   }, [searchQuery, navigation]);
 
   const handleBrowseOysters = useCallback(() => {
-    setShowLoading(true);
-
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: ANIMATION_CONFIG.FADE_DURATION,
-      useNativeDriver: true,
-    }).start();
-
-    setTimeout(() => {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: ANIMATION_CONFIG.FADE_DURATION,
-        useNativeDriver: true,
-      }).start(() => {
-        navigation.navigate('OysterList');
-        setShowLoading(false);
-      });
-    }, ANIMATION_CONFIG.TRANSITION_DELAY);
-  }, [fadeAnim, navigation]);
+    navigation.navigate('OysterList');
+  }, [navigation]);
 
   if (checking) {
     return (
@@ -232,16 +207,6 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
-      {showLoading && (
-        <Animated.View style={[styles.loadingOverlay, { opacity: fadeAnim, backgroundColor: paperTheme.colors.background }]}>
-          <Image
-            source={require('../../assets/logo.png')}
-            style={styles.loadingLogo}
-            resizeMode="contain"
-          />
-        </Animated.View>
-      )}
-
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <Image
           source={require('../../assets/logo.png')}
@@ -280,10 +245,6 @@ export default function HomeScreen() {
                 <Text variant="bodySmall" style={styles.statLabel}>Favorites</Text>
               </Surface>
             </TouchableOpacity>
-            <Surface style={styles.statCard} elevation={1}>
-              <Text variant="headlineSmall" style={styles.statNumber}>{userStats.oystersTried}</Text>
-              <Text variant="bodySmall" style={styles.statLabel}>Tried</Text>
-            </Surface>
           </View>
         )}
 
@@ -464,20 +425,6 @@ const styles = StyleSheet.create({
     width: LOGO_SIZES.NORMAL,
     height: LOGO_SIZES.NORMAL,
     marginBottom: 20,
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  loadingLogo: {
-    width: LOGO_SIZES.LOADING,
-    height: LOGO_SIZES.LOADING,
   },
   loadingText: {
     marginTop: 20,

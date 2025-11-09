@@ -25,6 +25,7 @@ import {
   Dialog,
   Surface,
   Chip,
+  Snackbar,
 } from 'react-native-paper';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
@@ -118,6 +119,8 @@ export default function AddReviewScreen() {
   const [contributedSpecies, setContributedSpecies] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   // Photo upload state
   const [photos, setPhotos] = useState<string[]>(existingReview?.photoUrls || []);
@@ -257,7 +260,6 @@ export default function AddReviewScreen() {
       if (data.success && data.data && data.data.url) {
         console.log('✅ [AddReviewScreen] Photo uploaded successfully:', data.data.url);
         setPhotos([...photos, data.data.url]);
-        Alert.alert('Success', 'Photo uploaded successfully!');
       } else {
         const errorMsg = data.error || 'Upload failed - no URL returned';
         console.error('❌ [AddReviewScreen] Upload failed:', errorMsg);
@@ -440,18 +442,14 @@ export default function AddReviewScreen() {
         }
       }
 
-      Alert.alert(
-        isUpdateMode ? 'Review Updated!' : 'Review Submitted!',
-        isUpdateMode
-          ? 'Your review has been updated successfully.'
-          : 'Thank you for sharing your tasting experience.',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
+      // Show success snackbar and navigate back after 600ms
+      setSnackbarMessage(
+        isUpdateMode ? 'Review Updated!' : 'Review Submitted!'
       );
+      setSnackbarVisible(true);
+      setTimeout(() => {
+        navigation.goBack();
+      }, 600);
     } catch (error: any) {
       console.error('❌ [AddReviewScreen] Error submitting review:', {
         message: error.message,
@@ -819,6 +817,15 @@ export default function AddReviewScreen() {
         </Button>
       </ScrollView>
       </KeyboardAvoidingView>
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={600}
+        style={{ backgroundColor: paperTheme.colors.tertiary }}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </SafeAreaView>
   );
 }

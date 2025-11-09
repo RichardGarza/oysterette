@@ -11,6 +11,7 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
 import { Card, Text, IconButton, Chip, Button, ActivityIndicator, Dialog, Portal, Snackbar } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
@@ -106,6 +107,7 @@ export const ReviewCard = memo<ReviewCardProps>(({
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [fullscreenPhoto, setFullscreenPhoto] = useState<string | null>(null);
 
   const isOwnReview = useMemo(
     () => currentUserId !== undefined && review.userId === currentUserId,
@@ -205,9 +207,14 @@ export const ReviewCard = memo<ReviewCardProps>(({
       <Card.Content>
         <View style={styles.reviewHeader}>
           <View style={styles.reviewHeaderLeft}>
-            <Text variant="labelLarge" style={{ color: theme.colors.primary }}>
-              {formatRatingText(review.rating)}
-            </Text>
+            <View>
+              <Text variant="labelLarge" style={{ color: theme.colors.primary }}>
+                {formatRatingText(review.rating)}
+              </Text>
+              <Text variant="bodySmall" style={{ color: theme.colors.textSecondary, marginTop: 2 }}>
+                {review.user?.name || 'Anonymous'}
+              </Text>
+            </View>
             {showCredibilityBadge && (
               <Chip
                 compact
@@ -257,7 +264,7 @@ export const ReviewCard = memo<ReviewCardProps>(({
             contentContainerStyle={styles.photoScrollContent}
           >
             {review.photoUrls.map((photoUrl, index) => (
-              <TouchableOpacity key={index} activeOpacity={0.8}>
+              <TouchableOpacity key={index} activeOpacity={0.8} onPress={() => setFullscreenPhoto(photoUrl)}>
                 <Image
                   source={{ uri: photoUrl }}
                   style={styles.photoThumbnail}
@@ -325,6 +332,25 @@ export const ReviewCard = memo<ReviewCardProps>(({
       >
         {snackbarMessage}
       </Snackbar>
+
+      <Modal visible={!!fullscreenPhoto} transparent onRequestClose={() => setFullscreenPhoto(null)}>
+        <View style={styles.fullscreenContainer}>
+          <TouchableOpacity style={styles.fullscreenTouchable} activeOpacity={1} onPress={() => setFullscreenPhoto(null)}>
+            <Image
+              source={{ uri: fullscreenPhoto || '' }}
+              style={styles.fullscreenImage}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+          <IconButton
+            icon="close"
+            iconColor={COLORS.WHITE}
+            size={24}
+            onPress={() => setFullscreenPhoto(null)}
+            style={styles.closeButton}
+          />
+        </View>
+      </Modal>
     </Card>
   );
 });
@@ -387,5 +413,27 @@ const useStyles = (theme: Theme, isDark: boolean) => useMemo(() => StyleSheet.cr
   },
   voteButtonContent: {
     paddingVertical: 4,
+  },
+  fullscreenContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullscreenTouchable: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullscreenImage: {
+    width: '100%',
+    height: '100%',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
 }), [theme, isDark]);

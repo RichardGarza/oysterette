@@ -1,12 +1,13 @@
 /**
  * Health Check Endpoint
  *
- * Monitors backend and database connectivity
+ * Monitors backend, database, and Redis connectivity
  * Used for Railway health checks and monitoring
  */
 
 import { Router } from 'express';
 import { prisma } from '../lib/prisma';
+import RedisClient from '../lib/redis';
 
 const router = Router();
 
@@ -49,8 +50,42 @@ router.get('/db', async (_req, res) => {
 });
 
 /**
+ * GET /api/health/redis
+ * Redis connectivity check
+ */
+router.get('/redis', async (_req, res) => {
+  try {
+    const redisHealth = await RedisClient.healthCheck();
+
+    if (redisHealth.status === 'healthy') {
+      res.status(200).json({
+        status: 'ok',
+        redis: 'connected',
+        latency: `${redisHealth.latency}ms`,
+        timestamp: new Date().toISOString(),
+      });
+    } else {
+      res.status(503).json({
+        status: 'error',
+        redis: 'disconnected',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  } catch (error: any) {
+    console.error('❌ [Health] Redis health check failed:', error);
+
+    res.status(503).json({
+      status: 'error',
+      redis: 'disconnected',
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
+/**
  * GET /api/health/detailed
- * Detailed health check with metrics
+ * Detailed health check with metrics (DB + Redis)
  */
 router.get('/detailed', async (_req, res) => {
   try {
@@ -66,6 +101,9 @@ router.get('/detailed', async (_req, res) => {
     const oysterCount = await prisma.oyster.count();
     const reviewCount = await prisma.review.count();
 
+    // Check Redis health
+    const redisHealth = await RedisClient.healthCheck();
+
     res.status(200).json({
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -79,11 +117,24 @@ router.get('/detailed', async (_req, res) => {
           reviews: reviewCount,
         },
       },
+      redis: {
+        status: redisHealth.status === 'healthy' ? 'connected' : 'disconnected',
+        latency: redisHealth.latency ? `${redisHealth.latency}ms` : undefined,
+      },
       environment: process.env.NODE_ENV,
       version: process.env.npm_package_version || '2.0.0',
     });
   } catch (error: any) {
     console.error('❌ [Health] Detailed health check failed:', error);
+
+    // Still try to check Redis even if DB failed
+    let redisStatus = 'unknown';
+    try {
+      const redisHealth = await RedisClient.healthCheck();
+      redisStatus = redisHealth.status === 'healthy' ? 'connected' : 'disconnected';
+    } catch {
+      redisStatus = 'disconnected';
+    }
 
     res.status(503).json({
       status: 'error',
@@ -92,6 +143,9 @@ router.get('/detailed', async (_req, res) => {
       database: {
         status: 'disconnected',
         error: error.message,
+      },
+      redis: {
+        status: redisStatus,
       },
       environment: process.env.NODE_ENV,
     });

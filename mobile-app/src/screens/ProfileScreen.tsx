@@ -293,8 +293,6 @@ export default function ProfileScreen() {
           console.log('✅ [ProfileScreen] State updated with photo URL:', updatedUser.profilePhotoUrl);
         }
       }
-
-      Alert.alert('Success', 'Profile photo updated successfully!');
     } catch (error) {
       if (__DEV__) {
         console.error('❌ [ProfileScreen] Error uploading profile photo:', error);
@@ -580,8 +578,7 @@ export default function ProfileScreen() {
           </Card>
 
           <Card mode="elevated" style={styles.statCard} onPress={() => {
-            navigation.navigate('OysterList' as any);
-            // Note: OysterList will need to support auto-selecting favorites tab
+            navigation.navigate('OysterList' as any, { showFavorites: true });
           }}>
             <Card.Content style={styles.statCardContent}>
               <Text variant="headlineMedium" style={styles.statValue}>{stats.totalFavorites}</Text>
@@ -622,27 +619,6 @@ export default function ProfileScreen() {
             </Card.Content>
           </Card>
         </View>
-
-        {/* Insights */}
-        {(stats.mostReviewedSpecies || stats.mostReviewedOrigin) && (
-          <Card mode="elevated" style={styles.insightsCard}>
-            <Card.Content>
-              <Text variant="titleLarge" style={styles.sectionTitle}>Your Tastes</Text>
-              {stats.mostReviewedSpecies && (
-                <View style={styles.insightRow}>
-                  <Text variant="bodyMedium" style={styles.insightLabel}>Favorite Species:</Text>
-                  <Text variant="bodyMedium" style={styles.insightValue}>{stats.mostReviewedSpecies}</Text>
-                </View>
-              )}
-              {stats.mostReviewedOrigin && (
-                <View style={styles.insightRow}>
-                  <Text variant="bodyMedium" style={styles.insightLabel}>Favorite Origin:</Text>
-                  <Text variant="bodyMedium" style={styles.insightValue}>{stats.mostReviewedOrigin}</Text>
-                </View>
-              )}
-            </Card.Content>
-          </Card>
-        )}
 
         {/* Flavor Profile */}
         {(user.baselineSize || user.baselineBody || user.baselineSweetBrininess || user.baselineFlavorfulness || user.baselineCreaminess) && (
@@ -821,6 +797,27 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               )}
             </View>
+            </Card.Content>
+          </Card>
+        )}
+
+        {/* Favorite Species / Region */}
+        {(stats.mostReviewedSpecies || stats.mostReviewedOrigin) && (
+          <Card mode="elevated" style={styles.insightsCard}>
+            <Card.Content>
+              <Text variant="titleLarge" style={styles.sectionTitle}>Favorite Species / Region</Text>
+              {stats.mostReviewedSpecies && (
+                <View style={styles.insightRow}>
+                  <Text variant="bodyMedium" style={styles.insightLabel}>Favorite Species:</Text>
+                  <Text variant="bodyMedium" style={styles.insightValue}>{stats.mostReviewedSpecies}</Text>
+                </View>
+              )}
+              {stats.mostReviewedOrigin && (
+                <View style={styles.insightRow}>
+                  <Text variant="bodyMedium" style={styles.insightLabel}>Favorite Origin:</Text>
+                  <Text variant="bodyMedium" style={styles.insightValue}>{stats.mostReviewedOrigin}</Text>
+                </View>
+              )}
             </Card.Content>
           </Card>
         )}

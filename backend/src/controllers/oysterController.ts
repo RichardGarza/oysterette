@@ -43,9 +43,9 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
     const filterConditions: any[] = [];
     const activeFilters: string[] = [];
 
-    // Sweetness filter
+    // Sweetness filter (fuzzy ranges with ±2 overlap)
     if (sweetness && typeof sweetness === 'string') {
-      const range = sweetness === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
+      const range = sweetness === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
       filterConditions.push({
         OR: [
           { avgSweetBrininess: range },
@@ -55,9 +55,9 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
       activeFilters.push('sweetness');
     }
 
-    // Size filter
+    // Size filter (fuzzy ranges with ±2 overlap)
     if (size && typeof size === 'string') {
-      const range = size === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
+      const range = size === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
       filterConditions.push({
         OR: [
           { avgSize: range },
@@ -67,9 +67,9 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
       activeFilters.push('size');
     }
 
-    // Body filter
+    // Body filter (fuzzy ranges with ±2 overlap)
     if (body && typeof body === 'string') {
-      const range = body === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
+      const range = body === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
       filterConditions.push({
         OR: [
           { avgBody: range },
@@ -79,9 +79,9 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
       activeFilters.push('body');
     }
 
-    // Flavorfulness filter
+    // Flavorfulness filter (fuzzy ranges with ±2 overlap)
     if (flavorfulness && typeof flavorfulness === 'string') {
-      const range = flavorfulness === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
+      const range = flavorfulness === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
       filterConditions.push({
         OR: [
           { avgFlavorfulness: range },
@@ -91,9 +91,9 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
       activeFilters.push('flavorfulness');
     }
 
-    // Creaminess filter
+    // Creaminess filter (fuzzy ranges with ±2 overlap)
     if (creaminess && typeof creaminess === 'string') {
-      const range = creaminess === 'low' ? { gte: 1, lte: 5 } : { gte: 6, lte: 10 };
+      const range = creaminess === 'low' ? { gte: 1, lte: 6 } : { gte: 4, lte: 10 };
       filterConditions.push({
         OR: [
           { avgCreaminess: range },

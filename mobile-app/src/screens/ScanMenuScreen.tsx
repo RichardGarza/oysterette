@@ -151,20 +151,13 @@ export default function ScanMenuScreen() {
 
       <CameraView style={styles.camera} ref={cameraRef}>
         <View style={styles.overlay}>
-          <View style={styles.topOverlay}>
+          <View style={styles.instructionContainer}>
             <Text variant="titleMedium" style={styles.instructionText}>
               Point camera at oyster menu
             </Text>
           </View>
 
-          <View style={styles.scanArea}>
-            <View style={[styles.corner, styles.topLeft]} />
-            <View style={[styles.corner, styles.topRight]} />
-            <View style={[styles.corner, styles.bottomLeft]} />
-            <View style={[styles.corner, styles.bottomRight]} />
-          </View>
-
-          <View style={styles.bottomOverlay}>
+          <View style={styles.bottomContainer}>
             {matches.length === 0 && unmatched.length === 0 ? (
               <Button
                 mode="contained"
@@ -292,56 +285,23 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'transparent',
+    justifyContent: 'space-between',
   },
-  topOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  instructionContainer: {
+    paddingTop: 40,
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    paddingBottom: 16,
   },
   instructionText: {
     color: '#fff',
     textAlign: 'center',
   },
-  scanArea: {
-    width: '80%',
-    aspectRatio: 4 / 3,
-    alignSelf: 'center',
-    position: 'relative',
-  },
-  corner: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    borderColor: '#fff',
-  },
-  topLeft: {
-    top: 0,
-    left: 0,
-    borderTopWidth: 4,
-    borderLeftWidth: 4,
-  },
-  topRight: {
-    top: 0,
-    right: 0,
-    borderTopWidth: 4,
-    borderRightWidth: 4,
-  },
-  bottomLeft: {
-    bottom: 0,
-    left: 0,
-    borderBottomWidth: 4,
-    borderLeftWidth: 4,
-  },
-  bottomRight: {
-    bottom: 0,
-    right: 0,
-    borderBottomWidth: 4,
-    borderRightWidth: 4,
-  },
-  bottomOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+  bottomContainer: {
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    paddingTop: 16,
+    paddingBottom: 32,
+    paddingHorizontal: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },

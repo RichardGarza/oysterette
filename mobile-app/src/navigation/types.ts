@@ -87,7 +87,7 @@ export type RootStackParamList = {
   Home: undefined;
   Login: undefined;
   Register: undefined;
-  OysterList: { searchQuery?: string } | undefined;
+  OysterList: { searchQuery?: string; showFavorites?: boolean } | undefined;
   OysterDetail: { oysterId: string };
   AddOyster: { name?: string } | undefined;
   AddReview: {
@@ -137,7 +137,7 @@ export type HomeScreenNavigationProp = NativeStackNavigationProp<
   'Home'
 > & {
   navigate(screen: 'TopOysters'): void;
-  navigate(screen: 'OysterList', params?: { searchQuery?: string }): void;
+  navigate(screen: 'OysterList', params?: { searchQuery?: string; showFavorites?: boolean }): void;
   navigate(screen: 'Login'): void;
   navigate(screen: 'SetFlavorProfile'): void;
   navigate(screen: 'Profile'): void;

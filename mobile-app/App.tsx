@@ -91,7 +91,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { TouchableOpacity, Text, Image } from 'react-native';
-import { PaperProvider } from 'react-native-paper';
+import { PaperProvider, IconButton } from 'react-native-paper';
 import { RootStackParamList } from './src/navigation/types';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { XPNotificationProvider } from './src/context/XPNotificationContext';
@@ -137,14 +137,15 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function AppNavigator() {
   const { theme, isDark, paperTheme } = useTheme();
 
-  // Settings button component for header
+  // Settings button component for header (hamburger menu)
   const SettingsButton = ({ navigation }: any) => (
-    <TouchableOpacity
+    <IconButton
+      icon="menu"
+      iconColor="#fff"
+      size={24}
       onPress={() => navigation.navigate('Settings')}
-      style={{ marginRight: 15 }}
-    >
-      <Text style={{ fontSize: 24 }}>⚙️</Text>
-    </TouchableOpacity>
+      style={{ marginRight: 8 }}
+    />
   );
 
   return (
@@ -208,14 +209,6 @@ function AppNavigator() {
                   style={{ width: 150, height: 40 }}
                   resizeMode="contain"
                 />
-              </TouchableOpacity>
-            ),
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Home')}
-                style={{ marginLeft: 15 }}
-              >
-                <Text style={{ color: '#fff', fontSize: 28 }}>←</Text>
               </TouchableOpacity>
             ),
             headerRight: () => <SettingsButton navigation={navigation} />,

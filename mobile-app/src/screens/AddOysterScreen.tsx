@@ -113,16 +113,6 @@ export default function AddOysterScreen() {
       return false;
     }
 
-    if (!formData.species.trim()) {
-      Alert.alert('Validation Error', 'Species is required');
-      return false;
-    }
-
-    if (!formData.origin.trim()) {
-      Alert.alert('Validation Error', 'Origin is required');
-      return false;
-    }
-
     const attributes: Array<keyof FormData> = ['size', 'body', 'sweetBrininess', 'flavorfulness', 'creaminess'];
     for (const attr of attributes) {
       const value = parseInt(formData[attr]);
@@ -142,8 +132,8 @@ export default function AddOysterScreen() {
       setLoading(true);
       const oysterData = {
         name: formData.name.trim(),
-        species: formData.species.trim(),
-        origin: formData.origin.trim(),
+        species: formData.species.trim() || 'Unknown',
+        origin: formData.origin.trim() || 'Unknown',
         standoutNotes: formData.standoutNotes.trim() || undefined,
         size: parseInt(formData.size),
         body: parseInt(formData.body),
@@ -215,7 +205,7 @@ export default function AddOysterScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <ScrollView style={styles.scrollView}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <Card style={styles.header}>
           <Card.Content>
             <Text variant="headlineMedium" style={{ color: theme.colors.text }}>Add New Oyster</Text>
@@ -240,8 +230,8 @@ export default function AddOysterScreen() {
 
             <TextInput
               mode="outlined"
-              label="Species *"
-              placeholder="e.g., Crassostrea gigas"
+              label="Species (optional)"
+              placeholder="e.g., Crassostrea gigas (defaults to Unknown)"
               value={formData.species}
               onChangeText={(value) => updateField('species', value)}
               style={styles.input}
@@ -249,8 +239,8 @@ export default function AddOysterScreen() {
 
             <TextInput
               mode="outlined"
-              label="Origin *"
-              placeholder="e.g., Hood Canal, Washington"
+              label="Origin (optional)"
+              placeholder="e.g., Hood Canal, Washington (defaults to Unknown)"
               value={formData.origin}
               onChangeText={(value) => updateField('origin', value)}
               style={styles.input}
@@ -320,6 +310,9 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 40,
   },
   header: {
     marginBottom: 8,
