@@ -141,7 +141,7 @@ export default function ProfileScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { theme, isDark, paperTheme } = useTheme();
-  const { userId: viewingUserId } = route.params || {};
+  const viewingUserId = route.params?.userId;
   const isViewingOwnProfile = !viewingUserId;
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
