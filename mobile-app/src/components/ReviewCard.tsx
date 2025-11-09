@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Card, Text, IconButton, Chip, Button, ActivityIndicator, Dialog, Portal, Snackbar } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Review } from '../types/Oyster';
 import { voteApi, reviewApi, getXPStats } from '../services/api';
 import { useTheme, Theme } from '../context/ThemeContext';
@@ -141,14 +142,14 @@ export const ReviewCard = memo<ReviewCardProps>(({
         // Check for level up after voting
         try {
           const xpStats = await getXPStats();
-          const oldLevel = await authStorage.getItem('lastLevel');
+          const oldLevel = await AsyncStorage.getItem('lastLevel');
           const newLevel = xpStats.level;
 
           if (oldLevel && parseInt(oldLevel) < newLevel) {
             showLevelUp(newLevel);
-            await authStorage.setItem('lastLevel', newLevel.toString());
+            await AsyncStorage.setItem('lastLevel', newLevel.toString());
           } else if (!oldLevel) {
-            await authStorage.setItem('lastLevel', newLevel.toString());
+            await AsyncStorage.setItem('lastLevel', newLevel.toString());
           }
         } catch (error) {
           if (__DEV__) {

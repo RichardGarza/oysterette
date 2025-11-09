@@ -644,7 +644,7 @@ export default function ProfileScreen() {
                   activeOpacity={0.7}
                 >
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Size</Text>
-                  {user.rangeMinSize !== null && user.rangeMaxSize !== null ? (
+                  {user.rangeMinSize != null && user.rangeMaxSize != null ? (
                     <View style={styles.rangeContainer}>
                       <View style={[styles.rangeBar, {
                         marginLeft: `${(user.rangeMinSize / 10) * 100}%`,
@@ -652,21 +652,21 @@ export default function ProfileScreen() {
                         backgroundColor: paperTheme.colors.primary,
                         opacity: 0.3
                       }]} />
-                      {user.rangeMedianSize && (
+                      {user.rangeMedianSize != null && (
                         <View style={[styles.medianIndicator, { left: `${(user.rangeMedianSize / 10) * 100}%` }]} />
                       )}
                     </View>
                   ) : (
                     <ProgressBar
-                      progress={user.baselineSize / 10}
+                      progress={user.baselineSize! / 10}
                       color={paperTheme.colors.primary}
                       style={styles.flavorBar}
                     />
                   )}
                   <Text variant="bodySmall" style={styles.flavorAttributeValue}>
-                    {user.rangeMinSize !== null && user.rangeMaxSize !== null
+                    {user.rangeMinSize != null && user.rangeMaxSize != null
                       ? `${user.rangeMinSize.toFixed(0)}-${user.rangeMaxSize.toFixed(0)}/10 (${getRangeLabel('size', user.rangeMinSize, user.rangeMaxSize)})`
-                      : `${user.baselineSize.toFixed(1)}/10 (${getAttributeLabel('size', user.baselineSize)})`}
+                      : `${user.baselineSize!.toFixed(1)}/10 (${getAttributeLabel('size', user.baselineSize!)})`}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -677,7 +677,7 @@ export default function ProfileScreen() {
                   activeOpacity={0.7}
                 >
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Body</Text>
-                  {user.rangeMinBody !== null && user.rangeMaxBody !== null ? (
+                  {user.rangeMinBody != null && user.rangeMaxBody != null ? (
                     <View style={styles.rangeContainer}>
                       <View style={[styles.rangeBar, {
                         marginLeft: `${(user.rangeMinBody / 10) * 100}%`,
@@ -685,21 +685,21 @@ export default function ProfileScreen() {
                         backgroundColor: paperTheme.colors.primary,
                         opacity: 0.3
                       }]} />
-                      {user.rangeMedianBody && (
+                      {user.rangeMedianBody != null && (
                         <View style={[styles.medianIndicator, { left: `${(user.rangeMedianBody / 10) * 100}%` }]} />
                       )}
                     </View>
                   ) : (
                     <ProgressBar
-                      progress={user.baselineBody / 10}
+                      progress={user.baselineBody! / 10}
                       color={paperTheme.colors.primary}
                       style={styles.flavorBar}
                     />
                   )}
                   <Text variant="bodySmall" style={styles.flavorAttributeValue}>
-                    {user.rangeMinBody !== null && user.rangeMaxBody !== null
+                    {user.rangeMinBody != null && user.rangeMaxBody != null
                       ? `${user.rangeMinBody.toFixed(0)}-${user.rangeMaxBody.toFixed(0)}/10 (${getRangeLabel('body', user.rangeMinBody, user.rangeMaxBody)})`
-                      : `${user.baselineBody.toFixed(1)}/10 (${getAttributeLabel('body', user.baselineBody)})`}
+                      : `${user.baselineBody!.toFixed(1)}/10 (${getAttributeLabel('body', user.baselineBody!)})`}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -710,7 +710,7 @@ export default function ProfileScreen() {
                   activeOpacity={0.7}
                 >
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Sweet/Brininess</Text>
-                  {user.rangeMinSweetBrininess !== null && user.rangeMaxSweetBrininess !== null ? (
+                  {user.rangeMinSweetBrininess != null && user.rangeMaxSweetBrininess != null ? (
                     <View style={styles.rangeContainer}>
                       <View style={[styles.rangeBar, {
                         marginLeft: `${(user.rangeMinSweetBrininess / 10) * 100}%`,
@@ -718,21 +718,21 @@ export default function ProfileScreen() {
                         backgroundColor: paperTheme.colors.primary,
                         opacity: 0.3
                       }]} />
-                      {user.rangeMedianSweetBrininess && (
+                      {user.rangeMedianSweetBrininess != null && (
                         <View style={[styles.medianIndicator, { left: `${(user.rangeMedianSweetBrininess / 10) * 100}%` }]} />
                       )}
                     </View>
                   ) : (
                     <ProgressBar
-                      progress={user.baselineSweetBrininess / 10}
+                      progress={user.baselineSweetBrininess! / 10}
                       color={paperTheme.colors.primary}
                       style={styles.flavorBar}
                     />
                   )}
                   <Text variant="bodySmall" style={styles.flavorAttributeValue}>
-                    {user.rangeMinSweetBrininess !== null && user.rangeMaxSweetBrininess !== null
+                    {user.rangeMinSweetBrininess != null && user.rangeMaxSweetBrininess != null
                       ? `${user.rangeMinSweetBrininess.toFixed(0)}-${user.rangeMaxSweetBrininess.toFixed(0)}/10 (${getRangeLabel('sweetBrininess', user.rangeMinSweetBrininess, user.rangeMaxSweetBrininess)})`
-                      : `${user.baselineSweetBrininess.toFixed(1)}/10 (${getAttributeLabel('sweetBrininess', user.baselineSweetBrininess)})`}
+                      : `${user.baselineSweetBrininess!.toFixed(1)}/10 (${getAttributeLabel('sweetBrininess', user.baselineSweetBrininess!)})`}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -743,7 +743,7 @@ export default function ProfileScreen() {
                   activeOpacity={0.7}
                 >
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Flavorfulness</Text>
-                  {user.rangeMinFlavorfulness !== null && user.rangeMaxFlavorfulness !== null ? (
+                  {user.rangeMinFlavorfulness != null && user.rangeMaxFlavorfulness != null ? (
                     <View style={styles.rangeContainer}>
                       <View style={[styles.rangeBar, {
                         marginLeft: `${(user.rangeMinFlavorfulness / 10) * 100}%`,
@@ -751,21 +751,21 @@ export default function ProfileScreen() {
                         backgroundColor: paperTheme.colors.primary,
                         opacity: 0.3
                       }]} />
-                      {user.rangeMedianFlavorfulness && (
+                      {user.rangeMedianFlavorfulness != null && (
                         <View style={[styles.medianIndicator, { left: `${(user.rangeMedianFlavorfulness / 10) * 100}%` }]} />
                       )}
                     </View>
                   ) : (
                     <ProgressBar
-                      progress={user.baselineFlavorfulness / 10}
+                      progress={user.baselineFlavorfulness! / 10}
                       color={paperTheme.colors.primary}
                       style={styles.flavorBar}
                     />
                   )}
                   <Text variant="bodySmall" style={styles.flavorAttributeValue}>
-                    {user.rangeMinFlavorfulness !== null && user.rangeMaxFlavorfulness !== null
+                    {user.rangeMinFlavorfulness != null && user.rangeMaxFlavorfulness != null
                       ? `${user.rangeMinFlavorfulness.toFixed(0)}-${user.rangeMaxFlavorfulness.toFixed(0)}/10 (${getRangeLabel('flavorfulness', user.rangeMinFlavorfulness, user.rangeMaxFlavorfulness)})`
-                      : `${user.baselineFlavorfulness.toFixed(1)}/10 (${getAttributeLabel('flavorfulness', user.baselineFlavorfulness)})`}
+                      : `${user.baselineFlavorfulness!.toFixed(1)}/10 (${getAttributeLabel('flavorfulness', user.baselineFlavorfulness!)})`}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -776,7 +776,7 @@ export default function ProfileScreen() {
                   activeOpacity={0.7}
                 >
                   <Text variant="bodyMedium" style={styles.flavorAttributeLabel}>Creaminess</Text>
-                  {user.rangeMinCreaminess !== null && user.rangeMaxCreaminess !== null ? (
+                  {user.rangeMinCreaminess != null && user.rangeMaxCreaminess != null ? (
                     <View style={styles.rangeContainer}>
                       <View style={[styles.rangeBar, {
                         marginLeft: `${(user.rangeMinCreaminess / 10) * 100}%`,
@@ -784,21 +784,21 @@ export default function ProfileScreen() {
                         backgroundColor: paperTheme.colors.primary,
                         opacity: 0.3
                       }]} />
-                      {user.rangeMedianCreaminess && (
+                      {user.rangeMedianCreaminess != null && (
                         <View style={[styles.medianIndicator, { left: `${(user.rangeMedianCreaminess / 10) * 100}%` }]} />
                       )}
                     </View>
                   ) : (
                     <ProgressBar
-                      progress={user.baselineCreaminess / 10}
+                      progress={user.baselineCreaminess! / 10}
                       color={paperTheme.colors.primary}
                       style={styles.flavorBar}
                     />
                   )}
                   <Text variant="bodySmall" style={styles.flavorAttributeValue}>
-                    {user.rangeMinCreaminess !== null && user.rangeMaxCreaminess !== null
+                    {user.rangeMinCreaminess != null && user.rangeMaxCreaminess != null
                       ? `${user.rangeMinCreaminess.toFixed(0)}-${user.rangeMaxCreaminess.toFixed(0)}/10 (${getRangeLabel('creaminess', user.rangeMinCreaminess, user.rangeMaxCreaminess)})`
-                      : `${user.baselineCreaminess.toFixed(1)}/10 (${getAttributeLabel('creaminess', user.baselineCreaminess)})`}
+                      : `${user.baselineCreaminess!.toFixed(1)}/10 (${getAttributeLabel('creaminess', user.baselineCreaminess!)})`}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -969,19 +969,19 @@ export default function ProfileScreen() {
           <Dialog.Content>
             {tooltipAttribute && user && (
               <>
-                {tooltipAttribute === 'size' && user.rangeMinSize !== null && user.rangeMaxSize !== null ? (
+                {tooltipAttribute === 'size' && user.rangeMinSize != null && user.rangeMaxSize != null ? (
                   <>
                     <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
-                      You typically enjoy oysters with sizes ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('size', user.rangeMinSize)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('size', user.rangeMaxSize)}</Text>.
+                      You typically enjoy oysters with sizes ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('size', user.rangeMinSize!)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('size', user.rangeMaxSize!)}</Text>.
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
-                      • Minimum: {user.rangeMinSize.toFixed(1)}/10
+                      • Minimum: {user.rangeMinSize!.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
                       • Most common: {user.rangeMedianSize?.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 8 }}>
-                      • Maximum: {user.rangeMaxSize.toFixed(1)}/10
+                      • Maximum: {user.rangeMaxSize!.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
                       Based on {stats.totalReviews} reviews. We'll recommend oysters in this range.
@@ -997,19 +997,19 @@ export default function ProfileScreen() {
                     </Text>
                   </>
                 ) : null}
-                {tooltipAttribute === 'body' && user.rangeMinBody !== null && user.rangeMaxBody !== null ? (
+                {tooltipAttribute === 'body' && user.rangeMinBody != null && user.rangeMaxBody != null ? (
                   <>
                     <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
-                      You typically enjoy oysters with body ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('body', user.rangeMinBody)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('body', user.rangeMaxBody)}</Text>.
+                      You typically enjoy oysters with body ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('body', user.rangeMinBody!)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('body', user.rangeMaxBody!)}</Text>.
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
-                      • Minimum: {user.rangeMinBody.toFixed(1)}/10
+                      • Minimum: {user.rangeMinBody!.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
                       • Most common: {user.rangeMedianBody?.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 8 }}>
-                      • Maximum: {user.rangeMaxBody.toFixed(1)}/10
+                      • Maximum: {user.rangeMaxBody!.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
                       Based on {stats.totalReviews} reviews. We'll recommend oysters in this range.
@@ -1025,19 +1025,19 @@ export default function ProfileScreen() {
                     </Text>
                   </>
                 ) : null}
-                {tooltipAttribute === 'sweetBrininess' && user.rangeMinSweetBrininess !== null && user.rangeMaxSweetBrininess !== null ? (
+                {tooltipAttribute === 'sweetBrininess' && user.rangeMinSweetBrininess != null && user.rangeMaxSweetBrininess != null ? (
                   <>
                     <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
-                      You typically enjoy oysters ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('sweetBrininess', user.rangeMinSweetBrininess)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('sweetBrininess', user.rangeMaxSweetBrininess)}</Text>.
+                      You typically enjoy oysters ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('sweetBrininess', user.rangeMinSweetBrininess!)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('sweetBrininess', user.rangeMaxSweetBrininess!)}</Text>.
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
-                      • Minimum: {user.rangeMinSweetBrininess.toFixed(1)}/10
+                      • Minimum: {user.rangeMinSweetBrininess!.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
                       • Most common: {user.rangeMedianSweetBrininess?.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 8 }}>
-                      • Maximum: {user.rangeMaxSweetBrininess.toFixed(1)}/10
+                      • Maximum: {user.rangeMaxSweetBrininess!.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
                       Based on {stats.totalReviews} reviews. We'll recommend oysters in this range.
@@ -1053,19 +1053,19 @@ export default function ProfileScreen() {
                     </Text>
                   </>
                 ) : null}
-                {tooltipAttribute === 'flavorfulness' && user.rangeMinFlavorfulness !== null && user.rangeMaxFlavorfulness !== null ? (
+                {tooltipAttribute === 'flavorfulness' && user.rangeMinFlavorfulness != null && user.rangeMaxFlavorfulness != null ? (
                   <>
                     <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
-                      You typically enjoy oysters with flavorfulness ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('flavorfulness', user.rangeMinFlavorfulness)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('flavorfulness', user.rangeMaxFlavorfulness)}</Text>.
+                      You typically enjoy oysters with flavorfulness ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('flavorfulness', user.rangeMinFlavorfulness!)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('flavorfulness', user.rangeMaxFlavorfulness!)}</Text>.
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
-                      • Minimum: {user.rangeMinFlavorfulness.toFixed(1)}/10
+                      • Minimum: {user.rangeMinFlavorfulness!.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
                       • Most common: {user.rangeMedianFlavorfulness?.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 8 }}>
-                      • Maximum: {user.rangeMaxFlavorfulness.toFixed(1)}/10
+                      • Maximum: {user.rangeMaxFlavorfulness!.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
                       Based on {stats.totalReviews} reviews. We'll recommend oysters in this range.
@@ -1081,19 +1081,19 @@ export default function ProfileScreen() {
                     </Text>
                   </>
                 ) : null}
-                {tooltipAttribute === 'creaminess' && user.rangeMinCreaminess !== null && user.rangeMaxCreaminess !== null ? (
+                {tooltipAttribute === 'creaminess' && user.rangeMinCreaminess != null && user.rangeMaxCreaminess != null ? (
                   <>
                     <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
-                      You typically enjoy oysters with creaminess ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('creaminess', user.rangeMinCreaminess)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('creaminess', user.rangeMaxCreaminess)}</Text>.
+                      You typically enjoy oysters with creaminess ranging from <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('creaminess', user.rangeMinCreaminess!)}</Text> to <Text style={{ fontWeight: 'bold' }}>{getAttributeLabel('creaminess', user.rangeMaxCreaminess!)}</Text>.
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
-                      • Minimum: {user.rangeMinCreaminess.toFixed(1)}/10
+                      • Minimum: {user.rangeMinCreaminess!.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 4 }}>
                       • Most common: {user.rangeMedianCreaminess?.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.secondary, marginBottom: 8 }}>
-                      • Maximum: {user.rangeMaxCreaminess.toFixed(1)}/10
+                      • Maximum: {user.rangeMaxCreaminess!.toFixed(1)}/10
                     </Text>
                     <Text variant="bodySmall" style={{ fontStyle: 'italic' }}>
                       Based on {stats.totalReviews} reviews. We'll recommend oysters in this range.

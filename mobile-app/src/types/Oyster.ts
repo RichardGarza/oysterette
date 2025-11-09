@@ -167,6 +167,23 @@ export interface User {
   readonly baselineFlavorfulness?: number | null;
   readonly baselineCreaminess?: number | null;
 
+  // Flavor profile ranges (for visualization)
+  readonly rangeMinSize?: number | null;
+  readonly rangeMaxSize?: number | null;
+  readonly rangeMedianSize?: number | null;
+  readonly rangeMinBody?: number | null;
+  readonly rangeMaxBody?: number | null;
+  readonly rangeMedianBody?: number | null;
+  readonly rangeMinSweetBrininess?: number | null;
+  readonly rangeMaxSweetBrininess?: number | null;
+  readonly rangeMedianSweetBrininess?: number | null;
+  readonly rangeMinFlavorfulness?: number | null;
+  readonly rangeMaxFlavorfulness?: number | null;
+  readonly rangeMedianFlavorfulness?: number | null;
+  readonly rangeMinCreaminess?: number | null;
+  readonly rangeMaxCreaminess?: number | null;
+  readonly rangeMedianCreaminess?: number | null;
+
   readonly createdAt: string;
   readonly updatedAt: string;
 }

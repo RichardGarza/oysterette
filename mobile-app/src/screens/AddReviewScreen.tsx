@@ -29,8 +29,9 @@ import {
 import { useRoute, useNavigation } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AddReviewScreenRouteProp, AddReviewScreenNavigationProp } from '../navigation/types';
-import { reviewApi, api } from '../services/api';
+import { reviewApi, userApi } from '../services/api';
 import { authStorage } from '../services/auth';
 import { ReviewRating } from '../types/Oyster';
 import { getAttributeDescriptor } from '../utils/ratingUtils';
@@ -332,7 +333,7 @@ export default function AddReviewScreen() {
       if (isUpdateMode && existingReview) {
         // Update existing review (requires auth)
         await reviewApi.update(existingReview.id, {
-          rating,
+          rating: rating!,
           size,
           body,
           sweetBrininess,
@@ -346,7 +347,7 @@ export default function AddReviewScreen() {
         // Create new review
         await reviewApi.create({
           oysterId,
-          rating,
+          rating: rating!,
           size,
           body,
           sweetBrininess,
@@ -363,27 +364,27 @@ export default function AddReviewScreen() {
         if (token) {
           try {
             const xpStats = await getXPStats();
-            const oldLevel = await authStorage.getItem('lastLevel');
+            const oldLevel = await AsyncStorage.getItem('lastLevel');
             const newLevel = xpStats.level;
 
             // Check for level up
             if (oldLevel && parseInt(oldLevel) < newLevel) {
               showLevelUp(newLevel);
-              await authStorage.setItem('lastLevel', newLevel.toString());
+              await AsyncStorage.setItem('lastLevel', newLevel.toString());
             } else if (!oldLevel) {
-              await authStorage.setItem('lastLevel', newLevel.toString());
+              await AsyncStorage.setItem('lastLevel', newLevel.toString());
             }
 
             // Check for new achievements (show most recent)
             if (xpStats.achievements && xpStats.achievements.length > 0) {
               const lastAchievement = xpStats.achievements[xpStats.achievements.length - 1];
-              const shownAchievements = await authStorage.getItem('shownAchievements') || '[]';
+              const shownAchievements = await AsyncStorage.getItem('shownAchievements') || '[]';
               const shown = JSON.parse(shownAchievements);
 
               if (!shown.includes(lastAchievement.key)) {
                 showAchievement(lastAchievement.name, lastAchievement.xpReward);
                 shown.push(lastAchievement.key);
-                await authStorage.setItem('shownAchievements', JSON.stringify(shown));
+                await AsyncStorage.setItem('shownAchievements', JSON.stringify(shown));
               }
             }
 
@@ -401,10 +402,8 @@ export default function AddReviewScreen() {
       if (!isUpdateMode && token) {
         try {
           const oldBadgeLevel = await authStorage.getBadgeLevel();
-          const profileResponse = await api.get('/users/profile', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          const newBadgeLevel = profileResponse.data?.data?.stats?.badgeLevel;
+          const profileResponse = await userApi.getProfile();
+          const newBadgeLevel = profileResponse.stats.badgeLevel;
 
           if (newBadgeLevel && newBadgeLevel !== oldBadgeLevel) {
             await authStorage.saveBadgeLevel(newBadgeLevel);

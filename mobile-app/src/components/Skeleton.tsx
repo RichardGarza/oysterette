@@ -76,7 +76,7 @@ export const Skeleton = memo(({
           height,
           borderRadius,
           opacity,
-        },
+        } as any,
         style,
       ]}
     />
