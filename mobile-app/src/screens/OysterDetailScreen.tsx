@@ -222,16 +222,18 @@ export default function OysterDetailScreen() {
             {
               text: 'Update Review',
               onPress: () => {
+                // Only use seed data fallback if oyster has no reviews yet
+                const hasNoReviews = oyster.totalReviews === 0;
                 navigation.navigate('AddReview', {
                   oysterId: oyster.id,
                   oysterName: oyster.name,
                   oysterOrigin: oyster.origin,
                   oysterSpecies: oyster.species,
-                  oysterAvgSize: oyster.avgSize ?? oyster.size,
-                  oysterAvgBody: oyster.avgBody ?? oyster.body,
-                  oysterAvgSweetBrininess: oyster.avgSweetBrininess ?? oyster.sweetBrininess,
-                  oysterAvgFlavorfulness: oyster.avgFlavorfulness ?? oyster.flavorfulness,
-                  oysterAvgCreaminess: oyster.avgCreaminess ?? oyster.creaminess,
+                  oysterAvgSize: oyster.avgSize ?? (hasNoReviews ? oyster.size : undefined),
+                  oysterAvgBody: oyster.avgBody ?? (hasNoReviews ? oyster.body : undefined),
+                  oysterAvgSweetBrininess: oyster.avgSweetBrininess ?? (hasNoReviews ? oyster.sweetBrininess : undefined),
+                  oysterAvgFlavorfulness: oyster.avgFlavorfulness ?? (hasNoReviews ? oyster.flavorfulness : undefined),
+                  oysterAvgCreaminess: oyster.avgCreaminess ?? (hasNoReviews ? oyster.creaminess : undefined),
                   existingReview: existingReview,
                 });
               },
@@ -240,16 +242,18 @@ export default function OysterDetailScreen() {
         );
       } else {
         // No existing review, navigate normally
+        // Only use seed data fallback if oyster has no reviews yet
+        const hasNoReviews = oyster.totalReviews === 0;
         navigation.navigate('AddReview', {
           oysterId: oyster.id,
           oysterName: oyster.name,
           oysterOrigin: oyster.origin,
           oysterSpecies: oyster.species,
-          oysterAvgSize: oyster.avgSize ?? oyster.size,
-          oysterAvgBody: oyster.avgBody ?? oyster.body,
-          oysterAvgSweetBrininess: oyster.avgSweetBrininess ?? oyster.sweetBrininess,
-          oysterAvgFlavorfulness: oyster.avgFlavorfulness ?? oyster.flavorfulness,
-          oysterAvgCreaminess: oyster.avgCreaminess ?? oyster.creaminess,
+          oysterAvgSize: oyster.avgSize ?? (hasNoReviews ? oyster.size : undefined),
+          oysterAvgBody: oyster.avgBody ?? (hasNoReviews ? oyster.body : undefined),
+          oysterAvgSweetBrininess: oyster.avgSweetBrininess ?? (hasNoReviews ? oyster.sweetBrininess : undefined),
+          oysterAvgFlavorfulness: oyster.avgFlavorfulness ?? (hasNoReviews ? oyster.flavorfulness : undefined),
+          oysterAvgCreaminess: oyster.avgCreaminess ?? (hasNoReviews ? oyster.creaminess : undefined),
         });
       }
     } catch (error) {
