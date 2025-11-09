@@ -159,7 +159,23 @@ export default function FriendsScreen() {
     try {
       const matches = await friendApi.getPairedRecommendations(friendId);
       navigation.navigate('PairedMatches', { friendName, matches });
-    } catch (error) {
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.error || error.message;
+
+      if (errorMsg?.includes('flavor profile') || errorMsg?.includes('baseline')) {
+        Alert.alert(
+          'Flavor Profiles Required',
+          `To see paired matches, both you and ${friendName} need to set up your flavor profiles by:\n\n1. Reviewing at least one oyster with ratings, OR\n2. Setting your baseline preferences in Profile`,
+          [{ text: 'Got It' }]
+        );
+      } else {
+        Alert.alert(
+          'Unable to Load Matches',
+          'Could not load paired recommendations. Please try again.',
+          [{ text: 'OK' }]
+        );
+      }
+
       if (__DEV__) {
         console.error('❌ [FriendsScreen] Error getting paired recommendations:', error);
       }
