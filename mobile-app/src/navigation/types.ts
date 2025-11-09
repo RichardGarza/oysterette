@@ -110,6 +110,25 @@ export type RootStackParamList = {
   SetFlavorProfile: undefined;
   ScanMenu: undefined;
   Friends: undefined;
+  PairedMatches: {
+    friendName: string;
+    matches: Array<{
+      oyster: {
+        id: string;
+        name: string;
+        species: string;
+        origin: string;
+        avgSize: number | null;
+        avgBody: number | null;
+        avgSweetBrininess: number | null;
+        avgFlavorfulness: number | null;
+        avgCreaminess: number | null;
+      };
+      userMatch: number;
+      friendMatch: number;
+      combinedScore: number;
+    }>;
+  };
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<

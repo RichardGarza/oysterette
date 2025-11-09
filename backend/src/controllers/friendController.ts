@@ -334,6 +334,150 @@ export const getFriendActivity = async (req: Request, res: Response): Promise<vo
 };
 
 /**
+ * Get paired recommendations for user and friend
+ *
+ * @route GET /api/friends/paired/:friendId
+ */
+export const getPairedRecommendations = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
+
+    const { friendId } = req.params;
+
+    // Verify friendship exists
+    const friendship = await prisma.friendship.findFirst({
+      where: {
+        status: 'accepted',
+        OR: [
+          { senderId: req.userId, receiverId: friendId },
+          { senderId: friendId, receiverId: req.userId },
+        ],
+      },
+    });
+
+    if (!friendship) {
+      res.status(403).json({ success: false, error: 'Not friends with this user' });
+      return;
+    }
+
+    // Get both users' flavor profiles
+    const [user, friend] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: req.userId },
+        select: {
+          baselineSize: true,
+          baselineBody: true,
+          baselineSweetBrininess: true,
+          baselineFlavorfulness: true,
+          baselineCreaminess: true,
+        },
+      }),
+      prisma.user.findUnique({
+        where: { id: friendId },
+        select: {
+          baselineSize: true,
+          baselineBody: true,
+          baselineSweetBrininess: true,
+          baselineFlavorfulness: true,
+          baselineCreaminess: true,
+        },
+      }),
+    ]);
+
+    if (!user?.baselineSize || !friend?.baselineSize) {
+      res.status(400).json({ success: false, error: 'Both users need flavor profiles' });
+      return;
+    }
+
+    // Get all oysters
+    const oysters = await prisma.oyster.findMany({
+      select: {
+        id: true,
+        name: true,
+        species: true,
+        origin: true,
+        avgSize: true,
+        avgBody: true,
+        avgSweetBrininess: true,
+        avgFlavorfulness: true,
+        avgCreaminess: true,
+      },
+    });
+
+    // Calculate match scores for both users
+    const pairedMatches = oysters.map((oyster) => {
+      const userMatch = calculateMatchScore(user, oyster);
+      const friendMatch = calculateMatchScore(friend, oyster);
+      const combinedScore = (userMatch + friendMatch) / 2;
+
+      return {
+        oyster,
+        userMatch,
+        friendMatch,
+        combinedScore,
+      };
+    });
+
+    // Filter for high matches (both users >70%) and sort by combined score
+    const goodMatches = pairedMatches
+      .filter((m) => m.userMatch >= 70 && m.friendMatch >= 70)
+      .sort((a, b) => b.combinedScore - a.combinedScore)
+      .slice(0, 20);
+
+    res.status(200).json({ success: true, data: goodMatches });
+  } catch (error) {
+    logger.error('Get paired recommendations error:', error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+};
+
+/**
+ * Helper: Calculate match score between user profile and oyster
+ */
+function calculateMatchScore(
+  profile: {
+    baselineSize: number | null;
+    baselineBody: number | null;
+    baselineSweetBrininess: number | null;
+    baselineFlavorfulness: number | null;
+    baselineCreaminess: number | null;
+  },
+  oyster: {
+    avgSize: number | null;
+    avgBody: number | null;
+    avgSweetBrininess: number | null;
+    avgFlavorfulness: number | null;
+    avgCreaminess: number | null;
+  }
+): number {
+  const matches: number[] = [];
+
+  if (profile.baselineSize && oyster.avgSize) {
+    matches.push(1 - Math.abs(profile.baselineSize - oyster.avgSize) / 10);
+  }
+  if (profile.baselineBody && oyster.avgBody) {
+    matches.push(1 - Math.abs(profile.baselineBody - oyster.avgBody) / 10);
+  }
+  if (profile.baselineSweetBrininess && oyster.avgSweetBrininess) {
+    matches.push(1 - Math.abs(profile.baselineSweetBrininess - oyster.avgSweetBrininess) / 10);
+  }
+  if (profile.baselineFlavorfulness && oyster.avgFlavorfulness) {
+    matches.push(1 - Math.abs(profile.baselineFlavorfulness - oyster.avgFlavorfulness) / 10);
+  }
+  if (profile.baselineCreaminess && oyster.avgCreaminess) {
+    matches.push(1 - Math.abs(profile.baselineCreaminess - oyster.avgCreaminess) / 10);
+  }
+
+  if (matches.length === 0) return 0;
+
+  const avgMatch = matches.reduce((sum, m) => sum + m, 0) / matches.length;
+  return Math.round(avgMatch * 100);
+}
+
+/**
  * Remove friend
  *
  * @route DELETE /api/friends/:friendshipId

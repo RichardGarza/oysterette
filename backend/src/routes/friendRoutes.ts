@@ -13,6 +13,7 @@ import {
   getPendingRequests,
   removeFriend,
   getFriendActivity,
+  getPairedRecommendations,
 } from '../controllers/friendController';
 import { authenticate } from '../middleware/auth';
 
@@ -25,6 +26,7 @@ router.put('/reject/:friendshipId', authenticate, rejectFriendRequest);
 router.get('/', authenticate, getFriends);
 router.get('/pending', authenticate, getPendingRequests);
 router.get('/activity', authenticate, getFriendActivity);
+router.get('/paired/:friendId', authenticate, getPairedRecommendations);
 router.delete('/:friendshipId', authenticate, removeFriend);
 
 export default router;

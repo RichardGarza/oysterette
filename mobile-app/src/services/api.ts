@@ -630,6 +630,12 @@ export const friendApi = {
     const response = await api.get<ApiResponse<any[]>>('/friends/activity');
     return response.data.data || [];
   },
+
+  // Get paired recommendations with friend
+  getPairedRecommendations: async (friendId: string): Promise<any[]> => {
+    const response = await api.get<ApiResponse<any[]>>(`/friends/paired/${friendId}`);
+    return response.data.data || [];
+  },
 };
 
 export default api;

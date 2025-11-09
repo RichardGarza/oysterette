@@ -108,6 +108,7 @@ import PrivacySettingsScreen from './src/screens/PrivacySettingsScreen';
 import SetFlavorProfileScreen from './src/screens/SetFlavorProfileScreen';
 import ScanMenuScreen from './src/screens/ScanMenuScreen';
 import FriendsScreen from './src/screens/FriendsScreen';
+import PairedMatchesScreen from './src/screens/PairedMatchesScreen';
 
 /**
  * TO REPLACE "Oysterette" TEXT WITH LOGO:
@@ -289,6 +290,13 @@ function AppNavigator() {
         <Stack.Screen
           name="Friends"
           component={FriendsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="PairedMatches"
+          component={PairedMatchesScreen}
           options={{
             headerShown: false,
           }}

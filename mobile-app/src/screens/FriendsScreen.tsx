@@ -8,8 +8,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl, SafeAreaView } from 'react-native';
 import { Card, Text, Button, Appbar, SegmentedButtons, Avatar, Searchbar } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../context/ThemeContext';
 import { friendApi, userApi } from '../services/api';
+import { RootStackParamList } from '../navigation/types';
 
 interface Friend {
   id: string;
@@ -32,7 +34,7 @@ interface PendingRequest {
 }
 
 export default function FriendsScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { paperTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('friends');
   const [loading, setLoading] = useState(true);
@@ -141,6 +143,17 @@ export default function FriendsScreen() {
     }
   }, [loadData]);
 
+  const handleViewPaired = useCallback(async (friendId: string, friendName: string) => {
+    try {
+      const matches = await friendApi.getPairedRecommendations(friendId);
+      navigation.navigate('PairedMatches', { friendName, matches });
+    } catch (error) {
+      if (__DEV__) {
+        console.error('❌ [FriendsScreen] Error getting paired recommendations:', error);
+      }
+    }
+  }, [navigation]);
+
   const renderFriend = ({ item }: { item: Friend }) => (
     <Card mode="elevated" style={styles.card}>
       <Card.Content>
@@ -154,6 +167,17 @@ export default function FriendsScreen() {
             <Text variant="titleMedium">{item.name}</Text>
             <Text variant="bodySmall" style={{ opacity: 0.7 }}>{item.email}</Text>
           </View>
+        </View>
+        <View style={styles.friendActions}>
+          <Button
+            mode="contained"
+            onPress={() => handleViewPaired(item.id, item.name)}
+            style={{ flex: 1, marginRight: 8 }}
+            compact
+            icon="heart-multiple"
+          >
+            Paired Matches
+          </Button>
           <Button mode="outlined" onPress={() => handleRemove(item.friendshipId)} compact>
             Remove
           </Button>
@@ -308,7 +332,7 @@ export default function FriendsScreen() {
             <Card
               mode="elevated"
               style={styles.card}
-              onPress={() => navigation.navigate('OysterDetail' as any, { oysterId: item.oyster.id })}
+              onPress={() => navigation.navigate('OysterDetail', { oysterId: item.oyster.id })}
             >
               <Card.Content>
                 <View style={styles.activityHeader}>
@@ -379,6 +403,11 @@ const styles = StyleSheet.create({
   friendInfo: {
     flex: 1,
     marginLeft: 12,
+  },
+  friendActions: {
+    flexDirection: 'row',
+    marginTop: 12,
+    gap: 8,
   },
   actions: {
     flexDirection: 'row',
