@@ -264,29 +264,22 @@ export default function HomeScreen() {
         />
 
         {/* Quick Stats */}
-        <View style={styles.statsContainer}>
-          {isLoggedIn ? (
-            <>
-              <Surface style={styles.statCard} elevation={1}>
-                <Text variant="headlineSmall" style={styles.statNumber}>{userStats.reviews}</Text>
-                <Text variant="bodySmall" style={styles.statLabel}>Reviews</Text>
-              </Surface>
-              <Surface style={styles.statCard} elevation={1}>
-                <Text variant="headlineSmall" style={styles.statNumber}>{userStats.favorites}</Text>
-                <Text variant="bodySmall" style={styles.statLabel}>Favorites</Text>
-              </Surface>
-              <Surface style={styles.statCard} elevation={1}>
-                <Text variant="headlineSmall" style={styles.statNumber}>{userStats.oystersTried}</Text>
-                <Text variant="bodySmall" style={styles.statLabel}>Tried</Text>
-              </Surface>
-            </>
-          ) : (
-            <Surface style={styles.statCardFull} elevation={1}>
-              <Text variant="displaySmall" style={styles.statNumber}>{totalOysters}</Text>
-              <Text variant="bodyMedium" style={styles.statLabel}>Oysters in Database</Text>
+        {isLoggedIn && (
+          <View style={styles.statsContainer}>
+            <Surface style={styles.statCard} elevation={1}>
+              <Text variant="headlineSmall" style={styles.statNumber}>{userStats.reviews}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>Reviews</Text>
             </Surface>
-          )}
-        </View>
+            <Surface style={styles.statCard} elevation={1}>
+              <Text variant="headlineSmall" style={styles.statNumber}>{userStats.favorites}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>Favorites</Text>
+            </Surface>
+            <Surface style={styles.statCard} elevation={1}>
+              <Text variant="headlineSmall" style={styles.statNumber}>{userStats.oystersTried}</Text>
+              <Text variant="bodySmall" style={styles.statLabel}>Tried</Text>
+            </Surface>
+          </View>
+        )}
 
         {/* Recommendations Section - Only show if logged in */}
         {isLoggedIn && (

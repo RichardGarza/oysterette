@@ -198,7 +198,7 @@ function AppNavigator() {
             headerTitle: () => (
               <TouchableOpacity onPress={() => navigation.navigate('Home')}>
                 <Image
-                  source={require('./assets/logo.png')}
+                  source={require('./assets/Top-Bar-Oysterette-Name.png')}
                   style={{ width: 150, height: 40 }}
                   resizeMode="contain"
                 />

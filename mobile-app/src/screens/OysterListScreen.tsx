@@ -330,27 +330,24 @@ export default function OysterListScreen() {
     >
       <Card.Content>
         <View style={styles.cardHeader}>
-          <Text variant="titleMedium" style={styles.oysterName} numberOfLines={TEXT.MAX_LINES_TITLE}>
+          <Text variant="titleMedium" style={styles.oysterName} numberOfLines={2}>
             {item.name}
           </Text>
-          <View style={styles.headerRight}>
-            <IconButton
-              icon={favorites.has(item.id) ? 'heart' : 'heart-outline'}
-              iconColor={favorites.has(item.id) ? COLORS.FAVORITE_HEART : undefined}
-              size={SIZES.ICON_SMALL}
-              onPress={(e) => {
-                e.stopPropagation();
-                handleToggleFavorite(item.id, e);
-              }}
-              style={styles.favoriteButton}
-            />
-            {item.species && item.species !== 'Unknown' && (
-              <Chip mode="outlined" compact style={styles.speciesChip}>
-                {item.species}
-              </Chip>
-            )}
-          </View>
+          <IconButton
+            icon={favorites.has(item.id) ? 'heart' : 'heart-outline'}
+            iconColor={favorites.has(item.id) ? COLORS.FAVORITE_HEART : undefined}
+            size={SIZES.ICON_SMALL}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleToggleFavorite(item.id, e);
+            }}
+            style={styles.favoriteButton}
+          />
         </View>
+
+        {item.species && item.species !== 'Unknown' && (
+          <Text variant="bodySmall" style={styles.species}>{item.species}</Text>
+        )}
 
         {item.origin && item.origin !== 'Unknown' && (
           <Text variant="bodySmall" style={styles.origin}>{item.origin}</Text>
@@ -701,6 +698,11 @@ const createStyles = (colors: any, isDark: boolean) =>
   },
   speciesChip: {
     height: 24,
+  },
+  species: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 4,
   },
   origin: {
     fontSize: 14,
