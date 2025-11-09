@@ -133,7 +133,11 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 - Apple App Store: 95% ready
 - Google Play Store: 100% documentation-ready
 
-**Next Critical Tasks:** Phase 14 Complete! See ROADMAP.md Phase 15 (Photo Upload) or Phase 16 (Advanced Recommendations)
+**Recent Completions:**
+- Phase 20: AR Menu Scanner (OCR, fuzzy matching, unmatched detection)
+- Phase 23: Enhanced Flavor Profile Visualization (ranges, tooltips)
+
+**Next Tasks:** See ROADMAP.md for Phase 21 (Social Features) or Phase 22 (Gamification)
 
 ---
 
@@ -180,8 +184,8 @@ git push origin main               # Deploy (triggers Railway)
 
 ---
 
-**Last Updated:** November 7, 2025
+**Last Updated:** November 8, 2025
 **Backend:** Live on Railway ✅
 **Database:** Live on Neon (131 unique oysters) ✅
 **Tests:** 229/229 passing ✅
-**Latest Version:** 1.7.0 (Phase 14 Complete - Anonymous Reviews, Badge System, Navigation UX)
+**Latest Version:** 1.8.0 (Phase 20 & 23 Complete - AR Menu Scanner, Flavor Profile Ranges)
