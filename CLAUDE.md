@@ -221,9 +221,9 @@ git push origin main               # Deploy (triggers Railway)
 
 ---
 
-**Last Updated:** November 9, 2025 14:15
+**Last Updated:** November 9, 2025 15:10
 **Backend:** Live on Railway ✅
 **Database:** Live on Neon (131 unique oysters) ✅
 **Tests:** 296/296 passing ✅
-**Latest Version:** 2.0.0 (Phase 22 + Redis Cache + Paired Matches UI)
-**Latest OTA Update:** Nov 9, 2025 14:15 - Paired matches navigation + review popup fix
+**Latest Version:** 2.0.0 (Phase 22 + Optional Redis Cache)
+**Latest OTA Update:** Nov 9, 2025 15:10 - Redis made optional (graceful fallback)
