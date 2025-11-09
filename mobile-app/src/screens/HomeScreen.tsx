@@ -513,6 +513,7 @@ const styles = StyleSheet.create({
   },
   topRatedList: {
     paddingRight: 12,
+    paddingBottom: 8,
   },
   quickActionsContainer: {
     width: '100%',
