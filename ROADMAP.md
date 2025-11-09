@@ -2102,8 +2102,8 @@ function getAttributeRangeLabel(attribute: string, min: number, max: number) {
 
 ### Known Issues:
 
-- [ ] TypeScript @ts-ignore usage for req.userId (need proper type augmentation fix)
-- [ ] SafeAreaView deprecation warning (migrate to react-native-safe-area-context)
+- [x] TypeScript @ts-ignore usage for req.userId (FIXED - express.d.ts type augmentation)
+- [x] SafeAreaView deprecation warning (FIXED - SafeAreaProvider installed)
 - [ ] Consider implementing proper vote optimistic updates
 
 ### Code Quality:
@@ -2112,7 +2112,7 @@ function getAttributeRangeLabel(attribute: string, min: number, max: number) {
 - [ ] Add mobile component tests
 - [ ] Set up CI/CD pipeline
 - [ ] Add code linting/formatting enforcement
-- [ ] Add API documentation (Swagger/OpenAPI)
+- [x] Add API documentation (Swagger/OpenAPI) - DONE at /api-docs
 
 ### Performance:
 
