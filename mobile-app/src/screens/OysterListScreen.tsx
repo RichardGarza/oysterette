@@ -405,7 +405,7 @@ export default function OysterListScreen() {
           <Text variant="bodyMedium" style={styles.attributeValue}>{item.body}/{ATTRIBUTE_SCALE.MAX}</Text>
         </View>
         <View style={styles.attributeItem}>
-          <Text variant="labelSmall" style={styles.attributeLabel}>Sweet/Briny</Text>
+          <Text variant="labelSmall" style={styles.attributeLabel}>Brine</Text>
           <Text variant="bodyMedium" style={styles.attributeValue}>{item.sweetBrininess}/{ATTRIBUTE_SCALE.MAX}</Text>
         </View>
         <View style={styles.attributeItem}>
@@ -413,7 +413,7 @@ export default function OysterListScreen() {
           <Text variant="bodyMedium" style={styles.attributeValue}>{item.flavorfulness}/{ATTRIBUTE_SCALE.MAX}</Text>
         </View>
         <View style={styles.attributeItem}>
-          <Text variant="labelSmall" style={styles.attributeLabel}>Creamy</Text>
+          <Text variant="labelSmall" style={styles.attributeLabel}>Cream</Text>
           <Text variant="bodyMedium" style={styles.attributeValue}>{item.creaminess}/{ATTRIBUTE_SCALE.MAX}</Text>
         </View>
       </View>
