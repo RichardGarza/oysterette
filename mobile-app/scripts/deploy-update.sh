@@ -29,7 +29,7 @@ echo ""
 
 # Publish to preview channel (for testing with friends)
 echo "📤 Publishing to preview channel..."
-eas update --branch preview --message "$UPDATE_MESSAGE"
+eas update --branch production --message "$UPDATE_MESSAGE"
 
 echo ""
 echo "✅ Update published successfully!"
