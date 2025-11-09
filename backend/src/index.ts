@@ -19,6 +19,7 @@ import favoriteRoutes from './routes/favoriteRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import friendRoutes from './routes/friendRoutes';
 import xpRoutes from './routes/xpRoutes';
+import healthRoutes from './routes/health';
 import prisma from './lib/prisma';
 import logger from './utils/logger';
 import swaggerUi from 'swagger-ui-express';
@@ -66,6 +67,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Health check routes (no rate limiting for monitoring)
+app.use('/api/health', healthRoutes);
+
 // Routes
 app.get('/', (req: Request, res: Response) => {
   res.json({
@@ -82,6 +86,7 @@ app.get('/', (req: Request, res: Response) => {
       favorites: '/api/favorites',
       upload: '/api/upload',
       friends: '/api/friends',
+      health: '/api/health',
     },
   });
 });

@@ -166,11 +166,17 @@ export default function ProfileScreen() {
   const [tooltipAttribute, setTooltipAttribute] = useState<string | null>(null);
 
   useEffect(() => {
+    if (__DEV__) {
+      console.log('🔍 [ProfileScreen] Component mounted - NO permission requests should happen here');
+    }
     loadProfile();
   }, []);
 
   useFocusEffect(
     React.useCallback(() => {
+      if (__DEV__) {
+        console.log('🔍 [ProfileScreen] Screen focused - loading profile');
+      }
       loadProfile();
     }, [])
   );
@@ -216,6 +222,9 @@ export default function ProfileScreen() {
 
   const pickImageFromCamera = async () => {
     try {
+      if (__DEV__) {
+        console.log('📷 [ProfileScreen] User tapped camera button - launching camera (permission requested only when needed)');
+      }
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -227,13 +236,18 @@ export default function ProfileScreen() {
         await uploadProfilePhoto(result.assets[0].uri);
       }
     } catch (error) {
-      console.error('Error picking image from camera:', error);
+      if (__DEV__) {
+        console.error('❌ [ProfileScreen] Error picking image from camera:', error);
+      }
       Alert.alert('Error', 'Failed to take photo. Please try again.');
     }
   };
 
   const pickImageFromLibrary = async () => {
     try {
+      if (__DEV__) {
+        console.log('📷 [ProfileScreen] User tapped library button - launching library (permission requested only when needed)');
+      }
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -245,7 +259,9 @@ export default function ProfileScreen() {
         await uploadProfilePhoto(result.assets[0].uri);
       }
     } catch (error) {
-      console.error('Error picking image from library:', error);
+      if (__DEV__) {
+        console.error('❌ [ProfileScreen] Error picking image from library:', error);
+      }
       Alert.alert('Error', 'Failed to select photo. Please try again.');
     }
   };

@@ -51,6 +51,7 @@
  */
 
 import axios, { AxiosInstance, AxiosHeaders } from 'axios';
+import axiosRetry from 'axios-retry';
 import { Platform } from 'react-native';
 import {
   Oyster,
@@ -90,9 +91,31 @@ const API_URL = getApiUrl();
 // Create axios instance
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
-  timeout: 10000,
+  timeout: 15000, // Increased from 10s to 15s for cold starts
   headers: {
     'Content-Type': 'application/json',
+  },
+});
+
+// Configure automatic retry with exponential backoff
+// Helps handle Railway/Neon cold starts and transient network failures
+axiosRetry(api, {
+  retries: 3, // Retry up to 3 times
+  retryDelay: axiosRetry.exponentialDelay, // 1s, 2s, 4s
+  retryCondition: (error) => {
+    // Retry on network errors and 5xx server errors
+    return (
+      axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+      (error.response?.status >= 500 && error.response?.status < 600)
+    );
+  },
+  onRetry: (retryCount, error, requestConfig) => {
+    if (__DEV__) {
+      console.warn(
+        `⚠️ [API Retry] Attempt ${retryCount} for ${requestConfig.url}`,
+        error.message
+      );
+    }
   },
 });
 
