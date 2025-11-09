@@ -17,6 +17,7 @@ import voteRoutes from './routes/voteRoutes';
 import recommendationRoutes from './routes/recommendationRoutes';
 import favoriteRoutes from './routes/favoriteRoutes';
 import uploadRoutes from './routes/uploadRoutes';
+import friendRoutes from './routes/friendRoutes';
 import prisma from './lib/prisma';
 import logger from './utils/logger';
 import {
@@ -87,6 +88,7 @@ app.use('/api/users', apiLimiter, userRoutes);
 app.use('/api/recommendations', apiLimiter, recommendationRoutes);
 app.use('/api/favorites', apiLimiter, favoriteRoutes);
 app.use('/api/upload', apiLimiter, uploadRoutes);
+app.use('/api/friends', apiLimiter, friendRoutes);
 app.use('/api', apiLimiter, voteRoutes);
 
 // Health check endpoint

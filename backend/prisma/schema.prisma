@@ -71,7 +71,30 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Social features
+  sentFriendRequests     Friendship[] @relation("FriendRequestSender")
+  receivedFriendRequests Friendship[] @relation("FriendRequestReceiver")
+
   @@map("users")
+}
+
+// Friendship Model
+model Friendship {
+  id String @id @default(uuid())
+
+  senderId   String
+  sender     User   @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiverId String
+  receiver   User   @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  status     String  @default("pending") // "pending", "accepted", "rejected"
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([senderId, receiverId])
+  @@map("friendships")
 }
 
 // Oyster Model
