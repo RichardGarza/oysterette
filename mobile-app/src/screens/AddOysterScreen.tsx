@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { TextInput, Button, Card, Text, HelperText } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { oysterApi } from '../services/api';
@@ -67,6 +67,8 @@ type AddOysterScreenNavigationProp = NativeStackNavigationProp<
   'AddOyster'
 >;
 
+type AddOysterScreenRouteProp = RouteProp<RootStackParamList, 'AddOyster'>;
+
 interface FormData {
   name: string;
   species: string;
@@ -85,11 +87,12 @@ interface FormData {
 
 export default function AddOysterScreen() {
   const navigation = useNavigation<AddOysterScreenNavigationProp>();
+  const route = useRoute<AddOysterScreenRouteProp>();
   const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
-    name: '',
+    name: route.params?.name || '',
     species: '',
     origin: '',
     standoutNotes: '',

@@ -89,7 +89,7 @@ export type RootStackParamList = {
   Register: undefined;
   OysterList: { searchQuery?: string } | undefined;
   OysterDetail: { oysterId: string };
-  AddOyster: undefined;
+  AddOyster: { name?: string } | undefined;
   AddReview: {
     oysterId: string;
     oysterName: string;

@@ -232,7 +232,7 @@ export default function ScanMenuScreen() {
                       <View style={styles.unmatchedActions}>
                         <Button
                           mode="contained"
-                          onPress={() => navigation.navigate('AddOyster')}
+                          onPress={() => navigation.navigate('AddOyster', { name: item.detectedText })}
                           style={styles.addButton}
                           compact
                           icon="plus"
