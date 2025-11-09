@@ -310,12 +310,12 @@ export default function OysterListScreen() {
   ], []);
 
   const attributeFilters = useMemo(() => [
-    { key: 'sweetness', state: sweetness, setState: setSweetness, low: 'Sweet', high: 'Briny' },
     { key: 'size', state: size, setState: setSize, low: 'Small', high: 'Big' },
     { key: 'body', state: body, setState: setBody, low: 'Thin', high: 'Fat' },
+    { key: 'sweetness', state: sweetness, setState: setSweetness, low: 'Sweet', high: 'Briny' },
     { key: 'flavorfulness', state: flavorfulness, setState: setFlavorfulness, low: 'Mild', high: 'Bold' },
     { key: 'creaminess', state: creaminess, setState: setCreaminess, low: 'No Cream', high: 'All the Cream' },
-  ], [sweetness, size, body, flavorfulness, creaminess]);
+  ], [size, body, sweetness, flavorfulness, creaminess]);
 
   const styles = useMemo(
     () => createStyles(theme.colors, isDark),
