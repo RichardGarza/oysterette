@@ -412,14 +412,7 @@ export default function OysterListScreen() {
   if (loading && oysters.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        <Appbar.Header elevated>
-          <Image
-            source={require('../../assets/logo.png')}
-            style={styles.logoSmall}
-            resizeMode="contain"
-          />
-          <Appbar.Content title="" />
-        </Appbar.Header>
+        <View style={styles.header}>
         <View style={styles.segmentedContainer}>
           <SegmentedButtons
             value={showFavoritesOnly ? 'favorites' : 'all'}
@@ -430,6 +423,7 @@ export default function OysterListScreen() {
             ]}
             style={styles.segmentedButtons}
           />
+        </View>
         </View>
         <View style={styles.listContainer}>
           {Array.from({ length: SKELETON.COUNT }).map((_, i) => (
@@ -443,12 +437,6 @@ export default function OysterListScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Image
-          source={require('../../assets/logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-
         <View style={styles.segmentedContainer}>
           <SegmentedButtons
             value={showFavoritesOnly ? 'favorites' : 'all'}
@@ -617,19 +605,7 @@ const createStyles = (colors: any, isDark: boolean) =>
     header: {
       backgroundColor: colors.card,
       padding: SPACING.PADDING_LARGE,
-      borderBottomWidth: BORDERS.WIDTH,
-      borderBottomColor: colors.border,
-    },
-    logo: {
-      width: SIZES.LOGO_WIDTH,
-      height: SIZES.LOGO_HEIGHT,
-      alignSelf: 'center',
-      marginBottom: SPACING.MARGIN_BOTTOM_LARGE,
-    },
-    logoSmall: {
-      width: SIZES.LOGO_WIDTH,
-      height: SIZES.LOGO_HEIGHT,
-      marginLeft: SPACING.PADDING_MEDIUM,
+      paddingTop: SPACING.PADDING_MEDIUM,
     },
     segmentedContainer: {
       marginBottom: SPACING.MARGIN_BOTTOM_LARGE,
