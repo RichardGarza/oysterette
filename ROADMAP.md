@@ -2169,17 +2169,26 @@ Comprehensive bug fix session addressing 11 critical issues affecting user exper
 - ✅ Removed flavorfulness/creaminess from filters (simplified to 3 core attributes)
 - ✅ Fixed filter ranges (non-overlapping: low=1-5, high=6-10)
 
-**In Progress:**
-- 🔄 26.2: Photo Not Displaying After Upload
-- 🔄 26.2: XP & Achievements Page Empty Initially
-- 🔄 26.2: Dark Mode Reverting to Light
+**Session Nov 8 - Round 2 (Completed):**
+- ✅ 26.2: Photo Not Displaying After Upload (FIXED - immediate state update)
+- ✅ 26.2: XP & Achievements Page Empty Initially (FIXED - useFocusEffect)
+- ✅ 26.2: Dark Mode Reverting to Light (FIXED - async/await)
+- ✅ 26.2: Review Attributes Pre-population (FIXED)
+- ✅ 26.8: Home Screen Logo (FIXED - headerTitle with Image)
 
-**Remaining:**
+**High Priority (User Testing - Nov 8 Evening):**
+- 🔴 26.10: Camera Permissions Still Prompting (CRITICAL)
+- 🔴 26.11: Backend Connection Failures (HIGH PRIORITY)
+- 🟡 26.12: Friend Request UX Improvements (MEDIUM)
+- 🟡 26.13: Replace Gear Icon with Hamburger Menu (MEDIUM)
+- 🟡 26.14: Exit App Prompt on All Screens (MEDIUM)
+- 🟡 26.15: Home Screen Logo Not Showing (VERIFY - may be OTA cache)
+
+**Remaining (Lower Priority):**
 - 26.3: Navigation Issues (Android back button behavior)
 - 26.4: Add Oyster Form Improvements
 - 26.5: AR Menu Scanner Fixes
 - 26.6: Username System
-- 26.7: Backend Reliability (retry logic, error handling)
 - 26.9: Testing & Verification
 
 ---
@@ -2861,6 +2870,215 @@ Reliability:
 - [ ] No "Failed to Load" errors
 - [ ] Automatic retry on failure
 - [ ] Fast load times (<2 seconds)
+```
+
+---
+
+### 26.10: Camera Permissions Still Prompting 📸
+
+**Status:** 🔴 CRITICAL
+**Priority:** HIGH
+**Time:** 30 minutes
+
+**Issue:** Camera permissions dialog still appears when opening Profile screen, despite removing the useEffect that requests permissions on mount.
+
+**Root Cause:** Need to verify if ImagePicker is triggering permissions or if there's another component requesting them.
+
+**Tasks:**
+- [ ] Verify ProfileScreen.tsx has no permission requests on mount
+- [ ] Check if ImagePicker methods are being called prematurely
+- [ ] Investigate if EditReviewScreen or AddReviewScreen trigger permissions
+- [ ] Ensure permissions only requested when user taps photo button
+- [ ] Test on both iOS and Android
+
+**Files to Check:**
+- `mobile-app/src/screens/ProfileScreen.tsx`
+- `mobile-app/src/screens/EditReviewScreen.tsx`
+- `mobile-app/src/screens/AddReviewScreen.tsx`
+
+---
+
+### 26.11: Backend Connection Failures 🚨
+
+**Status:** 🔴 HIGH PRIORITY
+**Priority:** CRITICAL
+**Time:** 4-6 hours
+
+**Issue:** Backend frequently fails to load oysters and profile data. App shows "Failed to Load" errors often. This is likely due to Railway/Neon serverless cold starts.
+
+**Root Cause:**
+- Railway backend sleeps after inactivity (serverless cold start)
+- Neon database connections exhausted during wake-up
+- No retry logic or connection pooling
+- No graceful error handling
+
+**Backend Hosting:**
+- **Railway:** Express backend ($5/month credit, auto-sleeps)
+- **Neon:** PostgreSQL database (3GB storage, auto-sleeps)
+
+**Tasks:**
+- [ ] **Connection Pooling:** Implement pg-pool to reuse connections
+- [ ] **Retry Logic:** Add exponential backoff with p-retry library
+- [ ] **Error Handling:** Graceful degradation with user-friendly messages
+- [ ] **Loading States:** Better UX during retries
+- [ ] **Health Check:** Add /health endpoint to monitor backend status
+- [ ] **Investigate:** Check Railway logs for wake-up times
+- [ ] **Consider:** Railway Pro plan ($20/month) to reduce sleep times
+- [ ] **Database:** Check Neon connection limits and pooling settings
+
+**Files to Modify:**
+- `backend/src/config/database.ts` (add pg-pool)
+- `backend/src/middleware/retry.ts` (new file)
+- `mobile-app/src/services/api.ts` (add retry interceptor)
+- `mobile-app/src/components/ErrorBoundary.tsx` (graceful error UI)
+
+**Research:**
+- [ ] Check Railway plan details and sleep behavior
+- [ ] Review Neon connection pooling documentation
+- [ ] Investigate alternative to Railway (Render, Fly.io)
+
+---
+
+### 26.12: Friend Request UX Improvements 👥
+
+**Status:** 🟡 MEDIUM
+**Priority:** MEDIUM
+**Time:** 2-3 hours
+
+**Issue:** Adding a friend has choppy UX and no feedback. After sending request, no confirmation toast appears and navigation is abrupt.
+
+**Root Cause:** Missing success feedback and proper state management.
+
+**Tasks:**
+- [ ] Add success toast: "Friend request sent!"
+- [ ] Smooth navigation after sending request
+- [ ] Show "Pending" state when friend request already sent
+- [ ] Change button from "Add Friend" to "Request Pending" when applicable
+- [ ] Disable button after sending to prevent duplicate requests
+- [ ] Add haptic feedback on successful send
+- [ ] Show loading spinner while sending request
+- [ ] Handle error states gracefully
+
+**Files to Modify:**
+- `mobile-app/src/screens/FriendsScreen.tsx`
+- `mobile-app/src/services/api.ts` (friends API calls)
+
+**Design:**
+```
+Button States:
+- "Add Friend" (default)
+- "Sending..." (loading)
+- "Request Pending" (disabled, gray)
+- "Friends ✓" (if already friends)
+```
+
+---
+
+### 26.13: Replace Gear Icon with Hamburger Menu 🍔
+
+**Status:** 🟡 MEDIUM
+**Priority:** MEDIUM
+**Time:** 3-4 hours
+
+**Issue:** Top-right gear icon should be replaced with 3-line hamburger menu that opens a drawer/modal with context-aware options.
+
+**Root Cause:** Settings icon is not standard for main navigation. Hamburger menu is more intuitive.
+
+**Tasks:**
+- [ ] Replace gear icon (⚙️) with hamburger icon (☰)
+- [ ] Create slide-out drawer or modal menu
+- [ ] **When logged in:** Show Profile, Friends, Settings, Logout
+- [ ] **When not logged in:** Show Settings, Log In, Sign Up
+- [ ] Add smooth slide animation
+- [ ] Add overlay/backdrop when menu open
+- [ ] Close menu on option select
+- [ ] Add haptic feedback on open/close
+- [ ] Show user avatar/name at top when logged in
+
+**Files to Modify:**
+- `mobile-app/App.tsx` (replace SettingsButton component)
+- `mobile-app/src/components/HamburgerMenu.tsx` (new component)
+
+**Design:**
+```
+┌─────────────────────┐
+│ 👤 John Doe        │  (if logged in)
+│ john@example.com   │
+├─────────────────────┤
+│ 👤 Profile         │
+│ 👥 Friends         │
+│ ⚙️  Settings       │
+│ 🚪 Logout          │
+└─────────────────────┘
+
+OR (not logged in):
+
+┌─────────────────────┐
+│ ⚙️  Settings       │
+│ 🔑 Log In          │
+│ ✍️  Sign Up        │
+└─────────────────────┘
+```
+
+---
+
+### 26.14: Exit App Prompt on All Screens 🚪
+
+**Status:** 🟡 MEDIUM
+**Priority:** MEDIUM
+**Time:** 1-2 hours
+
+**Issue:** Swiping back (or pressing Android back button) triggers "Exit App?" confirmation on ALL screens. This should ONLY happen on the homepage.
+
+**Root Cause:** Android BackHandler or navigation configuration applying exit logic globally.
+
+**Expected Behavior:**
+- **Home Screen:** Show "Exit App?" prompt
+- **All Other Screens:** Navigate back normally
+
+**Tasks:**
+- [ ] Review BackHandler implementation in OysterListScreen
+- [ ] Check if other screens have BackHandler logic
+- [ ] Ensure BackHandler only attached on Home screen
+- [ ] Remove BackHandler from non-home screens
+- [ ] Test Android back button on each screen
+- [ ] Test iOS swipe back gesture
+- [ ] Verify proper back navigation flow
+
+**Files to Check:**
+- `mobile-app/src/screens/HomeScreen.tsx`
+- `mobile-app/src/screens/OysterListScreen.tsx` (OysterListScreen.tsx:156-160)
+- `mobile-app/src/screens/*.tsx` (check all screens)
+
+---
+
+### 26.15: Home Screen Logo Not Showing 🎨
+
+**Status:** 🟡 LOW (VERIFY - may be OTA cache issue)
+**Priority:** LOW
+**Time:** 15 minutes
+
+**Issue:** Home screen still shows "Oysterette" text instead of logo PNG, even though we updated App.tsx to use headerTitle with Image component.
+
+**Root Cause:** Possibly OTA update cache issue or incomplete deployment.
+
+**Tasks:**
+- [ ] Verify App.tsx has headerTitle with Image for Home screen
+- [ ] Force kill app and reopen
+- [ ] Clear React Native cache
+- [ ] Check if OTA update fully propagated
+- [ ] Verify logo file path is correct
+- [ ] Test on fresh install
+- [ ] Check expo-updates cache
+
+**Files to Verify:**
+- `mobile-app/App.tsx` (App.tsx:173-179)
+- `mobile-app/assets/Top-Bar-Oysterette-Name.png`
+
+**Quick Fix:**
+```bash
+# Clear cache and rebuild
+npx expo start --clear
 ```
 
 ---
