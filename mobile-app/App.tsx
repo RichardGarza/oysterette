@@ -94,6 +94,7 @@ import { TouchableOpacity, Text } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
 import { RootStackParamList } from './src/navigation/types';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { XPNotificationProvider } from './src/context/XPNotificationContext';
 import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
@@ -321,7 +322,9 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <AppNavigator />
+        <XPNotificationProvider>
+          <AppNavigator />
+        </XPNotificationProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

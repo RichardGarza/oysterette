@@ -14,6 +14,7 @@ import * as Haptics from 'expo-haptics';
 import { Review } from '../types/Oyster';
 import { voteApi, reviewApi } from '../services/api';
 import { useTheme, Theme } from '../context/ThemeContext';
+import { useXPNotification } from '../context/XPNotificationContext';
 
 // ============================================================================
 // CONSTANTS
@@ -92,6 +93,7 @@ export const ReviewCard = memo<ReviewCardProps>(({
   onDelete,
 }) => {
   const { theme, isDark } = useTheme();
+  const { showXPGain } = useXPNotification();
   const [currentVote, setCurrentVote] = useState<boolean | null>(userVote);
   const [voting, setVoting] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -134,6 +136,7 @@ export const ReviewCard = memo<ReviewCardProps>(({
       } else {
         await voteApi.vote(review.id, isAgree);
         setCurrentVote(isAgree);
+        showXPGain(2, 'Vote on review');
       }
 
       onVoteChange();

@@ -36,6 +36,7 @@ import { ReviewRating } from '../types/Oyster';
 import { getAttributeDescriptor } from '../utils/ratingUtils';
 import { useTheme } from '../context/ThemeContext';
 import { tempReviewsStorage } from '../services/tempReviews';
+import { useXPNotification } from '../context/XPNotificationContext';
 
 // ============================================================================
 // CONSTANTS
@@ -68,6 +69,7 @@ export default function AddReviewScreen() {
   const route = useRoute<AddReviewScreenRouteProp>();
   const navigation = useNavigation<AddReviewScreenNavigationProp>();
   const { paperTheme } = useTheme();
+  const { showXPGain } = useXPNotification();
   const {
     oysterId,
     oysterName,
@@ -355,6 +357,11 @@ export default function AddReviewScreen() {
           photoUrls: photos.length > 0 ? photos : undefined,
         });
         console.log('✅ [AddReviewScreen] Review submitted successfully');
+
+        // Show XP notification for new reviews
+        if (token) {
+          showXPGain(10, 'Review submitted');
+        }
       }
 
       // Check for badge level up (only for new reviews)
