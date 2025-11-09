@@ -191,5 +191,5 @@ git push origin main               # Deploy (triggers Railway)
 **Last Updated:** November 8, 2025
 **Backend:** Live on Railway ✅
 **Database:** Live on Neon (131 unique oysters) ✅
-**Tests:** 282/282 passing ✅
-**Latest Version:** 1.9.0 (Phase 21 Complete - Social Features: Friends, Activity Feed, Paired Recommendations)
+**Tests:** 293/293 passing ✅
+**Latest Version:** 2.0.0 (Phase 22 Complete - Gamification: XP, Levels, Achievements)
