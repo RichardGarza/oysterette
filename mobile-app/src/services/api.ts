@@ -624,6 +624,12 @@ export const friendApi = {
   removeFriend: async (friendshipId: string): Promise<void> => {
     await api.delete<ApiResponse<any>>(`/friends/${friendshipId}`);
   },
+
+  // Get friend activity feed
+  getActivity: async (): Promise<any[]> => {
+    const response = await api.get<ApiResponse<any[]>>('/friends/activity');
+    return response.data.data || [];
+  },
 };
 
 export default api;

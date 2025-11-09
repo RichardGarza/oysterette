@@ -45,15 +45,18 @@ export default function FriendsScreen() {
     sent: [],
     received: [],
   });
+  const [activity, setActivity] = useState<any[]>([]);
 
   const loadData = useCallback(async () => {
     try {
-      const [friendsData, pendingData] = await Promise.all([
+      const [friendsData, pendingData, activityData] = await Promise.all([
         friendApi.getFriends(),
         friendApi.getPendingRequests(),
+        friendApi.getActivity(),
       ]);
       setFriends(friendsData);
       setPendingRequests(pendingData);
+      setActivity(activityData);
     } catch (error) {
       if (__DEV__) {
         console.error('❌ [FriendsScreen] Error loading data:', error);
@@ -258,6 +261,7 @@ export default function FriendsScreen() {
         buttons={[
           { value: 'friends', label: `Friends (${friends.length})` },
           { value: 'pending', label: `Pending (${pendingRequests.received.length})` },
+          { value: 'activity', label: 'Activity' },
         ]}
         style={styles.tabs}
       />
@@ -292,6 +296,54 @@ export default function FriendsScreen() {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text variant="bodyLarge">No pending requests</Text>
+            </View>
+          }
+        />
+      )}
+
+      {activeTab === 'activity' && (
+        <FlatList
+          data={activity}
+          renderItem={({ item }) => (
+            <Card
+              mode="elevated"
+              style={styles.card}
+              onPress={() => navigation.navigate('OysterDetail' as any, { oysterId: item.oyster.id })}
+            >
+              <Card.Content>
+                <View style={styles.activityHeader}>
+                  <Avatar.Text
+                    size={40}
+                    label={item.user.name.charAt(0).toUpperCase()}
+                    style={{ backgroundColor: paperTheme.colors.primary, marginRight: 12 }}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text variant="bodyMedium">
+                      <Text style={{ fontWeight: 'bold' }}>{item.user.name}</Text> reviewed{' '}
+                      <Text style={{ fontWeight: 'bold' }}>{item.oyster.name}</Text>
+                    </Text>
+                    <Text variant="bodySmall" style={{ opacity: 0.7, marginTop: 4 }}>
+                      {item.rating.replace('_', ' ')} • {new Date(item.createdAt).toLocaleDateString()}
+                    </Text>
+                  </View>
+                </View>
+                {item.notes && (
+                  <Text variant="bodySmall" style={{ marginTop: 8, fontStyle: 'italic' }} numberOfLines={2}>
+                    "{item.notes}"
+                  </Text>
+                )}
+              </Card.Content>
+            </Card>
+          )}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text variant="bodyLarge">No recent activity</Text>
+              <Text variant="bodySmall" style={{ opacity: 0.7, marginTop: 8 }}>
+                Your friends haven't reviewed any oysters recently
+              </Text>
             </View>
           }
         />
@@ -331,6 +383,10 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     marginTop: 12,
+  },
+  activityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   empty: {
     alignItems: 'center',

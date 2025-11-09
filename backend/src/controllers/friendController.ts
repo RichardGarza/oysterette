@@ -261,6 +261,79 @@ export const getPendingRequests = async (req: Request, res: Response): Promise<v
 };
 
 /**
+ * Get friend activity feed (recent reviews from friends)
+ *
+ * @route GET /api/friends/activity
+ */
+export const getFriendActivity = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
+
+    // Get accepted friendships
+    const friendships = await prisma.friendship.findMany({
+      where: {
+        status: 'accepted',
+        OR: [
+          { senderId: req.userId },
+          { receiverId: req.userId },
+        ],
+      },
+    });
+
+    // Extract friend IDs
+    const friendIds = friendships.map((f) =>
+      f.senderId === req.userId ? f.receiverId : f.senderId
+    );
+
+    if (friendIds.length === 0) {
+      res.status(200).json({ success: true, data: [] });
+      return;
+    }
+
+    // Get recent reviews from friends (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const reviews = await prisma.review.findMany({
+      where: {
+        userId: { in: friendIds },
+        createdAt: { gte: thirtyDaysAgo },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profilePhotoUrl: true,
+          },
+        },
+        oyster: {
+          select: {
+            id: true,
+            name: true,
+            species: true,
+            origin: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 50,
+    });
+
+    res.status(200).json({ success: true, data: reviews });
+  } catch (error) {
+    logger.error('Get friend activity error:', error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+};
+
+/**
  * Remove friend
  *
  * @route DELETE /api/friends/:friendshipId
