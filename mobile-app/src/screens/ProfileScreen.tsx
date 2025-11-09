@@ -115,6 +115,7 @@ import { userApi, reviewApi, uploadApi } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { Review, User } from '../types/Oyster';
 import { EmptyState } from '../components/EmptyState';
+import { getRangeLabel, getAttributeLabel } from '../utils/flavorLabels';
 
 interface ProfileStats {
   totalReviews: number;
@@ -607,7 +608,9 @@ export default function ProfileScreen() {
             <Card.Content>
               <Text variant="titleLarge" style={styles.sectionTitle}>Your Flavor Profile</Text>
               <Text variant="bodyMedium" style={styles.flavorDescription}>
-                Your preferred oyster characteristics based on your reviews
+                {stats.totalReviews >= 5
+                  ? 'Your taste range based on oysters you loved'
+                  : 'Your preferred oyster characteristics'}
               </Text>
             <View style={styles.flavorAttributesGrid}>
               {user.baselineSize && (
@@ -634,8 +637,8 @@ export default function ProfileScreen() {
                   )}
                   <Text variant="bodySmall" style={styles.flavorAttributeValue}>
                     {user.rangeMinSize !== null && user.rangeMaxSize !== null
-                      ? `${user.rangeMinSize.toFixed(0)}-${user.rangeMaxSize.toFixed(0)}/10`
-                      : `${user.baselineSize.toFixed(1)}/10`}
+                      ? `${user.rangeMinSize.toFixed(0)}-${user.rangeMaxSize.toFixed(0)}/10 (${getRangeLabel('size', user.rangeMinSize, user.rangeMaxSize)})`
+                      : `${user.baselineSize.toFixed(1)}/10 (${getAttributeLabel('size', user.baselineSize)})`}
                   </Text>
                 </View>
               )}
@@ -663,8 +666,8 @@ export default function ProfileScreen() {
                   )}
                   <Text variant="bodySmall" style={styles.flavorAttributeValue}>
                     {user.rangeMinBody !== null && user.rangeMaxBody !== null
-                      ? `${user.rangeMinBody.toFixed(0)}-${user.rangeMaxBody.toFixed(0)}/10`
-                      : `${user.baselineBody.toFixed(1)}/10`}
+                      ? `${user.rangeMinBody.toFixed(0)}-${user.rangeMaxBody.toFixed(0)}/10 (${getRangeLabel('body', user.rangeMinBody, user.rangeMaxBody)})`
+                      : `${user.baselineBody.toFixed(1)}/10 (${getAttributeLabel('body', user.baselineBody)})`}
                   </Text>
                 </View>
               )}
@@ -692,8 +695,8 @@ export default function ProfileScreen() {
                   )}
                   <Text variant="bodySmall" style={styles.flavorAttributeValue}>
                     {user.rangeMinSweetBrininess !== null && user.rangeMaxSweetBrininess !== null
-                      ? `${user.rangeMinSweetBrininess.toFixed(0)}-${user.rangeMaxSweetBrininess.toFixed(0)}/10`
-                      : `${user.baselineSweetBrininess.toFixed(1)}/10`}
+                      ? `${user.rangeMinSweetBrininess.toFixed(0)}-${user.rangeMaxSweetBrininess.toFixed(0)}/10 (${getRangeLabel('sweetBrininess', user.rangeMinSweetBrininess, user.rangeMaxSweetBrininess)})`
+                      : `${user.baselineSweetBrininess.toFixed(1)}/10 (${getAttributeLabel('sweetBrininess', user.baselineSweetBrininess)})`}
                   </Text>
                 </View>
               )}
@@ -721,8 +724,8 @@ export default function ProfileScreen() {
                   )}
                   <Text variant="bodySmall" style={styles.flavorAttributeValue}>
                     {user.rangeMinFlavorfulness !== null && user.rangeMaxFlavorfulness !== null
-                      ? `${user.rangeMinFlavorfulness.toFixed(0)}-${user.rangeMaxFlavorfulness.toFixed(0)}/10`
-                      : `${user.baselineFlavorfulness.toFixed(1)}/10`}
+                      ? `${user.rangeMinFlavorfulness.toFixed(0)}-${user.rangeMaxFlavorfulness.toFixed(0)}/10 (${getRangeLabel('flavorfulness', user.rangeMinFlavorfulness, user.rangeMaxFlavorfulness)})`
+                      : `${user.baselineFlavorfulness.toFixed(1)}/10 (${getAttributeLabel('flavorfulness', user.baselineFlavorfulness)})`}
                   </Text>
                 </View>
               )}
@@ -750,8 +753,8 @@ export default function ProfileScreen() {
                   )}
                   <Text variant="bodySmall" style={styles.flavorAttributeValue}>
                     {user.rangeMinCreaminess !== null && user.rangeMaxCreaminess !== null
-                      ? `${user.rangeMinCreaminess.toFixed(0)}-${user.rangeMaxCreaminess.toFixed(0)}/10`
-                      : `${user.baselineCreaminess.toFixed(1)}/10`}
+                      ? `${user.rangeMinCreaminess.toFixed(0)}-${user.rangeMaxCreaminess.toFixed(0)}/10 (${getRangeLabel('creaminess', user.rangeMinCreaminess, user.rangeMaxCreaminess)})`
+                      : `${user.baselineCreaminess.toFixed(1)}/10 (${getAttributeLabel('creaminess', user.baselineCreaminess)})`}
                   </Text>
                 </View>
               )}
