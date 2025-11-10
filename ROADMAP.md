@@ -2150,12 +2150,12 @@ Comprehensive bug fix session addressing 11 critical issues affecting user exper
 
 ## 📱 Phase 26: Production Testing Fixes (v2.0.0 User Testing)
 
-**Status:** 🚧 IN PROGRESS (60% Complete)
-**Estimated Time:** 20-30 hours (12 hours completed)
+**Status:** 🚧 IN PROGRESS (65% Complete)
+**Estimated Time:** 20-30 hours (13 hours completed)
 **Priority:** CRITICAL (Production Deployment Blockers)
-**Test Date:** November 8, 2025
+**Test Date:** November 8-9, 2025
 **Build Version:** 2.0.0
-**Latest OTA:** 10:56 PM (Nov 8, 2025)
+**Latest OTA:** November 9, 2025
 
 **Context:** Issues discovered during production build testing. These must be addressed systematically before public release.
 
@@ -2175,6 +2175,15 @@ Comprehensive bug fix session addressing 11 critical issues affecting user exper
 - ✅ 26.2: Dark Mode Reverting to Light (FIXED - async/await)
 - ✅ 26.2: Review Attributes Pre-population (FIXED)
 - ✅ 26.8: Home Screen Logo (FIXED - headerTitle with Image)
+
+**Session Nov 9 (Completed):**
+- ✅ 26.16: Profile Photos Missing in Reviews (FIXED - backend API)
+  - Issue: Profile photos not displaying in ReviewCard component
+  - Root cause: getOysterById endpoint missing profilePhotoUrl in user select
+  - Solution: Added profilePhotoUrl to review.user include in oysterController.ts
+  - Rate limit updated to industry standard (60 req/min)
+  - Result: Profile photos now display correctly in all reviews
+  - Tests: 297/297 passing ✅
 
 **High Priority (User Testing - Nov 8 Evening):**
 - 🔴 26.10: Camera Permissions Still Prompting (CRITICAL)
