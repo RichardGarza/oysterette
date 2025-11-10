@@ -137,6 +137,7 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
           select: {
             id: true,
             name: true,
+            profilePhotoUrl: true,
           },
         },
         oyster: {
@@ -209,6 +210,7 @@ export const getOysterReviews = async (req: Request, res: Response): Promise<voi
           select: {
             id: true,
             name: true,
+            profilePhotoUrl: true,
           },
         },
       },
