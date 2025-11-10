@@ -112,6 +112,7 @@ import ScanMenuScreen from './src/screens/ScanMenuScreen';
 import FriendsScreen from './src/screens/FriendsScreen';
 import PairedMatchesScreen from './src/screens/PairedMatchesScreen';
 import XPStatsScreen from './src/screens/XPStatsScreen';
+import MenuScreen from './src/screens/MenuScreen';
 
 /**
  * TO REPLACE "Oysterette" TEXT WITH LOGO:
@@ -143,7 +144,7 @@ function AppNavigator() {
       icon="menu"
       iconColor="#fff"
       size={24}
-      onPress={() => navigation.navigate('Settings')}
+      onPress={() => navigation.navigate('Menu')}
       style={{ marginRight: 8 }}
     />
   );
@@ -250,6 +251,11 @@ function AppNavigator() {
           name="Settings"
           component={SettingsScreen}
           options={{ title: 'Settings' }}
+        />
+        <Stack.Screen
+          name="Menu"
+          component={MenuScreen}
+          options={{ title: 'Menu' }}
         />
         <Stack.Screen
           name="TopOysters"
