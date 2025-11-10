@@ -249,6 +249,7 @@ export const getOysterById = async (req: Request, res: Response): Promise<void> 
               select: {
                 id: true,
                 name: true,
+                profilePhotoUrl: true,
               },
             },
           },
