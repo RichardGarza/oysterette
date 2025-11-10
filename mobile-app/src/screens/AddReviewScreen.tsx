@@ -325,6 +325,12 @@ export default function AddReviewScreen() {
       return;
     }
 
+    // Check if photo is still uploading
+    if (uploadingPhoto) {
+      Alert.alert('Photo Uploading', 'Please wait for the photo to finish uploading before submitting.');
+      return;
+    }
+
     // Check if user is logged in
     const token = await authStorage.getToken();
 
@@ -807,7 +813,7 @@ export default function AddReviewScreen() {
           mode="contained"
           onPress={handleSubmit}
           loading={submitting}
-          disabled={submitting}
+          disabled={submitting || uploadingPhoto}
           style={styles.submitButton}
           contentStyle={styles.submitButtonContent}
           icon="check-circle"
