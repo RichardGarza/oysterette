@@ -208,13 +208,14 @@ export const ReviewCard = memo<ReviewCardProps>(({
         <View style={styles.reviewHeader}>
           <View style={styles.reviewHeaderLeft}>
             {(() => {
+              // ALWAYS LOG - NO __DEV__ CHECK
+              console.log('💓💓💓 [ReviewCard HEARTBEAT] Rendering avatar for:', review.user?.name);
+              console.log('🔍 [ReviewCard] Full review.user object:', JSON.stringify(review.user, null, 2));
+
               const photoUrl = review.user?.profilePhotoUrl;
               const hasPhoto = photoUrl && photoUrl.trim() !== '';
 
-              if (__DEV__) {
-                console.log('💓 [ReviewCard HEARTBEAT] Rendering avatar for:', review.user?.name);
-                console.log('🖼️ [ReviewCard]', review.user?.name, 'hasPhoto:', hasPhoto, 'url:', photoUrl);
-              }
+              console.log('🖼️ [ReviewCard]', review.user?.name, 'hasPhoto:', hasPhoto, 'url:', photoUrl, 'type:', typeof photoUrl);
 
               return hasPhoto ? (
                 <Avatar.Image
