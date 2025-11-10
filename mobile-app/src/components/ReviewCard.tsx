@@ -207,11 +207,16 @@ export const ReviewCard = memo<ReviewCardProps>(({
       <Card.Content>
         <View style={styles.reviewHeader}>
           <View style={styles.reviewHeaderLeft}>
-            {review.user?.profilePhotoUrl && review.user.profilePhotoUrl.trim() !== '' ? (
-              <Avatar.Image size={40} source={{ uri: review.user.profilePhotoUrl }} style={{ marginRight: 12 }} />
-            ) : (
-              <Avatar.Text size={40} label={(review.user?.name || 'A').charAt(0).toUpperCase()} style={{ marginRight: 12, backgroundColor: theme.colors.primary }} />
-            )}
+            {(() => {
+              if (__DEV__) {
+                console.log('🖼️ [ReviewCard] User photo URL:', review.user?.name, review.user?.profilePhotoUrl);
+              }
+              return review.user?.profilePhotoUrl && review.user.profilePhotoUrl.trim() !== '' ? (
+                <Avatar.Image size={40} source={{ uri: review.user.profilePhotoUrl }} style={{ marginRight: 12 }} />
+              ) : (
+                <Avatar.Text size={40} label={(review.user?.name || 'A').charAt(0).toUpperCase()} style={{ marginRight: 12, backgroundColor: theme.colors.primary }} />
+              );
+            })()}
             <View>
               <Text variant="labelLarge" style={{ color: theme.colors.primary }}>
                 {formatRatingText(review.rating)}
