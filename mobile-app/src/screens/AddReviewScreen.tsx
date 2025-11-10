@@ -65,6 +65,19 @@ const PHOTO_LIMITS = {
 } as const;
 
 // ============================================================================
+// HELPERS
+// ============================================================================
+
+/**
+ * Round number to 1 decimal place for customer-facing display
+ * Backend stores full precision, but UI shows cleaner values
+ */
+const roundToOneDecimal = (value: number | null | undefined): number | undefined => {
+  if (value === null || value === undefined) return undefined;
+  return Math.round(value * 10) / 10;
+};
+
+// ============================================================================
 // COMPONENT
 // ============================================================================
 
@@ -89,19 +102,19 @@ export default function AddReviewScreen() {
 
   const [rating, setRating] = useState<ReviewRating | null>(existingReview?.rating || null);
   const [size, setSize] = useState<number>(
-    existingReview?.size ?? oysterAvgSize ?? SLIDER_CONFIG.DEFAULT_VALUE
+    existingReview?.size ?? roundToOneDecimal(oysterAvgSize) ?? SLIDER_CONFIG.DEFAULT_VALUE
   );
   const [body, setBody] = useState<number>(
-    existingReview?.body ?? oysterAvgBody ?? SLIDER_CONFIG.DEFAULT_VALUE
+    existingReview?.body ?? roundToOneDecimal(oysterAvgBody) ?? SLIDER_CONFIG.DEFAULT_VALUE
   );
   const [sweetBrininess, setSweetBrininess] = useState<number>(
-    existingReview?.sweetBrininess ?? oysterAvgSweetBrininess ?? SLIDER_CONFIG.DEFAULT_VALUE
+    existingReview?.sweetBrininess ?? roundToOneDecimal(oysterAvgSweetBrininess) ?? SLIDER_CONFIG.DEFAULT_VALUE
   );
   const [flavorfulness, setFlavorfulness] = useState<number>(
-    existingReview?.flavorfulness ?? oysterAvgFlavorfulness ?? SLIDER_CONFIG.DEFAULT_VALUE
+    existingReview?.flavorfulness ?? roundToOneDecimal(oysterAvgFlavorfulness) ?? SLIDER_CONFIG.DEFAULT_VALUE
   );
   const [creaminess, setCreaminess] = useState<number>(
-    existingReview?.creaminess ?? oysterAvgCreaminess ?? SLIDER_CONFIG.DEFAULT_VALUE
+    existingReview?.creaminess ?? roundToOneDecimal(oysterAvgCreaminess) ?? SLIDER_CONFIG.DEFAULT_VALUE
   );
 
   if (__DEV__) {
