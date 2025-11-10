@@ -282,6 +282,21 @@ describe('Review API Integration Tests', () => {
       expect(response.body.count).toBeGreaterThanOrEqual(1);
     });
 
+    it('should include user profilePhotoUrl in review data', async () => {
+      const response = await request(app)
+        .get(`/api/reviews/oyster/${oysterId}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.length).toBeGreaterThan(0);
+
+      const review = response.body.data[0];
+      expect(review.user).toBeDefined();
+      expect(review.user).toHaveProperty('id');
+      expect(review.user).toHaveProperty('name');
+      expect(review.user).toHaveProperty('profilePhotoUrl');
+    });
+
     it('should return empty array for oyster with no reviews', async () => {
       const emptyOyster = await prisma.oyster.create({
         data: {
