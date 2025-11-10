@@ -208,13 +208,25 @@ export const ReviewCard = memo<ReviewCardProps>(({
         <View style={styles.reviewHeader}>
           <View style={styles.reviewHeaderLeft}>
             {(() => {
+              const photoUrl = review.user?.profilePhotoUrl;
+              const hasPhoto = photoUrl && photoUrl.trim() !== '';
+
               if (__DEV__) {
-                console.log('🖼️ [ReviewCard] User photo URL:', review.user?.name, review.user?.profilePhotoUrl);
+                console.log('🖼️ [ReviewCard]', review.user?.name, 'hasPhoto:', hasPhoto, 'url:', photoUrl);
               }
-              return review.user?.profilePhotoUrl && review.user.profilePhotoUrl.trim() !== '' ? (
-                <Avatar.Image size={40} source={{ uri: review.user.profilePhotoUrl }} style={{ marginRight: 12 }} />
+
+              return hasPhoto ? (
+                <Avatar.Image
+                  size={40}
+                  source={{ uri: photoUrl }}
+                  style={{ marginRight: 12, borderWidth: 2, borderColor: 'red' }}
+                />
               ) : (
-                <Avatar.Text size={40} label={(review.user?.name || 'A').charAt(0).toUpperCase()} style={{ marginRight: 12, backgroundColor: theme.colors.primary }} />
+                <Avatar.Text
+                  size={40}
+                  label={(review.user?.name || 'A').charAt(0).toUpperCase()}
+                  style={{ marginRight: 12, backgroundColor: theme.colors.primary, borderWidth: 2, borderColor: 'blue' }}
+                />
               );
             })()}
             <View>
