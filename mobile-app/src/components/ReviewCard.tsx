@@ -212,6 +212,7 @@ export const ReviewCard = memo<ReviewCardProps>(({
               const hasPhoto = photoUrl && photoUrl.trim() !== '';
 
               if (__DEV__) {
+                console.log('💓 [ReviewCard HEARTBEAT] Rendering avatar for:', review.user?.name);
                 console.log('🖼️ [ReviewCard]', review.user?.name, 'hasPhoto:', hasPhoto, 'url:', photoUrl);
               }
 
