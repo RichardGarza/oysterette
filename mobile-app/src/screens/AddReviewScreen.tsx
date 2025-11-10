@@ -4,7 +4,7 @@
  * Review creation and update form with rating selection and attribute sliders.
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -125,6 +125,7 @@ export default function AddReviewScreen() {
   // Photo upload state
   const [photos, setPhotos] = useState<string[]>(existingReview?.photoUrls || []);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const uploadPromiseRef = useRef<Promise<void> | null>(null);
 
   // Check if we should show origin/species inputs (only when data is missing)
   const showOriginInput = oysterOrigin === 'Unknown';
@@ -196,16 +197,17 @@ export default function AddReviewScreen() {
   };
 
   const uploadPhoto = async (uri: string) => {
-    try {
-      setUploadingPhoto(true);
-      const token = await authStorage.getToken();
+    const uploadTask = (async () => {
+      try {
+        setUploadingPhoto(true);
+        const token = await authStorage.getToken();
 
-      if (!token) {
-        Alert.alert('Authentication Required', 'Please log in to upload photos.');
-        return;
-      }
+        if (!token) {
+          Alert.alert('Authentication Required', 'Please log in to upload photos.');
+          return;
+        }
 
-      console.log('📸 [AddReviewScreen] Starting photo upload:', uri);
+        console.log('📸 [AddReviewScreen] Starting photo upload:', uri);
 
       // Create form data
       const formData = new FormData();
@@ -288,9 +290,14 @@ export default function AddReviewScreen() {
       }
 
       Alert.alert('Upload Failed', userMessage);
-    } finally {
-      setUploadingPhoto(false);
-    }
+      } finally {
+        setUploadingPhoto(false);
+        uploadPromiseRef.current = null;
+      }
+    })();
+
+    uploadPromiseRef.current = uploadTask;
+    return uploadTask;
   };
 
   const removePhoto = (index: number) => {
@@ -325,10 +332,12 @@ export default function AddReviewScreen() {
       return;
     }
 
-    // Check if photo is still uploading
-    if (uploadingPhoto) {
-      Alert.alert('Photo Uploading', 'Please wait for the photo to finish uploading before submitting.');
-      return;
+    // Wait for photo upload to complete if in progress
+    if (uploadPromiseRef.current) {
+      if (__DEV__) {
+        console.log('📸 [AddReviewScreen] Waiting for photo upload to complete...');
+      }
+      await uploadPromiseRef.current;
     }
 
     // Check if user is logged in
