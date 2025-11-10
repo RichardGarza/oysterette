@@ -20,6 +20,7 @@
       "policy": "appVersion"
     },
     "ios": {
+      "bundleIdentifier": "com.oysterette.app",
       "supportsTablet": true,
       "buildNumber": "11",
       "infoPlist": {

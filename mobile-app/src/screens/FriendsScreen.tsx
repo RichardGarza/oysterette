@@ -85,34 +85,60 @@ export default function FriendsScreen() {
   const handleAccept = useCallback(async (friendshipId: string) => {
     try {
       await friendApi.acceptRequest(friendshipId);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setSnackbarMessage('Friend request accepted!');
+      setSnackbarVisible(true);
       loadData();
-    } catch (error) {
+    } catch (error: any) {
       if (__DEV__) {
         console.error('❌ [FriendsScreen] Error accepting request:', error);
       }
+      setSnackbarMessage(error.response?.data?.error || 'Failed to accept request');
+      setSnackbarVisible(true);
     }
   }, [loadData]);
 
   const handleReject = useCallback(async (friendshipId: string) => {
     try {
       await friendApi.rejectRequest(friendshipId);
+      setSnackbarMessage('Friend request rejected');
+      setSnackbarVisible(true);
       loadData();
-    } catch (error) {
+    } catch (error: any) {
       if (__DEV__) {
         console.error('❌ [FriendsScreen] Error rejecting request:', error);
       }
+      setSnackbarMessage(error.response?.data?.error || 'Failed to reject request');
+      setSnackbarVisible(true);
     }
   }, [loadData]);
 
-  const handleRemove = useCallback(async (friendshipId: string) => {
-    try {
-      await friendApi.removeFriend(friendshipId);
-      loadData();
-    } catch (error) {
-      if (__DEV__) {
-        console.error('❌ [FriendsScreen] Error removing friend:', error);
-      }
-    }
+  const handleRemove = useCallback(async (friendshipId: string, friendName: string) => {
+    Alert.alert(
+      'Remove Friend',
+      `Remove ${friendName} from your friends?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await friendApi.removeFriend(friendshipId);
+              setSnackbarMessage(`${friendName} removed from friends`);
+              setSnackbarVisible(true);
+              loadData();
+            } catch (error: any) {
+              if (__DEV__) {
+                console.error('❌ [FriendsScreen] Error removing friend:', error);
+              }
+              setSnackbarMessage(error.response?.data?.error || 'Failed to remove friend');
+              setSnackbarVisible(true);
+            }
+          },
+        },
+      ]
+    );
   }, [loadData]);
 
   const handleSearch = useCallback(async (query: string) => {
@@ -218,7 +244,7 @@ export default function FriendsScreen() {
           >
             Paired Matches
           </Button>
-          <Button mode="outlined" onPress={() => handleRemove(item.friendshipId)} compact>
+          <Button mode="outlined" onPress={() => handleRemove(item.friendshipId, item.name)} compact>
             Remove
           </Button>
         </View>
