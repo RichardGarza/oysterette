@@ -195,11 +195,11 @@ export default function OysterListScreen() {
       }
       setOysters(data);
     } catch (err: any) {
-      const errorMsg = err?.response?.data?.error || err?.message || 'Unknown error';
+      const errorMsg = err?.userMessage || err?.response?.data?.error || err?.message || 'Unknown error';
       const statusCode = err?.response?.status || 'No status';
       const endpoint = 'GET /api/oysters';
 
-      setError(`Failed to load oysters. Status: ${statusCode} - ${errorMsg}`);
+      setError(err?.userMessage || `Failed to load oysters. Status: ${statusCode} - ${errorMsg}`);
       setErrorDetails({ err, statusCode, endpoint, errorMsg });
 
       if (__DEV__) {

@@ -91,7 +91,7 @@ const API_URL = getApiUrl();
 // Create axios instance
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
-  timeout: 15000, // Increased from 10s to 15s for cold starts
+  timeout: 30000, // 30s for Railway/Neon cold starts (can take 20-30s)
   headers: {
     'Content-Type': 'application/json',
   },
@@ -147,7 +147,7 @@ api.interceptors.request.use(
   }
 );
 
-// Handle auth errors
+// Handle auth errors and connection failures
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -155,6 +155,20 @@ api.interceptors.response.use(
       // Token expired or invalid
       await authStorage.clearAuth();
     }
+
+    // Add user-friendly error messages for common connection issues
+    if (error.code === 'ECONNABORTED') {
+      error.userMessage = 'Request timed out. The server may be starting up (this can take 20-30 seconds). Please try again.';
+    } else if (error.code === 'ERR_NETWORK' || !error.response) {
+      error.userMessage = 'Network error. Please check your internet connection and try again.';
+    } else if (error.response?.status >= 500) {
+      error.userMessage = 'Server error. Please try again in a moment.';
+    }
+
+    if (__DEV__ && error.userMessage) {
+      console.log('💬 [API] User-friendly error:', error.userMessage);
+    }
+
     return Promise.reject(error);
   }
 );
