@@ -40,10 +40,15 @@ export default function ScanMenuScreen() {
 
   useEffect(() => {
     (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
+      const { status } = await Camera.getCameraPermissionsAsync();
       setHasPermission(status === 'granted');
     })();
   }, []);
+
+  const requestPermissions = async () => {
+    const { status } = await Camera.requestCameraPermissionsAsync();
+    setHasPermission(status === 'granted');
+  };
 
   useEffect(() => {
     loadOysters();
@@ -132,9 +137,12 @@ export default function ScanMenuScreen() {
         <View style={styles.centerContent}>
           <Text variant="headlineSmall" style={styles.errorTitle}>Camera Permission Required</Text>
           <Text variant="bodyMedium" style={styles.errorText}>
-            Please enable camera access in your device settings to scan menus.
+            Camera access is needed to scan oyster menus and match them with our database.
           </Text>
-          <Button mode="contained" onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Button mode="contained" onPress={requestPermissions} style={styles.backButton}>
+            Grant Camera Access
+          </Button>
+          <Button mode="text" onPress={() => navigation.goBack()} style={{ marginTop: 8 }}>
             Go Back
           </Button>
         </View>
