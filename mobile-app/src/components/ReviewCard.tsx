@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-import { Card, Text, IconButton, Chip, Button, ActivityIndicator, Dialog, Portal, Snackbar } from 'react-native-paper';
+import { Card, Text, IconButton, Chip, Button, ActivityIndicator, Dialog, Portal, Snackbar, Avatar } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Review } from '../types/Oyster';
@@ -207,6 +207,11 @@ export const ReviewCard = memo<ReviewCardProps>(({
       <Card.Content>
         <View style={styles.reviewHeader}>
           <View style={styles.reviewHeaderLeft}>
+            {review.user?.profilePhotoUrl ? (
+              <Avatar.Image size={40} source={{ uri: review.user.profilePhotoUrl }} style={{ marginRight: 12 }} />
+            ) : (
+              <Avatar.Text size={40} label={(review.user?.name || 'A').charAt(0).toUpperCase()} style={{ marginRight: 12, backgroundColor: theme.colors.primary }} />
+            )}
             <View>
               <Text variant="labelLarge" style={{ color: theme.colors.primary }}>
                 {formatRatingText(review.rating)}

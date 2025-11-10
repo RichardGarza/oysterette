@@ -133,6 +133,7 @@ export interface Review {
   readonly user?: {
     id: string;
     name: string;
+    profilePhotoUrl?: string | null;
   };
   readonly oyster?: Oyster;
 }
