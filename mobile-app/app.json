@@ -66,6 +66,14 @@
           "photosPermission": "Oysterette needs access to your photos to add images to your reviews.",
           "cameraPermission": "Oysterette needs access to your camera to take photos of your oysters."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
+        }
       ]
     ]
   }
