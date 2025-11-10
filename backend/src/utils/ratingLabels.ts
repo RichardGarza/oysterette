@@ -10,10 +10,10 @@
  * - Loaded from data/oyster-rating-labels.json for easy customization
  *
  * Rating Scale (highest to lowest):
- * - LOVE_IT: 9.0 (range 8.0-10.0) - Best
- * - LIKE_IT: 7.0 (range 6.0-7.9) - Good
- * - OKAY: 4.95 (range 4.0-5.9) - Okay
- * - MEH: 2.5 (range 1.0-3.9) - Worst
+ * - LOVE_IT: 10 - Best
+ * - LIKE_IT: 7.5 - Good
+ * - OKAY: 5 - Okay
+ * - MEH: 1 - Worst
  */
 
 import { ReviewRating } from '@prisma/client';
@@ -22,23 +22,21 @@ import ratingLabelsData from '../../data/oyster-rating-labels.json';
 /**
  * Convert ReviewRating enum to numeric score
  *
- * Uses midpoint of each rating range for consistent scoring.
- *
  * @param rating - Review rating enum value
  * @returns Numeric score (1-10 scale)
  */
 export function ratingToScore(rating: ReviewRating): number {
   switch (rating) {
-    case 'LOVE_IT':   // 8.0-10.0 (Best)
-      return 9.0;
-    case 'LIKE_IT':   // 6.0-7.9 (Good)
-      return 7.0;
-    case 'OKAY':      // 4.0-5.9 (Okay)
-      return 4.95;
-    case 'MEH':       // 1.0-3.9 (Worst)
-      return 2.5;
+    case 'LOVE_IT':   // Best
+      return 10;
+    case 'LIKE_IT':   // Good
+      return 7.5;
+    case 'OKAY':      // Okay
+      return 5;
+    case 'MEH':       // Worst
+      return 1;
     default:
-      return 5.0; // Fallback
+      return 5; // Fallback
   }
 }
 

@@ -80,7 +80,7 @@ describe('Rating Service', () => {
       // With 5 reviews, user weight should be 0.7
       // Expected: (1 - 0.7) * 5 + 0.7 * 9 = 1.5 + 6.3 = 7.8
       expect(updateCall.data.avgSize).toBeCloseTo(7.8, 1);
-      expect(updateCall.data.avgRating).toBe(9); // LOVE_IT = 9.0
+      expect(updateCall.data.avgRating).toBe(10); // LOVE_IT = 10
       expect(updateCall.data.totalReviews).toBe(5);
     });
 
@@ -267,9 +267,9 @@ describe('Rating Service', () => {
       const updateCall = (prisma.oyster.update as jest.Mock).mock.calls[0][0];
 
       // overallScore is based ONLY on avgRating (not weighted with attributes)
-      // avgRating = 9.0 (LOVE_IT), already on 10-point scale
-      // overallScore = 9.0
-      expect(updateCall.data.overallScore).toBe(9);
+      // avgRating = 10 (LOVE_IT), already on 10-point scale
+      // overallScore = 10
+      expect(updateCall.data.overallScore).toBe(10);
     });
   });
 });

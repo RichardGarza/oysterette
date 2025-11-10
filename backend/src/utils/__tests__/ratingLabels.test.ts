@@ -9,20 +9,20 @@ import { ReviewRating } from '@prisma/client';
 
 describe('ratingLabels', () => {
   describe('ratingToScore', () => {
-    it('should convert LOVE_IT to 9.0', () => {
-      expect(ratingToScore('LOVE_IT')).toBe(9.0);
+    it('should convert LOVE_IT to 10', () => {
+      expect(ratingToScore('LOVE_IT')).toBe(10);
     });
 
-    it('should convert LIKE_IT to 7.0', () => {
-      expect(ratingToScore('LIKE_IT')).toBe(7.0);
+    it('should convert LIKE_IT to 7.5', () => {
+      expect(ratingToScore('LIKE_IT')).toBe(7.5);
     });
 
-    it('should convert OKAY to 4.95', () => {
-      expect(ratingToScore('OKAY')).toBe(4.95);
+    it('should convert OKAY to 5', () => {
+      expect(ratingToScore('OKAY')).toBe(5);
     });
 
-    it('should convert MEH to 2.5', () => {
-      expect(ratingToScore('MEH')).toBe(2.5);
+    it('should convert MEH to 1', () => {
+      expect(ratingToScore('MEH')).toBe(1);
     });
   });
 
@@ -186,42 +186,42 @@ describe('ratingLabels', () => {
       expect(calculateOverallScore([])).toBe(5.0);
     });
 
-    it('should return 9.0 for single LOVE_IT rating', () => {
-      expect(calculateOverallScore(['LOVE_IT'])).toBe(9.0);
+    it('should return 10 for single LOVE_IT rating', () => {
+      expect(calculateOverallScore(['LOVE_IT'])).toBe(10);
     });
 
-    it('should return 7.0 for single LIKE_IT rating', () => {
-      expect(calculateOverallScore(['LIKE_IT'])).toBe(7.0);
+    it('should return 7.5 for single LIKE_IT rating', () => {
+      expect(calculateOverallScore(['LIKE_IT'])).toBe(7.5);
     });
 
     it('should calculate average of multiple ratings', () => {
-      const ratings: ReviewRating[] = ['LOVE_IT', 'LIKE_IT']; // 9.0 + 7.0 = 16.0 / 2 = 8.0
-      expect(calculateOverallScore(ratings)).toBe(8.0);
+      const ratings: ReviewRating[] = ['LOVE_IT', 'LIKE_IT']; // 10 + 7.5 = 17.5 / 2 = 8.75
+      expect(calculateOverallScore(ratings)).toBe(8.75);
     });
 
     it('should calculate average of mixed ratings', () => {
       const ratings: ReviewRating[] = ['LOVE_IT', 'LOVE_IT', 'LIKE_IT', 'OKAY'];
-      // (9.0 + 9.0 + 7.0 + 4.95) / 4 = 29.95 / 4 = 7.4875
-      expect(calculateOverallScore(ratings)).toBe(7.49);
+      // (10 + 10 + 7.5 + 5) / 4 = 32.5 / 4 = 8.125
+      expect(calculateOverallScore(ratings)).toBe(8.13);
     });
 
     it('should handle all same ratings', () => {
       const ratings: ReviewRating[] = ['OKAY', 'OKAY', 'OKAY'];
-      // (4.95 + 4.95 + 4.95) / 3 = 4.95
-      expect(calculateOverallScore(ratings)).toBe(4.95);
+      // (5 + 5 + 5) / 3 = 5
+      expect(calculateOverallScore(ratings)).toBe(5);
     });
 
     it('should handle all ratings types', () => {
       const ratings: ReviewRating[] = ['LOVE_IT', 'LIKE_IT', 'OKAY', 'MEH'];
-      // (9.0 + 7.0 + 4.95 + 2.5) / 4 = 23.45 / 4 = 5.8625
-      expect(calculateOverallScore(ratings)).toBe(5.86);
+      // (10 + 7.5 + 5 + 1) / 4 = 23.5 / 4 = 5.875
+      expect(calculateOverallScore(ratings)).toBe(5.88);
     });
 
     it('should round to 2 decimal places', () => {
       const ratings: ReviewRating[] = ['LOVE_IT', 'OKAY', 'MEH'];
-      // (9.0 + 4.95 + 2.5) / 3 = 16.45 / 3 = 5.483333...
+      // (10 + 5 + 1) / 3 = 16 / 3 = 5.333333...
       const result = calculateOverallScore(ratings);
-      expect(result).toBe(5.48);
+      expect(result).toBe(5.33);
       expect(result.toString().split('.')[1]?.length || 0).toBeLessThanOrEqual(2);
     });
   });
@@ -257,14 +257,14 @@ describe('ratingLabels', () => {
       const loveItScore = ratingToScore('LOVE_IT');
       const verdict = scoreToVerdict(loveItScore);
       expect(verdict.verdict).toBe('Love It');
-      expect(loveItScore).toBe(9.0);
+      expect(loveItScore).toBe(10);
     });
 
     it('should handle complete rating workflow', () => {
       // User submits LIKE_IT rating
       const rating: ReviewRating = 'LIKE_IT';
       const score = ratingToScore(rating);
-      expect(score).toBe(7.0);
+      expect(score).toBe(7.5);
 
       // Convert score to verdict for display
       const verdict = scoreToVerdict(score);
@@ -273,7 +273,7 @@ describe('ratingLabels', () => {
 
       // Convert to stars for small display
       const stars = scoreToStars(score);
-      expect(stars).toBe(3.5);
+      expect(stars).toBe(3.8);
     });
 
     it('should handle aggregated ratings workflow', () => {
@@ -282,8 +282,8 @@ describe('ratingLabels', () => {
 
       // Calculate overall score
       const overallScore = calculateOverallScore(ratings);
-      // (9.0 + 9.0 + 7.0) / 3 = 8.33
-      expect(overallScore).toBe(8.33);
+      // (10 + 10 + 7.5) / 3 = 9.17
+      expect(overallScore).toBe(9.17);
 
       // Get verdict for overall score
       const verdict = scoreToVerdict(overallScore);
@@ -291,7 +291,7 @@ describe('ratingLabels', () => {
 
       // Convert to stars
       const stars = scoreToStars(overallScore);
-      expect(stars).toBe(4.2);
+      expect(stars).toBe(4.6);
     });
   });
 });
