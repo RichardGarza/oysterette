@@ -208,26 +208,20 @@ export const ReviewCard = memo<ReviewCardProps>(({
         <View style={styles.reviewHeader}>
           <View style={styles.reviewHeaderLeft}>
             {(() => {
-              // ALWAYS LOG - NO __DEV__ CHECK
-              console.log('💓💓💓 [ReviewCard HEARTBEAT] Rendering avatar for:', review.user?.name);
-              console.log('🔍 [ReviewCard] Full review.user object:', JSON.stringify(review.user, null, 2));
-
               const photoUrl = review.user?.profilePhotoUrl;
               const hasPhoto = photoUrl && photoUrl.trim() !== '';
-
-              console.log('🖼️ [ReviewCard]', review.user?.name, 'hasPhoto:', hasPhoto, 'url:', photoUrl, 'type:', typeof photoUrl);
 
               return hasPhoto ? (
                 <Avatar.Image
                   size={40}
                   source={{ uri: photoUrl }}
-                  style={{ marginRight: 12, borderWidth: 2, borderColor: 'red' }}
+                  style={{ marginRight: 12 }}
                 />
               ) : (
                 <Avatar.Text
                   size={40}
                   label={(review.user?.name || 'A').charAt(0).toUpperCase()}
-                  style={{ marginRight: 12, backgroundColor: theme.colors.primary, borderWidth: 2, borderColor: 'blue' }}
+                  style={{ marginRight: 12, backgroundColor: theme.colors.primary }}
                 />
               );
             })()}
