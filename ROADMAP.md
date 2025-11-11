@@ -2150,12 +2150,12 @@ Comprehensive bug fix session addressing 11 critical issues affecting user exper
 
 ## 📱 Phase 26: Production Testing Fixes (v2.0.0 User Testing)
 
-**Status:** 🚧 IN PROGRESS (65% Complete)
-**Estimated Time:** 20-30 hours (13 hours completed)
+**Status:** 🚧 IN PROGRESS (75% Complete)
+**Estimated Time:** 20-30 hours (15 hours completed)
 **Priority:** CRITICAL (Production Deployment Blockers)
 **Test Date:** November 8-9, 2025
 **Build Version:** 2.0.0
-**Latest OTA:** November 9, 2025
+**Latest OTA:** November 9, 2025 (07:08 PM)
 
 **Context:** Issues discovered during production build testing. These must be addressed systematically before public release.
 
@@ -2184,11 +2184,25 @@ Comprehensive bug fix session addressing 11 critical issues affecting user exper
   - Rate limit updated to industry standard (60 req/min)
   - Result: Profile photos now display correctly in all reviews
   - Tests: 297/297 passing ✅
+- ✅ 26.10: Camera Permissions (FIXED - lazy loading)
+  - Changed ScanMenuScreen to getCameraPermissionsAsync on mount
+  - Added "Grant Camera Access" button for explicit permission request
+  - No intrusive prompts on screen load
+- ✅ 26.11: Backend Connection Handling (IMPROVED)
+  - Increased API timeout 15s → 30s for Railway/Neon cold starts
+  - Added user-friendly error messages (timeout, network, server errors)
+  - Better UX for connection issues
+- ✅ 26.12: Friend Request UX (IMPROVED)
+  - Accept: Haptic feedback + success Snackbar
+  - Reject: Success message
+  - Remove: Confirmation dialog + personalized message
+  - Error handling for all operations
+- ✅ iOS Simulator Build Setup
+  - Added expo-build-properties with deploymentTarget 16.0
+  - Added iOS bundleIdentifier to app.json
+  - Fixed ML Kit pod compatibility
 
 **High Priority (User Testing - Nov 8 Evening):**
-- 🔴 26.10: Camera Permissions Still Prompting (CRITICAL)
-- 🔴 26.11: Backend Connection Failures (HIGH PRIORITY)
-- 🟡 26.12: Friend Request UX Improvements (MEDIUM)
 - 🟡 26.13: Replace Gear Icon with Hamburger Menu (MEDIUM)
 - 🟡 26.14: Exit App Prompt on All Screens (MEDIUM)
 - 🟡 26.15: Home Screen Logo Not Showing (VERIFY - may be OTA cache)
