@@ -41,7 +41,7 @@ const router = express.Router();
 // Public GET routes (optional auth to show user-specific data)
 router.get('/', optionalAuthenticate, getAllOysters);
 router.get('/search', optionalAuthenticate, searchOysters);
-router.get('/:id', optionalAuthenticate, validateParams(uuidParamSchema), getOysterById);
+router.get('/:id', optionalAuthenticate, getOysterById); // Accept both numeric and UUID
 
 // Protected routes (require authentication)
 router.post('/', authenticate, validateBody(createOysterSchema), createOyster);

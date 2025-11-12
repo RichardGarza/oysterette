@@ -229,9 +229,10 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
  *
  * Includes all associated reviews with user information, ordered by most recent.
  * Used for the oyster detail screen.
+ * Accepts both UUID (for production) and numeric IDs (for demos, returns Nth oyster alphabetically).
  *
  * @route GET /api/oysters/:id
- * @param req.params.id - Oyster UUID
+ * @param req.params.id - Oyster UUID or numeric index (1-based)
  * @returns 200 - Oyster with reviews array and review count
  * @returns 404 - Oyster not found
  * @returns 500 - Server error
@@ -240,26 +241,66 @@ export const getOysterById = async (req: Request, res: Response): Promise<void> 
   try {
     const { id } = req.params;
 
-    const oyster = await prisma.oyster.findUnique({
-      where: { id },
-      include: {
-        reviews: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                profilePhotoUrl: true,
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        error: 'Oyster ID is required',
+      });
+      return;
+    }
+
+    let oyster;
+
+    // Check if ID is numeric (for demo purposes - returns Nth oyster alphabetically)
+    const numericId = parseInt(id, 10);
+    if (!isNaN(numericId) && numericId > 0) {
+      // Fetch the Nth oyster (sorted alphabetically by name)
+      const oysters = await prisma.oyster.findMany({
+        orderBy: { name: 'asc' },
+        skip: numericId - 1, // 1-indexed
+        take: 1,
+        include: {
+          reviews: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  profilePhotoUrl: true,
+                },
               },
             },
+            orderBy: { createdAt: 'desc' },
           },
-          orderBy: { createdAt: 'desc' },
+          _count: {
+            select: { reviews: true },
+          },
         },
-        _count: {
-          select: { reviews: true },
+      });
+      oyster = oysters[0];
+    } else {
+      // UUID lookup
+      oyster = await prisma.oyster.findUnique({
+        where: { id },
+        include: {
+          reviews: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  profilePhotoUrl: true,
+                },
+              },
+            },
+            orderBy: { createdAt: 'desc' },
+          },
+          _count: {
+            select: { reviews: true },
+          },
         },
-      },
-    });
+      });
+    }
 
     if (!oyster) {
       res.status(404).json({
