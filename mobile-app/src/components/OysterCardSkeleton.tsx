@@ -52,7 +52,7 @@ const HEIGHTS = {
 
 export const OysterCardSkeleton = memo(() => {
   return (
-    <View style={styles.card}>
+    <View style={styles.card} testID="oyster-skeleton">
       {/* Header */}
       <View style={styles.header}>
         <Skeleton

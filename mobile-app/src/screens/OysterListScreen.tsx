@@ -548,6 +548,7 @@ export default function OysterListScreen() {
       )}
 
       <FlatList
+        testID="oyster-list"
         ref={flatListRef}
         data={getFilteredOysters}
         renderItem={renderOysterItem}
