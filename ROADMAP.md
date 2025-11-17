@@ -381,11 +381,11 @@
 - **Live Site:** https://richardgarza.github.io/oysterette/docs/
 
 **Compliance Status:**
-- **Apple App Store:** 95% (was 90%)
+- **Apple App Store:** 98% (was 95%)
 - **Google Play Store:** 100% documentation-ready! 🎉
 
 **Next Steps (Actual Submission):**
-- [ ] Add Sign in with Apple (2-4 hours, CRITICAL for Apple)
+- [x] Add Sign in with Apple (COMPLETED - Backend OAuth verification + JWT issuance implemented)
 - [ ] Capture screenshots (1-2 hours)
 - [ ] Generate production builds via EAS
 - [ ] TestFlight beta testing (Apple, optional)
@@ -3116,6 +3116,7 @@ npx expo start --clear
 - [x] TypeScript @ts-ignore usage for req.userId (FIXED - express.d.ts type augmentation)
 - [x] SafeAreaView deprecation warning (FIXED - SafeAreaProvider installed)
 - [ ] Consider implementing proper vote optimistic updates
+- [x] Add JWT issuance after OAuth verification (COMPLETED - Both Google & Apple OAuth now issue JWTs)
 
 ### Code Quality:
 
@@ -3195,35 +3196,40 @@ git push
 
 **Resume at:** Phase 12 - App Store Submission Preparation
 
-**Session Goal:** Implement Sign in with Apple (CRITICAL blocker for Apple App Store)
+**Session Goal:** Complete OAuth testing and mobile integration (Apple Store submission prep)
+
+**Completed Backend Tasks:**
+- ✅ Installed `apple-signin-auth` npm package
+- ✅ Created `POST /api/auth/apple` endpoint
+- ✅ Implemented Apple ID token verification
+- ✅ Added `appleId` field to User schema
+- ✅ Added `googleId` field to User schema
+- ✅ JWT issuance for both Google & Apple OAuth
+- ✅ Added 14 OAuth integration tests (Google + Apple)
+- ✅ Added comprehensive debug logging to OAuth flows
 
 **First Tasks:**
-1. **Backend Setup (1-1.5 hours):**
-   - Install `apple-signin-auth` npm package
-   - Create `POST /api/auth/apple` endpoint
-   - Implement Apple ID token verification
-   - Add `appleId` field to User schema (Prisma migration)
-   - Test with mock/test Apple tokens
-
-2. **Mobile Setup (1-1.5 hours):**
+1. **Mobile Setup (1-1.5 hours):**
    - Install `expo-apple-authentication` package
    - Add Apple Sign-In button to LoginScreen
    - Implement authentication flow
    - Test on iOS device (requires physical device)
 
-3. **Configuration (30 min):**
+2. **Configuration (30 min):**
    - Apple Developer Console configuration
    - Enable Sign in with Apple capability
    - Update app.json with Apple credentials
 
-**Why This Is Critical:**
-- Apple REQUIRES Sign in with Apple if offering other social logins
-- App will be REJECTED without it
-- After this: Only screenshots remain before submission!
+3. **Screenshots & Submission (1-2 hours):**
+   - Capture app screenshots for both stores
+   - Generate production builds via EAS
+   - TestFlight beta testing (optional)
+   - Submit to App Store Connect
 
-**Alternative (if Apple Developer account not ready):**
-- Skip to screenshot capture (1-2 hours)
-- Can add Sign in with Apple later before final submission
+**Why This Is Critical:**
+- Backend OAuth complete, only mobile integration remains
+- Apple REQUIRES Sign in with Apple if offering other social logins
+- After mobile integration: Only screenshots remain before submission!
 
 ---
 

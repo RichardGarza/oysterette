@@ -219,6 +219,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
 export const googleAuth = async (req: Request, res: Response): Promise<void> => {
   try {
     const { idToken } = req.body;
+    logger.debug('Google OAuth request received', { tokenLength: idToken?.length || 0 });
 
     if (!idToken) {
       res.status(400).json({
@@ -233,6 +234,7 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
 
     // Verify the Google ID token
     let ticket;
+    logger.debug('Starting Google token verification');
     try {
       ticket = await client.verifyIdToken({
         idToken,
@@ -259,6 +261,7 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
 
     const { email, name, picture } = payload;
     const googleId = payload.sub; // Google's unique user ID
+    logger.debug('Google token verified successfully', { email, googleId, hasProfilePhoto: !!picture });
 
     // Check if user already exists (by email or googleId)
     let user = await prisma.user.findFirst({
@@ -298,7 +301,12 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
           googleId: true,
         },
       });
-      logger.info(`New user created via Google OAuth: ${email}`);
+      logger.info('New user created via Google OAuth', {
+        email,
+        googleId,
+        userId: user.id,
+        hasProfilePhoto: !!picture
+      });
     } else if (!user.googleId) {
       // Update existing user with googleId if they signed up with email/password first
       user = await prisma.user.update({
@@ -313,11 +321,16 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
           googleId: true,
         },
       });
-      logger.info(`Linked Google account to existing user: ${email}`);
+      logger.info('Linked Google account to existing user', {
+        email,
+        googleId,
+        userId: user.id
+      });
     }
 
     // Generate JWT token
     const token = generateToken(user.id);
+    logger.info('Google OAuth successful, JWT issued', { userId: user.id, email });
 
     res.status(200).json({
       success: true,
@@ -356,6 +369,10 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
 export const appleAuth = async (req: Request, res: Response): Promise<void> => {
   try {
     const { idToken, user: appleUser } = req.body;
+    logger.debug('Apple OAuth request received', {
+      tokenLength: idToken?.length || 0,
+      hasUserData: !!appleUser
+    });
 
     if (!idToken) {
       res.status(400).json({
@@ -367,6 +384,7 @@ export const appleAuth = async (req: Request, res: Response): Promise<void> => {
 
     // Verify the Apple ID token
     let appleData;
+    logger.debug('Starting Apple token verification');
     try {
       appleData = await appleSignin.verifyIdToken(idToken, {
         // No audience check needed - Expo handles the client ID
@@ -390,11 +408,16 @@ export const appleAuth = async (req: Request, res: Response): Promise<void> => {
     }
 
     const { email, sub: appleId } = appleData;
+    logger.debug('Apple token verified successfully', { email, appleId });
 
     // Apple only provides user info on FIRST sign-in, so we get it from the request
     const userName = appleUser?.fullName
       ? `${appleUser.fullName.givenName || ''} ${appleUser.fullName.familyName || ''}`.trim()
       : email.split('@')[0] || 'User';
+
+    if (!appleUser?.fullName) {
+      logger.warn('Apple user data not provided, using email prefix as name', { email });
+    }
 
     // Check if user already exists (by email or appleId)
     let user = await prisma.user.findFirst({
@@ -432,7 +455,12 @@ export const appleAuth = async (req: Request, res: Response): Promise<void> => {
           appleId: true,
         },
       });
-      logger.info(`New user created via Apple Sign-In: ${email}`);
+      logger.info('New user created via Apple Sign-In', {
+        email,
+        appleId,
+        userId: user.id,
+        userName
+      });
     } else if (!user.appleId) {
       // Update existing user with appleId if they signed up with email/password first
       user = await prisma.user.update({
@@ -447,11 +475,16 @@ export const appleAuth = async (req: Request, res: Response): Promise<void> => {
           appleId: true,
         },
       });
-      logger.info(`Linked Apple account to existing user: ${email}`);
+      logger.info('Linked Apple account to existing user', {
+        email,
+        appleId,
+        userId: user.id
+      });
     }
 
     // Generate JWT token
     const token = generateToken(user.id);
+    logger.info('Apple OAuth successful, JWT issued', { userId: user.id, email });
 
     res.status(200).json({
       success: true,
