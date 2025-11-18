@@ -43,12 +43,6 @@ export default function ProfilePage() {
   const [editUsername, setEditUsername] = useState('');
   const [editLoading, setEditLoading] = useState(false);
 
-  // Change Password Modal
-  const [showChangePassword, setShowChangePassword] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordLoading, setPasswordLoading] = useState(false);
 
   // Photo Upload
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -149,28 +143,6 @@ export default function ProfilePage() {
     }
   };
 
-  // Change Password Form Handling
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
-    
-    try {
-      setPasswordLoading(true);
-      await userApi.changePassword(currentPassword, newPassword);
-      setShowChangePassword(false);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (error: any) {
-      console.error('Failed to change password:', error);
-      // Handle specific errors (current password wrong, etc.)
-    } finally {
-      setPasswordLoading(false);
-    }
-  };
 
   // Photo Upload Handling
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -374,15 +346,6 @@ export default function ProfilePage() {
           )}
         </section>
 
-        {/* Change Password Button */}
-        <div className="mt-8 text-center">
-          <button
-            onClick={() => setShowChangePassword(true)}
-            className="px-6 py-2 bg-gray-100 dark:bg-[#243447] text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-[#334e68] transition-colors font-medium"
-          >
-            Change Password
-          </button>
-        </div>
       </main>
 
       {/* Edit Profile Modal */}
@@ -448,68 +411,6 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Change Password Modal */}
-      {showChangePassword && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-[#243447] rounded-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Change Password</h2>
-            <form onSubmit={handleChangePassword} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Current Password
-                </label>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-[#334e68] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-[#334e68] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Confirm New Password
-                </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-[#334e68] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
-                  required
-                />
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowChangePassword(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-[#334e68] transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={passwordLoading}
-                  className="flex-1 px-4 py-2 bg-[#FF6B35] text-white rounded-md hover:bg-[#e55a2b] transition-colors font-medium disabled:opacity-50"
-                >
-                  {passwordLoading ? 'Changing...' : 'Change Password'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

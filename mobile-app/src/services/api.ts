@@ -367,6 +367,12 @@ export const reviewApi = {
     return response.data.data || [];
   },
 
+  // Get public user reviews by userId
+  getPublicUserReviews: async (userId: string): Promise<Review[]> => {
+    const response = await api.get<ApiResponse<Review[]>>(`/reviews/user/${userId}`);
+    return response.data.data || [];
+  },
+
   // Create a review
   create: async (review: {
     oysterId: string;
@@ -501,6 +507,28 @@ export const userApi = {
     };
   }> => {
     const response = await api.get<ApiResponse<any>>('/users/profile');
+    return response.data.data;
+  },
+
+  // Get public user profile by userId
+  getPublicProfile: async (userId: string): Promise<{
+    user: User;
+    stats: {
+      totalReviews: number;
+      totalFavorites: number;
+      totalVotesGiven: number;
+      totalVotesReceived: number;
+      avgRatingGiven: number;
+      credibilityScore: number;
+      badgeLevel: 'Novice' | 'Trusted' | 'Expert';
+      memberSince: string;
+      reviewStreak: number;
+      mostReviewedSpecies?: string;
+      mostReviewedOrigin?: string;
+      friendsCount: number;
+    };
+  }> => {
+    const response = await api.get<ApiResponse<any>>(`/users/${userId}`);
     return response.data.data;
   },
 

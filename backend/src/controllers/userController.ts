@@ -486,6 +486,166 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
+/**
+ * Get public user profile by userId
+ * 
+ * Similar to getProfile but public (no auth required) and takes userId as param.
+ * Returns user profile with stats for viewing other users' profiles.
+ *
+ * @route GET /api/users/:userId
+ * @param req.params.userId - User ID to fetch profile for
+ * @returns 200 - User object with stats object
+ * @returns 404 - User not found
+ * @returns 500 - Server error
+ */
+export const getPublicProfile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      res.status(400).json({
+        success: false,
+        error: 'User ID is required',
+      });
+      return;
+    }
+
+    // Fetch user with aggregated stats
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        _count: {
+          select: {
+            reviews: true,
+            favorites: true,
+            votesGiven: true,
+          },
+        },
+        reviews: {
+          select: {
+            rating: true,
+            createdAt: true,
+            oyster: {
+              select: {
+                species: true,
+                origin: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        error: 'User not found',
+      });
+      return;
+    }
+
+    // Calculate stats (same logic as getProfile)
+    let avgRatingGiven = 0;
+
+    if (user.reviews.length > 0) {
+      const ratingValues: Record<string, number> = {
+        LOVE_IT: 4,
+        LIKE_IT: 3,
+        OKAY: 2,
+        MEH: 1,
+      };
+      const totalRating = user.reviews.reduce((sum: number, review: any) => sum + (ratingValues[review.rating] || 0), 0);
+      avgRatingGiven = totalRating / user.reviews.length;
+    }
+
+    const speciesCounts = user.reviews.reduce((acc: Record<string, number>, review: any) => {
+      if (review.oyster.species) {
+        acc[review.oyster.species] = (acc[review.oyster.species] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    const originCounts = user.reviews.reduce((acc: Record<string, number>, review: any) => {
+      if (review.oyster.origin) {
+        acc[review.oyster.origin] = (acc[review.oyster.origin] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    const mostReviewedSpecies = Object.keys(speciesCounts).length > 0
+      ? (Object.entries(speciesCounts) as [string, number][]).sort((a, b) => b[1] - a[1])[0]?.[0]
+      : undefined;
+
+    const mostReviewedOrigin = Object.keys(originCounts).length > 0
+      ? (Object.entries(originCounts) as [string, number][]).sort((a, b) => b[1] - a[1])[0]?.[0]
+      : undefined;
+
+    let badgeLevel: 'Novice' | 'Trusted' | 'Expert' = 'Novice';
+    const reviewCount = user._count.reviews;
+
+    if (reviewCount >= 50 && user.credibilityScore >= 1.5) {
+      badgeLevel = 'Expert';
+    } else if (reviewCount >= 10 && user.credibilityScore >= 1.0) {
+      badgeLevel = 'Trusted';
+    }
+
+    let reviewStreak = 0;
+    if (user.reviews.length > 0) {
+      const sortedReviews = user.reviews.sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime());
+      const lastReview = sortedReviews[0];
+      if (lastReview) {
+        const daysSinceLastReview = Math.floor((Date.now() - lastReview.createdAt.getTime()) / (1000 * 60 * 60 * 24));
+        reviewStreak = daysSinceLastReview <= 7 ? user.reviews.length : 0;
+      }
+    }
+
+    const friendsCount = await prisma.friendship.count({
+      where: {
+        status: 'accepted',
+        OR: [
+          { senderId: userId },
+          { receiverId: userId },
+        ],
+      },
+    });
+
+    const stats = {
+      totalReviews: user._count.reviews,
+      totalFavorites: user._count.favorites,
+      avgRatingGiven,
+      credibilityScore: user.credibilityScore,
+      badgeLevel,
+      reviewStreak,
+      mostReviewedSpecies,
+      mostReviewedOrigin,
+      memberSince: user.createdAt.toISOString(),
+      totalVotesGiven: user._count.votesGiven,
+      totalVotesReceived: user.totalAgrees + user.totalDisagrees,
+      friendsCount,
+    };
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          username: user.username,
+          profilePhotoUrl: user.profilePhotoUrl,
+          credibilityScore: user.credibilityScore,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+        stats,
+      },
+    });
+  } catch (error: any) {
+    logger.error('Get public profile error:', error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+};
+
 // Get user's review history
 export const getMyReviews = async (req: Request, res: Response): Promise<void> => {
   try {

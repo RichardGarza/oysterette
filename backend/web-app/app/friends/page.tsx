@@ -183,7 +183,11 @@ export default function FriendsPage() {
   }
 
   const renderFriend = (friend: Friend) => (
-    <div key={friend.id} className="bg-white dark:bg-[#243447] rounded-lg p-4 mb-4 shadow-md border border-gray-200 dark:border-gray-700">
+    <Link
+      key={friend.id}
+      href={`/users/${friend.id}`}
+      className="block bg-white dark:bg-[#243447] rounded-lg p-4 mb-4 shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
+    >
       <div className="flex items-center mb-3">
         <div className="w-12 h-12 bg-[#FF6B35] rounded-full flex items-center justify-center mr-4">
           <span className="text-white font-bold text-sm">{friend.name.charAt(0).toUpperCase()}</span>
@@ -196,19 +200,27 @@ export default function FriendsPage() {
       </div>
       <div className="flex gap-2">
         <button
-          onClick={() => handleViewPaired(friend.id)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleViewPaired(friend.id);
+          }}
           className="flex-1 px-4 py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors font-medium text-sm"
         >
           Paired Matches
         </button>
         <button
-          onClick={() => handleRemove(friend.friendshipId, friend.name)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleRemove(friend.friendshipId, friend.name);
+          }}
           className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm"
         >
           Remove
         </button>
       </div>
-    </div>
+    </Link>
   );
 
   const renderReceived = (request: PendingRequest) => (

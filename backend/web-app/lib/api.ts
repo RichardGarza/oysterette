@@ -174,6 +174,12 @@ export const reviewApi = {
     const response = await api.get<ApiResponse<Review[]>>('/reviews/user');
     return response.data.data || [];
   },
+
+  getPublicUserReviews: async (userId: string): Promise<Review[]> => {
+    // Public endpoint for viewing other users' reviews
+    const response = await api.get<ApiResponse<Review[]>>(`/reviews/user/${userId}`);
+    return response.data.data || [];
+  },
 };
 
 // Vote API
@@ -263,6 +269,20 @@ export const userApi = {
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Failed to search users');
     }
+  },
+
+  deleteAccount: async (password?: string, confirmText?: string): Promise<{ message: string }> => {
+    const response = await api.delete<ApiResponse<{ message: string }>>('/users/account', {
+      data: { password, confirmText },
+    });
+    if (!response.data.data) throw new Error('Failed to delete account');
+    return response.data.data;
+  },
+
+  getPublicProfile: async (userId: string): Promise<{ user: User; stats: any }> => {
+    const response = await api.get<ApiResponse<{ user: User; stats: any }>>(`/users/${userId}`);
+    if (!response.data.data) throw new Error('Failed to get public profile');
+    return response.data.data;
   },
 };
 

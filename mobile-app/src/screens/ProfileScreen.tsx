@@ -192,36 +192,39 @@ export default function ProfileScreen() {
         setLoading(true);
       }
 
-      if (!isViewingOwnProfile) {
-        // Viewing friend's profile - show coming soon alert
-        Alert.alert(
-          'Coming Soon',
-          'Friend profiles are coming in the next update!',
-          [{ text: 'OK', onPress: () => navigation.goBack() }]
-        );
-        setLoading(false);
-        return;
+      if (!isViewingOwnProfile && viewingUserId) {
+        // Viewing friend's public profile
+        const profile = await userApi.getPublicProfile(viewingUserId);
+        setProfileData(profile);
+        
+        // Fetch public user reviews
+        const publicReviews = await reviewApi.getPublicUserReviews(viewingUserId);
+        setReviews(publicReviews);
+        
+        // Don't load XP data for other users
+        setXpData(null);
+      } else {
+        // Viewing own profile
+        const user = await authStorage.getUser();
+        if (!user) {
+          navigation.navigate('Login');
+          return;
+        }
+
+        // Fetch profile with stats using new API
+        const profile = await userApi.getProfile();
+        setProfileData(profile);
+        setEditName(profile.user.name);
+        setEditEmail(profile.user.email);
+
+        // Fetch user's reviews (paginated, showing first 20)
+        const reviewHistory = await userApi.getMyReviews({ page: 1, limit: 20, sortBy: 'createdAt' });
+        setReviews(reviewHistory.reviews);
+
+        // Fetch XP stats
+        const xp = await getXPStats();
+        setXpData(xp);
       }
-
-      const user = await authStorage.getUser();
-      if (!user) {
-        navigation.navigate('Login');
-        return;
-      }
-
-      // Fetch profile with stats using new API
-      const profile = await userApi.getProfile();
-      setProfileData(profile);
-      setEditName(profile.user.name);
-      setEditEmail(profile.user.email);
-
-      // Fetch user's reviews (paginated, showing first 20)
-      const reviewHistory = await userApi.getMyReviews({ page: 1, limit: 20, sortBy: 'createdAt' });
-      setReviews(reviewHistory.reviews);
-
-      // Fetch XP stats
-      const xp = await getXPStats();
-      setXpData(xp);
     } catch (error) {
       console.error('Error loading profile:', error);
       Alert.alert('Error', 'Failed to load profile. Please try again.');
@@ -510,11 +513,7 @@ export default function ProfileScreen() {
       >
         {/* Profile Header */}
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.avatarContainer}
-            onPress={showPhotoOptions}
-            disabled={uploadingPhoto}
-          >
+          <View style={styles.avatarContainer}>
             {user.profilePhotoUrl ? (
               <Image
                 source={{ uri: user.profilePhotoUrl }}
@@ -523,59 +522,64 @@ export default function ProfileScreen() {
             ) : (
               <Text style={styles.avatarText}>{user.name.charAt(0).toUpperCase()}</Text>
             )}
-            {uploadingPhoto && (
+            {isViewingOwnProfile && !uploadingPhoto && (
+              <TouchableOpacity
+                style={styles.cameraIconContainer}
+                onPress={showPhotoOptions}
+              >
+                <Text style={styles.cameraIcon}>📷</Text>
+              </TouchableOpacity>
+            )}
+            {isViewingOwnProfile && uploadingPhoto && (
               <View style={styles.avatarOverlay}>
                 <ActivityIndicator size="large" color="#fff" />
               </View>
             )}
-            {!uploadingPhoto && (
-              <View style={styles.cameraIconContainer}>
-                <Text style={styles.cameraIcon}>📷</Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          </View>
           <Text variant="headlineSmall" style={styles.userName}>{user.username || user.name}</Text>
-          <Text variant="bodyMedium" style={styles.userEmail}>{user.email}</Text>
+          {isViewingOwnProfile && <Text variant="bodyMedium" style={styles.userEmail}>{user.email}</Text>}
           <Text variant="bodySmall" style={styles.joinDate}>Member since {formatDate(stats.memberSince)}</Text>
 
-          {/* Action Buttons */}
-          <View style={styles.actionButtons}>
-            <Button
-              mode="outlined"
-              onPress={() => setShowEditProfile(true)}
-              style={styles.actionButton}
-              compact
-            >
-              Edit Profile
-            </Button>
-            <Button
-              mode="outlined"
-              onPress={() => setShowChangePassword(true)}
-              style={styles.actionButton}
-              compact
-            >
-              Change Password
-            </Button>
-            <Button
-              mode="outlined"
-              onPress={() => navigation.navigate('PrivacySettings')}
-              style={styles.actionButton}
-              compact
-            >
-              Privacy Settings
-            </Button>
-            <Button
-              mode="outlined"
-              onPress={() => navigation.navigate('XPStats')}
-              style={styles.actionButton}
-              compact
-            >
-              XP & Achievements
-            </Button>
-          </View>
+          {/* Action Buttons - Only show for own profile */}
+          {isViewingOwnProfile && (
+            <View style={styles.actionButtons}>
+              <Button
+                mode="outlined"
+                onPress={() => setShowEditProfile(true)}
+                style={styles.actionButton}
+                compact
+              >
+                Edit Profile
+              </Button>
+              <Button
+                mode="outlined"
+                onPress={() => setShowChangePassword(true)}
+                style={styles.actionButton}
+                compact
+              >
+                Change Password
+              </Button>
+              <Button
+                mode="outlined"
+                onPress={() => navigation.navigate('PrivacySettings')}
+                style={styles.actionButton}
+                compact
+              >
+                Privacy Settings
+              </Button>
+              <Button
+                mode="outlined"
+                onPress={() => navigation.navigate('XPStats')}
+                style={styles.actionButton}
+                compact
+              >
+                XP & Achievements
+              </Button>
+            </View>
+          )}
 
-          {/* XP Badge */}
-          {xpData && (
+          {/* XP Badge - Only show for own profile */}
+          {isViewingOwnProfile && xpData && (
             <View style={styles.xpContainer}>
               <XPBadge xp={xpData.xp} level={xpData.level} />
             </View>
@@ -855,12 +859,14 @@ export default function ProfileScreen() {
                       </Text>
                       <Text variant="bodyMedium" style={styles.reviewRating}>{review.rating.replace('_', ' ')}</Text>
                     </View>
-                    <IconButton
-                      icon="delete"
-                      size={20}
-                      onPress={(event) => handleDeleteReview(review, event)}
-                      style={styles.deleteButton}
-                    />
+                    {isViewingOwnProfile && (
+                      <IconButton
+                        icon="delete"
+                        size={20}
+                        onPress={(event) => handleDeleteReview(review, event)}
+                        style={styles.deleteButton}
+                      />
+                    )}
                   </View>
                   {review.notes && (
                     <Text variant="bodyMedium" style={styles.reviewNotes} numberOfLines={2}>

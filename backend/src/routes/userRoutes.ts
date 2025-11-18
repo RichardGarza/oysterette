@@ -35,6 +35,7 @@ import {
   updatePreferences,
   updateProfile,
   getProfile,
+  getPublicProfile,
   getMyReviews,
   changePassword,
   deleteAccount,
@@ -44,7 +45,7 @@ import {
   setUsername,
 } from '../controllers/userController';
 import { authenticate } from '../middleware/auth';
-import { validate } from '../middleware/validate';
+import { validate, validateParams } from '../middleware/validate';
 import {
   changePasswordSchema,
   deleteAccountSchema,
@@ -52,6 +53,7 @@ import {
   updatePrivacySettingsSchema,
   reviewQuerySchema,
   usernameSchema,
+  userIdParamSchema,
 } from '../validators/schemas';
 
 const router = express.Router();
@@ -90,5 +92,8 @@ router.delete('/top-oysters/:oysterId', authenticate, removeTopOyster);
 
 // New route: PUT /users/username
 router.put('/username', authenticate, validate(usernameSchema, 'body'), setUsername);
+
+// Public profile route - MUST be last to avoid matching other routes
+router.get('/:userId', validateParams(userIdParamSchema), getPublicProfile);
 
 export default router;

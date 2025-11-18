@@ -275,6 +275,86 @@ export const getUserReviews = async (req: Request, res: Response): Promise<void>
 };
 
 /**
+ * Get all reviews written by a specific user (public endpoint)
+ *
+ * Returns reviews ordered by most recent first, with full oyster info.
+ * This is a public endpoint for viewing other users' profiles.
+ *
+ * @route GET /api/reviews/user/:userId
+ * @param req.params.userId - User ID to fetch reviews for
+ * @returns 200 - Array of user's reviews with oyster info
+ * @returns 404 - User not found
+ * @returns 500 - Server error
+ */
+export const getPublicUserReviews = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      res.status(400).json({
+        success: false,
+        error: 'User ID is required',
+      });
+      return;
+    }
+
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        error: 'User not found',
+      });
+      return;
+    }
+
+    const reviews = await prisma.review.findMany({
+      where: { userId },
+      include: {
+        oyster: {
+          select: {
+            id: true,
+            name: true,
+            species: true,
+            origin: true,
+            avgRating: true,
+            overallScore: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            profilePhotoUrl: true,
+          },
+        },
+        _count: {
+          select: { votes: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10, // Limit to 10 most recent for public profile
+    });
+
+    res.status(200).json({
+      success: true,
+      count: reviews.length,
+      data: reviews,
+    });
+  } catch (error) {
+    logger.error('Get public user reviews error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error',
+    });
+  }
+};
+
+/**
  * Check if authenticated user has already reviewed an oyster
  *
  * Used by mobile app to determine whether to show "Add Review" or "Update Review"

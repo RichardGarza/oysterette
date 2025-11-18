@@ -24,6 +24,7 @@ import {
   createReview,
   getOysterReviews,
   getUserReviews,
+  getPublicUserReviews,
   updateReview,
   deleteReview,
   checkExistingReview,
@@ -35,6 +36,7 @@ import {
   updateReviewSchema,
   oysterIdParamSchema,
   reviewIdParamSchema,
+  userIdParamSchema,
 } from '../validators/schemas';
 
 const router = express.Router();
@@ -44,7 +46,8 @@ router.get('/oyster/:oysterId', validateParams(oysterIdParamSchema), getOysterRe
 
 // Protected routes (optional authentication - allows anonymous reviews)
 router.post('/', optionalAuthenticate, validateBody(createReviewSchema), createReview);
-router.get('/user', authenticate, getUserReviews);
+router.get('/user', authenticate, getUserReviews); // Must come before /user/:userId
+router.get('/user/:userId', validateParams(userIdParamSchema), getPublicUserReviews); // Public user reviews - must come after /user
 router.get('/check/:oysterId', authenticate, validateParams(oysterIdParamSchema), checkExistingReview);
 router.put('/:reviewId', authenticate, validateParams(reviewIdParamSchema), validateBody(updateReviewSchema), updateReview);
 router.delete('/:reviewId', authenticate, validateParams(reviewIdParamSchema), deleteReview);
