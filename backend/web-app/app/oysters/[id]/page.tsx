@@ -135,15 +135,13 @@ export default function OysterDetailPage() {
               {isAuthenticated && (
                 <button
                   onClick={handleToggleFavorite}
-                  disabled={favoriteLoading}
                   className='px-3 py-2 rounded-lg font-medium transition-colors text-xl bg-gray-200 dark:bg-[#2d4054] text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'>
-                  {favoriteLoading ? (
-                    '...'
-                  ) : isFavorite ? (
-                    <span className='text-red-500'>❤️</span>
-                  ) : (
-                    '🤍'
-                  )}
+                  <span
+                    className={`transition-colors duration-300 ${
+                      isFavorite ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'
+                    }`}>
+                    {isFavorite ? '❤️' : '🤍'}
+                  </span>
                 </button>
               )}
             </div>
