@@ -21,7 +21,7 @@ export default function Header() {
   const moonIcon = '🌙';
 
   return (
-    <header className="bg-[#1a2332] dark:bg-[#1a2332] shadow-lg">
+    <header className="sticky top-0 z-50 bg-[#3498db] shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
@@ -29,11 +29,11 @@ export default function Header() {
             <Image
               src="/top-bar-logo.png"
               alt="Oysterette"
-              width={40}
+              width={150}
               height={40}
-              className="mr-2"
+              className="object-contain"
+              priority
             />
-            <span className="text-xl font-bold text-white hidden sm:inline">Oysterette</span>
           </Link>
 
           {/* Navigation */}
