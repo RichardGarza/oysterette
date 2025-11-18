@@ -178,7 +178,7 @@ export const getUserAttributePreferences = async (
     let totalCream = 0;
     let totalWeight = 0;
 
-    reviews.forEach((review) => {
+    reviews.forEach((review: any) => {
       // Weight: 1.5 for favorited oysters, 1.0 for others
       const weight = favoriteOysterIds.has(review.oysterId) ? 1.5 : 1.0;
 
@@ -393,7 +393,7 @@ export const getCollaborativeRecommendations = async (
         where: { userId },
         select: { oysterId: true },
       })
-      .then((reviews) => reviews.map((r: any) => r.oysterId));
+      .then((reviews: any) => reviews.map((r: any) => r.oysterId));
 
     // Get oysters liked by similar users
     const similarUserIds = similarUsers.map((u) => u.userId);
@@ -413,7 +413,7 @@ export const getCollaborativeRecommendations = async (
     // Score each oyster by weighted sum of similar users' ratings
     const oysterScores = new Map<string, { oyster: any; score: number; count: number }>();
 
-    likedByOthers.forEach((review) => {
+    likedByOthers.forEach((review: any) => {
       if (!review.userId) return; // Skip if userId is null
       const userSimilarity = similarityMap.get(review.userId) || 0;
       const ratingWeight = review.rating === 'LOVE_IT' ? 2 : 1;
@@ -619,7 +619,7 @@ export const getRecommendations = async (
             where: { userId },
             select: { oysterId: true },
           })
-          .then((reviews) => reviews.map((r: any) => r.oysterId));
+          .then((reviews: any) => reviews.map((r: any) => r.oysterId));
 
         const unreviewedOysters = await prisma.oyster.findMany({
           where: {
@@ -810,11 +810,11 @@ export const updateFlavorProfileRanges = async (userId: string): Promise<void> =
     }
 
     // Extract values for each attribute (filter out nulls)
-    const sizes = reviews.map(r => r.size).filter((v): v is number => v !== null);
-    const bodies = reviews.map(r => r.body).filter((v): v is number => v !== null);
-    const sweetBrininesses = reviews.map(r => r.sweetBrininess).filter((v): v is number => v !== null);
-    const flavorfulnesses = reviews.map(r => r.flavorfulness).filter((v): v is number => v !== null);
-    const creaminesses = reviews.map(r => r.creaminess).filter((v): v is number => v !== null);
+    const sizes = reviews.map((r: any) => r.size).filter((v: any): v is number => v !== null);
+    const bodies = reviews.map((r: any) => r.body).filter((v: any): v is number => v !== null);
+    const sweetBrininesses = reviews.map((r: any) => r.sweetBrininess).filter((v: any): v is number => v !== null);
+    const flavorfulnesses = reviews.map((r: any) => r.flavorfulness).filter((v: any): v is number => v !== null);
+    const creaminesses = reviews.map((r: any) => r.creaminess).filter((v: any): v is number => v !== null);
 
     // Calculate ranges
     await prisma.user.update({

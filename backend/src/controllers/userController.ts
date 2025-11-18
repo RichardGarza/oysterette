@@ -409,11 +409,11 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     }, {} as Record<string, number>);
 
     const mostReviewedSpecies = Object.keys(speciesCounts).length > 0
-      ? Object.entries(speciesCounts).sort((a: [string, number], b: [string, number]) => b[1] - a[1])[0]?.[0]
+      ? (Object.entries(speciesCounts) as [string, number][]).sort((a, b) => b[1] - a[1])[0]?.[0]
       : undefined;
 
     const mostReviewedOrigin = Object.keys(originCounts).length > 0
-      ? Object.entries(originCounts).sort((a: [string, number], b: [string, number]) => b[1] - a[1])[0]?.[0]
+      ? (Object.entries(originCounts) as [string, number][]).sort((a, b) => b[1] - a[1])[0]?.[0]
       : undefined;
 
     // Determine badge level (based on review count AND credibility)

@@ -113,7 +113,7 @@ export async function voteOnReview(
   }
 
   // Use transaction to ensure consistency
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: any) => {
     if (existingVote) {
       // Update existing vote if it changed
       if (existingVote.isAgree !== isAgree) {
@@ -208,7 +208,7 @@ export async function removeVote(userId: string, reviewId: string): Promise<void
   }
 
   // Use transaction
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: any) => {
     // Delete vote
     await tx.reviewVote.delete({
       where: { id: vote.id },
@@ -312,7 +312,7 @@ export async function getUserVotes(
 
   const voteMap = new Map<string, boolean | null>();
   reviewIds.forEach((id) => {
-    const vote = votes.find((v) => v.reviewId === id);
+    const vote = votes.find((v: any) => v.reviewId === id);
     voteMap.set(id, vote ? vote.isAgree : null);
   });
 

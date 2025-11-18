@@ -14,6 +14,7 @@
     "test:unit": "jest --testPathPattern=unit",
     "test:integration": "jest --testPathPattern=integration",
     "depcheck": "depcheck --ignores='@types/*,typescript,ts-node,nodemon,jest,ts-jest,@types/jest,supertest,@types/supertest,pg,prisma'",
+    "postinstall": "prisma generate",
     "prebuild": "npm run depcheck",
     "build:prod": "npm run test && npm run build"
   },
