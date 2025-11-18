@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Header from '../../components/Header';
 import ReviewCard from '../../components/ReviewCard';
 import EmptyState from '../../components/EmptyState';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { userApi, reviewApi, xpApi, uploadApi } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Review, User } from '../../lib/types';
@@ -197,9 +198,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-white dark:bg-[#1a2332]">
         <Header />
         <main className="max-w-4xl mx-auto px-4 py-12">
-          <div className="animate-pulse space-y-6">
-            <div className="h-32 bg-gray-200 dark:bg-[#243447] rounded-xl" />
-          </div>
+          <LoadingSpinner size="lg" text="Loading profile..." />
         </main>
       </div>
     );

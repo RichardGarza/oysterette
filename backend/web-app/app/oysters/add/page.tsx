@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../../../components/Header';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 import { oysterApi } from '../../../lib/api';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -174,8 +175,11 @@ export default function AddOysterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors font-medium disabled:opacity-50"
+            className="w-full py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
           >
+            {loading && (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            )}
             {loading ? 'Submitting...' : 'Suggest Oyster'}
           </button>
         </form>

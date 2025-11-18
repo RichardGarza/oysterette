@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import Header from '../../components/Header';
 import RatingDisplay from '../../components/RatingDisplay';
 import EmptyState from '../../components/EmptyState';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { oysterApi, favoriteApi } from '../../lib/api';
 import { Oyster } from '../../lib/types';
 import { useAuth } from '../../context/AuthContext';
@@ -159,7 +160,9 @@ function OystersContent() {
         </div>
 
         {/* Oysters Grid */}
-        {loading ? (
+        {loading && oysters.length === 0 ? (
+          <LoadingSpinner size="lg" text="Loading oysters..." />
+        ) : loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(9)].map((_, i) => (
               <div key={i} className="animate-pulse bg-gray-200 dark:bg-[#243447] rounded-xl h-64" />

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Header from '../../../../components/Header';
+import LoadingSpinner from '../../../../components/LoadingSpinner';
 import { oysterApi, reviewApi } from '../../../../lib/api';
 import { Oyster, Review, ReviewRating } from '../../../../lib/types';
 import { useAuth } from '../../../../context/AuthContext';
@@ -161,10 +162,7 @@ export default function ReviewPage() {
       <div className="min-h-screen bg-white dark:bg-[#1a2332]">
         <Header />
         <main className="max-w-2xl mx-auto px-4 py-12">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 dark:bg-[#243447] rounded w-1/3" />
-            <div className="h-64 bg-gray-200 dark:bg-[#243447] rounded" />
-          </div>
+          <LoadingSpinner size="lg" text="Loading review form..." />
         </main>
       </div>
     );
@@ -289,8 +287,11 @@ export default function ReviewPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {submitting && (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                )}
                 {submitting ? 'Submitting...' : isEditMode ? 'Update Review' : 'Submit Review'}
               </button>
             </div>

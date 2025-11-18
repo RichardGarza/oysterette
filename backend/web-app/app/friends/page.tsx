@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { useAuth } from '../../context/AuthContext';
 import { friendApi, userApi } from '../../lib/api';
 import Link from 'next/link';
@@ -172,9 +173,11 @@ export default function FriendsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#1a2332] flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-[#1a2332]">
         <Header />
-        <div className="text-center">Loading friends...</div>
+        <main className="max-w-4xl mx-auto px-4 py-12">
+          <LoadingSpinner size="lg" text="Loading friends..." />
+        </main>
       </div>
     );
   }

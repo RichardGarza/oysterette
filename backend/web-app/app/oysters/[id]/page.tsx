@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Header from '../../../components/Header';
 import ReviewCard from '../../../components/ReviewCard';
 import EmptyState from '../../../components/EmptyState';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 import { oysterApi, reviewApi, favoriteApi } from '../../../lib/api';
 import { Oyster, Review } from '../../../lib/types';
 import { useAuth } from '../../../context/AuthContext';
@@ -97,10 +98,7 @@ export default function OysterDetailPage() {
       <div className="min-h-screen bg-white dark:bg-[#1a2332]">
         <Header />
         <main className="max-w-4xl mx-auto px-4 py-12">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 dark:bg-[#243447] rounded w-1/3" />
-            <div className="h-64 bg-gray-200 dark:bg-[#243447] rounded" />
-          </div>
+          <LoadingSpinner size="lg" text="Loading oyster details..." />
         </main>
       </div>
     );
