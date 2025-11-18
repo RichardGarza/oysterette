@@ -103,9 +103,10 @@ export default function ProfilePage() {
     try {
       // Use getMyReviews which gets current user's reviews
       const data = await reviewApi.getMyReviews();
-      setReviews(data.reviews);
+      setReviews(data?.reviews || []);
     } catch (error) {
       console.error('Failed to load reviews:', error);
+      setReviews([]); // Ensure reviews is always an array
     }
   };
 
@@ -343,7 +344,7 @@ export default function ProfilePage() {
             )}
           </div>
           
-          {reviews.length > 0 ? (
+          {reviews && reviews.length > 0 ? (
             <div className="space-y-4">
               {reviews.slice(0, 3).map((review) => (
                 <ReviewCard
