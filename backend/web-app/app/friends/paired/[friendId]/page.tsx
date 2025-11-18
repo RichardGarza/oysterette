@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { friendApi } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface PairedMatch {
   oyster: {
@@ -60,9 +61,11 @@ export default function PairedMatchesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#1a2332] flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-[#1a2332]">
         <Header />
-        <div className="text-center">Loading paired matches...</div>
+        <main className="max-w-4xl mx-auto px-4 py-12 flex items-center justify-center min-h-[60vh]">
+          <LoadingSpinner size="lg" text="Loading paired matches..." />
+        </main>
       </div>
     );
   }
