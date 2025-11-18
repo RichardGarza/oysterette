@@ -51,6 +51,12 @@ export default function Header() {
               Browse Oysters
             </Link>
             <Link
+              href="/favorites"
+              className="text-white hover:text-gray-100 transition-colors px-3 py-2 rounded-md"
+            >
+              Favorites
+            </Link>
+            <Link
               href="/friends"
               className="text-white hover:text-gray-100 transition-colors px-3 py-2 rounded-md"
             >
