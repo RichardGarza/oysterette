@@ -1,55 +1,78 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
 import React from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import Image from 'next/image';
 
 export default function Header() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const router = useRouter();
+  const { isAuthenticated, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
+
+  const sunIcon = '☀️';
+  const moonIcon = '🌙';
+
   return (
-    <header className="sticky top-0 z-50 bg-[#3498db] border-b border-[#2980b9]">
+    <header className="bg-[#1a2332] dark:bg-[#1a2332] shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center py-4">
+          {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
               src="/top-bar-logo.png"
               alt="Oysterette"
-              width={150}
+              width={40}
               height={40}
-              className="object-contain"
-              priority
+              className="mr-2"
             />
+            <span className="text-xl font-bold text-white hidden sm:inline">Oysterette</span>
           </Link>
 
-          <nav className="flex items-center space-x-4">
+          {/* Navigation */}
+          <nav className="hidden md:flex items-center space-x-6">
             <Link
               href="/"
-              className="text-white hover:text-gray-100 transition-colors"
+              className="text-white hover:text-gray-100 transition-colors px-3 py-2 rounded-md"
             >
               Home
             </Link>
             <Link
               href="/oysters"
-              className="text-white hover:text-gray-100 transition-colors"
+              className="text-white hover:text-gray-100 transition-colors px-3 py-2 rounded-md"
             >
-              Browse
+              Browse Oysters
             </Link>
-
+            <Link
+              href="/friends"
+              className="text-white hover:text-gray-100 transition-colors px-3 py-2 rounded-md"
+            >
+              Friends
+            </Link>
             {isAuthenticated ? (
               <>
                 <Link
                   href="/profile"
-                  className="text-white hover:text-gray-100 transition-colors"
+                  className="text-white hover:text-gray-100 transition-colors px-3 py-2 rounded-md"
                 >
                   Profile
                 </Link>
+                <Link
+                  href="/settings"
+                  className="text-white hover:text-gray-100 transition-colors px-3 py-2 rounded-md"
+                >
+                  Settings
+                </Link>
                 <button
-                  onClick={logout}
-                  className="text-white hover:text-gray-100 transition-colors"
+                  onClick={handleLogout}
+                  className="text-white hover:text-gray-100 transition-colors px-3 py-2 rounded-md"
                 >
                   Logout
                 </button>
@@ -58,27 +81,35 @@ export default function Header() {
               <>
                 <Link
                   href="/login"
-                  className="text-white hover:text-gray-100 transition-colors"
+                  className="text-white hover:text-gray-100 transition-colors px-3 py-2 rounded-md"
                 >
                   Login
                 </Link>
                 <Link
                   href="/register"
-                  className="bg-white text-[#3498db] px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+                  className="bg-[#FF6B35] hover:bg-[#e55a2b] text-white px-4 py-2 rounded-md transition-colors font-medium"
                 >
                   Sign Up
                 </Link>
               </>
             )}
-
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-[#2980b9] transition-colors text-white"
-              aria-label="Toggle theme"
-            >
-              {theme === 'light' ? '🌙' : '☀️'}
-            </button>
           </nav>
+
+          {/* Mobile menu button */}
+          <button className="md:hidden text-white">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="text-white hover:text-gray-100 p-2 rounded-full transition-colors ml-2"
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? sunIcon : moonIcon}
+          </button>
         </div>
       </div>
     </header>

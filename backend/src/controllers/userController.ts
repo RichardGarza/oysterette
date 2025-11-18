@@ -380,8 +380,12 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    // Calculate average rating given
+    // Calculate stats
     let avgRatingGiven = 0;
+    let mostReviewedSpecies: string | undefined;
+    let mostReviewedOrigin: string | undefined;
+    let reviewStreak = 0;
+
     if (user.reviews.length > 0) {
       const ratingValues: Record<string, number> = {
         LOVE_IT: 4,   // Best
@@ -437,36 +441,51 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
       }
     }
 
+    // Calculate friends count
+    const friendsCount = await prisma.friendship.count({
+      where: {
+        status: 'accepted',
+        OR: [
+          { senderId: req.userId },
+          { receiverId: req.userId },
+        ],
+      },
+    });
+
     const stats = {
       totalReviews: user._count.reviews,
       totalFavorites: user._count.favorites,
-      totalVotesGiven: user._count.votesGiven,
-      totalVotesReceived: user.totalAgrees + user.totalDisagrees,
-      avgRatingGiven: Number(avgRatingGiven.toFixed(2)),
+      avgRatingGiven,
       credibilityScore: user.credibilityScore,
       badgeLevel,
-      memberSince: user.createdAt.toISOString(),
       reviewStreak,
       mostReviewedSpecies,
       mostReviewedOrigin,
+      memberSince: user.createdAt.toISOString(),
+      totalVotesGiven: user._count.votesGiven,
+      totalVotesReceived: user.totalAgrees + user.totalDisagrees,
+      friendsCount, // Added friends count
     };
-
-    // Return user without password and with stats
-    const { password, ...userWithoutPassword } = user;
 
     res.status(200).json({
       success: true,
       data: {
-        user: userWithoutPassword,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          username: user.username, // Include username
+          profilePhotoUrl: user.profilePhotoUrl,
+          credibilityScore: user.credibilityScore,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
         stats,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Get profile error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Server error',
-    });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 };
 
