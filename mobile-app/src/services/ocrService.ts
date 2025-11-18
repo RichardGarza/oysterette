@@ -56,50 +56,53 @@ export const recognizeText = async (imageUri: string): Promise<TextWithPosition[
  * Match detected text against oyster database
  */
 export const matchOysters = (
-  detectedTexts: TextWithPosition[],
-  oysters: Oyster[]
-): { matches: OysterMatch[]; unmatched: UnmatchedOyster[] } => {
-  const fuse = new Fuse(oysters, {
-    keys: ['name', 'species', 'origin'],
-    threshold: 0.4,
+  detectedTexts: string[],
+  allOysters: Oyster[],
+  options = { threshold: 0.7 }
+): { matches: any[], unmatched: any[] } => {
+  // Filter words: split, >3 chars, no numbers/prices
+  const priceRegex = /^\d+\.?\d*$/; // e.g., 12.99
+  const currencyRegex = /[$€£]/; // Currency symbols
+  const filteredWords = detectedTexts
+    .flatMap(text => text.split(/\s+/))
+    .filter(word => word.length > 3 && !isNaN(word).toString() !== word && !priceRegex.test(word) && !currencyRegex.test(word));
+
+  if (filteredWords.length === 0) {
+    return { matches: [], unmatched: detectedTexts.map((text, pos) => ({ detectedText: text, position: pos })) };
+  }
+
+  // Fuzzy search on filtered words
+  const fuse = new Fuse(allOysters, {
+    keys: ['name'],
+    threshold: options.threshold, // 0.7 = good matches only
     includeScore: true,
   });
 
-  const matches: OysterMatch[] = [];
-  const unmatched: UnmatchedOyster[] = [];
-  const matchedOysterIds = new Set<string>();
-  const processedTexts = new Set<string>();
+  const allMatches = filteredWords.map(word => {
+    const results = fuse.search(word);
+    return results.map(result => ({ ...result, detectedText: word, position: detectedTexts.indexOf(word) }));
+  }).flat();
 
-  detectedTexts.forEach((item) => {
-    const results = fuse.search(item.text);
-
-    let foundMatch = false;
-    results.forEach((result: any) => {
-      if (result.score && result.score < 0.4 && !matchedOysterIds.has(result.item.id)) {
-        matches.push({
-          oyster: result.item,
-          score: 1 - result.score, // Convert to match percentage
-          detectedText: item.text,
-          position: item.position,
-        });
-        matchedOysterIds.add(result.item.id);
-        foundMatch = true;
-      }
-    });
-
-    // Track unmatched if text looks like an oyster name (3+ chars, not processed)
-    if (!foundMatch && item.text.length >= 3 && !processedTexts.has(item.text.toLowerCase())) {
-      unmatched.push({
-        detectedText: item.text,
-        position: item.position,
-      });
-      processedTexts.add(item.text.toLowerCase());
+  // Dedupe by oyster.id (keep highest score)
+  const uniqueMatches = allMatches.reduce((acc, match) => {
+    const existing = acc.find(m => m.item.id === match.item.id);
+    if (!existing || match.score < existing.score) {
+      acc.push(match);
     }
-  });
+    return acc;
+  }, []);
 
-  // Sort by position to maintain menu order
-  matches.sort((a, b) => a.position - b.position);
-  unmatched.sort((a, b) => a.position - b.position);
+  // Sort: confidence (score) desc, then position asc
+  uniqueMatches.sort((a, b) => (b.score - a.score) || (a.item.position - b.item.position)); // Note: position from detect, may need adjust
+
+  // Limit to 20
+  const matches = uniqueMatches.slice(0, 20);
+
+  // Unmatched: Original detectedTexts not in matches (simplified)
+  const matchedTexts = new Set(matches.map(m => m.detectedText));
+  const unmatched = detectedTexts
+    .filter(text => !matchedTexts.has(text.split(/\s+/)[0])) // Simplified
+    .map((text, pos) => ({ detectedText: text, position: pos }));
 
   return { matches, unmatched };
 };

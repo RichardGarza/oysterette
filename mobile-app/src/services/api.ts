@@ -53,6 +53,7 @@
 import axios, { AxiosInstance, AxiosHeaders } from 'axios';
 import axiosRetry from 'axios-retry';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Oyster,
   Review,
@@ -260,8 +261,45 @@ export const oysterApi = {
     flavorfulness?: 'low' | 'high';
     creaminess?: 'low' | 'high';
   }): Promise<Oyster[]> => {
+    const cacheKey = 'oyster-cache';
+    const cacheExpiry = 3600000; // 1 hour in ms
+
+    try {
+      // Try to get from cache first
+      const cached = await AsyncStorage.getItem(cacheKey);
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < cacheExpiry) {
+          console.log('📦 [API] Using cached oysters');
+          return data;
+        } else {
+          console.log('🗑️ [API] Cache expired, fetching fresh data');
+          await AsyncStorage.removeItem(cacheKey);
+        }
+      }
+    } catch (cacheError) {
+      console.warn('⚠️ [API] Cache read error:', cacheError);
+    }
+
+    // Fetch fresh data
     const response = await api.get<ApiResponse<Oyster[]>>('/oysters', { params });
-    return response.data.data || [];
+    const oysters = response.data.data || [];
+
+    // Cache the response
+    try {
+      await AsyncStorage.setItem(
+        cacheKey,
+        JSON.stringify({
+          data: oysters,
+          timestamp: Date.now(),
+        })
+      );
+      console.log('💾 [API] Oysters cached');
+    } catch (cacheError) {
+      console.warn('⚠️ [API] Cache write error:', cacheError);
+    }
+
+    return oysters;
   },
 
   // Get single oyster by ID

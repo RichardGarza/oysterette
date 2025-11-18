@@ -534,7 +534,7 @@ export default function ProfileScreen() {
               </View>
             )}
           </TouchableOpacity>
-          <Text variant="headlineSmall" style={styles.userName}>{user.name}</Text>
+          <Text variant="headlineSmall" style={styles.userName}>{user.username || user.name}</Text>
           <Text variant="bodyMedium" style={styles.userEmail}>{user.email}</Text>
           <Text variant="bodySmall" style={styles.joinDate}>Member since {formatDate(stats.memberSince)}</Text>
 
@@ -911,6 +911,14 @@ export default function ProfileScreen() {
               mode="outlined"
               keyboardType="email-address"
               autoCapitalize="none"
+              style={styles.dialogInput}
+            />
+            <PaperTextInput
+              label="Username (optional)"
+              placeholder="e.g., OysterFan123"
+              value={user.username || ''}
+              onChangeText={(value) => setEditName(value)} // Assuming username is part of the name field for now
+              mode="outlined"
               style={styles.dialogInput}
             />
           </Dialog.Content>

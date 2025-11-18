@@ -85,12 +85,12 @@
  * - Version in app.json
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { TouchableOpacity, Text, Image } from 'react-native';
+import { TouchableOpacity, Text, Image, View } from 'react-native';
 import { PaperProvider, IconButton } from 'react-native-paper';
 import { RootStackParamList } from './src/navigation/types';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
@@ -113,6 +113,8 @@ import FriendsScreen from './src/screens/FriendsScreen';
 import PairedMatchesScreen from './src/screens/PairedMatchesScreen';
 import XPStatsScreen from './src/screens/XPStatsScreen';
 import MenuScreen from './src/screens/MenuScreen';
+import { Avatar } from 'react-native-paper'; // Add import for Avatar
+import { authStorage } from './src/services/auth'; // Add import for auth
 
 /**
  * TO REPLACE "Oysterette" TEXT WITH LOGO:
@@ -137,17 +139,46 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppNavigator() {
   const { theme, isDark, paperTheme } = useTheme();
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Add state
 
-  // Settings button component for header (hamburger menu)
-  const SettingsButton = ({ navigation }: any) => (
-    <IconButton
-      icon="menu"
-      iconColor="#fff"
-      size={24}
-      onPress={() => navigation.navigate('Menu')}
-      style={{ marginRight: 8 }}
-    />
-  );
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await authStorage.getToken();
+      setIsLoggedIn(!!token);
+    };
+    checkAuth();
+  }, []);
+
+  // Enhanced SettingsButton (hamburger) with conditional avatar
+  const SettingsButton = ({ navigation }: any) => {
+    const [user, setUser] = useState<any>(null);
+    useEffect(() => {
+      const loadUser = async () => {
+        const u = await authStorage.getUser();
+        setUser(u);
+      };
+      loadUser();
+    }, []);
+
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {isLoggedIn && user?.profilePhotoUrl ? (
+          <Avatar.Image
+            size={32}
+            source={{ uri: user.profilePhotoUrl }}
+            style={{ marginRight: 8 }}
+          />
+        ) : null}
+        <IconButton
+          icon="menu"
+          iconColor="#fff"
+          size={24}
+          onPress={() => navigation.navigate('Menu')}
+          style={{ marginRight: 8 }}
+        />
+      </View>
+    );
+  };
 
   return (
     <PaperProvider theme={paperTheme}>

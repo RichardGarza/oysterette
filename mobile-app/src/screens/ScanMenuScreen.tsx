@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, StyleSheet, Alert, ScrollView, Image } from 'react-native';
 import { CameraView, Camera, CameraType } from 'expo-camera';
 import { Button, Text, Appbar, ActivityIndicator, Card, Chip } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
@@ -37,6 +37,9 @@ export default function ScanMenuScreen() {
   const [matches, setMatches] = useState<MatchedOyster[]>([]);
   const [unmatched, setUnmatched] = useState<UnmatchedOyster[]>([]);
   const [allOysters, setAllOysters] = useState<Oyster[]>([]);
+  // Add state for captured photo and analyzing
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const [showAnalyzing, setShowAnalyzing] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -76,24 +79,31 @@ export default function ScanMenuScreen() {
       // Take photo
       const photo = await cameraRef.current.takePictureAsync();
 
-      // Run OCR
+      // Show static photo and analyzing overlay (disable live camera)
+      setCapturedPhoto(photo.uri);
+      setShowAnalyzing(true);
+
+      // Process OCR
       const detectedTexts = await recognizeText(photo.uri);
 
       if (detectedTexts.length === 0) {
         Alert.alert('No Text Detected', 'Point camera at menu text and try again.');
+        setShowAnalyzing(false);
+        setCapturedPhoto(null);
         return;
       }
 
-      // Match oysters
-      const { matches: ocrMatches, unmatched: unmatchedItems } = matchOysters(detectedTexts, allOysters);
+      // Match oysters with fixes
+      const { matches: ocrMatches, unmatched: unmatchedItems } = matchOysters(detectedTexts, allOysters, { threshold: 0.7 }); // >70%
 
-      if (ocrMatches.length === 0 && unmatchedItems.length === 0) {
-        Alert.alert('No Matches', 'No oysters found on this menu. Try another angle.');
-        return;
-      }
+      // Dedupe matches by oyster.id, limit 20, sort by score desc then position
+      const uniqueMatches = ocrMatches
+        .filter((match, index, self) => self.findIndex(m => m.oyster.id === match.oyster.id) === index) // Dedupe
+        .sort((a, b) => b.score - a.score || a.position - b.position) // Sort confidence desc, then position asc
+        .slice(0, 20); // Limit 20
 
-      // Calculate personalized scores for matched oysters
-      const matchesWithScores: MatchedOyster[] = ocrMatches.map((match) => ({
+      // Calculate personalized scores
+      const matchesWithScores: MatchedOyster[] = uniqueMatches.map((match) => ({
         oyster: match.oyster,
         score: match.score,
         personalizedScore: calculatePersonalizedScore(match.oyster),
@@ -102,8 +112,14 @@ export default function ScanMenuScreen() {
       }));
 
       setMatches(matchesWithScores);
-      setUnmatched(unmatchedItems);
+      setUnmatched(unmatchedItems.slice(0, 20)); // Limit unmatched too
+      setShowAnalyzing(false);
+      setCapturedPhoto(null); // Clear static photo after processing
+
+      // Navigate to results if needed, or render below
     } catch (error) {
+      setShowAnalyzing(false);
+      setCapturedPhoto(null);
       if (__DEV__) {
         console.error('❌ [ScanMenu] Scan error:', error);
       }
@@ -157,110 +173,38 @@ export default function ScanMenuScreen() {
         <Appbar.Content title="Scan Menu" />
       </Appbar.Header>
 
-      <CameraView style={styles.camera} ref={cameraRef}>
-        <View style={styles.overlay}>
-          <View style={styles.instructionContainer}>
-            <Text variant="titleMedium" style={styles.instructionText}>
-              Point camera at oyster menu
-            </Text>
-          </View>
-
-          <View style={styles.bottomContainer}>
-            {matches.length === 0 && unmatched.length === 0 ? (
-              <Button
-                mode="contained"
-                onPress={handleScan}
-                loading={scanning}
-                disabled={scanning}
-                style={styles.scanButton}
-                icon="camera"
-              >
-                {scanning ? 'Scanning...' : 'Scan Now'}
-              </Button>
-            ) : (
-              <ScrollView style={styles.resultsContainer}>
-                <Text variant="titleLarge" style={styles.resultsTitle}>
-                  Found {matches.length + unmatched.length} Item{matches.length + unmatched.length !== 1 ? 's' : ''}
-                </Text>
-                <Text variant="bodyMedium" style={styles.resultsSubtitle}>
-                  {matches.length} in database • {unmatched.length} not found
-                </Text>
-
-                {/* Matched Oysters */}
-                {matches.map((match, index) => (
-                  <Card
-                    key={`match-${index}`}
-                    mode="elevated"
-                    style={styles.resultCard}
-                    onPress={() => navigation.navigate('OysterDetail', { oysterId: match.oyster.id })}
-                  >
-                    <Card.Content>
-                      <View style={styles.resultHeader}>
-                        <Text variant="titleMedium">{match.oyster.name}</Text>
-                        <Chip
-                          style={[
-                            styles.scoreChip,
-                            { backgroundColor: getMatchColor(match.personalizedScore) },
-                          ]}
-                        >
-                          {match.personalizedScore}%
-                        </Chip>
-                      </View>
-                      <Text variant="bodySmall" style={styles.resultOrigin}>
-                        {match.oyster.origin}
-                      </Text>
-                      <Text variant="labelSmall" style={styles.matchLabel}>
-                        {getMatchLabel(match.personalizedScore)}
-                      </Text>
-                    </Card.Content>
-                  </Card>
-                ))}
-
-                {/* Unmatched Oysters */}
-                {unmatched.map((item, index) => (
-                  <Card
-                    key={`unmatched-${index}`}
-                    mode="outlined"
-                    style={[styles.resultCard, styles.unmatchedCard]}
-                  >
-                    <Card.Content>
-                      <Text variant="titleMedium" style={styles.unmatchedName}>
-                        {item.detectedText}
-                      </Text>
-                      <Text variant="bodySmall" style={styles.unmatchedText}>
-                        Not in database
-                      </Text>
-                      <View style={styles.unmatchedActions}>
-                        <Button
-                          mode="contained"
-                          onPress={() => navigation.navigate('AddOyster', { name: item.detectedText })}
-                          style={styles.addButton}
-                          compact
-                          icon="plus"
-                        >
-                          Add to Database
-                        </Button>
-                      </View>
-                    </Card.Content>
-                  </Card>
-                ))}
-
-                <Button
-                  mode="outlined"
-                  onPress={() => {
-                    setMatches([]);
-                    setUnmatched([]);
-                  }}
-                  style={styles.scanAgainButton}
-                  icon="camera"
-                >
-                  Scan Again
-                </Button>
-              </ScrollView>
-            )}
+      {showAnalyzing ? (
+        <View style={styles.analyzingContainer}>
+          {capturedPhoto && <Image source={{ uri: capturedPhoto }} style={styles.staticPhoto} />}
+          <View style={styles.analyzingOverlay}>
+            <ActivityIndicator size="large" color={paperTheme.colors.primary} />
+            <Text style={styles.analyzingText}>Analyzing...</Text>
           </View>
         </View>
-      </CameraView>
+      ) : (
+        <CameraView style={styles.camera} ref={cameraRef}>
+          <View style={styles.overlay}>
+            <View style={styles.instructionContainer}>
+              <Text variant="titleMedium" style={styles.instructionText}>
+                Point camera at oyster menu
+              </Text>
+            </View>
+          </View>
+        </CameraView>
+      )}
+
+      {/* Existing bottomContainer with scan button (disabled during analyzing) */}
+      <View style={styles.bottomContainer}>
+        <Button
+          mode="contained"
+          onPress={handleScan}
+          disabled={scanning || showAnalyzing}
+          style={styles.scanButton}
+          icon="camera"
+        >
+          {scanning ? 'Scanning...' : 'Scan Now'}
+        </Button>
+      </View>
     </View>
   );
 }
@@ -372,5 +316,24 @@ const styles = StyleSheet.create({
   scanAgainButton: {
     marginTop: 16,
     marginBottom: 32,
+  },
+  analyzingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  staticPhoto: {
+    flex: 1,
+    width: '100%',
+  },
+  analyzingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  analyzingText: {
+    color: 'white',
+    marginTop: 10,
   },
 });

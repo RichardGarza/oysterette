@@ -32,6 +32,7 @@ import { favoritesStorage } from '../services/favorites';
 import { recommendationApi, userApi, oysterApi } from '../services/api';
 import { Oyster } from '../types/Oyster';
 import RecommendedOysterCard from '../components/RecommendedOysterCard';
+import * as Haptics from 'expo-haptics'; // Add if not present
 
 // ============================================================================
 // CONSTANTS
@@ -63,15 +64,16 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
 
-  // Handle Android back button press - show exit confirmation
+  // Handle Android back button press - show exit confirmation (EXCLUSIVE TO HOME SCREEN)
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Add haptic for UX
       Alert.alert(
-        'Exit App?',
-        'Are you sure you want to exit Oysterette?',
+        'Exit Oysterette?',
+        'Are you sure you want to exit the app?',
         [
           {
-            text: 'Cancel',
+            text: 'Stay',
             style: 'cancel',
           },
           {

@@ -15,17 +15,43 @@ export default function ReviewPage() {
   const { isAuthenticated } = useAuth();
   const id = params.id as string;
 
+  // Helper functions to map slider position (0-100) to display value (1-10)
+  // This ensures the slider thumb is visually centered at value 5
+  const sliderToDisplay = (slider: number): number => {
+    if (slider <= 50) {
+      return Math.round(slider / 12.5 + 1);
+    } else {
+      return Math.round((slider - 50) / 10 + 5);
+    }
+  };
+
+  const displayToSlider = (display: number): number => {
+    if (display <= 5) {
+      return (display - 1) * 12.5;
+    } else {
+      return 50 + (display - 5) * 10;
+    }
+  };
+
   const [oyster, setOyster] = useState<Oyster | null>(null);
   const [rating, setRating] = useState<ReviewRating>('LIKE_IT');
   const [notes, setNotes] = useState('');
-  const [size, setSize] = useState(5);
-  const [body, setBody] = useState(5);
-  const [sweetBrininess, setSweetBrininess] = useState(5);
-  const [flavorfulness, setFlavorfulness] = useState(5);
-  const [creaminess, setCreaminess] = useState(5);
+  // Store slider positions (0-100) internally, convert to display values (1-10) as needed
+  const [sizeSlider, setSizeSlider] = useState(50); // 50 = display value 5
+  const [bodySlider, setBodySlider] = useState(50);
+  const [sweetBrininessSlider, setSweetBrininessSlider] = useState(50);
+  const [flavorfulnessSlider, setFlavorfulnessSlider] = useState(50);
+  const [creaminessSlider, setCreaminessSlider] = useState(50);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // Convert slider values to display values for submission
+  const size = sliderToDisplay(sizeSlider);
+  const body = sliderToDisplay(bodySlider);
+  const sweetBrininess = sliderToDisplay(sweetBrininessSlider);
+  const flavorfulness = sliderToDisplay(flavorfulnessSlider);
+  const creaminess = sliderToDisplay(creaminessSlider);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -40,12 +66,12 @@ export default function ReviewPage() {
       const data = await oysterApi.getById(id);
       if (data) {
         setOyster(data);
-        // Pre-populate with oyster's existing attributes
-        setSize(data.avgSize ? Math.round(data.avgSize) : 5);
-        setBody(data.avgBody ? Math.round(data.avgBody) : 5);
-        setSweetBrininess(data.avgSweetBrininess ? Math.round(data.avgSweetBrininess) : 5);
-        setFlavorfulness(data.avgFlavorfulness ? Math.round(data.avgFlavorfulness) : 5);
-        setCreaminess(data.avgCreaminess ? Math.round(data.avgCreaminess) : 5);
+        // Pre-populate with oyster's existing attributes (convert display to slider)
+        setSizeSlider(displayToSlider(data.avgSize ? Math.round(data.avgSize) : 5));
+        setBodySlider(displayToSlider(data.avgBody ? Math.round(data.avgBody) : 5));
+        setSweetBrininessSlider(displayToSlider(data.avgSweetBrininess ? Math.round(data.avgSweetBrininess) : 5));
+        setFlavorfulnessSlider(displayToSlider(data.avgFlavorfulness ? Math.round(data.avgFlavorfulness) : 5));
+        setCreaminessSlider(displayToSlider(data.avgCreaminess ? Math.round(data.avgCreaminess) : 5));
       }
     } catch (error) {
       console.error('Failed to load oyster:', error);
@@ -156,31 +182,31 @@ export default function ReviewPage() {
 
             {/* Attributes */}
             {[
-              { label: 'Size', value: size, setValue: setSize },
-              { label: 'Body', value: body, setValue: setBody },
-              { label: 'Sweet/Brininess', value: sweetBrininess, setValue: setSweetBrininess },
-              { label: 'Flavorfulness', value: flavorfulness, setValue: setFlavorfulness },
-              { label: 'Creaminess', value: creaminess, setValue: setCreaminess },
+              { label: 'Size', sliderValue: sizeSlider, setSliderValue: setSizeSlider, displayValue: size },
+              { label: 'Body', sliderValue: bodySlider, setSliderValue: setBodySlider, displayValue: body },
+              { label: 'Sweet/Brininess', sliderValue: sweetBrininessSlider, setSliderValue: setSweetBrininessSlider, displayValue: sweetBrininess },
+              { label: 'Flavorfulness', sliderValue: flavorfulnessSlider, setSliderValue: setFlavorfulnessSlider, displayValue: flavorfulness },
+              { label: 'Creaminess', sliderValue: creaminessSlider, setSliderValue: setCreaminessSlider, displayValue: creaminess },
             ].map((attr) => (
               <div key={attr.label}>
                 <div className="flex justify-between items-center mb-2">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {attr.label}
                   </label>
-                  <span className="text-sm font-semibold text-[#FF6B35]">{attr.value}/10</span>
+                  <span className="text-sm font-semibold text-[#FF6B35]">{attr.displayValue}/10</span>
                 </div>
                 <input
                   type="range"
-                  min="1"
-                  max="10"
-                  value={attr.value}
-                  onChange={(e) => attr.setValue(parseInt(e.target.value))}
+                  min="0"
+                  max="100"
+                  value={attr.sliderValue}
+                  onChange={(e) => attr.setSliderValue(parseInt(e.target.value))}
                   className="w-full h-2 bg-gray-200 dark:bg-[#2d4054] rounded-lg appearance-none cursor-pointer accent-[#FF6B35]"
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>1</span>
-                  <span>5</span>
-                  <span>10</span>
+                <div className="relative w-full h-6 mt-1">
+                  <div className="absolute left-0 text-xs text-gray-500">1</div>
+                  <div className="absolute left-1/2 transform -translate-x-1/2 text-xs text-gray-500">5</div>
+                  <div className="absolute right-0 text-xs text-gray-500">10</div>
                 </div>
               </div>
             ))}

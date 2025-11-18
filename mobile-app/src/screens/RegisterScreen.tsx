@@ -13,6 +13,7 @@ import {
   Platform,
   StyleSheet,
   ScrollView,
+  Modal,
 } from 'react-native';
 import {
   TextInput,
@@ -21,6 +22,7 @@ import {
   Text,
   Divider,
   HelperText,
+  Chip,
 } from 'react-native-paper';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -71,6 +73,9 @@ export default function RegisterScreen() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const [username, setUsername] = useState('');
+  const [usernameSuggestions, setUsernameSuggestions] = useState<string[]>([]);
 
   React.useEffect(() => {
     GoogleSignin.configure({
@@ -214,6 +219,30 @@ export default function RegisterScreen() {
     return true;
   }, [name, email, password, confirmPassword]);
 
+  const generateSuggestions = () => {
+    const suggestions = [
+      'OysterFan' + Math.floor(Math.random() * 1000),
+      'ShellSeeker' + Math.floor(Math.random() * 1000),
+      // 3 more...
+    ];
+    setUsernameSuggestions(suggestions);
+  };
+
+  const validateUsername = (u: string) => /^[a-zA-Z0-9]{3,20}$/.test(u);
+
+  const handleUsernameSubmit = async () => {
+    if (!username || !validateUsername(username)) {
+      Alert.alert('Invalid Username', 'Must be 3-20 alphanumeric characters');
+      return;
+    }
+    try {
+      await authApi.updateProfile(username);
+      setShowUsernameModal(false);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save username');
+    }
+  };
+
   const handleRegister = useCallback(async () => {
     if (!validateForm()) return;
 
@@ -236,6 +265,7 @@ export default function RegisterScreen() {
 
       await authStorage.saveToken(response.token);
       await authStorage.saveUser(response.user);
+      setShowUsernameModal(true); // Show prompt after register
 
       await loadUserTheme(response.user);
       await favoritesStorage.syncWithBackend();
@@ -428,6 +458,36 @@ export default function RegisterScreen() {
           </Card>
         </ScrollView>
       </KeyboardAvoidingView>
+      <Modal visible={showUsernameModal} onRequestClose={() => setShowUsernameModal(false)}>
+        <View style={styles.modalView}>
+          <Text variant="headlineSmall">Choose Your Username</Text>
+          <Text variant="bodyMedium">Optional - make it fun and unique!</Text>
+          <TextInput
+            label="Username"
+            placeholder="e.g., OysterFan123"
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+            autoCorrect={false}
+            style={styles.usernameInput}
+          />
+          <Button onPress={generateSuggestions}>Get Suggestions</Button>
+          <ScrollView horizontal>
+            {usernameSuggestions.map((sug, idx) => (
+              <Chip key={idx} onPress={() => setUsername(sug)} selected={username === sug}>
+                {sug}
+              </Chip>
+            ))}
+          </ScrollView>
+          <View style={styles.modalButtons}>
+            <Button onPress={() => {
+              setShowUsernameModal(false);
+              // Proceed to Home or next
+            }}>Skip</Button>
+            <Button onPress={handleUsernameSubmit} disabled={!validateUsername(username)}>Save</Button>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -485,5 +545,16 @@ const styles = StyleSheet.create({
   },
   loginButtonLabel: {
     marginHorizontal: 0,
+  },
+  modalView: {
+    padding: 20,
+  },
+  usernameInput: {
+    marginVertical: 10,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 20,
   },
 });
