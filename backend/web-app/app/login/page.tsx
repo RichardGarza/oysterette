@@ -37,9 +37,9 @@ export default function LoginPage() {
       <Header />
       <main className="max-w-md mx-auto px-4 py-12">
         <div className="bg-white dark:bg-[#243447] rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Log In</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Login</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Welcome back! Sign in to continue.
+            Welcome back! Log in to continue.
           </p>
 
           {error && (
@@ -82,7 +82,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Logging in...' : 'Log In'}
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
 
