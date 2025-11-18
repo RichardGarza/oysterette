@@ -249,58 +249,27 @@ export const getOysterById = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    let oyster;
-
-    // Check if ID is numeric (for demo purposes - returns Nth oyster alphabetically)
-    const numericId = parseInt(id, 10);
-    if (!isNaN(numericId) && numericId > 0) {
-      // Fetch the Nth oyster (sorted alphabetically by name)
-      const oysters = await prisma.oyster.findMany({
-        orderBy: { name: 'asc' },
-        skip: numericId - 1, // 1-indexed
-        take: 1,
-        include: {
-          reviews: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  profilePhotoUrl: true,
-                },
+    // UUID lookup - production-ready, no demo code
+    const oyster = await prisma.oyster.findUnique({
+      where: { id },
+      include: {
+        reviews: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                profilePhotoUrl: true,
               },
             },
-            orderBy: { createdAt: 'desc' },
           },
-          _count: {
-            select: { reviews: true },
-          },
+          orderBy: { createdAt: 'desc' },
         },
-      });
-      oyster = oysters[0];
-    } else {
-      // UUID lookup
-      oyster = await prisma.oyster.findUnique({
-        where: { id },
-        include: {
-          reviews: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  profilePhotoUrl: true,
-                },
-              },
-            },
-            orderBy: { createdAt: 'desc' },
-          },
-          _count: {
-            select: { reviews: true },
-          },
+        _count: {
+          select: { reviews: true },
         },
-      });
-    }
+      },
+    });
 
     if (!oyster) {
       res.status(404).json({

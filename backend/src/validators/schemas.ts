@@ -95,14 +95,14 @@ export const updateReviewSchema = z.object({
 
 export const createOysterSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
-  species: z.string().min(1, 'Species is required').max(100, 'Species too long'),
-  origin: z.string().min(1, 'Origin is required').max(200, 'Origin too long'),
+  species: z.string().max(100, 'Species too long').optional(), // Optional, defaults to 'Unknown'
+  origin: z.string().max(200, 'Origin too long').optional(), // Optional, defaults to 'Unknown'
   standoutNotes: z.string().max(500).optional(),
-  size: z.number().min(0).max(10).optional(),
-  body: z.number().min(0).max(10).optional(),
-  sweetBrininess: z.number().min(0).max(10).optional(),
-  flavorfulness: z.number().min(0).max(10).optional(),
-  creaminess: z.number().min(0).max(10).optional(),
+  size: z.number().int().min(1, 'Size must be between 1 and 10').max(10), // Required 1-10
+  body: z.number().int().min(1, 'Body must be between 1 and 10').max(10), // Required 1-10
+  sweetBrininess: z.number().int().min(1, 'Sweet/Brininess must be between 1 and 10').max(10), // Required 1-10
+  flavorfulness: z.number().int().min(1, 'Flavorfulness must be between 1 and 10').max(10), // Required 1-10
+  creaminess: z.number().int().min(1, 'Creaminess must be between 1 and 10').max(10), // Required 1-10
 });
 
 export const updateOysterSchema = z.object({

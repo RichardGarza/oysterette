@@ -266,11 +266,26 @@ export async function recalculateAllRatings(): Promise<void> {
 
     logger.info(`📊 Recalculating ratings for ${oysters.length} oysters...`);
 
+    let successCount = 0;
+    let skipCount = 0;
+
     for (const oyster of oysters) {
-      await recalculateOysterRatings(oyster.id);
+      try {
+        await recalculateOysterRatings(oyster.id);
+        successCount++;
+      } catch (error: any) {
+        // Skip oysters that were deleted during calculation
+        if (error.message?.includes('Oyster not found')) {
+          logger.warn(`⚠️  Skipping deleted oyster: ${oyster.name} (${oyster.id})`);
+          skipCount++;
+        } else {
+          // Re-throw other errors
+          throw error;
+        }
+      }
     }
 
-    logger.info('✅ All oyster ratings recalculated successfully');
+    logger.info(`✅ Recalculated ${successCount} oysters successfully${skipCount > 0 ? `, skipped ${skipCount}` : ''}`);
   } catch (error) {
     logger.error('Error recalculating all ratings:', error);
     throw error;

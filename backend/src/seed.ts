@@ -1,9 +1,13 @@
 import dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
-import prisma from './lib/prisma';
 
-dotenv.config();
+// Load environment variables before importing prisma
+// Try .env.local first, then .env
+dotenv.config({ path: path.join(__dirname, '../.env.local') });
+dotenv.config({ path: path.join(__dirname, '../.env') });
+
+import prisma from './lib/prisma';
 
 interface OysterDataJSON {
   name: string;

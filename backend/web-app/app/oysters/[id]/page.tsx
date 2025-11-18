@@ -1,0 +1,237 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Header from '../../../components/Header';
+import ReviewCard from '../../../components/ReviewCard';
+import EmptyState from '../../../components/EmptyState';
+import { oysterApi, reviewApi, favoriteApi } from '../../../lib/api';
+import { Oyster, Review } from '../../../lib/types';
+import { useAuth } from '../../../context/AuthContext';
+
+export const dynamic = 'force-dynamic';
+
+export default function OysterDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
+  const id = params.id as string;
+
+  const [oyster, setOyster] = useState<Oyster | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+
+  useEffect(() => {
+    if (id) {
+      loadOyster();
+      loadReviews();
+      if (isAuthenticated) {
+        loadFavoriteStatus();
+      }
+    }
+  }, [id, isAuthenticated]);
+
+  const loadOyster = async () => {
+    try {
+      const data = await oysterApi.getById(id);
+      setOyster(data);
+    } catch (error) {
+      console.error('Failed to load oyster:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadReviews = async () => {
+    try {
+      const data = await reviewApi.getOysterReviews(id);
+      setReviews(data);
+    } catch (error) {
+      console.error('Failed to load reviews:', error);
+    }
+  };
+
+  const loadFavoriteStatus = async () => {
+    try {
+      const favorites = await favoriteApi.getAll();
+      setIsFavorite(favorites.includes(id));
+    } catch (error) {
+      console.error('Failed to load favorite status:', error);
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      setFavoriteLoading(true);
+      if (isFavorite) {
+        await favoriteApi.remove(id);
+        setIsFavorite(false);
+      } else {
+        await favoriteApi.add(id);
+        setIsFavorite(true);
+      }
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
+
+  const handleReviewChange = () => {
+    loadReviews();
+    if (oyster) {
+      loadOyster(); // Refresh oyster to update stats
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-[#1a2332]">
+        <Header />
+        <main className="max-w-4xl mx-auto px-4 py-12">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-gray-200 dark:bg-[#243447] rounded w-1/3" />
+            <div className="h-64 bg-gray-200 dark:bg-[#243447] rounded" />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!oyster) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-[#1a2332]">
+        <Header />
+        <main className="max-w-4xl mx-auto px-4 py-12 text-center">
+          <p className="text-gray-600 dark:text-gray-400">Oyster not found.</p>
+          <Link href="/oysters" className="text-[#FF6B35] hover:underline mt-4 inline-block">
+            Back to Browse
+          </Link>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-[#1a2332]">
+      <Header />
+
+      <main className="max-w-4xl mx-auto px-4 py-12">
+        {/* Oyster Info */}
+        <div className="bg-white dark:bg-[#243447] rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700 mb-8">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                {oyster.name}
+              </h1>
+              <p className="text-lg text-gray-600 dark:text-gray-400">
+                {oyster.species} • {oyster.origin}
+              </p>
+            </div>
+            {oyster.totalReviews > 0 && (
+              <div className="text-right">
+                <div className="flex items-center space-x-1 mb-1">
+                  <span className="text-yellow-500 text-2xl">⭐</span>
+                  <span className="text-2xl font-bold">{oyster.overallScore.toFixed(1)}</span>
+                </div>
+                <p className="text-sm text-gray-500">{oyster.totalReviews} reviews</p>
+              </div>
+            )}
+          </div>
+
+          {oyster.standoutNotes && (
+            <p className="text-gray-700 dark:text-gray-300 mb-6 italic">
+              {oyster.standoutNotes}
+            </p>
+          )}
+
+          {/* Attributes */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {[
+              { label: 'Size', value: oyster.size, avg: oyster.avgSize },
+              { label: 'Body', value: oyster.body, avg: oyster.avgBody },
+              { label: 'Sweet/Brine', value: oyster.sweetBrininess, avg: oyster.avgSweetBrininess },
+              { label: 'Flavor', value: oyster.flavorfulness, avg: oyster.avgFlavorfulness },
+              { label: 'Cream', value: oyster.creaminess, avg: oyster.avgCreaminess },
+            ].map((attr) => (
+              <div key={attr.label} className="text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{attr.label}</p>
+                <div className="relative w-full h-2 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
+                  <div
+                    className="absolute h-full bg-[#FF6B35]"
+                    style={{ width: `${(attr.avg || attr.value) * 10}%` }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {attr.avg ? attr.avg.toFixed(1) : attr.value}/10
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 flex gap-4">
+            {isAuthenticated && (
+              <>
+                <button
+                  onClick={handleToggleFavorite}
+                  disabled={favoriteLoading}
+                  className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                    isFavorite
+                      ? 'bg-red-500 text-white hover:bg-red-600'
+                      : 'bg-gray-200 dark:bg-[#2d4054] text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  {favoriteLoading ? '...' : isFavorite ? '❤️ Favorited' : '🤍 Favorite'}
+                </button>
+                <Link
+                  href={`/oysters/${id}/review`}
+                  className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors font-medium"
+                >
+                  Write Review
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Reviews */}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+            Reviews ({reviews.length})
+          </h2>
+
+          {reviews.length === 0 ? (
+            <EmptyState
+              icon="📝"
+              title="No Reviews Yet"
+              description="Be the first to review this oyster!"
+              actionLabel="Write Review"
+              actionHref={isAuthenticated ? `/oysters/${id}/review` : '/login'}
+            />
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((review) => (
+                <ReviewCard
+                  key={review.id}
+                  review={review}
+                  onVoteChange={handleReviewChange}
+                  onDelete={handleReviewChange}
+                  showOysterLink={false}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
+

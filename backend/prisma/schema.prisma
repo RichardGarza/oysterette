@@ -13,6 +13,7 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   name      String
+  username  String?  @unique  // Add this line
   password  String   // hashed with bcrypt
 
   // OAuth provider IDs (optional)

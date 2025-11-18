@@ -17,6 +17,13 @@ import logger from '../utils/logger';
 import prisma from '../lib/prisma';
 import { hashPassword, comparePassword } from '../utils/auth';
 import { setBaselineProfile } from '../services/recommendationService';
+import { z } from 'zod';
+import { updateProfileSchema } from '../validators/schemas'; // Assume schema updated
+
+// Add new schema for username (inline or import)
+const usernameSchema = z.object({
+  username: z.string().regex(/^[a-zA-Z0-9]{3,20}$/, 'Username must be 3-20 alphanumeric characters').optional(),
+});
 
 /**
  * Get user's top oysters list
@@ -230,63 +237,79 @@ export const updatePreferences = async (req: Request, res: Response): Promise<vo
   }
 };
 
-// Update user profile
-export const updateProfile = async (req: Request, res: Response): Promise<void> => {
+// Enhanced updateProfile to handle username
+export const updateProfile = async (req: Request, res: Response) => {
   try {
-    if (!req.userId) {
-      res.status(401).json({
-        success: false,
-        error: 'Not authenticated',
-      });
-      return;
-    }
+    const { name, email, profilePhotoUrl, username } = req.body;
 
-    const { name, email, profilePhotoUrl } = req.body;
-    const updateData: any = {};
-
-    if (name) updateData.name = name;
-    if (profilePhotoUrl !== undefined) updateData.profilePhotoUrl = profilePhotoUrl;
-    if (email) {
-      // Check if email is already taken
-      const existing = await prisma.user.findUnique({
-        where: { email },
-      });
-
-      if (existing && existing.id !== req.userId) {
-        res.status(400).json({
-          success: false,
-          error: 'Email already in use',
-        });
-        return;
+    // Validate username if provided
+    if (username !== undefined) {
+      const validation = usernameSchema.safeParse({ username });
+      if (!validation.success) {
+        return res.status(400).json({ error: validation.error.errors[0].message });
       }
 
-      updateData.email = email;
+      // Check uniqueness (exclude current user)
+      const existingUser = await prisma.user.findUnique({
+        where: { username },
+      });
+
+      if (existingUser && existingUser.id !== req.userId) {
+        return res.status(409).json({ error: 'Username already taken' });
+      }
     }
 
-    const user = await prisma.user.update({
+    // Update user (username included if provided)
+    const updatedUser = await prisma.user.update({
       where: { id: req.userId },
-      data: updateData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        profilePhotoUrl: true,
-        preferences: true,
-        createdAt: true,
-        updatedAt: true,
+      data: {
+        name,
+        email: email?.toLowerCase(),
+        profilePhotoUrl,
+        username, // Update if provided
       },
     });
 
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
+    res.json({ data: updatedUser });
   } catch (error) {
-    logger.error('Update profile error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Server error',
+    console.error('❌ [userController] Error updating profile:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+};
+
+// New endpoint: PUT /users/username
+export const setUsername = async (req: Request, res: Response) => {
+  try {
+    const { username } = req.body;
+
+    if (!username) {
+      return res.status(400).json({ error: 'Username is required' });
+    }
+
+    const validation = usernameSchema.safeParse({ username });
+    if (!validation.success) {
+      return res.status(400).json({ error: validation.error.errors[0].message });
+    }
+
+    // Check uniqueness
+    const existingUser = await prisma.user.findUnique({
+      where: { username },
     });
+
+    if (existingUser && existingUser.id !== req.userId) {
+      return res.status(409).json({ error: 'Username already taken' });
+    }
+
+    // Update
+    const user = await prisma.user.update({
+      where: { id: req.userId },
+      data: { username },
+    });
+
+    res.json({ data: user });
+  } catch (error) {
+    console.error('❌ [userController] Error setting username:', error);
+    res.status(500).json({ error: 'Failed to set username' });
   }
 };
 

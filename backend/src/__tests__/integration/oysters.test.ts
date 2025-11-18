@@ -21,6 +21,7 @@ describe('Oyster API Integration Tests', () => {
     // Clean up test data
     await prisma.review.deleteMany({ where: { user: { email: 'test@oysterette.com' } } });
     await prisma.user.deleteMany({ where: { email: 'test@oysterette.com' } });
+    await prisma.oyster.deleteMany({ where: { name: 'Test Oyster for GET' } });
 
     // Register test user
     const response = await request(app)
@@ -33,17 +34,27 @@ describe('Oyster API Integration Tests', () => {
 
     authToken = response.body.data.token;
 
-    // Get a test oyster ID
-    const oysters = await prisma.oyster.findFirst();
-    if (oysters) {
-      testOysterId = oysters.id;
-    }
+    // Create a test oyster for GET tests
+    const oyster = await prisma.oyster.create({
+      data: {
+        name: 'Test Oyster for GET',
+        species: 'Crassostrea gigas',
+        origin: 'Test Bay',
+        size: 5,
+        body: 6,
+        sweetBrininess: 7,
+        flavorfulness: 8,
+        creaminess: 5,
+      },
+    });
+    testOysterId = oyster.id;
   });
 
   // Cleanup after all tests
   afterAll(async () => {
     await prisma.review.deleteMany({ where: { user: { email: 'test@oysterette.com' } } });
     await prisma.user.deleteMany({ where: { email: 'test@oysterette.com' } });
+    await prisma.oyster.deleteMany({ where: { id: testOysterId } });
     await prisma.$disconnect();
   });
 

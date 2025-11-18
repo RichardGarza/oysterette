@@ -41,6 +41,7 @@ import {
   updatePrivacySettings,
   setFlavorProfile,
   searchUsers,
+  setUsername,
 } from '../controllers/userController';
 import { authenticate } from '../middleware/auth';
 import { validate } from '../middleware/validate';
@@ -50,6 +51,7 @@ import {
   updateProfileSchema,
   updatePrivacySettingsSchema,
   reviewQuerySchema,
+  usernameSchema,
 } from '../validators/schemas';
 
 const router = express.Router();
@@ -85,5 +87,8 @@ router.get('/search', authenticate, searchUsers);
 router.get('/top-oysters', authenticate, getTopOysters);
 router.post('/top-oysters', authenticate, addTopOyster);
 router.delete('/top-oysters/:oysterId', authenticate, removeTopOyster);
+
+// New route: PUT /users/username
+router.put('/username', authenticate, validate(usernameSchema, 'body'), setUsername);
 
 export default router;
