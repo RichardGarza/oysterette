@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Header from '../../../../components/Header';
 import { oysterApi, reviewApi } from '../../../../lib/api';
-import { Oyster, ReviewRating } from '../../../../lib/types';
+import { Oyster, Review, ReviewRating } from '../../../../lib/types';
 import { useAuth } from '../../../../context/AuthContext';
 
 export const dynamic = 'force-dynamic';
@@ -12,8 +12,10 @@ export const dynamic = 'force-dynamic';
 export default function ReviewPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated } = useAuth();
   const id = params.id as string;
+  const editReviewId = searchParams.get('edit');
 
   // Helper functions to map slider position (0-100) to display value (1-10)
   // This ensures the slider thumb is visually centered at value 5
@@ -34,6 +36,8 @@ export default function ReviewPage() {
   };
 
   const [oyster, setOyster] = useState<Oyster | null>(null);
+  const [existingReview, setExistingReview] = useState<Review | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [rating, setRating] = useState<ReviewRating>('LIKE_IT');
   const [notes, setNotes] = useState('');
   // Store slider positions (0-100) internally, convert to display values (1-10) as needed
@@ -45,6 +49,7 @@ export default function ReviewPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
 
   // Convert slider values to display values for submission
   const size = sliderToDisplay(sizeSlider);
@@ -59,7 +64,10 @@ export default function ReviewPage() {
       return;
     }
     loadOyster();
-  }, [id, isAuthenticated, router]);
+    if (editReviewId) {
+      loadExistingReview();
+    }
+  }, [id, editReviewId, isAuthenticated, router]);
 
   const loadOyster = async () => {
     try {
@@ -80,25 +88,69 @@ export default function ReviewPage() {
     }
   };
 
+  const loadExistingReview = async () => {
+    try {
+      setLoading(true);
+      const review = await reviewApi.checkExisting(id);
+      if (review && review.id === editReviewId) {
+        setExistingReview(review);
+        setIsEditMode(true);
+        setRating(review.rating);
+        setNotes(review.notes || '');
+        setSizeSlider(displayToSlider(review.size));
+        setBodySlider(displayToSlider(review.body));
+        setSweetBrininessSlider(displayToSlider(review.sweetBrininess));
+        setFlavorfulnessSlider(displayToSlider(review.flavorfulness));
+        setCreaminessSlider(displayToSlider(review.creaminess));
+      } else {
+        // If review doesn't exist or wrong ID, redirect back
+        router.push(`/oysters/${id}`);
+      }
+    } catch (error) {
+      console.error('Failed to load existing review:', error);
+      router.push(`/oysters/${id}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSubmitting(true);
 
     try {
-      await reviewApi.create({
-        oysterId: id,
-        rating,
-        size,
-        body,
-        sweetBrininess,
-        flavorfulness,
-        creaminess,
-        notes: notes.trim() || undefined,
-      });
-      router.push(`/oysters/${id}`);
+      if (isEditMode && existingReview) {
+        await reviewApi.update(existingReview.id, {
+          rating,
+          size,
+          body,
+          sweetBrininess,
+          flavorfulness,
+          creaminess,
+          notes: notes.trim() || undefined,
+        });
+        router.push(`/oysters/${id}`);
+      } else {
+        await reviewApi.create({
+          oysterId: id,
+          rating,
+          size,
+          body,
+          sweetBrininess,
+          flavorfulness,
+          creaminess,
+          notes: notes.trim() || undefined,
+        });
+        router.push(`/oysters/${id}`);
+      }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to submit review. Please try again.');
+      const errorMsg = err.response?.data?.error || 'Failed to submit review. Please try again.';
+      if (!isEditMode && errorMsg.includes('already reviewed')) {
+        setShowDuplicateModal(true);
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -143,10 +195,10 @@ export default function ReviewPage() {
       <main className="max-w-2xl mx-auto px-4 py-12">
         <div className="bg-white dark:bg-[#243447] rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Review {oyster.name}
+            {isEditMode ? 'Update' : 'Review'} {oyster.name}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Share your experience with this oyster
+            {isEditMode ? 'Update your experience with this oyster' : 'Share your experience with this oyster'}
           </p>
 
           {error && (
@@ -239,12 +291,49 @@ export default function ReviewPage() {
                 disabled={submitting}
                 className="flex-1 px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Submitting...' : 'Submit Review'}
+                {submitting ? 'Submitting...' : isEditMode ? 'Update Review' : 'Submit Review'}
               </button>
             </div>
           </form>
         </div>
       </main>
+
+      {/* Duplicate Review Modal */}
+      {showDuplicateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-[#243447] rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Already Reviewed?
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              You have already reviewed this oyster. Would you like to update your existing review?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDuplicateModal(false);
+                  // Navigate to edit mode - assume checkExisting would get the ID, but for simplicity, redirect to profile or reload
+                  // In practice, call checkExisting to get review ID
+                  reviewApi.checkExisting(id).then((review) => {
+                    if (review) {
+                      router.push(`/oysters/${id}/review?edit=${review.id}`);
+                    }
+                  });
+                }}
+                className="flex-1 px-4 py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors font-medium"
+              >
+                Update Review?
+              </button>
+              <button
+                onClick={() => setShowDuplicateModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

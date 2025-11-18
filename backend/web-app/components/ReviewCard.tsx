@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Review } from '../lib/types';
 import { voteApi, reviewApi } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 interface ReviewCardProps {
   review: Review;
@@ -20,6 +21,7 @@ export default function ReviewCard({
   showOysterLink = true,
 }: ReviewCardProps) {
   const { isAuthenticated, user } = useAuth();
+  const router = useRouter();
   const [currentVote, setCurrentVote] = useState<boolean | null>(null);
   const [voting, setVoting] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -96,7 +98,7 @@ export default function ReviewCard({
                   onClick={() => {
                     // Navigate to edit review page
                     if (review.oyster?.id) {
-                      window.location.href = `/oysters/${review.oyster.id}/review?edit=${review.id}`;
+                      router.push(`/oysters/${review.oyster.id}/review?edit=${review.id}`);
                     }
                   }}
                   className="p-1 text-gray-500 hover:text-[#FF6B35] transition-colors"

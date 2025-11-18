@@ -12,7 +12,7 @@ import { useTheme } from '../context/ThemeContext';
 export const dynamic = 'force-dynamic';
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { theme } = useTheme(); // Subscribe to theme changes to force re-render
   const [oysters, setOysters] = useState<Oyster[]>([]);
   const [recommendations, setRecommendations] = useState<Oyster[]>([]);
@@ -22,11 +22,12 @@ export default function Home() {
 
   useEffect(() => {
     loadOysters();
-    if (isAuthenticated) {
+    // Only load authenticated data after auth state has finished loading
+    if (isAuthenticated && !authLoading) {
       loadRecommendations();
       loadUserStats();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, authLoading]);
 
   const loadOysters = async () => {
     try {

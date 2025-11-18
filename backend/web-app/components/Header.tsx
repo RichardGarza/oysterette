@@ -27,6 +27,12 @@ export default function Header() {
 
           <nav className="flex items-center space-x-4">
             <Link
+              href="/"
+              className="text-white hover:text-gray-100 transition-colors"
+            >
+              Home
+            </Link>
+            <Link
               href="/oysters"
               className="text-white hover:text-gray-100 transition-colors"
             >

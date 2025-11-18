@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run ESLint
+        run: npm run lint
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Jest tests
+        run: npm test
+
+  e2e:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps ${{ matrix.project }}
+      - name: Run Playwright tests
+        run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.project }}
+          path: playwright-report/
+          retention-days: 30
