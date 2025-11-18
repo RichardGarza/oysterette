@@ -95,10 +95,10 @@ export default function OysterDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#1a2332]">
+      <div className='min-h-screen bg-white dark:bg-[#1a2332]'>
         <Header />
-        <main className="max-w-4xl mx-auto px-4 py-12">
-          <LoadingSpinner size="lg" text="Loading oyster details..." />
+        <main className='max-w-4xl mx-auto px-4 py-12'>
+          <LoadingSpinner size='lg' text='Loading oyster details...' />
         </main>
       </div>
     );
@@ -106,11 +106,13 @@ export default function OysterDetailPage() {
 
   if (!oyster) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#1a2332]">
+      <div className='min-h-screen bg-white dark:bg-[#1a2332]'>
         <Header />
-        <main className="max-w-4xl mx-auto px-4 py-12 text-center">
-          <p className="text-gray-600 dark:text-gray-400">Oyster not found.</p>
-          <Link href="/oysters" className="text-[#FF6B35] hover:underline mt-4 inline-block">
+        <main className='max-w-4xl mx-auto px-4 py-12 text-center'>
+          <p className='text-gray-600 dark:text-gray-400'>Oyster not found.</p>
+          <Link
+            href='/oysters'
+            className='text-[#FF6B35] hover:underline mt-4 inline-block'>
             Back to Browse
           </Link>
         </main>
@@ -119,57 +121,93 @@ export default function OysterDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#1a2332]">
+    <div className='min-h-screen bg-white dark:bg-[#1a2332]'>
       <Header />
 
-      <main className="max-w-4xl mx-auto px-4 py-12">
+      <main className='max-w-4xl mx-auto px-4 py-12'>
         {/* Oyster Info */}
-        <div className="bg-white dark:bg-[#243447] rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700 mb-8">
-          <div className="flex items-start justify-between mb-6">
+        <div className='bg-white dark:bg-[#243447] rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700 mb-8'>
+          <div className='flex items-start justify-between mb-6'>
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+              <h1 className='text-4xl font-bold text-gray-900 dark:text-white mb-2'>
                 {oyster.name}
               </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-400">
+              <p className='text-lg text-gray-600 dark:text-gray-400'>
                 {oyster.species} • {oyster.origin}
               </p>
             </div>
-            {oyster.totalReviews > 0 && (
-              <div className="text-right">
-                <div className="flex items-center space-x-1 mb-1">
-                  <span className="text-yellow-500 text-2xl">⭐</span>
-                  <span className="text-2xl font-bold">{oyster.overallScore.toFixed(1)}</span>
+            <div className='flex items-center gap-4'>
+              {isAuthenticated && (
+                <button
+                  onClick={handleToggleFavorite}
+                  disabled={favoriteLoading}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                    isFavorite
+                      ? 'bg-red-500 text-white hover:bg-red-600'
+                      : 'bg-gray-200 dark:bg-[#2d4054] text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}>
+                  {favoriteLoading
+                    ? '...'
+                    : isFavorite
+                    ? '❤️ Favorited'
+                    : '🤍 Favorite'}
+                </button>
+              )}
+              {oyster.totalReviews > 0 && (
+                <div className='text-right'>
+                  <div className='flex items-center space-x-1 mb-1'>
+                    <span className='text-2xl font-bold'>
+                      {oyster.overallScore.toFixed(1)}
+                    </span>
+                    <span className='text-yellow-500 text-2xl'>⭐</span>
+                  </div>
+                  <p className='text-sm text-gray-500'>
+                    {oyster.totalReviews} reviews
+                  </p>
                 </div>
-                <p className="text-sm text-gray-500">{oyster.totalReviews} reviews</p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {oyster.standoutNotes && (
-            <p className="text-gray-700 dark:text-gray-300 mb-6 italic">
+            <p className='text-gray-700 dark:text-gray-300 mb-6 italic'>
               {oyster.standoutNotes}
             </p>
           )}
 
           {/* Attributes */}
-          <div className="space-y-4">
+          <div className='space-y-4'>
             {[
               { label: 'Size', value: oyster.size, avg: oyster.avgSize },
               { label: 'Body', value: oyster.body, avg: oyster.avgBody },
-              { label: 'Sweet/Brine', value: oyster.sweetBrininess, avg: oyster.avgSweetBrininess },
-              { label: 'Flavor', value: oyster.flavorfulness, avg: oyster.avgFlavorfulness },
-              { label: 'Cream', value: oyster.creaminess, avg: oyster.avgCreaminess },
+              {
+                label: 'Sweet/Brine',
+                value: oyster.sweetBrininess,
+                avg: oyster.avgSweetBrininess,
+              },
+              {
+                label: 'Flavor',
+                value: oyster.flavorfulness,
+                avg: oyster.avgFlavorfulness,
+              },
+              {
+                label: 'Cream',
+                value: oyster.creaminess,
+                avg: oyster.avgCreaminess,
+              },
             ].map((attr) => (
-              <div key={attr.label} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{attr.label}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+              <div key={attr.label} className='space-y-2'>
+                <div className='flex justify-between items-center'>
+                  <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                    {attr.label}
+                  </p>
+                  <p className='text-sm text-gray-600 dark:text-gray-400'>
                     {attr.avg ? attr.avg.toFixed(1) : attr.value}/10
                   </p>
                 </div>
-                <div className="relative w-full h-3 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
+                <div className='relative w-full h-3 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden'>
                   <div
-                    className="absolute h-full bg-[#FF6B35] transition-all duration-300"
+                    className='absolute h-full bg-[#FF6B35] transition-all duration-300'
                     style={{ width: `${(attr.avg || attr.value) * 10}%` }}
                   />
                 </div>
@@ -177,47 +215,33 @@ export default function OysterDetailPage() {
             ))}
           </div>
 
-          <div className="mt-6 flex gap-4">
+          <div className='mt-6 flex gap-4'>
             {isAuthenticated && (
-              <>
-                <button
-                  onClick={handleToggleFavorite}
-                  disabled={favoriteLoading}
-                  className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                    isFavorite
-                      ? 'bg-red-500 text-white hover:bg-red-600'
-                      : 'bg-gray-200 dark:bg-[#2d4054] text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  {favoriteLoading ? '...' : isFavorite ? '❤️ Favorited' : '🤍 Favorite'}
-                </button>
-                <Link
-                  href={`/oysters/${id}/review`}
-                  className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors font-medium"
-                >
-                  Write Review
-                </Link>
-              </>
+              <Link
+                href={`/oysters/${id}/review`}
+                className='px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors font-medium'>
+                Write Review
+              </Link>
             )}
           </div>
         </div>
 
         {/* Reviews */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-6'>
             Reviews ({reviews.length})
           </h2>
 
           {reviews.length === 0 ? (
             <EmptyState
-              icon="📝"
-              title="No Reviews Yet"
-              description="Be the first to review this oyster!"
-              actionLabel="Write Review"
+              icon='📝'
+              title='No Reviews Yet'
+              description='Be the first to review this oyster!'
+              actionLabel='Write Review'
               actionHref={isAuthenticated ? `/oysters/${id}/review` : '/login'}
             />
           ) : (
-            <div className="space-y-4">
+            <div className='space-y-4'>
               {reviews.map((review) => (
                 <ReviewCard
                   key={review.id}
@@ -234,4 +258,3 @@ export default function OysterDetailPage() {
     </div>
   );
 }
-
