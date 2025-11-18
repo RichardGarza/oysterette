@@ -127,8 +127,8 @@ export default function OysterDetailPage() {
       <main className='max-w-4xl mx-auto px-4 py-12'>
         {/* Oyster Info */}
         <div className='bg-white dark:bg-[#243447] rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700 mb-8'>
-          <div className='mb-6'>
-            <div className='flex items-start justify-between mb-2'>
+          <div className='flex items-start justify-between mb-6'>
+            <div className='flex items-center gap-3'>
               <h1 className='text-4xl font-bold text-gray-900 dark:text-white'>
                 {oyster.name}
               </h1>
@@ -145,25 +145,23 @@ export default function OysterDetailPage() {
                 </button>
               )}
             </div>
-            <div className='flex items-start justify-between'>
-              <p className='text-lg text-gray-600 dark:text-gray-400'>
-                {oyster.species} • {oyster.origin}
-              </p>
-              {oyster.totalReviews > 0 && (
-                <div className='text-right'>
-                  <div className='flex items-center space-x-1 mb-1'>
-                    <span className='text-2xl font-bold'>
-                      {oyster.overallScore.toFixed(1)}
-                    </span>
-                    <span className='text-yellow-500 text-2xl'>⭐</span>
-                  </div>
-                  <p className='text-sm text-gray-500'>
-                    {oyster.totalReviews} reviews
-                  </p>
+            {oyster.totalReviews > 0 && (
+              <div className='text-right'>
+                <div className='flex items-center space-x-1 mb-1'>
+                  <span className='text-2xl font-bold'>
+                    {oyster.overallScore.toFixed(1)}
+                  </span>
+                  <span className='text-yellow-500 text-2xl'>⭐</span>
                 </div>
-              )}
-            </div>
+                <p className='text-sm text-gray-500'>
+                  {oyster.totalReviews} reviews
+                </p>
+              </div>
+            )}
           </div>
+          <p className='text-lg text-gray-600 dark:text-gray-400 mb-6'>
+            {oyster.species} • {oyster.origin}
+          </p>
 
           {oyster.standoutNotes && (
             <p className='text-gray-700 dark:text-gray-300 mb-6 italic'>
