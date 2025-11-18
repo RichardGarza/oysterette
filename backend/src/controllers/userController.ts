@@ -382,9 +382,6 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
 
     // Calculate stats
     let avgRatingGiven = 0;
-    let mostReviewedSpecies: string | undefined;
-    let mostReviewedOrigin: string | undefined;
-    let reviewStreak = 0;
 
     if (user.reviews.length > 0) {
       const ratingValues: Record<string, number> = {
