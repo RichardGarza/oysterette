@@ -10,6 +10,7 @@ import {
   acceptFriendRequest,
   rejectFriendRequest,
   getFriends,
+  getFriendsCount,
   getPendingRequests,
   removeFriend,
   getFriendActivity,
@@ -24,6 +25,7 @@ router.post('/request', authenticate, sendFriendRequest);
 router.put('/accept/:friendshipId', authenticate, acceptFriendRequest);
 router.put('/reject/:friendshipId', authenticate, rejectFriendRequest);
 router.get('/', authenticate, getFriends);
+router.get('/count', authenticate, getFriendsCount);
 router.get('/pending', authenticate, getPendingRequests);
 router.get('/activity', authenticate, getFriendActivity);
 router.get('/paired/:friendId', authenticate, getPairedRecommendations);

@@ -170,7 +170,8 @@ export const reviewApi = {
   },
 
   getUserReviews: async (userId: string): Promise<Review[]> => {
-    const response = await api.get<ApiResponse<Review[]>>(`/reviews/user/${userId}`);
+    // Use the current user's reviews endpoint (no userId param needed)
+    const response = await api.get<ApiResponse<Review[]>>('/reviews/user');
     return response.data.data || [];
   },
 };
@@ -310,6 +311,16 @@ export const xpApi = {
   }> => {
     const response = await api.get<ApiResponse<any>>('/xp/stats');
     return response.data.data || { xp: 0, level: 1, xpToNextLevel: 100, achievements: [] };
+  },
+
+  getXpData: async (userId?: string): Promise<{
+    xp: number;
+    level: number;
+    xpToNextLevel: number;
+    achievements: any[];
+  }> => {
+    // Alias for getStats (userId is ignored, uses authenticated user)
+    return xpApi.getStats();
   },
 };
 

@@ -209,6 +209,35 @@ export const getFriends = async (req: Request, res: Response): Promise<void> => 
 };
 
 /**
+ * Get friends count
+ *
+ * @route GET /api/friends/count
+ */
+export const getFriendsCount = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
+
+    const count = await prisma.friendship.count({
+      where: {
+        status: 'accepted',
+        OR: [
+          { senderId: req.userId },
+          { receiverId: req.userId },
+        ],
+      },
+    });
+
+    res.status(200).json({ success: true, data: { friendsCount: count } });
+  } catch (error) {
+    logger.error('Get friends count error:', error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+};
+
+/**
  * Get pending friend requests
  *
  * @route GET /api/friends/pending

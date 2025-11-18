@@ -101,8 +101,9 @@ export default function ProfilePage() {
   const loadReviews = async () => {
     if (!isAuthenticated) return;
     try {
-      const data = await reviewApi.getUserReviews(authUser.id);
-      setReviews(data);
+      // Use getMyReviews which gets current user's reviews
+      const data = await reviewApi.getMyReviews();
+      setReviews(data.reviews);
     } catch (error) {
       console.error('Failed to load reviews:', error);
     }
@@ -111,7 +112,8 @@ export default function ProfilePage() {
   const loadXpData = async () => {
     if (!isAuthenticated) return;
     try {
-      const data = await xpApi.getXpData(authUser.id);
+      // getStats uses authenticated user, no userId needed
+      const data = await xpApi.getStats();
       setXpData(data);
     } catch (error) {
       console.error('Failed to load XP data:', error);
