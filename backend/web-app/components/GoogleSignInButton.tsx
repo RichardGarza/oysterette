@@ -33,7 +33,6 @@ export default function GoogleSignInButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isReady, setIsReady] = useState(false);
-  const buttonRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
   const renderedRef = useRef(false);
 
@@ -61,13 +60,11 @@ export default function GoogleSignInButton({
     }
 
     if (typeof window === 'undefined') return;
-    if (!buttonRef.current) return;
     if (renderedRef.current) return;
 
     const initializeAndRender = () => {
       if (!window.google?.accounts?.id) return;
       if (renderedRef.current) return;
-      if (!buttonRef.current) return;
 
       try {
         // Initialize Google Identity Services
