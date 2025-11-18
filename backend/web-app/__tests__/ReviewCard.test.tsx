@@ -137,4 +137,43 @@ describe('ReviewCard Component', () => {
     expect(screen.queryByTitle('Edit review')).not.toBeInTheDocument();
     expect(screen.queryByTitle('Delete review')).not.toBeInTheDocument();
   });
+
+  it('navigates to edit on pencil click for own review', () => {
+    const mockPush = jest.fn();
+    const useRouter = require('next/router').useRouter;
+    useRouter.mockReturnValue({ push: mockPush });
+    const useAuth = require('../context/AuthContext').useAuth;
+    useAuth.mockReturnValue({ isAuthenticated: true, user: { id: 'current-user' } });
+
+    render(<ReviewCard review={mockOwnReview} onVoteChange={jest.fn()} onDelete={jest.fn()} />);
+
+    const editButton = screen.getByTitle('Edit review');
+    fireEvent.click(editButton);
+
+    expect(mockPush).toHaveBeenCalledWith(`/oysters/oyster-1/review?edit=review-1`);
+  });
+
+  it('renders photos if present', () => {
+    const reviewWithPhotos = { ...mockReview, photoUrls: ['/test-photo.jpg'] };
+    render(<ReviewCard review={reviewWithPhotos} onVoteChange={jest.fn()} onDelete={jest.fn()} />);
+
+    const photoImg = screen.getByAltText(/Review photo 1/);
+    expect(photoImg).toHaveAttribute('src', '/test-photo.jpg');
+    expect(photoImg).toHaveClass('w-24 h-24 object-cover rounded-lg');
+  });
+
+  it('handles delete confirmation dialog', () => {
+    const mockDelete = jest.fn().mockResolvedValue(true);
+    global.confirm = jest.fn(() => true);
+    const useAuth = require('../context/AuthContext').useAuth;
+    useAuth.mockReturnValue({ isAuthenticated: true, user: { id: 'current-user' } });
+
+    render(<ReviewCard review={mockOwnReview} onVoteChange={jest.fn()} onDelete={jest.fn()} />);
+
+    const deleteButton = screen.getByTitle('Delete review');
+    fireEvent.click(deleteButton);
+
+    expect(global.confirm).toHaveBeenCalled();
+    // Mock onDelete callback would be called after confirm
+  });
 });

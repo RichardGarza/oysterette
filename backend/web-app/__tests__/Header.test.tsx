@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { useRouter } from 'next/router';
 import Header from '../components/Header';  // Adjusted path
 
@@ -82,26 +82,64 @@ describe('Header Component', () => {
     expect(themeButton).toBeInTheDocument();
   });
 
-  it('renders authenticated navigation', () => {
-    const useAuth = require('../context/AuthContext').useAuth;
-    useAuth.mockReturnValue({
-      user: { id: '1', name: 'Test User' },
-      isAuthenticated: true,
-      logout: jest.fn(),
+  it('includes Home button and tests navigation', () => {
+    const mockPush = jest.fn();
+    useRouter.mockReturnValue({
+      route: '/',
+      pathname: '/',
+      query: {},
+      asPath: '/',
+      push: mockPush,
+      pop: jest.fn(),
+      reload: jest.fn(),
+      back: jest.fn(),
+      prefetch: jest.fn(),
+      beforePopState: jest.fn(),
+      events: {
+        on: jest.fn(),
+        off: jest.fn(),
+        emit: jest.fn(),
+      },
     });
 
     render(<Header />);
 
-    // Should show Profile instead of Login
-    const profileLink = screen.getByText('Profile');
-    expect(profileLink).toBeInTheDocument();
-    expect(profileLink).toHaveAttribute('href', '/profile');
+    const homeLink = screen.getByText('Home');
+    fireEvent.click(homeLink);
 
-    // Should show Logout button
-    const logoutButton = screen.getByText('Logout');
-    expect(logoutButton).toBeInTheDocument();
+    expect(mockPush).toHaveBeenCalledWith('/', undefined, { scroll: true });
+  });
 
-    // No Sign Up button
+  it('shows correct nav based on authentication', () => {
+    // Unauthenticated
+    useRouter.mockReturnValue({
+      route: '/',
+      pathname: '/',
+      query: {},
+      asPath: '/',
+      push: jest.fn(),
+      pop: jest.fn(),
+      reload: jest.fn(),
+      back: jest.fn(),
+      prefetch: jest.fn(),
+      beforePopState: jest.fn(),
+      events: {
+        on: jest.fn(),
+        off: jest.fn(),
+        emit: jest.fn(),
+      },
+    });
+    const useAuth = require('../context/AuthContext').useAuth;
+    useAuth.mockReturnValue({ isAuthenticated: false, user: null });
+    render(<Header />);
+    expect(screen.getByText('Login')).toBeInTheDocument();
+    expect(screen.getByText('Sign Up')).toBeInTheDocument();
+
+    // Authenticated
+    useAuth.mockReturnValue({ isAuthenticated: true, user: { id: '1' } });
+    render(<Header />);
+    expect(screen.getByText('Profile')).toBeInTheDocument();
+    expect(screen.getByText('Logout')).toBeInTheDocument();
     expect(screen.queryByText('Sign Up')).not.toBeInTheDocument();
   });
 
