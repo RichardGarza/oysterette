@@ -63,7 +63,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  username?: string | null;
+  username?: string;
   profilePhotoUrl?: string | null;
   credibilityScore: number;
   totalAgrees: number;

@@ -248,6 +248,7 @@ export default function ProfilePage() {
               {user.username || user.name}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
+            {profile.username && <p className="text-sm text-gray-500">@ {profile.username}</p>}
             <p className="text-sm text-gray-500 mt-1">
               Member since {new Date(stats.memberSince).toLocaleDateString()}
             </p>

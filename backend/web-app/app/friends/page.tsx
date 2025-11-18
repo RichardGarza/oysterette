@@ -185,6 +185,7 @@ export default function FriendsPage() {
         </div>
         <div className="flex-1">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{friend.name}</h3>
+          {friend.username && <p className="text-sm text-gray-500 dark:text-gray-400">@{friend.username}</p>}
           <p className="text-sm text-gray-600 dark:text-gray-400">{friend.email}</p>
         </div>
       </div>
@@ -213,6 +214,7 @@ export default function FriendsPage() {
         </div>
         <div className="flex-1">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{request.user.name}</h3>
+          {request.user.username && <p className="text-sm text-gray-500 dark:text-gray-400">@{request.user.username}</p>}
           <p className="text-sm text-gray-600 dark:text-gray-400">{request.user.email}</p>
         </div>
       </div>
@@ -241,6 +243,7 @@ export default function FriendsPage() {
         </div>
         <div className="flex-1">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{request.user.name}</h3>
+          {request.user.username && <p className="text-sm text-gray-500 dark:text-gray-400">@{request.user.username}</p>}
           <p className="text-sm text-gray-600 dark:text-gray-400">Request pending...</p>
         </div>
       </div>
@@ -260,6 +263,7 @@ export default function FriendsPage() {
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{item.name}</h3>
+            {item.username && <p className="text-sm text-gray-500 dark:text-gray-400">@{item.username}</p>}
             <p className="text-sm text-gray-600 dark:text-gray-400">{item.email}</p>
           </div>
           {isAlreadyFriend ? (

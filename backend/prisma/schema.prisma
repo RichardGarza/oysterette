@@ -10,11 +10,12 @@ datasource db {
 
 // User Model
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  username  String?  @unique  // Add this line
-  password  String   // hashed with bcrypt
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String
+  username          String?  @unique
+  password          String?
+  profilePhotoUrl   String?
 
   // OAuth provider IDs (optional)
   googleId  String?  @unique  // Google's unique user ID

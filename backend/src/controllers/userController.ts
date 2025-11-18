@@ -263,8 +263,8 @@ export const updateProfile = async (req: Request, res: Response) => {
     const updatedUser = await prisma.user.update({
       where: { id: req.userId },
       data: {
-        name,
-        email: email?.toLowerCase(),
+        name: name || undefined,
+        email: email || undefined,
         profilePhotoUrl,
         username, // Update if provided
       },
@@ -801,6 +801,7 @@ export const searchUsers = async (req: Request, res: Response): Promise<void> =>
         OR: [
           { name: { contains: searchTerm, mode: 'insensitive' } },
           { email: { contains: searchTerm, mode: 'insensitive' } },
+          { username: { contains: searchTerm, mode: 'insensitive' } },
         ],
       },
       select: {
