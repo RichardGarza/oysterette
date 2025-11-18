@@ -152,7 +152,7 @@ export default function OysterDetailPage() {
           )}
 
           {/* Attributes */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="space-y-4">
             {[
               { label: 'Size', value: oyster.size, avg: oyster.avgSize },
               { label: 'Body', value: oyster.body, avg: oyster.avgBody },
@@ -160,17 +160,19 @@ export default function OysterDetailPage() {
               { label: 'Flavor', value: oyster.flavorfulness, avg: oyster.avgFlavorfulness },
               { label: 'Cream', value: oyster.creaminess, avg: oyster.avgCreaminess },
             ].map((attr) => (
-              <div key={attr.label} className="text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{attr.label}</p>
-                <div className="relative w-full h-2 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
+              <div key={attr.label} className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{attr.label}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {attr.avg ? attr.avg.toFixed(1) : attr.value}/10
+                  </p>
+                </div>
+                <div className="relative w-full h-3 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
                   <div
-                    className="absolute h-full bg-[#FF6B35]"
+                    className="absolute h-full bg-[#FF6B35] transition-all duration-300"
                     style={{ width: `${(attr.avg || attr.value) * 10}%` }}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {attr.avg ? attr.avg.toFixed(1) : attr.value}/10
-                </p>
               </div>
             ))}
           </div>
