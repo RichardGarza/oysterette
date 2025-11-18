@@ -246,7 +246,7 @@ export const updateProfile = async (req: Request, res: Response) => {
     if (username !== undefined) {
       const validation = usernameSchema.safeParse({ username });
       if (!validation.success) {
-        return res.status(400).json({ error: validation.error.issues[0].message });
+        return res.status(400).json({ error: validation.error.issues[0]?.message || 'Validation error' });
       }
 
       // Check uniqueness (exclude current user)
@@ -288,7 +288,7 @@ export const setUsername = async (req: Request, res: Response) => {
 
     const validation = usernameSchema.safeParse({ username });
     if (!validation.success) {
-      return res.status(400).json({ error: validation.error.issues[0].message });
+      return res.status(400).json({ error: validation.error.issues[0]?.message || 'Validation error' });
     }
 
     // Check uniqueness
