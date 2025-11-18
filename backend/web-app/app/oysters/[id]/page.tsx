@@ -141,16 +141,12 @@ export default function OysterDetailPage() {
                 <button
                   onClick={handleToggleFavorite}
                   disabled={favoriteLoading}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                  className={`px-3 py-2 rounded-lg font-medium transition-colors text-xl ${
                     isFavorite
                       ? 'bg-red-500 text-white hover:bg-red-600'
                       : 'bg-gray-200 dark:bg-[#2d4054] text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                   }`}>
-                  {favoriteLoading
-                    ? '...'
-                    : isFavorite
-                    ? '❤️ Favorited'
-                    : '🤍 Favorite'}
+                  {favoriteLoading ? '...' : isFavorite ? '❤️' : '🤍'}
                 </button>
               )}
               {oyster.totalReviews > 0 && (
