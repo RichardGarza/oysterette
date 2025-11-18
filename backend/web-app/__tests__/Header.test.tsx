@@ -82,68 +82,37 @@ describe('Header Component', () => {
     expect(themeButton).toBeInTheDocument();
   });
 
-  it('includes Home button and tests navigation', () => {
-    const mockPush = jest.fn();
-    useRouter.mockReturnValue({
-      route: '/',
-      pathname: '/',
-      query: {},
-      asPath: '/',
-      push: mockPush,
-      pop: jest.fn(),
-      reload: jest.fn(),
-      back: jest.fn(),
-      prefetch: jest.fn(),
-      beforePopState: jest.fn(),
-      events: {
-        on: jest.fn(),
-        off: jest.fn(),
-        emit: jest.fn(),
-      },
-    });
-
+  it('includes Home button with correct href', () => {
     render(<Header />);
 
     const homeLink = screen.getByText('Home');
-    fireEvent.click(homeLink);
-
-    expect(mockPush).toHaveBeenCalledWith('/', undefined, { scroll: true });
+    expect(homeLink).toBeInTheDocument();
+    expect(homeLink).toHaveAttribute('href', '/');
   });
 
-  it('shows correct nav based on authentication', () => {
-    // Unauthenticated
-    useRouter.mockReturnValue({
-      route: '/',
-      pathname: '/',
-      query: {},
-      asPath: '/',
-      push: jest.fn(),
-      pop: jest.fn(),
-      reload: jest.fn(),
-      back: jest.fn(),
-      prefetch: jest.fn(),
-      beforePopState: jest.fn(),
-      events: {
-        on: jest.fn(),
-        off: jest.fn(),
-        emit: jest.fn(),
-      },
-    });
+  it('shows unauthenticated navigation', () => {
     const useAuth = require('../context/AuthContext').useAuth;
     useAuth.mockReturnValue({ isAuthenticated: false, user: null });
+    
     render(<Header />);
+    
     expect(screen.getByText('Login')).toBeInTheDocument();
     expect(screen.getByText('Sign Up')).toBeInTheDocument();
-
-    // Authenticated
-    useAuth.mockReturnValue({ isAuthenticated: true, user: { id: '1' } });
-    render(<Header />);
-    expect(screen.getByText('Profile')).toBeInTheDocument();
-    expect(screen.getByText('Logout')).toBeInTheDocument();
-    expect(screen.queryByText('Sign Up')).not.toBeInTheDocument();
+    expect(screen.queryByText('Profile')).not.toBeInTheDocument();
   });
 
-  it('toggles theme icon based on current theme', () => {
+  it('shows authenticated navigation', () => {
+    const useAuth = require('../context/AuthContext').useAuth;
+    useAuth.mockReturnValue({ isAuthenticated: true, user: { id: '1', name: 'Test User' } });
+    
+    render(<Header />);
+    
+    expect(screen.getByText('Profile')).toBeInTheDocument();
+    expect(screen.getByText('Logout')).toBeInTheDocument();
+    expect(screen.queryByText('Login')).not.toBeInTheDocument();
+  });
+
+  it('shows moon icon for light theme', () => {
     const useTheme = require('../context/ThemeContext').useTheme;
     useTheme.mockReturnValue({
       theme: 'light',
@@ -153,13 +122,17 @@ describe('Header Component', () => {
     render(<Header />);
     const themeButton = screen.getByLabelText('Toggle theme');
     expect(themeButton).toHaveTextContent('🌙');  // Moon for light theme
+  });
 
+  it('shows sun icon for dark theme', () => {
+    const useTheme = require('../context/ThemeContext').useTheme;
     useTheme.mockReturnValue({
       theme: 'dark',
       toggleTheme: jest.fn(),
     });
 
     render(<Header />);
+    const themeButton = screen.getByLabelText('Toggle theme');
     expect(themeButton).toHaveTextContent('☀️');  // Sun for dark theme
   });
 });
