@@ -167,7 +167,7 @@ export const getUserAttributePreferences = async (
       select: { oysterId: true },
     });
 
-    const favoriteOysterIds = new Set(favorites.map((f) => f.oysterId));
+    const favoriteOysterIds = new Set(favorites.map((f: any) => f.oysterId));
 
     // Calculate weighted averages from reviews
     // Favorited oysters get 1.5x weight
@@ -358,7 +358,7 @@ export const findSimilarUsers = async (
     });
 
     // Sort by similarity (descending)
-    similarities.sort((a, b) => b.similarity - a.similarity);
+    similarities.sort((a: any, b: any) => b.similarity - a.similarity);
 
     return similarities.slice(0, limit);
   } catch (error) {
@@ -393,7 +393,7 @@ export const getCollaborativeRecommendations = async (
         where: { userId },
         select: { oysterId: true },
       })
-      .then((reviews) => reviews.map((r) => r.oysterId));
+      .then((reviews) => reviews.map((r: any) => r.oysterId));
 
     // Get oysters liked by similar users
     const similarUserIds = similarUsers.map((u) => u.userId);
@@ -440,7 +440,7 @@ export const getCollaborativeRecommendations = async (
         similarUserCount: item.count,
         reason: 'collaborative',
       }))
-      .sort((a, b) => b.collaborativeScore - a.collaborativeScore)
+      .sort((a: any, b: any) => b.collaborativeScore - a.collaborativeScore)
       .slice(0, limit);
 
     logger.info(
@@ -516,7 +516,7 @@ export const getHybridRecommendations = async (
 
     // Sort by hybrid score
     const recommendations = Array.from(oysterMap.values())
-      .sort((a, b) => b.hybridScore - a.hybridScore)
+      .sort((a: any, b: any) => b.hybridScore - a.hybridScore)
       .slice(0, limit);
 
     logger.info(
@@ -588,7 +588,7 @@ export const getRecommendations = async (
             take: limit,
           });
 
-          return topRated.map((oyster) => ({
+          return topRated.map((oyster: any) => ({
             id: oyster.id,
             name: oyster.name,
             species: oyster.species,
@@ -619,7 +619,7 @@ export const getRecommendations = async (
             where: { userId },
             select: { oysterId: true },
           })
-          .then((reviews) => reviews.map((r) => r.oysterId));
+          .then((reviews) => reviews.map((r: any) => r.oysterId));
 
         const unreviewedOysters = await prisma.oyster.findMany({
           where: {
@@ -651,7 +651,7 @@ export const getRecommendations = async (
         });
 
         // Calculate similarity scores for all unreviewed oysters
-        const scoredOysters = unreviewedOysters.map((oyster) => {
+        const scoredOysters = unreviewedOysters.map((oyster: any) => {
           const similarity = calculateSimilarityScore(oyster, preferences);
           return {
             ...oyster,
@@ -661,7 +661,7 @@ export const getRecommendations = async (
         });
 
         // Sort by similarity (highest first)
-        scoredOysters.sort((a, b) => b.similarity - a.similarity);
+        scoredOysters.sort((a: any, b: any) => b.similarity - a.similarity);
 
         // Take top N
         return scoredOysters.slice(0, limit);
@@ -771,7 +771,7 @@ export const setBaselineProfile = async (
  */
 function calculateMedian(values: number[]): number {
   if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
+  const sorted = [...values].sort((a: any, b: any) => a - b);
   const mid = Math.floor(sorted.length / 2);
   if (sorted.length % 2 === 0) {
     const val1 = sorted[mid - 1];

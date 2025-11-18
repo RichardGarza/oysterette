@@ -383,25 +383,25 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     // Calculate average rating given
     let avgRatingGiven = 0;
     if (user.reviews.length > 0) {
-      const ratingValues = {
+      const ratingValues: Record<string, number> = {
         LOVE_IT: 4,   // Best
         LIKE_IT: 3,   // Good
         OKAY: 2,      // Okay
         MEH: 1,       // Worst
       };
-      const totalRating = user.reviews.reduce((sum, review) => sum + ratingValues[review.rating], 0);
+      const totalRating = user.reviews.reduce((sum: number, review: any) => sum + (ratingValues[review.rating] || 0), 0);
       avgRatingGiven = totalRating / user.reviews.length;
     }
 
     // Find most reviewed species and origin
-    const speciesCounts = user.reviews.reduce((acc, review) => {
+    const speciesCounts = user.reviews.reduce((acc: Record<string, number>, review: any) => {
       if (review.oyster.species) {
         acc[review.oyster.species] = (acc[review.oyster.species] || 0) + 1;
       }
       return acc;
     }, {} as Record<string, number>);
 
-    const originCounts = user.reviews.reduce((acc, review) => {
+    const originCounts = user.reviews.reduce((acc: Record<string, number>, review: any) => {
       if (review.oyster.origin) {
         acc[review.oyster.origin] = (acc[review.oyster.origin] || 0) + 1;
       }
@@ -409,11 +409,11 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     }, {} as Record<string, number>);
 
     const mostReviewedSpecies = Object.keys(speciesCounts).length > 0
-      ? Object.entries(speciesCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
+      ? Object.entries(speciesCounts).sort((a: [string, number], b: [string, number]) => b[1] - a[1])[0]?.[0]
       : undefined;
 
     const mostReviewedOrigin = Object.keys(originCounts).length > 0
-      ? Object.entries(originCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
+      ? Object.entries(originCounts).sort((a: [string, number], b: [string, number]) => b[1] - a[1])[0]?.[0]
       : undefined;
 
     // Determine badge level (based on review count AND credibility)
@@ -429,7 +429,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     // Calculate review streak (simplified - just days since last review)
     let reviewStreak = 0;
     if (user.reviews.length > 0) {
-      const sortedReviews = user.reviews.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      const sortedReviews = user.reviews.sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime());
       const lastReview = sortedReviews[0];
       if (lastReview) {
         const daysSinceLastReview = Math.floor((Date.now() - lastReview.createdAt.getTime()) / (1000 * 60 * 60 * 24));

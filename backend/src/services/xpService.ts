@@ -137,7 +137,7 @@ export async function checkAchievements(userId: string): Promise<any[]> {
 
   if (!user) return [];
 
-  const unlockedKeys = user.achievements.map((ua) => ua.achievement.key);
+  const unlockedKeys = user.achievements.map((ua: any) => ua.achievement.key);
   const newAchievements: any[] = [];
 
   // Define achievement criteria
@@ -214,7 +214,7 @@ export async function getUserXPStats(userId: string) {
     xpProgress,
     xpNeeded,
     progressPercent,
-    achievements: user.achievements.map((ua) => ({
+    achievements: user.achievements.map((ua: any) => ({
       ...ua.achievement,
       unlockedAt: ua.unlockedAt,
     })),

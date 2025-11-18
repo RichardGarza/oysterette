@@ -27,7 +27,7 @@
  */
 
 import prisma from '../lib/prisma';
-import { ReviewRating } from '@prisma/client';
+import type { ReviewRating } from '@prisma/client';
 import logger from '../utils/logger';
 import { ratingToScore } from '../utils/ratingLabels';
 
@@ -167,7 +167,7 @@ export async function recalculateOysterRatings(oysterId: string): Promise<void> 
 
     // Calculate weighted attributes
     // Now incorporating review quality and reviewer credibility
-    const reviewData = oyster.reviews.map((r) => ({
+    const reviewData = oyster.reviews.map((r: any) => ({
       size: r.size,
       body: r.body,
       sweetBrininess: r.sweetBrininess,
@@ -179,7 +179,7 @@ export async function recalculateOysterRatings(oysterId: string): Promise<void> 
 
     const avgSize = calculateWeightedAttribute(
       oyster.size,
-      reviewData.map((r) => ({
+      reviewData.map((r: any) => ({
         value: r.size,
         reviewWeight: r.reviewWeight,
         credibilityScore: r.credibilityScore,
@@ -188,7 +188,7 @@ export async function recalculateOysterRatings(oysterId: string): Promise<void> 
     );
     const avgBody = calculateWeightedAttribute(
       oyster.body,
-      reviewData.map((r) => ({
+      reviewData.map((r: any) => ({
         value: r.body,
         reviewWeight: r.reviewWeight,
         credibilityScore: r.credibilityScore,
@@ -197,7 +197,7 @@ export async function recalculateOysterRatings(oysterId: string): Promise<void> 
     );
     const avgSweetBrininess = calculateWeightedAttribute(
       oyster.sweetBrininess,
-      reviewData.map((r) => ({
+      reviewData.map((r: any) => ({
         value: r.sweetBrininess,
         reviewWeight: r.reviewWeight,
         credibilityScore: r.credibilityScore,
@@ -206,7 +206,7 @@ export async function recalculateOysterRatings(oysterId: string): Promise<void> 
     );
     const avgFlavorfulness = calculateWeightedAttribute(
       oyster.flavorfulness,
-      reviewData.map((r) => ({
+      reviewData.map((r: any) => ({
         value: r.flavorfulness,
         reviewWeight: r.reviewWeight,
         credibilityScore: r.credibilityScore,
@@ -215,7 +215,7 @@ export async function recalculateOysterRatings(oysterId: string): Promise<void> 
     );
     const avgCreaminess = calculateWeightedAttribute(
       oyster.creaminess,
-      reviewData.map((r) => ({
+      reviewData.map((r: any) => ({
         value: r.creaminess,
         reviewWeight: r.reviewWeight,
         credibilityScore: r.credibilityScore,
@@ -309,10 +309,10 @@ export async function getOysterRatingStats(oysterId: string) {
 
   // Count reviews by rating type
   const ratingBreakdown = {
-    loveIt: oyster.reviews.filter((r) => r.rating === 'LOVE_IT').length,
-    likeIt: oyster.reviews.filter((r) => r.rating === 'LIKE_IT').length,
-    okay: oyster.reviews.filter((r) => r.rating === 'OKAY').length,
-    meh: oyster.reviews.filter((r) => r.rating === 'MEH').length,
+    loveIt: oyster.reviews.filter((r: any) => r.rating === 'LOVE_IT').length,
+    likeIt: oyster.reviews.filter((r: any) => r.rating === 'LIKE_IT').length,
+    okay: oyster.reviews.filter((r: any) => r.rating === 'OKAY').length,
+    meh: oyster.reviews.filter((r: any) => r.rating === 'MEH').length,
   };
 
   const userWeight = calculateUserRatingWeight(oyster.totalReviews);

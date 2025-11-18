@@ -12,7 +12,7 @@
 import { Request, Response } from 'express';
 import logger from '../utils/logger';
 import prisma from '../lib/prisma';
-import { ReviewRating } from '@prisma/client';
+import type { ReviewRating } from '@prisma/client';
 import { recalculateOysterRatings } from '../services/ratingService';
 import { invalidateCache, updateBaselineWithReview } from '../services/recommendationService';
 import { awardXP, updateStreak, XP_REWARDS } from '../services/xpService';

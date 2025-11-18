@@ -41,7 +41,7 @@ export const getUserFavorites = async (req: Request, res: Response) => {
     });
 
     // Return array of oyster IDs
-    const oysterIds = favorites.map(f => f.oysterId);
+    const oysterIds = favorites.map((f: { oysterId: string }) => f.oysterId);
 
     logger.info(`Retrieved ${oysterIds.length} favorites for user ${userId}`);
     res.json({ favorites: oysterIds });
@@ -174,16 +174,16 @@ export const syncFavorites = async (req: Request, res: Response) => {
       select: { oysterId: true },
     });
 
-    const existingIds = new Set(existingFavorites.map(f => f.oysterId));
+    const existingIds = new Set(existingFavorites.map((f: { oysterId: string }) => f.oysterId));
     const newIds = new Set(favorites);
 
     // Find favorites to add (in new list but not in existing)
-    const toAdd = favorites.filter(id => !existingIds.has(id));
+    const toAdd = favorites.filter((id: string) => !existingIds.has(id));
 
     // Find favorites to remove (in existing but not in new list)
     const toRemove = existingFavorites
-      .map(f => f.oysterId)
-      .filter(id => !newIds.has(id));
+      .map((f: { oysterId: string }) => f.oysterId)
+      .filter((id: string) => !newIds.has(id));
 
     // Add new favorites
     if (toAdd.length > 0) {

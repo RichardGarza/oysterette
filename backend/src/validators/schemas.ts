@@ -30,7 +30,6 @@
  */
 
 import { z } from 'zod';
-import { ReviewRating } from '@prisma/client';
 
 // ==================== Auth Schemas ====================
 
@@ -68,7 +67,7 @@ export const appleAuthSchema = z.object({
 
 export const createReviewSchema = z.object({
   oysterId: z.string().uuid('Invalid oyster ID'),
-  rating: z.nativeEnum(ReviewRating),
+  rating: z.enum(['LOVE_IT', 'LIKE_IT', 'OKAY', 'MEH']),
   notes: z.string().max(1000, 'Notes too long').optional(),
   size: z.number().int().min(1).max(10, 'Size must be between 1 and 10'),
   body: z.number().int().min(1).max(10, 'Body must be between 1 and 10'),
@@ -81,7 +80,7 @@ export const createReviewSchema = z.object({
 });
 
 export const updateReviewSchema = z.object({
-  rating: z.nativeEnum(ReviewRating).optional(),
+  rating: z.enum(['LOVE_IT', 'LIKE_IT', 'OKAY', 'MEH']).optional(),
   notes: z.string().max(1000, 'Notes too long').optional(),
   size: z.number().int().min(1).max(10).optional(),
   body: z.number().int().min(1).max(10).optional(),

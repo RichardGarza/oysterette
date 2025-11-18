@@ -189,7 +189,7 @@ export const getFriends = async (req: Request, res: Response): Promise<void> => 
     });
 
     // Map to friend objects (other person in friendship)
-    const friends = friendships.map((f) => {
+    const friends = friendships.map((f: any) => {
       const friend = f.senderId === req.userId ? f.receiver : f.sender;
       return {
         id: friend.id,
@@ -243,12 +243,12 @@ export const getPendingRequests = async (req: Request, res: Response): Promise<v
     res.status(200).json({
       success: true,
       data: {
-        sent: sent.map((f) => ({
+        sent: sent.map((f: any) => ({
           id: f.id,
           user: f.receiver,
           createdAt: f.createdAt,
         })),
-        received: received.map((f) => ({
+        received: received.map((f: any) => ({
           id: f.id,
           user: f.sender,
           createdAt: f.createdAt,
@@ -285,7 +285,7 @@ export const getFriendActivity = async (req: Request, res: Response): Promise<vo
     });
 
     // Extract friend IDs
-    const friendIds = friendships.map((f) =>
+    const friendIds = friendships.map((f: any) =>
       f.senderId === req.userId ? f.receiverId : f.senderId
     );
 
@@ -411,7 +411,7 @@ export const getPairedRecommendations = async (req: Request, res: Response): Pro
     });
 
     // Calculate match scores for both users
-    const pairedMatches = oysters.map((oyster) => {
+    const pairedMatches = oysters.map((oyster: any) => {
       const userMatch = calculateMatchScore(userProfile, oyster);
       const friendMatch = calculateMatchScore(friendProfile, oyster);
       const combinedScore = (userMatch + friendMatch) / 2;
@@ -426,8 +426,8 @@ export const getPairedRecommendations = async (req: Request, res: Response): Pro
 
     // Filter for high matches (both users >70%) and sort by combined score
     const goodMatches = pairedMatches
-      .filter((m) => m.userMatch >= 70 && m.friendMatch >= 70)
-      .sort((a, b) => b.combinedScore - a.combinedScore)
+      .filter((m: any) => m.userMatch >= 70 && m.friendMatch >= 70)
+      .sort((a: any, b: any) => b.combinedScore - a.combinedScore)
       .slice(0, 20);
 
     res.status(200).json({ success: true, data: goodMatches });

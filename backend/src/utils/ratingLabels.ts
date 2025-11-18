@@ -16,7 +16,7 @@
  * - MEH: 1 - Worst
  */
 
-import { ReviewRating } from '@prisma/client';
+import type { ReviewRating } from '@prisma/client';
 import ratingLabelsData from '../../data/oyster-rating-labels.json';
 
 /**
