@@ -81,7 +81,7 @@ router.put('/preferences', authenticate, updatePreferences);
 router.put('/flavor-profile', authenticate, setFlavorProfile);
 
 // Search users
-router.get('/search', authenticate, searchUsers);
+router.get('/search', searchUsers);
 
 // Top oysters
 router.get('/top-oysters', authenticate, getTopOysters);

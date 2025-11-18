@@ -249,6 +249,15 @@ export const userApi = {
     const response = await api.put<{ message: string }>('/users/username', { username });
     return response.data;
   },
+
+  searchUsers: async (query: string) => {
+    try {
+      const response = await api.get('/users/search', { params: { q: query } });
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to search users');
+    }
+  },
 };
 
 // Favorites API
@@ -310,6 +319,80 @@ export const uploadApi = {
       },
     });
     return response.data.url;
+  },
+};
+
+export const friendApi = {
+  getFriends: async () => {
+    try {
+      const response = await api.get('/friends');
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to load friends');
+    }
+  },
+
+  getPendingRequests: async () => {
+    try {
+      const response = await api.get('/friends/pending');
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to load pending requests');
+    }
+  },
+
+  sendRequest: async (receiverId: string) => {
+    try {
+      const response = await api.post('/friends/request', { receiverId });
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to send friend request');
+    }
+  },
+
+  acceptRequest: async (friendshipId: string) => {
+    try {
+      const response = await api.put(`/friends/accept/${friendshipId}`);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to accept request');
+    }
+  },
+
+  rejectRequest: async (friendshipId: string) => {
+    try {
+      const response = await api.put(`/friends/reject/${friendshipId}`);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to reject request');
+    }
+  },
+
+  removeFriend: async (friendshipId: string) => {
+    try {
+      const response = await api.delete(`/friends/${friendshipId}`);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to remove friend');
+    }
+  },
+
+  getActivity: async () => {
+    try {
+      const response = await api.get('/friends/activity');
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to load activity');
+    }
+  },
+
+  getPairedRecommendations: async (friendId: string) => {
+    try {
+      const response = await api.get(`/friends/paired/${friendId}`);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to load paired recommendations');
+    }
   },
 };
 
