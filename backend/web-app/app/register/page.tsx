@@ -135,7 +135,7 @@ export default function RegisterPage() {
             <div className="flex-1 border-t border-gray-300 dark:border-gray-700"></div>
           </div>
 
-          <GoogleSignInButton />
+          <GoogleSignInButton text="Sign up with Google account" />
 
           <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{' '}

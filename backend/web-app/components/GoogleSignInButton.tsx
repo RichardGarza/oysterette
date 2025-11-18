@@ -25,7 +25,7 @@ declare global {
 }
 
 export default function GoogleSignInButton({ 
-  text = 'Continue with Google',
+  text = 'Log in with Google',
   variant = 'default'
 }: GoogleSignInButtonProps) {
   const router = useRouter();
@@ -158,7 +158,9 @@ export default function GoogleSignInButton({
       {loading && (
         <div className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg bg-gray-100 dark:bg-[#243447]">
           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#FF6B35]"></div>
-          <span className="text-gray-700 dark:text-gray-300">Logging in...</span>
+          <span className="text-gray-700 dark:text-gray-300">
+            {text.includes('Sign up') ? 'Signing up...' : 'Logging in...'}
+          </span>
         </div>
       )}
       {!loading && (
@@ -186,7 +188,7 @@ export default function GoogleSignInButton({
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          <span>Log in with Google</span>
+          <span>{text}</span>
         </button>
       )}
       {error && (
