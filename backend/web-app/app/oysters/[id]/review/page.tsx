@@ -97,11 +97,11 @@ export default function ReviewPage() {
         setIsEditMode(true);
         setRating(review.rating);
         setNotes(review.notes || '');
-        setSizeSlider(displayToSlider(review.size));
-        setBodySlider(displayToSlider(review.body));
-        setSweetBrininessSlider(displayToSlider(review.sweetBrininess));
-        setFlavorfulnessSlider(displayToSlider(review.flavorfulness));
-        setCreaminessSlider(displayToSlider(review.creaminess));
+        setSizeSlider(displayToSlider(review.size ?? 5));
+        setBodySlider(displayToSlider(review.body ?? 5));
+        setSweetBrininessSlider(displayToSlider(review.sweetBrininess ?? 5));
+        setFlavorfulnessSlider(displayToSlider(review.flavorfulness ?? 5));
+        setCreaminessSlider(displayToSlider(review.creaminess ?? 5));
       } else {
         // If review doesn't exist or wrong ID, redirect back
         router.push(`/oysters/${id}`);

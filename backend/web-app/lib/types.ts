@@ -69,6 +69,21 @@ export interface User {
   totalAgrees: number;
   totalDisagrees: number;
   reviewCount: number;
+  baselineSize?: number | null;
+  baselineBody?: number | null;
+  baselineSweetBrininess?: number | null;
+  baselineFlavorfulness?: number | null;
+  baselineCreaminess?: number | null;
+  rangeMinSize?: number | null;
+  rangeMaxSize?: number | null;
+  rangeMinBody?: number | null;
+  rangeMaxBody?: number | null;
+  rangeMinSweetBrininess?: number | null;
+  rangeMaxSweetBrininess?: number | null;
+  rangeMinFlavorfulness?: number | null;
+  rangeMaxFlavorfulness?: number | null;
+  rangeMinCreaminess?: number | null;
+  rangeMaxCreaminess?: number | null;
   createdAt: string;
   updatedAt: string;
 }

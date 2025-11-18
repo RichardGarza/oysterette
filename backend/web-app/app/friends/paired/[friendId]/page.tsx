@@ -1,8 +1,10 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Header from '../../../components/Header';
-import { useAuth } from '../../../context/AuthContext';
-import { friendApi } from '../../../lib/api';
+import Header from '@/components/Header';
+import { useAuth } from '@/context/AuthContext';
+import { friendApi } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
 

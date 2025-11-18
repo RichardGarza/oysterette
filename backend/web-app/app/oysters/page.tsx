@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Header from '../../components/Header';
@@ -12,7 +12,7 @@ import { useAuth } from '../../context/AuthContext';
 
 export const dynamic = 'force-dynamic';
 
-export default function OystersPage() {
+function OystersContent() {
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuth();
   const [oysters, setOysters] = useState<Oyster[]>([]);
@@ -206,6 +206,14 @@ export default function OystersPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function OystersPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white dark:bg-[#1a2332] flex items-center justify-center"><p>Loading...</p></div>}>
+      <OystersContent />
+    </Suspense>
   );
 }
 

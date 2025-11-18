@@ -12,6 +12,7 @@ interface Friend {
   id: string;
   name: string;
   email: string;
+  username?: string;
   profilePhotoUrl: string | null;
   friendshipId: string;
   since: string;
@@ -23,6 +24,7 @@ interface PendingRequest {
     id: string;
     name: string;
     email: string;
+    username?: string;
     profilePhotoUrl: string | null;
   };
   createdAt: string;

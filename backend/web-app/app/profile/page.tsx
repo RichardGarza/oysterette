@@ -245,10 +245,10 @@ export default function ProfilePage() {
               )}
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              {user.username || user.name}
+              {user.name}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
-            {profile.username && <p className="text-sm text-gray-500">@ {profile.username}</p>}
+            {user.username && <p className="text-sm text-gray-500 dark:text-gray-400">@{user.username}</p>}
             <p className="text-sm text-gray-500 mt-1">
               Member since {new Date(stats.memberSince).toLocaleDateString()}
             </p>
