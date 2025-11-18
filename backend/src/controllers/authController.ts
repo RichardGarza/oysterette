@@ -110,6 +110,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Check if user has a password (OAuth users won't have one)
+    if (!user.password) {
+      res.status(401).json({
+        success: false,
+        error: 'Invalid credentials. Please use Google or Apple sign-in.',
+      });
+      return;
+    }
+
     // Verify password
     const isValidPassword = await comparePassword(password, user.password);
 
