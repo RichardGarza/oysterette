@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '../../../components/Header';
@@ -23,6 +23,8 @@ export default function OysterDetailPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const pendingRequestRef = useRef<{ targetState: boolean; previousState: boolean } | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -69,22 +71,54 @@ export default function OysterDetailPage() {
       return;
     }
 
-    // Optimistic update - immediately change UI
-    const previousFavoriteState = isFavorite;
-    setIsFavorite(!isFavorite);
+    // Cancel any pending request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
+    // Track the target state (what user wants after this click)
+    const targetState = !isFavorite;
+    const previousState = isFavorite;
+    
+    // Update pending request ref with this request's info
+    pendingRequestRef.current = { targetState, previousState };
+
+    // Optimistic update - immediately change UI to final state
+    setIsFavorite(targetState);
 
     try {
       // Make API call
-      if (previousFavoriteState) {
+      if (previousState) {
         await favoriteApi.remove(id);
       } else {
         await favoriteApi.add(id);
       }
-      // Success - state already updated optimistically
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error);
-      // Revert on failure
-      setIsFavorite(previousFavoriteState);
+      
+      // Only process result if this is still the current request
+      // (i.e., user hasn't clicked again)
+      if (!abortController.signal.aborted && 
+          pendingRequestRef.current?.targetState === targetState) {
+        // Success - state already updated optimistically, just clean up
+        pendingRequestRef.current = null;
+        abortControllerRef.current = null;
+      }
+    } catch (error: any) {
+      // Only revert if this is still the current request
+      // (i.e., user hasn't clicked again and this request wasn't cancelled)
+      if (!abortController.signal.aborted && 
+          pendingRequestRef.current?.targetState === targetState) {
+        console.error('Failed to toggle favorite:', error);
+        // Revert on failure only if this is still the active request
+        setIsFavorite(previousState);
+        pendingRequestRef.current = null;
+        abortControllerRef.current = null;
+      }
+      // If request was cancelled or superseded, ignore the error
+      // The UI already reflects the user's final intended state
     }
   };
 
