@@ -375,13 +375,32 @@ npm test -- --coverage
 npm test ratingService.test.ts
 ```
 
-### Test Coverage (229 tests)
-- **Rating System**: Dynamic weighting, attribute scores, overall score
-- **Voting & Credibility**: Vote creation, updates, credibility calculation
-- **Recommendations**: Flavor profile, baseline updates, similarity scoring
-- **Authentication**: JWT, Google OAuth, rate limiting
-- **API Integration**: All endpoints, error handling, validation
-- **Schema Validation**: Zod schemas for all request/response types
+### Web App Tests
+```bash
+cd backend/web-app
+
+# Unit tests (Jest)
+npm test
+
+# E2E tests (Playwright)
+npm run test:e2e
+
+# Lint and build
+npm run lint
+npm run build
+```
+
+### Test Coverage
+- **Backend**: 297/297 tests passing (unit + integration)
+- **Web App**: 6 Jest unit tests + 20 Playwright E2E tests (5 browsers)
+- **CI/CD**: GitHub Actions on every push/PR
+
+### Phase 26: Comprehensive Testing (November 2025)
+- ✅ **Jest Setup**: Unit tests for Header component (navigation, auth, theme)
+- ✅ **Playwright E2E**: Home page, browse, login flow across 5 browsers (Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari)
+- ✅ **GitHub Actions CI**: Automated lint, build, test workflow
+- ✅ **Test Artifacts Cleanup**: Removed test reports and logs from repo
+- ✅ **Dependency Cleanup**: Removed unused testing libraries (MSW, next-router-mock)
 
 ---
 
@@ -581,10 +600,11 @@ MIT License - See LICENSE file for details
 
 ---
 
-**Version:** 1.8.0
-**Last Updated:** November 8, 2024
-**Status:** Production - Active Development
-**Tests:** 229/229 passing ✅
+**Version:** 2.0.0
+**Last Updated:** November 18, 2025
+**Status:** Production Ready - Testing Complete
+**Tests:** Backend 297/297 + Web 26/26 passing ✅
 **Backend:** Live on Railway ✅
 **Database:** Live on Neon (131 unique oysters) ✅
 **UI:** React Native Paper (Material Design) ✅
+**Web App:** Next.js 16 with comprehensive testing ✅
