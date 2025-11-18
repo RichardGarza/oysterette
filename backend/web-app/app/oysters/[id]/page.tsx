@@ -136,33 +136,19 @@ export default function OysterDetailPage() {
                 {oyster.species} • {oyster.origin}
               </p>
             </div>
-            <div className='flex items-center gap-4'>
-              {isAuthenticated && (
-                <button
-                  onClick={handleToggleFavorite}
-                  disabled={favoriteLoading}
-                  className={`px-3 py-2 rounded-lg font-medium transition-colors text-xl ${
-                    isFavorite
-                      ? 'bg-red-500 text-white hover:bg-red-600'
-                      : 'bg-gray-200 dark:bg-[#2d4054] text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                  }`}>
-                  {favoriteLoading ? '...' : isFavorite ? '❤️' : '🤍'}
-                </button>
-              )}
-              {oyster.totalReviews > 0 && (
-                <div className='text-right'>
-                  <div className='flex items-center space-x-1 mb-1'>
-                    <span className='text-2xl font-bold'>
-                      {oyster.overallScore.toFixed(1)}
-                    </span>
-                    <span className='text-yellow-500 text-2xl'>⭐</span>
-                  </div>
-                  <p className='text-sm text-gray-500'>
-                    {oyster.totalReviews} reviews
-                  </p>
+            {oyster.totalReviews > 0 && (
+              <div className='text-right'>
+                <div className='flex items-center space-x-1 mb-1'>
+                  <span className='text-2xl font-bold'>
+                    {oyster.overallScore.toFixed(1)}
+                  </span>
+                  <span className='text-yellow-500 text-2xl'>⭐</span>
                 </div>
-              )}
-            </div>
+                <p className='text-sm text-gray-500'>
+                  {oyster.totalReviews} reviews
+                </p>
+              </div>
+            )}
           </div>
 
           {oyster.standoutNotes && (
@@ -211,13 +197,25 @@ export default function OysterDetailPage() {
             ))}
           </div>
 
-          <div className='mt-6 flex gap-4'>
+          <div className='mt-6 flex justify-between items-center gap-4'>
             {isAuthenticated && (
-              <Link
-                href={`/oysters/${id}/review`}
-                className='px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors font-medium'>
-                Write Review
-              </Link>
+              <>
+                <Link
+                  href={`/oysters/${id}/review`}
+                  className='px-6 py-3 bg-[#FF6B35] text-white rounded-lg hover:bg-[#e55a2b] transition-colors font-medium'>
+                  Write Review
+                </Link>
+                <button
+                  onClick={handleToggleFavorite}
+                  disabled={favoriteLoading}
+                  className={`px-3 py-2 rounded-lg font-medium transition-colors text-xl ${
+                    isFavorite
+                      ? 'bg-red-500 text-white hover:bg-red-600'
+                      : 'bg-gray-200 dark:bg-[#2d4054] text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}>
+                  {favoriteLoading ? '...' : isFavorite ? '❤️' : '🤍'}
+                </button>
+              </>
             )}
           </div>
         </div>
