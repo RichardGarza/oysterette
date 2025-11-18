@@ -168,6 +168,11 @@ export const reviewApi = {
     const response = await api.delete<ApiResponse<{}>>(`/reviews/${reviewId}`);
     return response.data.success;
   },
+
+  getUserReviews: async (userId: string): Promise<Review[]> => {
+    const response = await api.get<ApiResponse<Review[]>>(`/reviews/user/${userId}`);
+    return response.data.data || [];
+  },
 };
 
 // Vote API
@@ -392,6 +397,15 @@ export const friendApi = {
       return response.data.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Failed to load paired recommendations');
+    }
+  },
+
+  getFriendsCount: async (): Promise<{ friendsCount: number }> => {
+    try {
+      const response = await api.get('/friends/count');
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to load friends count');
     }
   },
 };
