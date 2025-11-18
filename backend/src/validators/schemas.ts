@@ -182,6 +182,10 @@ export const updatePrivacySettingsSchema = z.object({
   showStatistics: z.boolean().optional(),
 });
 
+export const usernameSchema = z.object({
+  username: z.string().regex(/^[a-zA-Z0-9]{3,20}$/, 'Username must be 3-20 alphanumeric characters'),
+});
+
 export const reviewQuerySchema = z.object({
   page: z.string().regex(/^\d+$/).transform(Number).pipe(z.number().min(1)).optional(),
   limit: z.string().regex(/^\d+$/).transform(Number).pipe(z.number().min(1).max(100)).optional(),
