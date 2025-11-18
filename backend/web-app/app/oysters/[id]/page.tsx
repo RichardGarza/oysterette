@@ -70,19 +70,22 @@ export default function OysterDetailPage() {
       return;
     }
 
+    // Optimistic update - immediately change UI
+    const previousFavoriteState = isFavorite;
+    setIsFavorite(!isFavorite);
+
     try {
-      setFavoriteLoading(true);
-      if (isFavorite) {
+      // Make API call
+      if (previousFavoriteState) {
         await favoriteApi.remove(id);
-        setIsFavorite(false);
       } else {
         await favoriteApi.add(id);
-        setIsFavorite(true);
       }
+      // Success - state already updated optimistically
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
-    } finally {
-      setFavoriteLoading(false);
+      // Revert on failure
+      setIsFavorite(previousFavoriteState);
     }
   };
 
@@ -138,7 +141,9 @@ export default function OysterDetailPage() {
                   className='px-3 py-2 rounded-lg font-medium transition-colors text-xl bg-gray-200 dark:bg-[#2d4054] text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'>
                   <span
                     className={`transition-colors duration-300 ${
-                      isFavorite ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'
+                      isFavorite
+                        ? 'text-red-500'
+                        : 'text-gray-700 dark:text-gray-300'
                     }`}>
                     {isFavorite ? '❤️' : '🤍'}
                   </span>
