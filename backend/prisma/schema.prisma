@@ -24,9 +24,6 @@ model User {
   // User preferences stored as JSON
   preferences Json?    @default("{}")
 
-  // Profile photo (Cloudinary URL)
-  profilePhotoUrl String?
-
   // Reviewer credibility metrics
   credibilityScore  Float   @default(1.0)  // Multiplier for review influence (0.5 to 1.5)
   totalAgrees       Int     @default(0)    // Total "Agree" votes received
