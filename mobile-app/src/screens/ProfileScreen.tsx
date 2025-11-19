@@ -112,6 +112,7 @@ import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/nativ
 import * as ImagePicker from 'expo-image-picker';
 import { authStorage } from '../services/auth';
 import { userApi, reviewApi, uploadApi, getXPStats } from '../services/api';
+import { profileCache } from '../services/profileCache';
 import { useTheme } from '../context/ThemeContext';
 import { Review, User } from '../types/Oyster';
 import { EmptyState } from '../components/EmptyState';
@@ -193,25 +194,50 @@ export default function ProfileScreen() {
       }
 
       if (!isViewingOwnProfile && viewingUserId) {
-        // Viewing friend's public profile
+        // Viewing friend's public profile - no caching for other users
         const profile = await userApi.getPublicProfile(viewingUserId);
         setProfileData(profile);
-        
+
         // Fetch public user reviews
         const publicReviews = await reviewApi.getPublicUserReviews(viewingUserId);
         setReviews(publicReviews);
-        
+
         // Don't load XP data for other users
         setXpData(null);
       } else {
-        // Viewing own profile
+        // Viewing own profile - use cache-first strategy
         const user = await authStorage.getUser();
         if (!user) {
           navigation.navigate('Login');
           return;
         }
 
-        // Fetch profile with stats using new API
+        // Step 1: Load cached data immediately (if available)
+        if (!isRefreshing) {
+          const cachedProfile = await profileCache.getProfileData();
+          const cachedReviews = await profileCache.getReviews();
+          const cachedXP = await profileCache.getXPData();
+
+          if (cachedProfile) {
+            if (__DEV__) {
+              console.log('⚡ [ProfileScreen] Showing cached data first');
+            }
+            setProfileData(cachedProfile);
+            setEditName(cachedProfile.user.name);
+            setEditEmail(cachedProfile.user.email);
+            setLoading(false); // Stop loading spinner immediately
+          }
+
+          if (cachedReviews) {
+            setReviews(cachedReviews);
+          }
+
+          if (cachedXP) {
+            setXpData(cachedXP);
+          }
+        }
+
+        // Step 2: Fetch fresh data from API in background
         const profile = await userApi.getProfile();
         setProfileData(profile);
         setEditName(profile.user.name);
@@ -224,6 +250,17 @@ export default function ProfileScreen() {
         // Fetch XP stats
         const xp = await getXPStats();
         setXpData(xp);
+
+        // Step 3: Update cache with fresh data
+        await Promise.all([
+          profileCache.saveProfileData(profile),
+          profileCache.saveReviews(reviewHistory.reviews),
+          profileCache.saveXPData(xp),
+        ]);
+
+        if (__DEV__) {
+          console.log('✅ [ProfileScreen] Fresh data loaded and cached');
+        }
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -304,10 +341,14 @@ export default function ProfileScreen() {
       // Update local storage and state immediately
       if (updatedUser && profileData) {
         await authStorage.saveUser(updatedUser);
-        setProfileData({ ...profileData, user: updatedUser });
+        const newProfileData = { ...profileData, user: updatedUser };
+        setProfileData(newProfileData);
+
+        // Update cache with new profile photo
+        await profileCache.saveProfileData(newProfileData);
 
         if (__DEV__) {
-          console.log('✅ [ProfileScreen] State updated with photo URL:', updatedUser.profilePhotoUrl);
+          console.log('✅ [ProfileScreen] State and cache updated with photo URL:', updatedUser.profilePhotoUrl);
         }
       }
     } catch (error) {
@@ -351,11 +392,15 @@ export default function ProfileScreen() {
       setEditLoading(true);
       await userApi.updateProfile(editName, editEmail);
 
-      // Update local storage
+      // Update local storage and cache
       if (profileData) {
         const updatedUser = { ...profileData.user, name: editName, email: editEmail };
         await authStorage.saveUser(updatedUser);
-        setProfileData({ ...profileData, user: updatedUser });
+        const newProfileData = { ...profileData, user: updatedUser };
+        setProfileData(newProfileData);
+
+        // Update cache with new profile info
+        await profileCache.saveProfileData(newProfileData);
       }
 
       setShowEditProfile(false);

@@ -136,22 +136,31 @@ export default function PublicProfilePage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* Reviews Card */}
-          <div className="bg-white dark:bg-[#243447] rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 text-center">
+          <Link
+            href={`/users/${userId}/reviews`}
+            className="bg-white dark:bg-[#243447] rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 text-center hover:shadow-xl hover:border-[#FF6B35] transition-all cursor-pointer"
+          >
             <div className="text-4xl font-bold text-[#FF6B35]">{stats.totalReviews}</div>
             <p className="text-gray-600 dark:text-gray-400 mt-2">Reviews</p>
-          </div>
+          </Link>
 
           {/* Favorites Card */}
-          <div className="bg-white dark:bg-[#243447] rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 text-center">
+          <Link
+            href={`/users/${userId}/favorites`}
+            className="bg-white dark:bg-[#243447] rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 text-center hover:shadow-xl hover:border-[#FF6B35] transition-all cursor-pointer"
+          >
             <div className="text-4xl font-bold text-[#FF6B35]">{stats.totalFavorites}</div>
             <p className="text-gray-600 dark:text-gray-400 mt-2">Favorites</p>
-          </div>
+          </Link>
 
           {/* Friends Card */}
-          <div className="bg-white dark:bg-[#243447] rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 text-center">
+          <Link
+            href={`/users/${userId}/friends`}
+            className="bg-white dark:bg-[#243447] rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 text-center hover:shadow-xl hover:border-[#FF6B35] transition-all cursor-pointer"
+          >
             <div className="text-4xl font-bold text-[#FF6B35]">{stats.friendsCount}</div>
             <p className="text-gray-600 dark:text-gray-400 mt-2">Friends</p>
-          </div>
+          </Link>
 
           {/* Credibility Card */}
           <div className="bg-white dark:bg-[#243447] rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 text-center">

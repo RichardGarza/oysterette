@@ -48,13 +48,13 @@ export default function Home() {
   const loadRecommendations = async () => {
     try {
       setLoadingRecommendations(true);
-      const recs = await recommendationApi.getHybrid(5);
+      const recs = await recommendationApi.getHybrid(6);
       setRecommendations(recs);
     } catch (error) {
       console.error('Failed to load recommendations:', error);
       // Fallback to attribute-based
       try {
-        const fallback = await recommendationApi.getRecommendations(5);
+        const fallback = await recommendationApi.getRecommendations(6);
         setRecommendations(fallback);
       } catch (fallbackError) {
         console.error('Fallback recommendations failed:', fallbackError);
@@ -128,7 +128,7 @@ export default function Home() {
             </h2>
             {loadingRecommendations ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(3)].map((_, i) => (
+                {[...Array(6)].map((_, i) => (
                   <div key={i} className="animate-pulse bg-gray-200 dark:bg-[#243447] rounded-xl h-48" />
                 ))}
               </div>

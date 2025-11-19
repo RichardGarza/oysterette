@@ -75,12 +75,13 @@ export default function ReviewPage() {
       const data = await oysterApi.getById(id);
       if (data) {
         setOyster(data);
-        // Pre-populate with oyster's existing attributes (convert display to slider)
-        setSizeSlider(displayToSlider(data.avgSize ? Math.round(data.avgSize) : 5));
-        setBodySlider(displayToSlider(data.avgBody ? Math.round(data.avgBody) : 5));
-        setSweetBrininessSlider(displayToSlider(data.avgSweetBrininess ? Math.round(data.avgSweetBrininess) : 5));
-        setFlavorfulnessSlider(displayToSlider(data.avgFlavorfulness ? Math.round(data.avgFlavorfulness) : 5));
-        setCreaminessSlider(displayToSlider(data.avgCreaminess ? Math.round(data.avgCreaminess) : 5));
+        // Pre-populate with oyster's existing attributes
+        // Use avgSize if available (from reviews), otherwise fall back to base attributes (seed data)
+        setSizeSlider(displayToSlider(Math.round(data.avgSize ?? data.size)));
+        setBodySlider(displayToSlider(Math.round(data.avgBody ?? data.body)));
+        setSweetBrininessSlider(displayToSlider(Math.round(data.avgSweetBrininess ?? data.sweetBrininess)));
+        setFlavorfulnessSlider(displayToSlider(Math.round(data.avgFlavorfulness ?? data.flavorfulness)));
+        setCreaminessSlider(displayToSlider(Math.round(data.avgCreaminess ?? data.creaminess)));
       }
     } catch (error) {
       console.error('Failed to load oyster:', error);

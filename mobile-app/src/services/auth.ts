@@ -6,6 +6,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types/Oyster';
+import { profileCache } from './profileCache';
 
 // ============================================================================
 // CONSTANTS
@@ -125,9 +126,10 @@ export const authStorage = {
       this.removeToken(),
       this.removeUser(),
       AsyncStorage.removeItem(STORAGE_KEYS.BADGE_LEVEL),
+      profileCache.clearCache(), // Also clear profile cache on logout
     ]);
     if (__DEV__) {
-      console.log('🧹 [AuthStorage] Auth cleared');
+      console.log('🧹 [AuthStorage] Auth and profile cache cleared');
     }
   },
 

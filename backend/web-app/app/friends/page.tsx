@@ -335,7 +335,15 @@ export default function FriendsPage() {
     <div className="min-h-screen bg-white dark:bg-[#1a2332]">
       <Header />
       <main className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Friends</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Friends</h1>
+          <Link
+            href="/profile"
+            className="px-4 py-2 bg-gray-200 dark:bg-[#2d4054] text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
+          >
+            Back to Profile
+          </Link>
+        </div>
 
         <input
           type="text"

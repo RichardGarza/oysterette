@@ -65,13 +65,21 @@ export default function FavoritesPage() {
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            My Favorites
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {oysters.length} {oysters.length === 1 ? 'favorite' : 'favorites'}
-          </p>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+              My Favorites
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              {oysters.length} {oysters.length === 1 ? 'favorite' : 'favorites'}
+            </p>
+          </div>
+          <Link
+            href="/profile"
+            className="px-4 py-2 bg-gray-200 dark:bg-[#2d4054] text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
+          >
+            Back to Profile
+          </Link>
         </div>
 
         {loading ? (
