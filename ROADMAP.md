@@ -2207,11 +2207,17 @@ Comprehensive bug fix session addressing 11 critical issues affecting user exper
 - 🟡 26.14: Exit App Prompt on All Screens (MEDIUM)
 - 🟡 26.15: Home Screen Logo Not Showing (VERIFY - may be OTA cache)
 
+**Session Nov 19 (In Progress):**
+- ✅ 26.6: Username Display Tests (PARTIAL)
+  - ReviewCardUsername tests: 2/2 passing ✅
+  - ProfileUsername tests: 0/4 (complex mocking, needs continuation)
+  - Next: Fix ProfileScreen test mocking (React Query hooks, navigation, etc.)
+
 **Remaining (Lower Priority):**
 - 26.3: Navigation Issues (Android back button behavior)
 - 26.4: Add Oyster Form Improvements
 - 26.5: AR Menu Scanner Fixes
-- 26.6: Username System
+- 26.6: Username System Tests (Continue ProfileScreen tests)
 - 26.9: Testing & Verification
 
 ---
