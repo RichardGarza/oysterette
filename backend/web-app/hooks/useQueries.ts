@@ -7,7 +7,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { oysterApi, reviewApi, userApi, recommendationApi, xpApi } from '../lib/api';
+import { oysterApi, reviewApi, voteApi, userApi, recommendationApi, xpApi } from '../lib/api';
 
 // ============================================================================
 // QUERY KEYS
@@ -75,7 +75,7 @@ export function useOysterRating(id: string) {
 export function useOysterReviews(id: string) {
   return useQuery({
     queryKey: queryKeys.oysterReviews(id),
-    queryFn: () => reviewApi.getByOyster(id),
+    queryFn: () => reviewApi.getOysterReviews(id),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }
@@ -253,11 +253,11 @@ export function useVoteReview() {
   return useMutation({
     mutationFn: ({
       reviewId,
-      voteType,
+      isAgree,
     }: {
       reviewId: string;
-      voteType: 'helpful' | 'not_helpful';
-    }) => reviewApi.vote(reviewId, voteType),
+      isAgree: boolean;
+    }) => voteApi.vote(reviewId, isAgree),
     onSuccess: (data, variables) => {
       // Invalidate reviews queries to show updated vote counts
       queryClient.invalidateQueries({ queryKey: ['oyster'] }); // All oyster reviews

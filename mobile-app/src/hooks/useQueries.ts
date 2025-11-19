@@ -5,7 +5,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { oysterApi, reviewApi, userApi, recommendationApi, getXPStats } from '../services/api';
+import { oysterApi, reviewApi, voteApi, userApi, recommendationApi, getXPStats } from '../services/api';
 
 // ============================================================================
 // QUERY KEYS
@@ -73,7 +73,7 @@ export function useOysterRating(id: string) {
 export function useOysterReviews(id: string) {
   return useQuery({
     queryKey: queryKeys.oysterReviews(id),
-    queryFn: () => reviewApi.getByOyster(id),
+    queryFn: () => reviewApi.getOysterReviews(id),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }
@@ -251,12 +251,12 @@ export function useVoteReview() {
   return useMutation({
     mutationFn: ({
       reviewId,
-      voteType,
+      isAgree,
     }: {
       reviewId: string;
-      voteType: 'helpful' | 'not_helpful';
-    }) => reviewApi.vote(reviewId, voteType),
-    onMutate: async ({ reviewId, voteType }) => {
+      isAgree: boolean;
+    }) => voteApi.vote(reviewId, isAgree),
+    onMutate: async ({ reviewId, isAgree }) => {
       // Optimistic update - we don't have the oyster ID here, so we just update the review
       // The review will be in one of the reviews queries
       // This is a simplified optimistic update - could be improved with more context
