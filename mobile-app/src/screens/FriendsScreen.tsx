@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl, SafeAreaView, Alert } from 'react-native';
-import { Card, Text, Button, Appbar, SegmentedButtons, Avatar, Searchbar, Snackbar } from 'react-native-paper';
+import { Card, Text, Button, Appbar, SegmentedButtons, Avatar, Searchbar, Snackbar, ActivityIndicator } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -355,7 +355,14 @@ export default function FriendsScreen() {
         loading={searching}
       />
 
-      {searchQuery.length >= 2 && searchResults.length > 0 ? (
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={paperTheme.colors.primary} />
+          <Text variant="bodyLarge" style={{ marginTop: 16 }}>
+            Loading Friends
+          </Text>
+        </View>
+      ) : searchQuery.length >= 2 && searchResults.length > 0 ? (
         <FlatList
           data={searchResults}
           renderItem={renderSearchResult}
@@ -521,5 +528,10 @@ const styles = StyleSheet.create({
   empty: {
     alignItems: 'center',
     padding: 32,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

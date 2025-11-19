@@ -29,10 +29,11 @@ import { HomeScreenNavigationProp } from '../navigation/types';
 import { useTheme } from '../context/ThemeContext';
 import { authStorage } from '../services/auth';
 import { favoritesStorage } from '../services/favorites';
-import { recommendationApi, userApi, oysterApi } from '../services/api';
+import { oysterApi } from '../services/api';
 import { Oyster } from '../types/Oyster';
 import RecommendedOysterCard from '../components/RecommendedOysterCard';
-import * as Haptics from 'expo-haptics'; // Add if not present
+import * as Haptics from 'expo-haptics';
+import { useRecommendations, useTopOysters, useProfile } from '../hooks/useQueries';
 
 // ============================================================================
 // CONSTANTS
@@ -44,7 +45,7 @@ const LOGO_SIZES = {
 
 const RECOMMENDATIONS_LIMIT = 5;
 
-const LAST_UPDATED = 'November 18, 2025 at 06:59 PM';
+const LAST_UPDATED = 'November 18, 2025 at 08:07 PM';
 const TOP_RATED_LIMIT = 5;
 
 // ============================================================================
@@ -56,16 +57,13 @@ export default function HomeScreen() {
   const { theme, loadUserTheme, paperTheme } = useTheme();
   const [checking, setChecking] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [recommendations, setRecommendations] = useState<Oyster[]>([]);
-  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
-  const [topRated, setTopRated] = useState<Oyster[]>([]);
-  const [userStats, setUserStats] = useState({
-    reviews: 0,
-    favorites: 0,
-    oystersTried: 0,
-  });
   const [totalOysters, setTotalOysters] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // React Query hooks for data fetching
+  const { data: recommendations = [], isLoading: loadingRecommendations, refetch: refetchRecommendations } = useRecommendations(RECOMMENDATIONS_LIMIT);
+  const { data: topRated = [], refetch: refetchTopRated } = useTopOysters();
+  const { data: profileData, refetch: refetchProfile } = useProfile();
 
   // Handle Android back button press - show exit confirmation (EXCLUSIVE TO HOME SCREEN)
   useEffect(() => {
@@ -96,64 +94,19 @@ export default function HomeScreen() {
     return () => backHandler.remove();
   }, []);
 
-  const loadRecommendations = useCallback(async () => {
-    try {
-      setLoadingRecommendations(true);
-      // Use hybrid recommendations for best results (combines attribute + collaborative)
-      const recs = await recommendationApi.getHybrid(RECOMMENDATIONS_LIMIT);
-      setRecommendations(recs);
-    } catch (error) {
-      if (__DEV__) {
-        console.error('❌ [HomeScreen] Error loading recommendations:', error);
-      }
-      // Fallback to attribute-based if hybrid fails
+  // Load total oyster count
+  useEffect(() => {
+    const loadTotalOysters = async () => {
       try {
-        const fallbackRecs = await recommendationApi.getRecommendations(
-          RECOMMENDATIONS_LIMIT
-        );
-        setRecommendations(fallbackRecs);
-      } catch (fallbackError) {
+        const data = await oysterApi.getAll();
+        setTotalOysters(data.length);
+      } catch (error) {
         if (__DEV__) {
-          console.error(
-            '❌ [HomeScreen] Fallback recommendations also failed:',
-            fallbackError
-          );
+          console.error('❌ [HomeScreen] Error loading total oysters:', error);
         }
       }
-    } finally {
-      setLoadingRecommendations(false);
-    }
-  }, []);
-
-  const loadTopRated = useCallback(async () => {
-    try {
-      const data = await oysterApi.getAll();
-      setTotalOysters(data.length);
-      const sorted = data
-        .filter((oyster) => oyster.totalReviews > 0)
-        .sort((a, b) => b.overallScore - a.overallScore)
-        .slice(0, TOP_RATED_LIMIT);
-      setTopRated(sorted);
-    } catch (error) {
-      if (__DEV__) {
-        console.error('❌ [HomeScreen] Error loading top rated:', error);
-      }
-    }
-  }, []);
-
-  const loadUserStats = useCallback(async () => {
-    try {
-      const profile = await userApi.getProfile();
-      setUserStats({
-        reviews: profile.stats?.totalReviews || 0,
-        favorites: profile.stats?.totalFavorites || 0,
-        oystersTried: profile.stats?.totalReviews || 0,
-      });
-    } catch (error) {
-      if (__DEV__) {
-        console.error('❌ [HomeScreen] Error loading user stats:', error);
-      }
-    }
+    };
+    loadTotalOysters();
   }, []);
 
   const checkAuth = useCallback(async () => {
@@ -165,14 +118,10 @@ export default function HomeScreen() {
         await loadUserTheme(user);
         favoritesStorage.syncWithBackend();
         setIsLoggedIn(true);
-        setChecking(false);
-        loadRecommendations();
-        loadUserStats();
       } else {
         setIsLoggedIn(false);
-        setChecking(false);
       }
-      loadTopRated();
+      setChecking(false);
     } catch (error) {
       if (__DEV__) {
         console.error('❌ [HomeScreen] Error checking auth:', error);
@@ -256,14 +205,14 @@ export default function HomeScreen() {
         />
 
         {/* Quick Stats */}
-        {isLoggedIn && (
+        {isLoggedIn && profileData && (
           <View style={styles.statsContainer}>
             <TouchableOpacity
               onPress={() => navigation.navigate('Profile' as any)}
               activeOpacity={0.7}>
               <Surface style={styles.statCard} elevation={1}>
                 <Text variant='headlineSmall' style={styles.statNumber}>
-                  {userStats.reviews}
+                  {profileData.stats?.totalReviews || 0}
                 </Text>
                 <Text variant='bodySmall' style={styles.statLabel}>
                   Reviews
@@ -275,7 +224,7 @@ export default function HomeScreen() {
               activeOpacity={0.7}>
               <Surface style={styles.statCard} elevation={1}>
                 <Text variant='headlineSmall' style={styles.statNumber}>
-                  {userStats.favorites}
+                  {profileData.stats?.totalFavorites || 0}
                 </Text>
                 <Text variant='bodySmall' style={styles.statLabel}>
                   Favorites

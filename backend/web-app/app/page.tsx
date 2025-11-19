@@ -4,77 +4,21 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Header from '../components/Header';
 import RatingDisplay from '../components/RatingDisplay';
-import { oysterApi, recommendationApi, userApi } from '../lib/api';
 import { Oyster } from '../lib/types';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useRecommendations, useTopOysters, useProfile } from '../hooks/useQueries';
 
 export const dynamic = 'force-dynamic';
 
 export default function Home() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { theme } = useTheme(); // Subscribe to theme changes to force re-render
-  const [oysters, setOysters] = useState<Oyster[]>([]);
-  const [recommendations, setRecommendations] = useState<Oyster[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
-  const [userStats, setUserStats] = useState({ reviews: 0, favorites: 0 });
+  const { theme } = useTheme();
 
-  useEffect(() => {
-    loadOysters();
-    // Only load authenticated data after auth state has finished loading
-    if (isAuthenticated && !authLoading) {
-      loadRecommendations();
-      loadUserStats();
-    }
-  }, [isAuthenticated, authLoading]);
-
-  const loadOysters = async () => {
-    try {
-      const data = await oysterApi.getAll();
-      // Sort by overallScore desc, take top 6
-      const topOysters = data
-        .filter(o => o.totalReviews > 0)
-        .sort((a, b) => b.overallScore - a.overallScore)
-        .slice(0, 6);
-      setOysters(topOysters);
-    } catch (error) {
-      console.error('Failed to load oysters:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadRecommendations = async () => {
-    try {
-      setLoadingRecommendations(true);
-      const recs = await recommendationApi.getHybrid(6);
-      setRecommendations(recs);
-    } catch (error) {
-      console.error('Failed to load recommendations:', error);
-      // Fallback to attribute-based
-      try {
-        const fallback = await recommendationApi.getRecommendations(6);
-        setRecommendations(fallback);
-      } catch (fallbackError) {
-        console.error('Fallback recommendations failed:', fallbackError);
-      }
-    } finally {
-      setLoadingRecommendations(false);
-    }
-  };
-
-  const loadUserStats = async () => {
-    try {
-      const profile = await userApi.getProfile();
-      setUserStats({
-        reviews: profile.stats.totalReviews,
-        favorites: profile.stats.totalFavorites,
-      });
-    } catch (error) {
-      console.error('Failed to load user stats:', error);
-    }
-  };
+  // React Query hooks for data fetching
+  const { data: recommendations = [], isLoading: loadingRecommendations } = useRecommendations(6);
+  const { data: oysters = [], isLoading: loading } = useTopOysters();
+  const { data: profileData } = useProfile();
 
 
   return (
@@ -101,20 +45,20 @@ export default function Home() {
         </div>
 
         {/* Quick Stats - Only if logged in */}
-        {isAuthenticated && (
+        {isAuthenticated && profileData && (
           <div className="grid grid-cols-2 gap-4 mb-8 max-w-md mx-auto">
             <Link
               href="/profile"
               className="p-4 bg-white dark:bg-[#243447] rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow text-center"
             >
-              <div className="text-3xl font-bold text-[#FF6B35]">{userStats.reviews}</div>
+              <div className="text-3xl font-bold text-[#FF6B35]">{profileData.stats?.totalReviews || 0}</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Reviews</div>
             </Link>
             <Link
               href="/favorites"
               className="p-4 bg-white dark:bg-[#243447] rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow text-center"
             >
-              <div className="text-3xl font-bold text-[#FF6B35]">{userStats.favorites}</div>
+              <div className="text-3xl font-bold text-[#FF6B35]">{profileData.stats?.totalFavorites || 0}</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Favorites</div>
             </Link>
           </div>

@@ -1,6 +1,6 @@
 /**
  * Auth Utilities for Web App
- * 
+ *
  * Handles JWT token storage and retrieval from localStorage
  */
 

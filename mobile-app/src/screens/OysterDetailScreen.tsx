@@ -29,7 +29,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { OysterDetailScreenRouteProp, OysterDetailScreenNavigationProp } from '../navigation/types';
-import { oysterApi, voteApi, reviewApi } from '../services/api';
+import { voteApi } from '../services/api';
 import { authStorage } from '../services/auth';
 import { favoritesStorage } from '../services/favorites';
 import { Oyster, Review } from '../types/Oyster';
@@ -38,6 +38,7 @@ import { EmptyState } from '../components/EmptyState';
 import { RatingDisplay } from '../components/RatingDisplay';
 import { ReviewCard } from '../components/ReviewCard';
 import { getAttributeDescriptor } from '../utils/ratingUtils';
+import { useOyster } from '../hooks/useQueries';
 
 // ============================================================================
 // CONSTANTS
@@ -103,29 +104,53 @@ export default function OysterDetailScreen() {
   const route = useRoute<OysterDetailScreenRouteProp>();
   const navigation = useNavigation<OysterDetailScreenNavigationProp>();
   const { oysterId } = route.params;
-  const [oyster, setOyster] = useState<Oyster | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { theme, isDark, paperTheme } = useTheme();
+
+  // React Query hook for oyster data
+  const {
+    data: oyster,
+    isLoading: loading,
+    isError,
+    refetch
+  } = useOyster(oysterId);
+
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [userVotes, setUserVotes] = useState<Record<string, boolean | null>>({});
   const [sortBy, setSortBy] = useState<SortOption>('helpful');
   const [ratingFilter, setRatingFilter] = useState<RatingFilter>('ALL');
   const [isFavorite, setIsFavorite] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const { theme, isDark, paperTheme } = useTheme();
 
+  // Load initial data
   useEffect(() => {
-    fetchOyster();
     loadFavoriteStatus();
     loadCurrentUser();
   }, [oysterId]);
 
-  // Auto-refresh when screen comes into focus (e.g., after adding/updating a review)
+  // Fetch user votes when oyster data loads
+  useEffect(() => {
+    const fetchUserVotes = async () => {
+      if (oyster && oyster.reviews && oyster.reviews.length > 0) {
+        try {
+          const reviewIds = oyster.reviews.map(r => r.id);
+          const votes = await voteApi.getUserVotes(reviewIds);
+          setUserVotes(votes);
+        } catch (voteError) {
+          if (__DEV__) {
+            console.error('❌ [OysterDetailScreen] Error fetching votes:', voteError);
+          }
+        }
+      }
+    };
+    fetchUserVotes();
+  }, [oyster]);
+
+  // Auto-refresh when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
-      fetchOyster();
+      refetch();
       loadFavoriteStatus();
-    }, [oysterId])
+    }, [oysterId, refetch])
   );
 
   const loadCurrentUser = useCallback(async () => {
@@ -138,51 +163,15 @@ export default function OysterDetailScreen() {
     setIsFavorite(favorited);
   }, [oysterId]);
 
-  const fetchOyster = useCallback(async (isRefreshing = false) => {
-    try {
-      if (isRefreshing) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-      setError(null);
-      const data = await oysterApi.getById(oysterId);
-      setOyster(data);
-
-      // Fetch user votes for all reviews
-      if (data && data.reviews && data.reviews.length > 0) {
-        try {
-          const reviewIds = data.reviews.map(r => r.id);
-          const votes = await voteApi.getUserVotes(reviewIds);
-          setUserVotes(votes);
-        } catch (voteError) {
-          if (__DEV__) {
-            console.error('❌ [OysterDetailScreen] Error fetching votes:', voteError);
-          }
-          // Continue even if votes fail
-        }
-      }
-    } catch (err) {
-      setError('Failed to load oyster details');
-      if (__DEV__) {
-        console.error('❌ [OysterDetailScreen] Error fetching oyster:', err);
-      }
-    } finally {
-      if (isRefreshing) {
-        setRefreshing(false);
-      } else {
-        setLoading(false);
-      }
-    }
-  }, [oysterId]);
-
-  const onRefresh = useCallback(() => {
-    fetchOyster(true);
-  }, [fetchOyster]);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const handleVoteChange = useCallback(() => {
-    fetchOyster(true);
-  }, [fetchOyster]);
+    refetch();
+  }, [refetch]);
 
   const handleToggleFavorite = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -195,8 +184,8 @@ export default function OysterDetailScreen() {
   }, [navigation]);
 
   const handleDeleteReview = useCallback(() => {
-    fetchOyster(true);
-  }, [fetchOyster]);
+    refetch();
+  }, [refetch]);
 
   const handleWriteReview = useCallback(async () => {
     if (!oyster) return;
@@ -335,10 +324,10 @@ export default function OysterDetailScreen() {
     );
   }
 
-  if (error || !oyster) {
+  if (isError || !oyster) {
     return (
       <View style={styles.centerContainer}>
-        <Text variant="bodyLarge" style={styles.errorText}>{error || 'Oyster not found'}</Text>
+        <Text variant="bodyLarge" style={styles.errorText}>Failed to load oyster details</Text>
       </View>
     );
   }

@@ -111,13 +111,13 @@ import {
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { authStorage } from '../services/auth';
-import { userApi, reviewApi, uploadApi, getXPStats } from '../services/api';
-import { profileCache } from '../services/profileCache';
+import { uploadApi } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { Review, User } from '../types/Oyster';
 import { EmptyState } from '../components/EmptyState';
 import { getRangeLabel, getAttributeLabel } from '../utils/flavorLabels';
 import { XPBadge } from '../components/XPBadge';
+import { useProfile, useProfileReviews, useProfileXP } from '../hooks/useQueries';
 
 interface ProfileStats {
   totalReviews: number;
@@ -144,11 +144,26 @@ export default function ProfileScreen() {
   const { theme, isDark, paperTheme } = useTheme();
   const viewingUserId = route.params?.userId;
   const isViewingOwnProfile = !viewingUserId;
-  const [loading, setLoading] = useState(true);
+
+  // React Query hooks for own profile
+  const {
+    data: profileData,
+    isLoading: loading,
+    refetch: refetchProfile
+  } = useProfile();
+
+  const {
+    data: reviewsData,
+    refetch: refetchReviews
+  } = useProfileReviews();
+
+  const {
+    data: xpData,
+    refetch: refetchXP
+  } = useProfileXP();
+
+  const reviews = reviewsData?.reviews || [];
   const [refreshing, setRefreshing] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileData | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [xpData, setXpData] = useState<any>(null);
 
   // Edit Profile Modal
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -169,109 +184,35 @@ export default function ProfileScreen() {
   // Flavor Attribute Tooltip
   const [tooltipAttribute, setTooltipAttribute] = useState<string | null>(null);
 
+  // Initialize edit fields when profile data loads
   useEffect(() => {
-    if (__DEV__) {
-      console.log('🔍 [ProfileScreen] Component mounted - NO permission requests should happen here');
+    if (profileData?.user) {
+      setEditName(profileData.user.name);
+      setEditEmail(profileData.user.email);
     }
-    loadProfile();
-  }, []);
+  }, [profileData]);
 
+  // Refetch on screen focus
   useFocusEffect(
     React.useCallback(() => {
       if (__DEV__) {
-        console.log('🔍 [ProfileScreen] Screen focused - loading profile');
+        console.log('🔍 [ProfileScreen] Screen focused - refetching profile');
       }
-      loadProfile();
-    }, [])
+      refetchProfile();
+      refetchReviews();
+      refetchXP();
+    }, [refetchProfile, refetchReviews, refetchXP])
   );
 
-  const loadProfile = async (isRefreshing = false) => {
-    try {
-      if (isRefreshing) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-
-      if (!isViewingOwnProfile && viewingUserId) {
-        // Viewing friend's public profile - no caching for other users
-        const profile = await userApi.getPublicProfile(viewingUserId);
-        setProfileData(profile);
-
-        // Fetch public user reviews
-        const publicReviews = await reviewApi.getPublicUserReviews(viewingUserId);
-        setReviews(publicReviews);
-
-        // Don't load XP data for other users
-        setXpData(null);
-      } else {
-        // Viewing own profile - use cache-first strategy
-        const user = await authStorage.getUser();
-        if (!user) {
-          navigation.navigate('Login');
-          return;
-        }
-
-        // Step 1: Load cached data immediately (if available)
-        if (!isRefreshing) {
-          const cachedProfile = await profileCache.getProfileData();
-          const cachedReviews = await profileCache.getReviews();
-          const cachedXP = await profileCache.getXPData();
-
-          if (cachedProfile) {
-            if (__DEV__) {
-              console.log('⚡ [ProfileScreen] Showing cached data first');
-            }
-            setProfileData(cachedProfile);
-            setEditName(cachedProfile.user.name);
-            setEditEmail(cachedProfile.user.email);
-            setLoading(false); // Stop loading spinner immediately
-          }
-
-          if (cachedReviews) {
-            setReviews(cachedReviews);
-          }
-
-          if (cachedXP) {
-            setXpData(cachedXP);
-          }
-        }
-
-        // Step 2: Fetch fresh data from API in background
-        const profile = await userApi.getProfile();
-        setProfileData(profile);
-        setEditName(profile.user.name);
-        setEditEmail(profile.user.email);
-
-        // Fetch user's reviews (paginated, showing first 20)
-        const reviewHistory = await userApi.getMyReviews({ page: 1, limit: 20, sortBy: 'createdAt' });
-        setReviews(reviewHistory.reviews);
-
-        // Fetch XP stats
-        const xp = await getXPStats();
-        setXpData(xp);
-
-        // Step 3: Update cache with fresh data
-        await Promise.all([
-          profileCache.saveProfileData(profile),
-          profileCache.saveReviews(reviewHistory.reviews),
-          profileCache.saveXPData(xp),
-        ]);
-
-        if (__DEV__) {
-          console.log('✅ [ProfileScreen] Fresh data loaded and cached');
-        }
-      }
-    } catch (error) {
-      console.error('Error loading profile:', error);
-      Alert.alert('Error', 'Failed to load profile. Please try again.');
-    } finally {
-      if (isRefreshing) {
-        setRefreshing(false);
-      } else {
-        setLoading(false);
-      }
-    }
+  // Handle pull-to-refresh
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([
+      refetchProfile(),
+      refetchReviews(),
+      refetchXP()
+    ]);
+    setRefreshing(false);
   };
 
   const pickImageFromCamera = async () => {
@@ -344,11 +285,8 @@ export default function ProfileScreen() {
         const newProfileData = { ...profileData, user: updatedUser };
         setProfileData(newProfileData);
 
-        // Update cache with new profile photo
-        await profileCache.saveProfileData(newProfileData);
-
         if (__DEV__) {
-          console.log('✅ [ProfileScreen] State and cache updated with photo URL:', updatedUser.profilePhotoUrl);
+          console.log('✅ [ProfileScreen] State updated with photo URL:', updatedUser.profilePhotoUrl);
         }
       }
     } catch (error) {
@@ -392,15 +330,12 @@ export default function ProfileScreen() {
       setEditLoading(true);
       await userApi.updateProfile(editName, editEmail);
 
-      // Update local storage and cache
+      // Update local storage
       if (profileData) {
         const updatedUser = { ...profileData.user, name: editName, email: editEmail };
         await authStorage.saveUser(updatedUser);
         const newProfileData = { ...profileData, user: updatedUser };
         setProfileData(newProfileData);
-
-        // Update cache with new profile info
-        await profileCache.saveProfileData(newProfileData);
       }
 
       setShowEditProfile(false);
@@ -551,7 +486,7 @@ export default function ProfileScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => loadProfile(true)}
+            onRefresh={handleRefresh}
             tintColor={theme.colors.primary}
           />
         }

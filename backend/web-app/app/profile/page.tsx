@@ -7,10 +7,11 @@ import Header from '../../components/Header';
 import ReviewCard from '../../components/ReviewCard';
 import EmptyState from '../../components/EmptyState';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { userApi, reviewApi, xpApi, uploadApi, friendApi } from '../../lib/api';
+import { uploadApi, friendApi } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Review, User } from '../../lib/types';
 import { getAttributeLabel, getRangeLabel } from '../../lib/flavorLabels';
+import { useProfile, useProfileReviews, useProfileXP } from '../../hooks/useQueries';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,11 +33,14 @@ interface ProfileStats {
 export default function ProfilePage() {
   const router = useRouter();
   const { user: authUser, isAuthenticated, logout, refreshUser } = useAuth();
-  const [profile, setProfile] = useState<{ user: User; stats: ProfileStats } | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [xpData, setXpData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  
+
+  // React Query hooks
+  const { data: profile, isLoading: loading, refetch: refetchProfile } = useProfile();
+  const { data: reviewsData, refetch: refetchReviews } = useProfileReviews();
+  const { data: xpData, refetch: refetchXP } = useProfileXP();
+
+  const reviews = reviewsData?.reviews || [];
+
   // Edit Profile Modal
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editName, setEditName] = useState('');
@@ -44,90 +48,37 @@ export default function ProfilePage() {
   const [editUsername, setEditUsername] = useState('');
   const [editLoading, setEditLoading] = useState(false);
 
-
   // Photo Upload
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
+  // Initialize edit fields from profile data
   useEffect(() => {
-    if (isAuthenticated) {
-      loadProfile();
-      loadReviews();
-      loadXpData();
-    } else {
+    if (profile?.user) {
+      setEditName(profile.user.name);
+      setEditEmail(profile.user.email);
+      setEditUsername(profile.user.username || '');
+    }
+  }, [profile]);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, router]);
 
-  const loadProfile = async () => {
-    try {
-      setLoading(true);
-      const profileData = await userApi.getProfile();
-      
-      // Load friends count separately if not included in profile
-      let friendsCount = 0;
-      try {
-        const friendsResponse = await friendApi.getFriendsCount();
-        friendsCount = friendsResponse.friendsCount;
-      } catch (error) {
-        console.error('Failed to load friends count:', error);
-      }
-      
-      // Extend stats with friends count
-      const extendedStats = {
-        ...profileData.stats,
-        friendsCount,
-      };
-      
-      setProfile({ ...profileData, stats: extendedStats });
-      
-      // Pre-populate edit form
-      setEditName(profileData.user.name);
-      setEditEmail(profileData.user.email);
-      setEditUsername(profileData.user.username || '');
-    } catch (error) {
-      console.error('Failed to load profile:', error);
-      router.push('/login');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadReviews = async () => {
-    if (!isAuthenticated) return;
-    try {
-      // Use getMyReviews which gets current user's reviews
-      const data = await reviewApi.getMyReviews();
-      setReviews(data?.reviews || []);
-    } catch (error) {
-      console.error('Failed to load reviews:', error);
-      setReviews([]); // Ensure reviews is always an array
-    }
-  };
-
-  const loadXpData = async () => {
-    if (!isAuthenticated) return;
-    try {
-      // getStats uses authenticated user, no userId needed
-      const data = await xpApi.getStats();
-      setXpData(data);
-    } catch (error) {
-      console.error('Failed to load XP data:', error);
-    }
-  };
-
-  // Handle review updates/deletes - reload reviews list
+  // Handle review updates/deletes - refetch data
   const handleReviewChange = async () => {
-    await loadReviews();
-    // Also reload profile to update stats
-    await loadProfile();
+    await refetchReviews();
+    await refetchProfile();
   };
 
   // Edit Profile Form Handling
   const handleEditProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAuthenticated) return;
-    
+
     try {
       setEditLoading(true);
       const updatedUser = await userApi.updateProfile({
@@ -135,13 +86,13 @@ export default function ProfilePage() {
         email: editEmail,
         username: editUsername || undefined,
       });
-      
+
       // Update auth user
       refreshUser(updatedUser);
-      
+
       // Refresh profile with new data
-      await loadProfile();
-      
+      await refetchProfile();
+
       setShowEditProfile(false);
     } catch (error: any) {
       console.error('Failed to update profile:', error);
@@ -156,21 +107,21 @@ export default function ProfilePage() {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !isAuthenticated) return;
-    
+
     try {
       setUploadingPhoto(true);
       const photoUrl = await uploadApi.uploadPhoto(file);
-      
+
       // Update profile photo
       const updatedUser = await userApi.updateProfile({
         profilePhotoUrl: photoUrl,
       });
-      
+
       // Update auth user
       refreshUser(updatedUser);
-      
-      // Refresh profile
-      await loadProfile();
+
+      // Refresh profile with new photo
+      await refetchProfile();
     } catch (error) {
       console.error('Failed to upload photo:', error);
     } finally {

@@ -34,7 +34,6 @@ import {
 import * as Haptics from 'expo-haptics';
 import { useNavigation, useFocusEffect, useRoute, RouteProp } from '@react-navigation/native';
 import { OysterListScreenNavigationProp, RootStackParamList } from '../navigation/types';
-import { oysterApi } from '../services/api';
 import { favoritesStorage } from '../services/favorites';
 import { authStorage } from '../services/auth';
 import { Oyster } from '../types/Oyster';
@@ -42,6 +41,7 @@ import { RatingDisplay } from '../components/RatingDisplay';
 import { EmptyState } from '../components/EmptyState';
 import { OysterCardSkeleton } from '../components/OysterCardSkeleton';
 import { useTheme } from '../context/ThemeContext';
+import { useOysters } from '../hooks/useQueries';
 // import * as Sentry from '@sentry/react-native';
 
 // ============================================================================
@@ -104,12 +104,17 @@ export default function OysterListScreen() {
   const navigation = useNavigation<OysterListScreenNavigationProp>();
   const route = useRoute<RouteProp<RootStackParamList, 'OysterList'>>();
   const { theme, isDark, paperTheme } = useTheme();
-  const [oysters, setOysters] = useState<Oyster[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  // React Query hook for oysters data
+  const {
+    data: oysters = [],
+    isLoading: loading,
+    isError: error,
+    refetch
+  } = useOysters();
+
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [errorDetails, setErrorDetails] = useState<any>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -134,17 +139,13 @@ export default function OysterListScreen() {
     if (route.params?.showFavorites) {
       setShowFavoritesOnly(true);
     }
-    fetchOysters();
     loadFavorites();
     checkAuth();
   }, []);
 
-
+  // Scroll to top when filters change
   useEffect(() => {
-    // Refetch when filters change and scroll to top
     if (!loading) {
-      fetchOysters();
-      // Scroll to top of list when filters change
       flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
     }
   }, [selectedSortBy, sortDirection, sweetness, size, body]);
@@ -152,9 +153,9 @@ export default function OysterListScreen() {
   useFocusEffect(
     React.useCallback(() => {
       checkAuth();
-      fetchOysters();
+      refetch();
       loadFavorites();
-    }, [])
+    }, [refetch])
   );
 
   const checkAuth = useCallback(async () => {
@@ -167,57 +168,11 @@ export default function OysterListScreen() {
     setFavorites(new Set(favs));
   }, []);
 
-  const fetchOysters = useCallback(async (isRefreshing = false) => {
-    try {
-      if (isRefreshing) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-      setError(null);
-
-      // Build filter params
-      const params: Record<string, string> = {};
-      if (selectedSortBy) params.sortBy = selectedSortBy;
-      if (sortDirection) params.sortDirection = sortDirection;
-      if (sweetness) params.sweetness = sweetness;
-      if (size) params.size = size;
-      if (body) params.body = body;
-
-      if (__DEV__) {
-        console.log('🔍 [OysterList] Filter params:', JSON.stringify(params, null, 2));
-      }
-
-      const data = await oysterApi.getAll(params);
-
-      if (__DEV__) {
-        console.log(`🦪 [OysterList] Received ${data.length} oysters`);
-      }
-      setOysters(data);
-    } catch (err: any) {
-      const errorMsg = err?.userMessage || err?.response?.data?.error || err?.message || 'Unknown error';
-      const statusCode = err?.response?.status || 'No status';
-      const endpoint = 'GET /api/oysters';
-
-      setError(err?.userMessage || `Failed to load oysters. Status: ${statusCode} - ${errorMsg}`);
-      setErrorDetails({ err, statusCode, endpoint, errorMsg });
-
-      if (__DEV__) {
-        console.error('❌ [OysterListScreen] Error fetching oysters:', err);
-        console.error('Status:', statusCode, 'Message:', errorMsg);
-      }
-    } finally {
-      if (isRefreshing) {
-        setRefreshing(false);
-      } else {
-        setLoading(false);
-      }
-    }
-  }, [selectedSortBy, sortDirection, sweetness, size, body]);
-
-  const onRefresh = useCallback(() => {
-    fetchOysters(true);
-  }, [fetchOysters]);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const handleToggleFavorite = useCallback(async (oysterId: string, e: any) => {
     e.stopPropagation();

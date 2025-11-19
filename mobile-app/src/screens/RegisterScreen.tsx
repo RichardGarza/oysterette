@@ -27,7 +27,7 @@ import {
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-import { authApi, reviewApi } from '../services/api';
+import { authApi, reviewApi, userApi } from '../services/api';
 import { authStorage } from '../services/auth';
 import { favoritesStorage } from '../services/favorites';
 import { tempReviewsStorage } from '../services/tempReviews';

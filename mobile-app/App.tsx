@@ -92,6 +92,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { TouchableOpacity, Text, Image, View } from 'react-native';
 import { PaperProvider, IconButton } from 'react-native-paper';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RootStackParamList } from './src/navigation/types';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { XPNotificationProvider } from './src/context/XPNotificationContext';
@@ -137,6 +138,17 @@ import { authStorage } from './src/services/auth'; // Add import for auth
  */
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+// Create QueryClient with optimized default options
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: true,
+      retry: 2,
+      staleTime: 0, // Individual queries override this
+    },
+  },
+});
 
 function AppNavigator() {
   const { theme, isDark, paperTheme } = useTheme();
@@ -366,11 +378,13 @@ function AppNavigator() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <ThemeProvider>
-        <XPNotificationProvider>
-          <AppNavigator />
-        </XPNotificationProvider>
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <XPNotificationProvider>
+            <AppNavigator />
+          </XPNotificationProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </SafeAreaProvider>
   );
 }
