@@ -360,12 +360,17 @@ export default function OysterDetailScreen() {
           />
         }
       >
-        <Appbar.Header elevated>
-          <Appbar.BackAction onPress={() => navigation.goBack()} />
-          <Appbar.Content title={oyster.name} subtitle={oyster.species} />
+        <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+          <Appbar.BackAction onPress={() => navigation.goBack()} iconColor="#fff" />
+          <Appbar.Content 
+            title={oyster.name} 
+            subtitle={oyster.species}
+            titleStyle={{ color: '#fff', fontWeight: 'bold' }}
+            subtitleStyle={{ color: '#fff' }}
+          />
           <Appbar.Action
             icon={isFavorite ? 'heart' : 'heart-outline'}
-            iconColor={isFavorite ? COLORS.FAVORITE_HEART : undefined}
+            iconColor={isFavorite ? COLORS.FAVORITE_HEART : '#fff'}
             onPress={handleToggleFavorite}
           />
         </Appbar.Header>

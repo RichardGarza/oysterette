@@ -250,10 +250,9 @@ function AppNavigator() {
         <Stack.Screen
           name="OysterDetail"
           component={OysterDetailScreen}
-          options={({ navigation }) => ({
-            title: 'Oyster Details',
-            headerRight: () => <SettingsButton navigation={navigation} />,
-          })}
+          options={{
+            headerShown: false,
+          }}
         />
         <Stack.Screen
           name="AddOyster"
