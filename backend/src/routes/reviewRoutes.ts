@@ -43,11 +43,13 @@ const router = express.Router();
 
 // Public routes
 router.get('/oyster/:oysterId', validateParams(oysterIdParamSchema), getOysterReviews);
-router.get('/user/:userId', validateParams(userIdParamSchema), getPublicUserReviews); // Public user reviews (no auth)
 
 // Protected routes (optional authentication - allows anonymous reviews)
 router.post('/', optionalAuthenticate, validateBody(createReviewSchema), createReview);
-router.get('/user', authenticate, getUserReviews); // Must come after /user/:userId in public routes
+router.get('/user', authenticate, getUserReviews); // Must come before /user/:userId
+
+// Public routes (must come after /user to avoid matching it)
+router.get('/user/:userId', validateParams(userIdParamSchema), getPublicUserReviews); // Public user reviews (no auth)
 router.get('/check/:oysterId', authenticate, validateParams(oysterIdParamSchema), checkExistingReview);
 router.put('/:reviewId', authenticate, validateParams(reviewIdParamSchema), validateBody(updateReviewSchema), updateReview);
 router.delete('/:reviewId', authenticate, validateParams(reviewIdParamSchema), deleteReview);
