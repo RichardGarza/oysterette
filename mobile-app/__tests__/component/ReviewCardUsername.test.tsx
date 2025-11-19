@@ -2,12 +2,78 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import ReviewCard from '../../src/components/ReviewCard';
 
-// Mock PaperProvider
+// Mock react-native-paper
 jest.mock('react-native-paper', () => ({
-  Card: ({ children }: any) => children,
+  Card: Object.assign(
+    ({ children }: any) => children,
+    {
+      Content: ({ children }: any) => children,
+      Title: ({ children }: any) => children,
+      Actions: ({ children }: any) => children,
+    }
+  ),
   Text: ({ children }: any) => children,
   IconButton: () => null,
   Avatar: { Text: () => null },
+  Chip: ({ children }: any) => children,
+  Button: ({ children }: any) => children,
+  ActivityIndicator: () => null,
+  Dialog: Object.assign(
+    ({ children }: any) => children,
+    {
+      Title: ({ children }: any) => children,
+      Content: ({ children }: any) => children,
+      Actions: ({ children }: any) => children,
+    }
+  ),
+  Portal: ({ children }: any) => children,
+  Snackbar: ({ children }: any) => children,
+  useTheme: () => ({
+    colors: {
+      primary: '#000',
+      background: '#fff',
+      surface: '#fff',
+      text: '#000',
+    },
+  }),
+  MD3LightTheme: {
+    colors: {
+      primary: '#000',
+      background: '#fff',
+      surface: '#fff',
+      text: '#000',
+      onSurface: '#000',
+      surfaceVariant: '#fff',
+      onSurfaceVariant: '#000',
+      outline: '#000',
+      outlineVariant: '#000',
+      shadow: '#000',
+      scrim: '#000',
+      inverseSurface: '#000',
+      inverseOnSurface: '#fff',
+      inversePrimary: '#000',
+      elevation: {},
+    },
+  },
+  MD3DarkTheme: {
+    colors: {
+      primary: '#fff',
+      background: '#000',
+      surface: '#000',
+      text: '#fff',
+      onSurface: '#fff',
+      surfaceVariant: '#000',
+      onSurfaceVariant: '#fff',
+      outline: '#fff',
+      outlineVariant: '#fff',
+      shadow: '#fff',
+      scrim: '#fff',
+      inverseSurface: '#fff',
+      inverseOnSurface: '#000',
+      inversePrimary: '#fff',
+      elevation: {},
+    },
+  },
 }));
 
 // Mock review prop
