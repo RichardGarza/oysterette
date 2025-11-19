@@ -97,11 +97,11 @@ export const createOysterSchema = z.object({
   species: z.string().max(100, 'Species too long').optional(),
   origin: z.string().max(200, 'Origin too long').optional(),
   standoutNotes: z.string().max(500).optional(),
-  size: z.number().min(1, 'Size must be between 1 and 10').max(10), // Required 1-10 (accepts decimals)
-  body: z.number().min(1, 'Body must be between 1 and 10').max(10), // Required 1-10 (accepts decimals)
-  sweetBrininess: z.number().min(1, 'Sweet/Brininess must be between 1 and 10').max(10), // Required 1-10 (accepts decimals)
-  flavorfulness: z.number().min(1, 'Flavorfulness must be between 1 and 10').max(10), // Required 1-10 (accepts decimals)
-  creaminess: z.number().min(1, 'Creaminess must be between 1 and 10').max(10), // Required 1-10 (accepts decimals)
+  size: z.number().min(1, 'Size must be between 1 and 10').max(10, 'Size must be between 1 and 10'), // Required 1-10 (accepts decimals)
+  body: z.number().min(1, 'Body must be between 1 and 10').max(10, 'Body must be between 1 and 10'), // Required 1-10 (accepts decimals)
+  sweetBrininess: z.number().min(1, 'Sweet/Brininess must be between 1 and 10').max(10, 'Sweet/Brininess must be between 1 and 10'), // Required 1-10 (accepts decimals)
+  flavorfulness: z.number().min(1, 'Flavorfulness must be between 1 and 10').max(10, 'Flavorfulness must be between 1 and 10'), // Required 1-10 (accepts decimals)
+  creaminess: z.number().min(1, 'Creaminess must be between 1 and 10').max(10, 'Creaminess must be between 1 and 10'), // Required 1-10 (accepts decimals)
 });
 
 export const updateOysterSchema = z.object({

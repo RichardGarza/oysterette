@@ -697,8 +697,14 @@ describe('UUID Param Schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should reject invalid UUID', () => {
-      const invalidData = { userId: invalidUUID };
+    it('should accept CUID format (flexible validation)', () => {
+      const validData = { userId: 'cmi5n8laj00002mf7yekf140j' };
+      const result = userIdParamSchema.safeParse(validData);
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject empty userId', () => {
+      const invalidData = { userId: '' };
       const result = userIdParamSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
     });

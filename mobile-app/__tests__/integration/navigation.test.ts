@@ -2,7 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Alert } from 'react-native';
+import { Alert, View } from 'react-native';
 import HomeScreen from '../../src/screens/HomeScreen';
 import OysterListScreen from '../../src/screens/OysterListScreen';
 import { RootStackParamList } from '../../src/types/navigation';

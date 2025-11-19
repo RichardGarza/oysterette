@@ -54,7 +54,9 @@ describe('Oyster Validation Schemas', () => {
 
     const result = createOysterSchema.safeParse(invalidData);
     expect(result.success).toBe(false);
-    expect(result.error.errors[0].message).toContain('Name is required');
+    if (!result.success) {
+      expect(result.error.issues[0].message).toContain('Name is required');
+    }
   });
 
   it('should validate attributes in 1-10 range (required)', () => {
@@ -83,7 +85,9 @@ describe('Oyster Validation Schemas', () => {
 
     const result = createOysterSchema.safeParse(missingAttr);
     expect(result.success).toBe(false);
-    expect(result.error.errors.find(e => e.path[0] === 'size')).toBeDefined();
+    if (!result.success) {
+      expect(result.error.issues.find(e => e.path[0] === 'size')).toBeDefined();
+    }
   });
 
   it('should reject attributes outside 1-10 (e.g., 0 or 11)', () => {
@@ -98,8 +102,14 @@ describe('Oyster Validation Schemas', () => {
 
     const result = createOysterSchema.safeParse(invalidAttrs);
     expect(result.success).toBe(false);
-    expect(result.error.errors.find(e => e.path[0] === 'size' && e.message.includes('between 1 and 10'))).toBeDefined();
-    expect(result.error.errors.find(e => e.path[0] === 'flavorfulness' && e.message.includes('between 1 and 10'))).toBeDefined();
+    if (!result.success) {
+      const sizeError = result.error.issues.find(e => e.path[0] === 'size');
+      const flavorError = result.error.issues.find(e => e.path[0] === 'flavorfulness');
+      expect(sizeError).toBeDefined();
+      expect(flavorError).toBeDefined();
+      expect(sizeError?.message).toContain('between 1 and 10');
+      expect(flavorError?.message).toContain('between 1 and 10');
+    }
   });
 });
 
