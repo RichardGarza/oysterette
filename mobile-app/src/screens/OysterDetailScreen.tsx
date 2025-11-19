@@ -371,27 +371,18 @@ export default function OysterDetailScreen() {
           />
         </Appbar.Header>
 
-        <Card mode="elevated" style={styles.mainOysterCard}>
+        <Card mode="elevated" style={styles.section}>
           <Card.Content>
-            <View style={styles.cardHeader}>
-              <Text variant="titleLarge" style={styles.oysterName} numberOfLines={2}>
-                {oyster.name}
-              </Text>
-              <IconButton
-                icon={isFavorite ? 'heart' : 'heart-outline'}
-                iconColor={isFavorite ? COLORS.FAVORITE_HEART : undefined}
-                size={SIZES.ICON_FAVORITE}
-                onPress={handleToggleFavorite}
-                style={styles.favoriteButton}
-              />
-            </View>
+            <Text variant="titleLarge" style={styles.oysterNameLarge}>
+              {oyster.name}
+            </Text>
 
             {oyster.species && oyster.species !== 'Unknown' && (
-              <Text variant="bodySmall" style={styles.species}>{oyster.species}</Text>
+              <Text variant="bodyMedium" style={styles.speciesLarge}>{oyster.species}</Text>
             )}
 
             {oyster.origin && oyster.origin !== 'Unknown' && (
-              <Text variant="bodySmall" style={styles.origin}>{oyster.origin}</Text>
+              <Text variant="bodyMedium" style={styles.originLarge}>{oyster.origin}</Text>
             )}
 
             <View style={styles.ratingContainer}>
@@ -403,37 +394,8 @@ export default function OysterDetailScreen() {
             </View>
 
             {oyster.standoutNotes && (
-              <Text variant="bodySmall" style={styles.notes} numberOfLines={2}>
+              <Text variant="bodyMedium" style={styles.notesLarge}>
                 {oyster.standoutNotes}
-              </Text>
-            )}
-
-            <View style={styles.attributesContainer}>
-              <View style={styles.attributeItem}>
-                <Text variant="labelSmall" style={styles.attributeLabel}>Size</Text>
-                <Text variant="bodyMedium" style={styles.attributeValue}>{oyster.size}/{ATTRIBUTE_SCALE.MAX}</Text>
-              </View>
-              <View style={styles.attributeItem}>
-                <Text variant="labelSmall" style={styles.attributeLabel}>Body</Text>
-                <Text variant="bodyMedium" style={styles.attributeValue}>{oyster.body}/{ATTRIBUTE_SCALE.MAX}</Text>
-              </View>
-              <View style={styles.attributeItem}>
-                <Text variant="labelSmall" style={styles.attributeLabel}>Brine</Text>
-                <Text variant="bodyMedium" style={styles.attributeValue}>{oyster.sweetBrininess}/{ATTRIBUTE_SCALE.MAX}</Text>
-              </View>
-              <View style={styles.attributeItem}>
-                <Text variant="labelSmall" style={styles.attributeLabel}>Flavor</Text>
-                <Text variant="bodyMedium" style={styles.attributeValue}>{oyster.flavorfulness}/{ATTRIBUTE_SCALE.MAX}</Text>
-              </View>
-              <View style={styles.attributeItem}>
-                <Text variant="labelSmall" style={styles.attributeLabel}>Cream</Text>
-                <Text variant="bodyMedium" style={styles.attributeValue}>{oyster.creaminess}/{ATTRIBUTE_SCALE.MAX}</Text>
-              </View>
-            </View>
-
-            {oyster.totalReviews > 0 && (
-              <Text variant="bodySmall" style={styles.reviewCount}>
-                {oyster.totalReviews} {oyster.totalReviews === 1 ? 'review' : 'reviews'}
               </Text>
             )}
           </Card.Content>
@@ -592,89 +554,26 @@ const createStyles = (colors: any, isDark: boolean) =>
     sectionSubtitle: {
       marginBottom: SPACING.SECTION_SUBTITLE_BOTTOM,
     },
-    mainOysterCard: {
-      backgroundColor: colors.cardBackground,
-      borderRadius: 12,
-      padding: 15,
-      marginTop: SPACING.SECTION_TOP,
-      marginHorizontal: 15,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.shadowColor,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: isDark ? 0.3 : 0.1,
-          shadowRadius: 4,
-        },
-        android: {
-          elevation: 3,
-        },
-      }),
-    },
-    cardHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
+    oysterNameLarge: {
+      fontWeight: 'bold',
       marginBottom: 8,
     },
-    oysterName: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      color: colors.text,
-      flex: 1,
-      marginRight: 10,
-    },
-    favoriteButton: {
-      padding: 4,
-    },
-    species: {
-      fontSize: 14,
+    speciesLarge: {
       color: colors.textSecondary,
       marginBottom: 4,
     },
-    origin: {
-      fontSize: 14,
+    originLarge: {
       color: colors.textSecondary,
+      marginBottom: 8,
     },
     ratingContainer: {
       marginBottom: 8,
       paddingVertical: 4,
     },
-    notes: {
-      fontSize: 13,
+    notesLarge: {
       color: colors.textSecondary,
       fontStyle: 'italic',
-      marginBottom: 12,
-      lineHeight: 18,
-    },
-    attributesContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginTop: 10,
-      paddingTop: 10,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-      flexWrap: 'wrap',
-    },
-    attributeItem: {
-      alignItems: 'center',
-      minWidth: '18%',
-    },
-    attributeLabel: {
-      fontSize: 10,
-      color: colors.textSecondary,
-      marginBottom: 4,
-      textAlign: 'center',
-    },
-    attributeValue: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: colors.primary,
-    },
-    reviewCount: {
-      fontSize: 12,
-      color: colors.success,
-      marginTop: 8,
-      fontWeight: '500',
+      lineHeight: 20,
     },
     attributeBarContainer: {
       marginBottom: SPACING.ATTRIBUTE_BAR_BOTTOM,

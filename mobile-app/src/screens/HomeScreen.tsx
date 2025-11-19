@@ -44,7 +44,7 @@ const LOGO_SIZES = {
 
 const RECOMMENDATIONS_LIMIT = 5;
 
-const LAST_UPDATED = 'November 18, 2025 at 06:11 PM';
+const LAST_UPDATED = 'November 18, 2025 at 06:16 PM';
 const TOP_RATED_LIMIT = 5;
 
 // ============================================================================
