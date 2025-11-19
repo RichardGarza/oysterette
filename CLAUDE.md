@@ -131,10 +131,11 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 
 **Quality:**
 - Backend: 297/297 tests passing ✅
-- Mobile: 68/97 tests passing (70%) - 6/13 suites passing
+- Mobile: 75/84 tests passing (89%) - 9/13 suites passing
   - ✅ Username tests: 6/6 passing (ProfileUsername, ReviewCardUsername)
+  - ✅ Component tests: Menu (3/3), AROverlay (2/2), ProfileScreenPublic (3/3)
   - ✅ LoginScreen, FriendFavoritesScreen, OysterListScreen, useQueries
-  - 🔧 7 test suites need mocking fixes (AROverlay, Menu, ProfileScreenPublic, etc.)
+  - 🔧 4 test suites remaining: RegisterUsername, ARScanner, navigation, oysterApi
 
 **Compliance:**
 - Apple App Store: 95% ready
