@@ -116,6 +116,13 @@ export default function ProfilePage() {
     }
   };
 
+  // Handle review updates/deletes - reload reviews list
+  const handleReviewChange = async () => {
+    await loadReviews();
+    // Also reload profile to update stats
+    await loadProfile();
+  };
+
   // Edit Profile Form Handling
   const handleEditProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -521,8 +528,8 @@ export default function ProfilePage() {
                 <ReviewCard
                   key={review.id}
                   review={review}
-                  onUpdate={handleReviewChange}
-                  showEditButton={true}
+                  onDelete={handleReviewChange}
+                  onVoteChange={handleReviewChange}
                 />
               ))}
               {reviews.length > 3 && (
