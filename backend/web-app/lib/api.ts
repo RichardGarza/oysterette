@@ -136,8 +136,15 @@ export const reviewApi = {
     limit?: number;
     sortBy?: string;
   }): Promise<{ reviews: Review[]; total: number; page: number; limit: number }> => {
-    const response = await api.get<ApiResponse<any>>('/reviews/user', { params });
-    return response.data.data || { reviews: [], total: 0, page: 1, limit: 20 };
+    const response = await api.get<ApiResponse<Review[]>>('/reviews/user', { params });
+    // Backend returns Review[] directly, wrap it in expected format
+    const reviews = response.data.data || [];
+    return {
+      reviews,
+      total: reviews.length,
+      page: params?.page || 1,
+      limit: params?.limit || 20,
+    };
   },
 
   checkExisting: async (oysterId: string): Promise<Review | null> => {
@@ -169,10 +176,16 @@ export const reviewApi = {
     return response.data.success;
   },
 
-  getUserReviews: async (userId: string): Promise<Review[]> => {
-    // Use the current user's reviews endpoint (no userId param needed)
-    const response = await api.get<ApiResponse<Review[]>>('/reviews/user');
-    return response.data.data || [];
+  getUserReviews: async (userId?: string): Promise<Review[]> => {
+    // If userId provided, use public endpoint; otherwise use current user's endpoint
+    if (userId) {
+      const response = await api.get<ApiResponse<Review[]>>(`/reviews/user/${userId}`);
+      return response.data.data || [];
+    } else {
+      // Use the current user's reviews endpoint
+      const response = await api.get<ApiResponse<Review[]>>('/reviews/user');
+      return response.data.data || [];
+    }
   },
 
   getPublicUserReviews: async (userId: string): Promise<Review[]> => {

@@ -44,7 +44,7 @@ const LOGO_SIZES = {
 
 const RECOMMENDATIONS_LIMIT = 5;
 
-const LAST_UPDATED = 'November 18, 2025 at 05:06 PM';
+const LAST_UPDATED = 'November 18, 2025 at 05:15 PM';
 const TOP_RATED_LIMIT = 5;
 
 // ============================================================================
@@ -59,33 +59,39 @@ export default function HomeScreen() {
   const [recommendations, setRecommendations] = useState<Oyster[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [topRated, setTopRated] = useState<Oyster[]>([]);
-  const [userStats, setUserStats] = useState({ reviews: 0, favorites: 0, oystersTried: 0 });
+  const [userStats, setUserStats] = useState({
+    reviews: 0,
+    favorites: 0,
+    oystersTried: 0,
+  });
   const [totalOysters, setTotalOysters] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
 
-
   // Handle Android back button press - show exit confirmation (EXCLUSIVE TO HOME SCREEN)
   useEffect(() => {
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Add haptic for UX
-      Alert.alert(
-        'Exit Oysterette?',
-        'Are you sure you want to exit the app?',
-        [
-          {
-            text: 'Stay',
-            style: 'cancel',
-          },
-          {
-            text: 'Exit',
-            onPress: () => BackHandler.exitApp(),
-            style: 'destructive',
-          },
-        ],
-        { cancelable: true }
-      );
-      return true; // Prevent default back button behavior
-    });
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Add haptic for UX
+        Alert.alert(
+          'Exit Oysterette?',
+          'Are you sure you want to exit the app?',
+          [
+            {
+              text: 'Stay',
+              style: 'cancel',
+            },
+            {
+              text: 'Exit',
+              onPress: () => BackHandler.exitApp(),
+              style: 'destructive',
+            },
+          ],
+          { cancelable: true }
+        );
+        return true; // Prevent default back button behavior
+      }
+    );
 
     return () => backHandler.remove();
   }, []);
@@ -102,11 +108,16 @@ export default function HomeScreen() {
       }
       // Fallback to attribute-based if hybrid fails
       try {
-        const fallbackRecs = await recommendationApi.getRecommendations(RECOMMENDATIONS_LIMIT);
+        const fallbackRecs = await recommendationApi.getRecommendations(
+          RECOMMENDATIONS_LIMIT
+        );
         setRecommendations(fallbackRecs);
       } catch (fallbackError) {
         if (__DEV__) {
-          console.error('❌ [HomeScreen] Fallback recommendations also failed:', fallbackError);
+          console.error(
+            '❌ [HomeScreen] Fallback recommendations also failed:',
+            fallbackError
+          );
         }
       }
     } finally {
@@ -119,7 +130,7 @@ export default function HomeScreen() {
       const data = await oysterApi.getAll();
       setTotalOysters(data.length);
       const sorted = data
-        .filter(oyster => oyster.totalReviews > 0)
+        .filter((oyster) => oyster.totalReviews > 0)
         .sort((a, b) => b.overallScore - a.overallScore)
         .slice(0, TOP_RATED_LIMIT);
       setTopRated(sorted);
@@ -198,33 +209,45 @@ export default function HomeScreen() {
 
   if (checking) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          { backgroundColor: paperTheme.colors.background },
+        ]}>
         <View style={styles.content}>
-          <ActivityIndicator size="large" animating={true} />
-          <Text variant="bodyLarge" style={styles.loadingText}>Loading...</Text>
+          <ActivityIndicator size='large' animating={true} />
+          <Text variant='bodyLarge' style={styles.loadingText}>
+            Loading...
+          </Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: paperTheme.colors.background },
+      ]}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}>
         <Image
           source={require('../../assets/logo.png')}
           style={styles.logo}
-          resizeMode="contain"
+          resizeMode='contain'
         />
-        <Text variant="headlineSmall" style={styles.welcome}>
+        <Text variant='headlineSmall' style={styles.welcome}>
           Welcome to Oysterette
         </Text>
-        <Text variant="bodyMedium" style={styles.subtitle}>
+        <Text variant='bodyMedium' style={styles.subtitle}>
           Discover and review oysters from around the world
         </Text>
 
         {/* Search Bar */}
         <Searchbar
-          placeholder="Search oysters..."
+          placeholder='Search oysters...'
           onChangeText={setSearchQuery}
           value={searchQuery}
           onSubmitEditing={handleSearch}
@@ -235,16 +258,28 @@ export default function HomeScreen() {
         {/* Quick Stats */}
         {isLoggedIn && (
           <View style={styles.statsContainer}>
-            <TouchableOpacity onPress={() => navigation.navigate('Profile' as any)} activeOpacity={0.7}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Profile' as any)}
+              activeOpacity={0.7}>
               <Surface style={styles.statCard} elevation={1}>
-                <Text variant="headlineSmall" style={styles.statNumber}>{userStats.reviews}</Text>
-                <Text variant="bodySmall" style={styles.statLabel}>Reviews</Text>
+                <Text variant='headlineSmall' style={styles.statNumber}>
+                  {userStats.reviews}
+                </Text>
+                <Text variant='bodySmall' style={styles.statLabel}>
+                  Reviews
+                </Text>
               </Surface>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('OysterList' as any)} activeOpacity={0.7}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('OysterList' as any)}
+              activeOpacity={0.7}>
               <Surface style={styles.statCard} elevation={1}>
-                <Text variant="headlineSmall" style={styles.statNumber}>{userStats.favorites}</Text>
-                <Text variant="bodySmall" style={styles.statLabel}>Favorites</Text>
+                <Text variant='headlineSmall' style={styles.statNumber}>
+                  {userStats.favorites}
+                </Text>
+                <Text variant='bodySmall' style={styles.statLabel}>
+                  Favorites
+                </Text>
               </Surface>
             </TouchableOpacity>
           </View>
@@ -255,27 +290,29 @@ export default function HomeScreen() {
           <View style={styles.recommendationsSection}>
             {loadingRecommendations ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" animating={true} />
-                <Text variant="bodyMedium" style={styles.loadingRecommendationsText}>
+                <ActivityIndicator size='small' animating={true} />
+                <Text
+                  variant='bodyMedium'
+                  style={styles.loadingRecommendationsText}>
                   Loading recommendations...
                 </Text>
               </View>
             ) : recommendations.length === 0 ? (
               // Empty State - No baseline profile set
-              <Card mode="elevated" style={styles.emptyStateCard}>
+              <Card mode='elevated' style={styles.emptyStateCard}>
                 <Card.Content>
-                  <Text variant="headlineSmall" style={styles.emptyStateTitle}>
+                  <Text variant='headlineSmall' style={styles.emptyStateTitle}>
                     Get Personalized Recommendations!
                   </Text>
-                  <Text variant="bodyMedium" style={styles.emptyStateText}>
-                    You haven't set your flavor profile yet! Tell us your ideal oyster attributes to get personalized recommendations.
+                  <Text variant='bodyMedium' style={styles.emptyStateText}>
+                    You haven't set your flavor profile yet! Tell us your ideal
+                    oyster attributes to get personalized recommendations.
                   </Text>
                   <Button
-                    mode="contained"
+                    mode='contained'
                     onPress={() => navigation.navigate('SetFlavorProfile')}
                     style={styles.setProfileButton}
-                    icon="tune"
-                  >
+                    icon='tune'>
                     Set Flavor Profile
                   </Button>
                 </Card.Content>
@@ -283,7 +320,7 @@ export default function HomeScreen() {
             ) : (
               // Show Recommendations
               <View>
-                <Text variant="headlineSmall" style={styles.sectionTitle}>
+                <Text variant='headlineSmall' style={styles.sectionTitle}>
                   Recommended for You
                 </Text>
                 <FlatList
@@ -294,7 +331,11 @@ export default function HomeScreen() {
                   renderItem={({ item }) => (
                     <RecommendedOysterCard
                       oyster={item}
-                      onPress={() => navigation.navigate('OysterDetail', { oysterId: item.id })}
+                      onPress={() =>
+                        navigation.navigate('OysterDetail', {
+                          oysterId: item.id,
+                        })
+                      }
                     />
                   )}
                   contentContainerStyle={styles.recommendationsList}
@@ -307,7 +348,7 @@ export default function HomeScreen() {
         {/* Top Rated This Week */}
         {topRated.length > 0 && (
           <View style={styles.topRatedSection}>
-            <Text variant="headlineSmall" style={styles.sectionTitle}>
+            <Text variant='headlineSmall' style={styles.sectionTitle}>
               Top Rated Oysters
             </Text>
             <FlatList
@@ -318,7 +359,9 @@ export default function HomeScreen() {
               renderItem={({ item }) => (
                 <RecommendedOysterCard
                   oyster={item}
-                  onPress={() => navigation.navigate('OysterDetail', { oysterId: item.id })}
+                  onPress={() =>
+                    navigation.navigate('OysterDetail', { oysterId: item.id })
+                  }
                 />
               )}
               contentContainerStyle={styles.topRatedList}
@@ -328,77 +371,128 @@ export default function HomeScreen() {
 
         {/* Quick Actions Grid */}
         <View style={styles.quickActionsContainer}>
-          <Text variant="headlineSmall" style={styles.sectionTitle}>Quick Actions</Text>
+          <Text variant='headlineSmall' style={styles.sectionTitle}>
+            Quick Actions
+          </Text>
           <View style={styles.actionsGrid}>
-            <Card mode="elevated" style={styles.actionCard} onPress={handleBrowseOysters}>
+            <Card
+              mode='elevated'
+              style={styles.actionCard}
+              onPress={handleBrowseOysters}>
               <Card.Content style={styles.actionCardContent}>
-                <Text variant="headlineMedium" style={styles.actionIcon}>🔍</Text>
-                <Text variant="titleMedium" style={styles.actionTitle}>Browse All</Text>
+                <Text variant='headlineMedium' style={styles.actionIcon}>
+                  🔍
+                </Text>
+                <Text variant='titleMedium' style={styles.actionTitle}>
+                  Browse All
+                </Text>
               </Card.Content>
             </Card>
 
-            <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('ScanMenu')}>
+            <Card
+              mode='elevated'
+              style={styles.actionCard}
+              onPress={() => navigation.navigate('ScanMenu')}>
               <Card.Content style={styles.actionCardContent}>
-                <Text variant="headlineMedium" style={styles.actionIcon}>📸</Text>
-                <Text variant="titleMedium" style={styles.actionTitle}>Scan Menu</Text>
+                <Text variant='headlineMedium' style={styles.actionIcon}>
+                  📸
+                </Text>
+                <Text variant='titleMedium' style={styles.actionTitle}>
+                  Scan Menu
+                </Text>
               </Card.Content>
             </Card>
 
             {isLoggedIn && (
-              <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('Friends')}>
+              <Card
+                mode='elevated'
+                style={styles.actionCard}
+                onPress={() => navigation.navigate('Friends')}>
                 <Card.Content style={styles.actionCardContent}>
-                  <Text variant="headlineMedium" style={styles.actionIcon}>👥</Text>
-                  <Text variant="titleMedium" style={styles.actionTitle}>Friends</Text>
+                  <Text variant='headlineMedium' style={styles.actionIcon}>
+                    👥
+                  </Text>
+                  <Text variant='titleMedium' style={styles.actionTitle}>
+                    Friends
+                  </Text>
                 </Card.Content>
               </Card>
             )}
 
-            <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('TopOysters')}>
+            <Card
+              mode='elevated'
+              style={styles.actionCard}
+              onPress={() => navigation.navigate('TopOysters')}>
               <Card.Content style={styles.actionCardContent}>
-                <Text variant="headlineMedium" style={styles.actionIcon}>🏆</Text>
-                <Text variant="titleMedium" style={styles.actionTitle}>Top Oysters</Text>
+                <Text variant='headlineMedium' style={styles.actionIcon}>
+                  🏆
+                </Text>
+                <Text variant='titleMedium' style={styles.actionTitle}>
+                  Top Oysters
+                </Text>
               </Card.Content>
             </Card>
 
-            <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('AddOyster')}>
+            <Card
+              mode='elevated'
+              style={styles.actionCard}
+              onPress={() => navigation.navigate('AddOyster')}>
               <Card.Content style={styles.actionCardContent}>
-                <Text variant="headlineMedium" style={styles.actionIcon}>➕</Text>
-                <Text variant="titleMedium" style={styles.actionTitle}>Add Oyster</Text>
+                <Text variant='headlineMedium' style={styles.actionIcon}>
+                  ➕
+                </Text>
+                <Text variant='titleMedium' style={styles.actionTitle}>
+                  Add Oyster
+                </Text>
               </Card.Content>
             </Card>
 
             {isLoggedIn ? (
-              <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('Profile')}>
+              <Card
+                mode='elevated'
+                style={styles.actionCard}
+                onPress={() => navigation.navigate('Profile')}>
                 <Card.Content style={styles.actionCardContent}>
-                  <Text variant="headlineMedium" style={styles.actionIcon}>👤</Text>
-                  <Text variant="titleMedium" style={styles.actionTitle}>My Profile</Text>
+                  <Text variant='headlineMedium' style={styles.actionIcon}>
+                    👤
+                  </Text>
+                  <Text variant='titleMedium' style={styles.actionTitle}>
+                    My Profile
+                  </Text>
                 </Card.Content>
               </Card>
             ) : (
-              <Card mode="elevated" style={styles.actionCard} onPress={() => navigation.navigate('Login')}>
+              <Card
+                mode='elevated'
+                style={styles.actionCard}
+                onPress={() => navigation.navigate('Login')}>
                 <Card.Content style={styles.actionCardContent}>
-                  <Text variant="headlineMedium" style={styles.actionIcon}>🔐</Text>
-                  <Text variant="titleMedium" style={styles.actionTitle}>Log In</Text>
+                  <Text variant='headlineMedium' style={styles.actionIcon}>
+                    🔐
+                  </Text>
+                  <Text variant='titleMedium' style={styles.actionTitle}>
+                    Log In
+                  </Text>
                 </Card.Content>
               </Card>
             )}
           </View>
         </View>
 
-{!isLoggedIn && (
-          <Card mode="outlined" style={styles.infoCard}>
+        {!isLoggedIn && (
+          <Card mode='outlined' style={styles.infoCard}>
             <Card.Content>
-              <Text variant="bodyMedium" style={styles.infoText}>
+              <Text variant='bodyMedium' style={styles.infoText}>
                 Explore oyster varieties from around the world with our 10-point
-                attribute system. Create an account to add reviews and track your
-                favorite oysters.
+                attribute system. Create an account to add reviews and track
+                your favorite oysters.
               </Text>
             </Card.Content>
           </Card>
         )}
 
         <View style={styles.timestampContainer}>
-          <Text variant="bodySmall" style={styles.timestamp}>
+          <Text variant='bodySmall' style={styles.timestamp}>
             Last Updated: {LAST_UPDATED}
           </Text>
         </View>

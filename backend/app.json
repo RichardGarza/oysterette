@@ -1,3 +1,7 @@
 {
-  "expo": {}
+  "expo": {
+    "android": {
+      "predictiveBackGestureEnabled": false
+    }
+  }
 }
