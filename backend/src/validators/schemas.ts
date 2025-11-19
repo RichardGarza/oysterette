@@ -69,11 +69,11 @@ export const createReviewSchema = z.object({
   oysterId: z.string().uuid('Invalid oyster ID'),
   rating: z.enum(['LOVE_IT', 'LIKE_IT', 'OKAY', 'MEH']),
   notes: z.string().max(1000, 'Notes too long').optional(),
-  size: z.number().int().min(1).max(10, 'Size must be between 1 and 10'),
-  body: z.number().int().min(1).max(10, 'Body must be between 1 and 10'),
-  sweetBrininess: z.number().int().min(1).max(10, 'Sweet/Brininess must be between 1 and 10'),
-  flavorfulness: z.number().int().min(1).max(10, 'Flavorfulness must be between 1 and 10'),
-  creaminess: z.number().int().min(1).max(10, 'Creaminess must be between 1 and 10'),
+  size: z.number().min(1).max(10, 'Size must be between 1 and 10'),
+  body: z.number().min(1).max(10, 'Body must be between 1 and 10'),
+  sweetBrininess: z.number().min(1).max(10, 'Sweet/Brininess must be between 1 and 10'),
+  flavorfulness: z.number().min(1).max(10, 'Flavorfulness must be between 1 and 10'),
+  creaminess: z.number().min(1).max(10, 'Creaminess must be between 1 and 10'),
   origin: z.string().max(100, 'Origin too long').optional(),
   species: z.string().max(100, 'Species too long').optional(),
   photoUrls: z.array(z.string().url('Invalid photo URL')).max(5, 'Maximum 5 photos allowed').optional(),
@@ -94,14 +94,14 @@ export const updateReviewSchema = z.object({
 
 export const createOysterSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
-  species: z.string().max(100, 'Species too long').optional(), // Optional, defaults to 'Unknown'
-  origin: z.string().max(200, 'Origin too long').optional(), // Optional, defaults to 'Unknown'
+  species: z.string().max(100, 'Species too long').optional(),
+  origin: z.string().max(200, 'Origin too long').optional(),
   standoutNotes: z.string().max(500).optional(),
-  size: z.number().int().min(1, 'Size must be between 1 and 10').max(10), // Required 1-10
-  body: z.number().int().min(1, 'Body must be between 1 and 10').max(10), // Required 1-10
-  sweetBrininess: z.number().int().min(1, 'Sweet/Brininess must be between 1 and 10').max(10), // Required 1-10
-  flavorfulness: z.number().int().min(1, 'Flavorfulness must be between 1 and 10').max(10), // Required 1-10
-  creaminess: z.number().int().min(1, 'Creaminess must be between 1 and 10').max(10), // Required 1-10
+  size: z.number().min(1, 'Size must be between 1 and 10').max(10), // Required 1-10 (accepts decimals)
+  body: z.number().min(1, 'Body must be between 1 and 10').max(10), // Required 1-10 (accepts decimals)
+  sweetBrininess: z.number().min(1, 'Sweet/Brininess must be between 1 and 10').max(10), // Required 1-10 (accepts decimals)
+  flavorfulness: z.number().min(1, 'Flavorfulness must be between 1 and 10').max(10), // Required 1-10 (accepts decimals)
+  creaminess: z.number().min(1, 'Creaminess must be between 1 and 10').max(10), // Required 1-10 (accepts decimals)
 });
 
 export const updateOysterSchema = z.object({

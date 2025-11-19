@@ -292,19 +292,19 @@ describe('Review Schemas', () => {
       expect(result.success).toBe(false);
     });
 
-    it('should reject non-integer attribute values', () => {
-      const invalidData = {
+    it('should accept decimal attribute values', () => {
+      const validData = {
         oysterId: '123e4567-e89b-12d3-a456-426614174000',
         rating: ReviewRating.LIKE_IT,
         size: 5.5,
-        body: 6,
-        sweetBrininess: 7,
-        flavorfulness: 8,
-        creaminess: 9,
+        body: 6.7,
+        sweetBrininess: 7.2,
+        flavorfulness: 8.9,
+        creaminess: 9.1,
       };
 
-      const result = createReviewSchema.safeParse(invalidData);
-      expect(result.success).toBe(false);
+      const result = createReviewSchema.safeParse(validData);
+      expect(result.success).toBe(true);
     });
 
     it('should accept all valid ReviewRating enums', () => {
@@ -385,35 +385,50 @@ describe('Oyster Schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should require name, species, and origin', () => {
+    it('should require name and all attributes', () => {
       const validData = {
         name: 'Kumamoto',
         species: 'Crassostrea sikamea',
         origin: 'California',
+        size: 5,
+        body: 6,
+        sweetBrininess: 7,
+        flavorfulness: 8,
+        creaminess: 9,
       };
 
       const result = createOysterSchema.safeParse(validData);
       expect(result.success).toBe(true);
     });
 
-    it('should reject missing species', () => {
-      const invalidData = {
+    it('should allow missing species (optional)', () => {
+      const validData = {
         name: 'Kumamoto',
         origin: 'California',
+        size: 5,
+        body: 6,
+        sweetBrininess: 7,
+        flavorfulness: 8,
+        creaminess: 9,
       };
 
-      const result = createOysterSchema.safeParse(invalidData);
-      expect(result.success).toBe(false);
+      const result = createOysterSchema.safeParse(validData);
+      expect(result.success).toBe(true);
     });
 
-    it('should reject missing origin', () => {
-      const invalidData = {
+    it('should allow missing origin (optional)', () => {
+      const validData = {
         name: 'Kumamoto',
         species: 'Crassostrea sikamea',
+        size: 5,
+        body: 6,
+        sweetBrininess: 7,
+        flavorfulness: 8,
+        creaminess: 9,
       };
 
-      const result = createOysterSchema.safeParse(invalidData);
-      expect(result.success).toBe(false);
+      const result = createOysterSchema.safeParse(validData);
+      expect(result.success).toBe(true);
     });
 
     it('should reject empty name', () => {

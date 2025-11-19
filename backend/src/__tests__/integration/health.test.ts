@@ -19,21 +19,35 @@ jest.mock('../../lib/prisma', () => ({
 }));
 
 // Mock Redis
-jest.mock('../../lib/redis', () => ({
-  default: {
-    healthCheck: jest.fn().mockResolvedValue({ status: 'healthy', latency: 2 }),
-    getInstance: jest.fn().mockResolvedValue({
-      ping: jest.fn().mockResolvedValue('PONG'),
-      status: 'ready',
-    }),
-    disconnect: jest.fn().mockResolvedValue(undefined),
-  },
-}));
+jest.mock('../../lib/redis', () => {
+  const mockHealthCheck = jest.fn().mockResolvedValue({ status: 'healthy', latency: 2 });
+  const mockGetInstance = jest.fn().mockResolvedValue({
+    ping: jest.fn().mockResolvedValue('PONG'),
+    status: 'ready',
+  });
+  const mockDisconnect = jest.fn().mockResolvedValue(undefined);
+
+  return {
+    __esModule: true,
+    default: {
+      healthCheck: mockHealthCheck,
+      getInstance: mockGetInstance,
+      disconnect: mockDisconnect,
+    },
+  };
+});
 
 const app = express();
 app.use('/api/health', healthRouter);
 
 describe('Health Endpoints Integration Tests', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Reset Redis mock to default behavior
+    const mockRedisClient = require('../../lib/redis').default;
+    mockRedisClient.healthCheck.mockResolvedValue({ status: 'healthy', latency: 2 });
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -85,7 +99,8 @@ describe('Health Endpoints Integration Tests', () => {
   });
 
   it('should handle Redis error gracefully', async () => {
-    (RedisClient.healthCheck as jest.Mock).mockRejectedValueOnce(new Error('Redis error'));
+    const mockRedisClient = require('../../lib/redis').default;
+    mockRedisClient.healthCheck.mockRejectedValueOnce(new Error('Redis error'));
     const response = await request(app).get('/api/health/redis');
     expect(response.status).toBe(503);
     expect(response.body.status).toBe('error');

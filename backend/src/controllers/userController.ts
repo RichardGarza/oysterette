@@ -1100,16 +1100,22 @@ export const searchUsers = async (
 
     const searchTerm = q.trim();
     if (searchTerm.length < 2) {
-      res.status(400).json({ success: false, error: 'Query too short' });
+      res.status(400).json({ success: false, error: 'Query must be at least 2 characters' });
       return;
     }
 
     const users = await prisma.user.findMany({
       where: {
-        OR: [
-          { name: { contains: searchTerm, mode: 'insensitive' } },
-          { email: { contains: searchTerm, mode: 'insensitive' } },
-          { username: { contains: searchTerm, mode: 'insensitive' } },
+        AND: [
+          {
+            OR: [
+              { name: { contains: searchTerm, mode: 'insensitive' } },
+              { email: { contains: searchTerm, mode: 'insensitive' } },
+              { username: { contains: searchTerm, mode: 'insensitive' } },
+            ],
+          },
+          // Exclude current user from results
+          { id: { not: req.userId } },
         ],
       },
       select: {

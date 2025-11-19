@@ -82,8 +82,8 @@ router.put('/preferences', authenticate, updatePreferences);
 // Flavor profile (for recommendations)
 router.put('/flavor-profile', authenticate, setFlavorProfile);
 
-// Search users
-router.get('/search', searchUsers);
+// Search users (requires authentication)
+router.get('/search', authenticate, searchUsers);
 
 // Top oysters
 router.get('/top-oysters', authenticate, getTopOysters);

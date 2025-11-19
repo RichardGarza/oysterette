@@ -19,7 +19,7 @@ describe('Oyster Validation Schemas', () => {
     const result = createOysterSchema.safeParse(validData);
     expect(result.success).toBe(true);
     expect(result.data.name).toBe('Test Oyster');
-    expect(result.data.species).toBeUndefined(); // Optional empty
+    expect(result.data.species).toBe(''); // Empty string stays as empty string
     expect(result.data.origin).toBeUndefined();
     expect(result.data.size).toBe(5); // Required
   });

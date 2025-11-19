@@ -1,7 +1,23 @@
 import '@testing-library/jest-dom';
 
-// Mock next/router for useRouter
+// Mock next/router for pages router (old)
 jest.mock('next/router', () => require('next-router-mock'));
+
+// Mock next/navigation for app router (new)
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    back: jest.fn(),
+    pathname: '/',
+    query: {},
+    asPath: '/',
+  }),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+  useParams: () => ({}),
+}));
 
 // Mock localStorage
 Object.defineProperty(window, 'localStorage', {

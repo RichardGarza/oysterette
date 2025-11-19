@@ -1,10 +1,11 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import Header from '../components/Header';  // Adjusted path
 
-// Mock the router
-jest.mock('next/router', () => ({
+// Mock the Next.js navigation (App Router)
+jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
+  usePathname: jest.fn(),
 }));
 
 // Mock auth and theme hooks - relative from __tests__
@@ -62,8 +63,8 @@ describe('Header Component', () => {
     expect(homeLink).toBeInTheDocument();
     expect(homeLink).toHaveAttribute('href', '/');
 
-    // Check Browse link
-    const browseLink = screen.getByText('Browse');
+    // Check Browse Oysters link
+    const browseLink = screen.getByText('Browse Oysters');
     expect(browseLink).toBeInTheDocument();
     expect(browseLink).toHaveAttribute('href', '/oysters');
 
@@ -78,7 +79,7 @@ describe('Header Component', () => {
     expect(signUpButton).toHaveAttribute('href', '/register');
 
     // Check theme toggle button
-    const themeButton = screen.getByLabelText('Toggle theme');
+    const themeButton = screen.getByTitle('Switch to dark mode');
     expect(themeButton).toBeInTheDocument();
   });
 
@@ -120,7 +121,7 @@ describe('Header Component', () => {
     });
 
     render(<Header />);
-    const themeButton = screen.getByLabelText('Toggle theme');
+    const themeButton = screen.getByTitle('Switch to dark mode');
     expect(themeButton).toHaveTextContent('🌙');  // Moon for light theme
   });
 
@@ -132,7 +133,7 @@ describe('Header Component', () => {
     });
 
     render(<Header />);
-    const themeButton = screen.getByLabelText('Toggle theme');
+    const themeButton = screen.getByTitle('Switch to light mode');
     expect(themeButton).toHaveTextContent('☀️');  // Sun for dark theme
   });
 });
