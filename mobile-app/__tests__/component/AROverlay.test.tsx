@@ -16,6 +16,7 @@ jest.mock('expo-camera', () => ({
 
 // Mock theme
 jest.mock('../../src/context/ThemeContext', () => ({
+  ThemeProvider: ({ children }: any) => children,
   useTheme: () => ({ paperTheme: { colors: { primary: 'black' } } }),
 }));
 

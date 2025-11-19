@@ -6,8 +6,8 @@ import { PaperProvider } from 'react-native-paper';
 import { ThemeProvider } from '../../src/context/ThemeContext';
 import Menu from '../../src/screens/MenuScreen'; // Assume MenuScreen is the component
 import { RootStackParamList } from '../../src/types/navigation';
-import { View, Divider } from 'react-native'; // Added missing imports
-import { IconButton } from 'react-native-paper'; // Added missing imports
+import { View } from 'react-native';
+import { IconButton, Divider } from 'react-native-paper';
 
 // Mock navigation
 const mockNavigate = jest.fn();
