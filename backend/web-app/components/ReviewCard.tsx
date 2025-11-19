@@ -86,6 +86,11 @@ export default function ReviewCard({
               <p className="text-sm text-gray-500">
                 {new Date(review.createdAt).toLocaleDateString()}
               </p>
+              {review.oyster?.name && (
+                <p className="text-sm font-medium text-[#FF6B35] mt-1">
+                  {review.oyster.name}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2">

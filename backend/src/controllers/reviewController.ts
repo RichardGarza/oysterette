@@ -255,7 +255,27 @@ export const getUserReviews = async (req: Request, res: Response): Promise<void>
     const reviews = await prisma.review.findMany({
       where: { userId: req.userId },
       include: {
-        oyster: true,
+        oyster: {
+          select: {
+            id: true,
+            name: true,
+            species: true,
+            origin: true,
+            avgRating: true,
+            overallScore: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            profilePhotoUrl: true,
+          },
+        },
+        _count: {
+          select: { votes: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
