@@ -204,10 +204,11 @@ export default function ReviewsScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <Appbar.Header elevated>
-          <Appbar.BackAction onPress={() => navigation.goBack()} />
+        <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+          <Appbar.BackAction onPress={() => navigation.goBack()} iconColor="#fff" />
           <Appbar.Content 
-            title={isViewingOwnReviews ? 'My Reviews' : `${userName || 'User'}'s Reviews`} 
+            title={isViewingOwnReviews ? 'My Reviews' : `${userName || 'User'}'s Reviews`}
+            titleStyle={{ color: '#fff', fontWeight: 'bold' }}
           />
         </Appbar.Header>
         <View style={styles.loadingContainer}>
@@ -220,10 +221,11 @@ export default function ReviewsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Appbar.Header elevated>
-        <Appbar.BackAction onPress={() => navigation.goBack()} />
+      <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+        <Appbar.BackAction onPress={() => navigation.goBack()} iconColor="#fff" />
         <Appbar.Content 
-          title={isViewingOwnReviews ? 'My Reviews' : `${userName || 'User'}'s Reviews`} 
+          title={isViewingOwnReviews ? 'My Reviews' : `${userName || 'User'}'s Reviews`}
+          titleStyle={{ color: '#fff', fontWeight: 'bold' }}
         />
       </Appbar.Header>
 
