@@ -66,6 +66,13 @@ export default function ReviewCard({
   return (
     <>
       <div className="bg-white dark:bg-[#243447] rounded-xl border border-gray-200 dark:border-[#2d4054] p-6">
+        {/* Oyster Name - Large text at top */}
+        {review.oyster?.name && (
+          <h3 className="text-xl font-bold text-[#FF6B35] mb-4">
+            {review.oyster.name}
+          </h3>
+        )}
+        
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3 flex-1">
             {review.user?.profilePhotoUrl ? (
@@ -86,11 +93,6 @@ export default function ReviewCard({
               <p className="text-sm text-gray-500">
                 {new Date(review.createdAt).toLocaleDateString()}
               </p>
-              {review.oyster?.name && (
-                <p className="text-sm font-medium text-[#FF6B35] mt-1">
-                  {review.oyster.name}
-                </p>
-              )}
             </div>
           </div>
           <div className="flex items-center gap-2">
