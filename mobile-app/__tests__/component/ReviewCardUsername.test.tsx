@@ -1,80 +1,160 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import ReviewCard from '../../src/components/ReviewCard';
+import { ReviewCard } from '../../src/components/ReviewCard';
 
-// Mock react-native-paper
-jest.mock('react-native-paper', () => ({
-  Card: Object.assign(
-    ({ children }: any) => children,
-    {
-      Content: ({ children }: any) => children,
-      Title: ({ children }: any) => children,
-      Actions: ({ children }: any) => children,
-    }
-  ),
-  Text: ({ children }: any) => children,
-  IconButton: () => null,
-  Avatar: { Text: () => null },
-  Chip: ({ children }: any) => children,
-  Button: ({ children }: any) => children,
-  ActivityIndicator: () => null,
-  Dialog: Object.assign(
-    ({ children }: any) => children,
-    {
-      Title: ({ children }: any) => children,
-      Content: ({ children }: any) => children,
-      Actions: ({ children }: any) => children,
-    }
-  ),
-  Portal: ({ children }: any) => children,
-  Snackbar: ({ children }: any) => children,
-  useTheme: () => ({
-    colors: {
-      primary: '#000',
-      background: '#fff',
-      surface: '#fff',
-      text: '#000',
-    },
-  }),
-  MD3LightTheme: {
-    colors: {
-      primary: '#000',
-      background: '#fff',
-      surface: '#fff',
-      text: '#000',
-      onSurface: '#000',
-      surfaceVariant: '#fff',
-      onSurfaceVariant: '#000',
-      outline: '#000',
-      outlineVariant: '#000',
-      shadow: '#000',
-      scrim: '#000',
-      inverseSurface: '#000',
-      inverseOnSurface: '#fff',
-      inversePrimary: '#000',
-      elevation: {},
-    },
-  },
-  MD3DarkTheme: {
-    colors: {
-      primary: '#fff',
-      background: '#000',
-      surface: '#000',
-      text: '#fff',
-      onSurface: '#fff',
-      surfaceVariant: '#000',
-      onSurfaceVariant: '#fff',
-      outline: '#fff',
-      outlineVariant: '#fff',
-      shadow: '#fff',
-      scrim: '#fff',
-      inverseSurface: '#fff',
-      inverseOnSurface: '#000',
-      inversePrimary: '#fff',
-      elevation: {},
-    },
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  __esModule: true,
+  default: {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+    clear: jest.fn(),
   },
 }));
+
+// Mock ThemeContext
+jest.mock('../../src/context/ThemeContext', () => ({
+  useTheme: () => ({
+    theme: {
+      colors: {
+        primary: '#000',
+        background: '#fff',
+        surface: '#fff',
+        text: '#000',
+      },
+    },
+    paperTheme: {
+      colors: {
+        primary: '#000',
+        background: '#fff',
+        surface: '#fff',
+        text: '#000',
+      },
+    },
+  }),
+}));
+
+// Mock XPNotificationContext
+jest.mock('../../src/context/XPNotificationContext', () => ({
+  useXPNotification: () => ({
+    showXPNotification: jest.fn(),
+  }),
+}));
+
+// Mock services
+jest.mock('../../src/services/api', () => ({
+  voteApi: {
+    vote: jest.fn(),
+  },
+  reviewApi: {
+    delete: jest.fn(),
+  },
+  getXPStats: jest.fn(),
+}));
+
+jest.mock('../../src/services/auth', () => ({
+  authStorage: {
+    getUser: jest.fn().mockResolvedValue({ id: 'test-user' }),
+  },
+}));
+
+// Mock haptics
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  notificationAsync: jest.fn(),
+  ImpactFeedbackStyle: {
+    Light: 'light',
+    Medium: 'medium',
+    Heavy: 'heavy',
+  },
+  NotificationFeedbackType: {
+    Success: 'success',
+    Warning: 'warning',
+    Error: 'error',
+  },
+}));
+
+// Mock react-native-paper
+jest.mock('react-native-paper', () => {
+  const React = require('react');
+
+  const mockComponent = (name: string) => {
+    const Component = (props: any) => React.createElement(name, props, props.children);
+    Component.displayName = name;
+    return Component;
+  };
+
+  return {
+    Card: Object.assign(mockComponent('Card'), {
+      Content: mockComponent('Card.Content'),
+      Title: mockComponent('Card.Title'),
+      Actions: mockComponent('Card.Actions'),
+    }),
+    Text: mockComponent('Text'),
+    IconButton: mockComponent('IconButton'),
+    Avatar: {
+      Text: mockComponent('Avatar.Text'),
+      Image: mockComponent('Avatar.Image'),
+    },
+    Chip: mockComponent('Chip'),
+    Button: mockComponent('Button'),
+    ActivityIndicator: mockComponent('ActivityIndicator'),
+    Dialog: Object.assign(mockComponent('Dialog'), {
+      Title: mockComponent('Dialog.Title'),
+      Content: mockComponent('Dialog.Content'),
+      Actions: mockComponent('Dialog.Actions'),
+    }),
+    Portal: mockComponent('Portal'),
+    Snackbar: mockComponent('Snackbar'),
+    useTheme: () => ({
+      colors: {
+        primary: '#000',
+        background: '#fff',
+        surface: '#fff',
+        text: '#000',
+      },
+    }),
+    MD3LightTheme: {
+      colors: {
+        primary: '#000',
+        background: '#fff',
+        surface: '#fff',
+        text: '#000',
+        onSurface: '#000',
+        surfaceVariant: '#fff',
+        onSurfaceVariant: '#000',
+        outline: '#000',
+        outlineVariant: '#000',
+        shadow: '#000',
+        scrim: '#000',
+        inverseSurface: '#000',
+        inverseOnSurface: '#fff',
+        inversePrimary: '#000',
+        elevation: {},
+      },
+    },
+    MD3DarkTheme: {
+      colors: {
+        primary: '#fff',
+        background: '#000',
+        surface: '#000',
+        text: '#fff',
+        onSurface: '#fff',
+        surfaceVariant: '#000',
+        onSurfaceVariant: '#fff',
+        outline: '#fff',
+        outlineVariant: '#fff',
+        shadow: '#fff',
+        scrim: '#fff',
+        inverseSurface: '#fff',
+        inverseOnSurface: '#000',
+        inversePrimary: '#fff',
+        elevation: {},
+      },
+    },
+  };
+});
 
 // Mock review prop
 const mockReviewWithUsername = {

@@ -230,7 +230,7 @@ export const ReviewCard = memo<ReviewCardProps>(({
                 {formatRatingText(review.rating)}
               </Text>
               <Text variant="bodySmall" style={{ color: theme.colors.textSecondary, marginTop: 2 }}>
-                {review.user?.name || 'Anonymous'}
+                {review.user?.username || review.user?.name || 'Anonymous'}
               </Text>
             </View>
             {showCredibilityBadge && (
