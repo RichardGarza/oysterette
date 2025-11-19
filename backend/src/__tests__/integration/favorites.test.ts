@@ -363,4 +363,163 @@ describe('Favorites API Integration Tests', () => {
         .expect(401);
     });
   });
+
+  describe('GET /api/favorites/user/:userId', () => {
+    let secondUserId: string;
+    let secondAuthToken: string;
+
+    const secondUser = {
+      email: 'secondfavoritetest@oysterette.com',
+      name: 'Second Favorite Test User',
+      password: 'TestPassword123',
+    };
+
+    beforeAll(async () => {
+      // Cleanup existing data
+      await prisma.user.deleteMany({
+        where: { email: secondUser.email },
+      });
+
+      // Register second test user
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send(secondUser);
+
+      secondAuthToken = response.body.data.token;
+      secondUserId = response.body.data.user.id;
+    });
+
+    afterAll(async () => {
+      await prisma.favorite.deleteMany({
+        where: { userId: secondUserId },
+      });
+
+      await prisma.user.deleteMany({
+        where: { email: secondUser.email },
+      });
+    });
+
+    beforeEach(async () => {
+      // Clear second user's favorites before each test
+      await prisma.favorite.deleteMany({
+        where: { userId: secondUserId },
+      });
+
+      // Ensure privacy settings allow viewing favorites (default is true)
+      await prisma.user.update({
+        where: { id: secondUserId },
+        data: { showFavorites: true },
+      });
+    });
+
+    it('should return empty array when user has no favorites', async () => {
+      const response = await request(app)
+        .get(`/api/favorites/user/${secondUserId}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toEqual([]);
+    });
+
+    it('should return user public favorites with full oyster data', async () => {
+      // Add favorites for second user
+      await prisma.favorite.createMany({
+        data: [
+          { userId: secondUserId, oysterId: oyster1Id },
+          { userId: secondUserId, oysterId: oyster2Id },
+        ],
+      });
+
+      const response = await request(app)
+        .get(`/api/favorites/user/${secondUserId}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toBeInstanceOf(Array);
+      expect(response.body.data.length).toBe(2);
+
+      // Verify oyster data is included
+      const firstOyster = response.body.data[0];
+      expect(firstOyster).toHaveProperty('id');
+      expect(firstOyster).toHaveProperty('name');
+      expect(firstOyster).toHaveProperty('species');
+      expect(firstOyster).toHaveProperty('origin');
+      expect(firstOyster).toHaveProperty('size');
+      expect(firstOyster).toHaveProperty('body');
+      expect(firstOyster).toHaveProperty('sweetBrininess');
+      expect(firstOyster).toHaveProperty('flavorfulness');
+      expect(firstOyster).toHaveProperty('creaminess');
+    });
+
+    it('should return 403 when user favorites are private', async () => {
+      // Set showFavorites to false
+      await prisma.user.update({
+        where: { id: secondUserId },
+        data: { showFavorites: false },
+      });
+
+      // Add a favorite
+      await prisma.favorite.create({
+        data: { userId: secondUserId, oysterId: oyster1Id },
+      });
+
+      const response = await request(app)
+        .get(`/api/favorites/user/${secondUserId}`)
+        .expect(403);
+
+      expect(response.body.error).toBe('User favorites are private');
+    });
+
+    it('should return 404 for non-existent user', async () => {
+      const fakeUserId = '00000000-0000-0000-0000-000000000000';
+      const response = await request(app)
+        .get(`/api/favorites/user/${fakeUserId}`)
+        .expect(404);
+
+      expect(response.body.error).toBe('User not found');
+    });
+
+    it('should return favorites in descending order by creation date', async () => {
+      // Add favorites with slight delay to ensure different timestamps
+      await prisma.favorite.create({
+        data: { userId: secondUserId, oysterId: oyster1Id },
+      });
+
+      // Wait a tiny bit to ensure different timestamp
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      await prisma.favorite.create({
+        data: { userId: secondUserId, oysterId: oyster2Id },
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      await prisma.favorite.create({
+        data: { userId: secondUserId, oysterId: oyster3Id },
+      });
+
+      const response = await request(app)
+        .get(`/api/favorites/user/${secondUserId}`)
+        .expect(200);
+
+      expect(response.body.data.length).toBe(3);
+      // Most recent favorite should be first (oyster3)
+      expect(response.body.data[0].id).toBe(oyster3Id);
+    });
+
+    it('should not require authentication to view public favorites', async () => {
+      // Add a favorite
+      await prisma.favorite.create({
+        data: { userId: secondUserId, oysterId: oyster1Id },
+      });
+
+      // Make request without auth token
+      const response = await request(app)
+        .get(`/api/favorites/user/${secondUserId}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.length).toBe(1);
+    });
+  });
 });
