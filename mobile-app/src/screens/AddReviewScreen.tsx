@@ -40,6 +40,7 @@ import { useTheme } from '../context/ThemeContext';
 import { tempReviewsStorage } from '../services/tempReviews';
 import { useXPNotification } from '../context/XPNotificationContext';
 import { getXPStats } from '../services/api';
+import { useCreateReview, useUpdateReview } from '../hooks/useQueries';
 
 // ============================================================================
 // CONSTANTS
@@ -99,6 +100,10 @@ export default function AddReviewScreen() {
     existingReview
   } = route.params;
   const isUpdateMode = !!existingReview;
+
+  // React Query mutations
+  const createReviewMutation = useCreateReview();
+  const updateReviewMutation = useUpdateReview();
 
   const [rating, setRating] = useState<ReviewRating | null>(existingReview?.rating || null);
   const [size, setSize] = useState<number>(
@@ -373,20 +378,23 @@ export default function AddReviewScreen() {
 
       if (isUpdateMode && existingReview) {
         // Update existing review (requires auth)
-        await reviewApi.update(existingReview.id, {
-          rating: rating!,
-          size,
-          body,
-          sweetBrininess,
-          flavorfulness,
-          creaminess,
-          notes: notes.trim() || undefined,
-          photoUrls: photos.length > 0 ? photos : undefined,
+        await updateReviewMutation.mutateAsync({
+          reviewId: existingReview.id,
+          data: {
+            rating: rating!,
+            size,
+            body,
+            sweetBrininess,
+            flavorfulness,
+            creaminess,
+            notes: notes.trim() || undefined,
+            photoUrls: photos.length > 0 ? photos : undefined,
+          }
         });
         console.log('✅ [AddReviewScreen] Review updated successfully');
       } else {
         // Create new review
-        await reviewApi.create({
+        await createReviewMutation.mutateAsync({
           oysterId,
           rating: rating!,
           size,

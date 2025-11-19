@@ -216,3 +216,52 @@ export const syncFavorites = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to sync favorites' });
   }
 };
+
+/**
+ * Get a user's public favorite oysters (full Oyster objects, not just IDs)
+ * Respects privacy settings - only returns if showFavorites is true
+ *
+ * @route GET /api/favorites/user/:userId
+ * @param userId - User ID to fetch favorites for
+ * @returns 200 - { favorites: Oyster[] }
+ * @returns 403 - User's favorites are private
+ * @returns 404 - User not found
+ * @returns 500 - Server error
+ */
+export const getUserPublicFavorites = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    // Check if user exists and get privacy settings
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { showFavorites: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check privacy settings
+    if (!user.showFavorites) {
+      return res.status(403).json({ error: 'User favorites are private' });
+    }
+
+    // Get favorites with full oyster data
+    const favorites = await prisma.favorite.findMany({
+      where: { userId },
+      include: {
+        oyster: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const oysters = favorites.map((f) => f.oyster);
+
+    logger.info(`Retrieved ${oysters.length} public favorites for user ${userId}`);
+    res.json({ success: true, data: oysters });
+  } catch (error: any) {
+    logger.error('Error getting public user favorites:', error);
+    res.status(500).json({ error: 'Failed to get favorites' });
+  }
+};

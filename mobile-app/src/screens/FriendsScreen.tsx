@@ -13,6 +13,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../context/ThemeContext';
 import { friendApi, userApi } from '../services/api';
 import { RootStackParamList } from '../navigation/types';
+import { useFriends } from '../hooks/useQueries';
 
 interface Friend {
   id: string;
@@ -37,13 +38,19 @@ interface PendingRequest {
 export default function FriendsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { paperTheme } = useTheme();
+
+  // React Query hook for friends
+  const {
+    data: friends = [],
+    isLoading: loading,
+    refetch: refetchFriends
+  } = useFriends();
+
   const [activeTab, setActiveTab] = useState('friends');
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
-  const [friends, setFriends] = useState<Friend[]>([]);
   const [pendingRequests, setPendingRequests] = useState<{ sent: PendingRequest[]; received: PendingRequest[] }>({
     sent: [],
     received: [],
@@ -55,12 +62,10 @@ export default function FriendsScreen() {
 
   const loadData = useCallback(async () => {
     try {
-      const [friendsData, pendingData, activityData] = await Promise.all([
-        friendApi.getFriends(),
+      const [pendingData, activityData] = await Promise.all([
         friendApi.getPendingRequests(),
         friendApi.getActivity(),
       ]);
-      setFriends(friendsData);
       setPendingRequests(pendingData);
       setActivity(activityData);
     } catch (error) {
@@ -68,7 +73,6 @@ export default function FriendsScreen() {
         console.error('❌ [FriendsScreen] Error loading data:', error);
       }
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
   }, []);

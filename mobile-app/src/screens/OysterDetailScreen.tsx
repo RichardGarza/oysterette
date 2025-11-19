@@ -38,7 +38,7 @@ import { EmptyState } from '../components/EmptyState';
 import { RatingDisplay } from '../components/RatingDisplay';
 import { ReviewCard } from '../components/ReviewCard';
 import { getAttributeDescriptor } from '../utils/ratingUtils';
-import { useOyster } from '../hooks/useQueries';
+import { useOyster, useOysterReviews } from '../hooks/useQueries';
 
 // ============================================================================
 // CONSTANTS
@@ -106,13 +106,26 @@ export default function OysterDetailScreen() {
   const { oysterId } = route.params;
   const { theme, isDark, paperTheme } = useTheme();
 
-  // React Query hook for oyster data
+  // React Query hooks for oyster data and reviews
   const {
-    data: oyster,
-    isLoading: loading,
+    data: oysterData,
+    isLoading: oysterLoading,
     isError,
-    refetch
+    refetch: refetchOyster
   } = useOyster(oysterId);
+
+  const {
+    data: reviews = [],
+    isLoading: reviewsLoading,
+    refetch: refetchReviews
+  } = useOysterReviews(oysterId);
+
+  // Combine oyster data with reviews
+  const oyster = oysterData ? { ...oysterData, reviews } : null;
+  const loading = oysterLoading || reviewsLoading;
+  const refetch = async () => {
+    await Promise.all([refetchOyster(), refetchReviews()]);
+  };
 
   const [refreshing, setRefreshing] = useState(false);
   const [userVotes, setUserVotes] = useState<Record<string, boolean | null>>({});

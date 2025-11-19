@@ -13,6 +13,7 @@ import {
   SafeAreaView,
   RefreshControl,
   Alert,
+  Platform,
 } from 'react-native';
 import {
   Text,
@@ -21,12 +22,15 @@ import {
   ActivityIndicator,
   Appbar,
 } from 'react-native-paper';
+import * as Haptics from 'expo-haptics';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { reviewApi, userApi } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { Review } from '../types/Oyster';
 import { EmptyState } from '../components/EmptyState';
 import { authStorage } from '../services/auth';
+import { favoritesStorage } from '../services/favorites';
+import { useProfileReviews, usePublicProfileReviews } from '../hooks/useQueries';
 
 export default function ReviewsScreen() {
   const navigation = useNavigation<any>();
@@ -36,51 +40,58 @@ export default function ReviewsScreen() {
   const userName = route.params?.userName;
   const isViewingOwnReviews = !userId;
 
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+  // React Query hooks - conditionally fetch own or public reviews
+  const {
+    data: ownReviewsData,
+    isLoading: ownLoading,
+    refetch: refetchOwnReviews
+  } = useProfileReviews({ page: 1, limit: 100, sortBy: 'createdAt' });
+
+  const {
+    data: publicReviewsData,
+    isLoading: publicLoading,
+    refetch: refetchPublicReviews
+  } = usePublicProfileReviews(userId || '');
+
+  // Use appropriate data based on viewing context
+  const loading = isViewingOwnReviews ? ownLoading : publicLoading;
+  const refetchReviews = isViewingOwnReviews ? refetchOwnReviews : refetchPublicReviews;
+
+  // Handle different data structures:
+  // - Own reviews: { reviews: Review[], total, page, pages }
+  // - Public reviews: Review[]
+  const reviews = isViewingOwnReviews
+    ? (ownReviewsData?.reviews || [])
+    : (publicReviewsData || []);
+
   const [refreshing, setRefreshing] = useState(false);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
-  const loadReviews = useCallback(async (isRefreshing = false) => {
-    try {
-      if (isRefreshing) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
+  const loadFavorites = useCallback(async () => {
+    const favs = await favoritesStorage.getFavorites();
+    setFavorites(new Set(favs));
+  }, []);
 
-      if (userId) {
-        // Viewing friend's reviews
-        const data = await reviewApi.getPublicUserReviews(userId);
-        setReviews(data || []);
-      } else {
-        // Viewing own reviews - use getMyReviews which returns paginated response
-        const reviewHistory = await userApi.getMyReviews({ 
-          page: 1, 
-          limit: 100, 
-          sortBy: 'createdAt' 
-        });
-        setReviews(reviewHistory.reviews || []);
-      }
-    } catch (error) {
-      console.error('Error loading reviews:', error);
-      Alert.alert('Error', 'Failed to load reviews. Please try again.');
-    } finally {
-      if (isRefreshing) {
-        setRefreshing(false);
-      } else {
-        setLoading(false);
-      }
+  const handleToggleFavorite = useCallback(async (oysterId: string, e: any) => {
+    e.stopPropagation();
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newState = await favoritesStorage.toggleFavorite(oysterId);
+    if (newState) {
+      setFavorites(prev => new Set([...prev, oysterId]));
+    } else {
+      setFavorites(prev => {
+        const next = new Set(prev);
+        next.delete(oysterId);
+        return next;
+      });
     }
-  }, [userId]);
-
-  useEffect(() => {
-    loadReviews();
-  }, [loadReviews]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      loadReviews(true);
-    }, [loadReviews])
+      refetchReviews();
+      loadFavorites();
+    }, [refetchReviews, loadFavorites])
   );
 
   const handleReviewPress = (review: Review) => {
@@ -142,53 +153,92 @@ export default function ReviewsScreen() {
       padding: 16,
     },
     reviewCard: {
-      marginBottom: 12,
+      backgroundColor: theme.colors.card,
+      borderRadius: 12,
+      padding: 15,
+      marginBottom: 15,
+      ...Platform.select({
+        ios: {
+          shadowColor: theme.colors.shadowColor,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isDark ? 0.3 : 0.1,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 3,
+        },
+      }),
     },
-    reviewHeader: {
+    cardHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       marginBottom: 8,
     },
-    reviewHeaderLeft: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-    },
     oysterName: {
-      fontSize: 16,
-      fontWeight: '600',
+      fontSize: 20,
+      fontWeight: 'bold',
       color: theme.colors.text,
       flex: 1,
+      marginRight: 10,
     },
-    reviewRating: {
-      fontSize: 14,
+    headerRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    userRating: {
+      fontSize: 13,
       fontWeight: '600',
       color: theme.colors.primary,
       textTransform: 'capitalize',
     },
-    deleteButton: {
-      // Paper IconButton handles styling
+    favoriteButton: {
+      padding: 4,
     },
-    reviewNotes: {
+    deleteButton: {
+      padding: 4,
+    },
+    species: {
+      fontSize: 14,
+      color: theme.colors.textSecondary,
+      marginBottom: 4,
+    },
+    origin: {
       fontSize: 14,
       color: theme.colors.textSecondary,
       marginBottom: 8,
-      lineHeight: 20,
     },
-    reviewFooter: {
+    notes: {
+      fontSize: 13,
+      color: theme.colors.textSecondary,
+      fontStyle: 'italic',
+      marginBottom: 12,
+      lineHeight: 18,
+    },
+    attributesContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
+      marginTop: 10,
+      paddingTop: 10,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.border,
+      flexWrap: 'wrap',
+    },
+    attributeItem: {
       alignItems: 'center',
+      minWidth: '18%',
     },
-    reviewDate: {
-      fontSize: 12,
+    attributeLabel: {
+      fontSize: 10,
       color: theme.colors.textSecondary,
+      marginBottom: 4,
+      textAlign: 'center',
     },
-    reviewVotes: {
-      fontSize: 12,
-      color: theme.colors.textSecondary,
+    attributeValue: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.primary,
     },
     loadingContainer: {
       flex: 1,
@@ -235,7 +285,11 @@ export default function ReviewsScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => loadReviews(true)}
+            onRefresh={async () => {
+              setRefreshing(true);
+              await refetchReviews();
+              setRefreshing(false);
+            }}
             tintColor={theme.colors.primary}
           />
         }
@@ -243,6 +297,9 @@ export default function ReviewsScreen() {
         {reviews.length > 0 ? (
           reviews.map((review) => {
             const isOwnReview = isViewingOwnReviews && currentUserId && review.userId === currentUserId;
+            const oyster = review.oyster;
+            if (!oyster) return null;
+
             return (
               <Card
                 key={review.id}
@@ -251,38 +308,69 @@ export default function ReviewsScreen() {
                 onPress={() => handleReviewPress(review)}
               >
                 <Card.Content>
-                  <View style={styles.reviewHeader}>
-                    <View style={styles.reviewHeaderLeft}>
-                      <Text variant="titleMedium" style={styles.oysterName}>
-                        {review.oyster?.name || 'Unknown Oyster'}
-                      </Text>
-                      <Text variant="bodyMedium" style={styles.reviewRating}>
+                  <View style={styles.cardHeader}>
+                    <Text variant="titleMedium" style={styles.oysterName} numberOfLines={2}>
+                      {oyster.name}
+                    </Text>
+                    <View style={styles.headerRight}>
+                      <Text variant="bodyMedium" style={styles.userRating}>
                         {review.rating.replace('_', ' ')}
                       </Text>
+                      {oyster.id && (
+                        <IconButton
+                          icon={favorites.has(oyster.id) ? 'heart' : 'heart-outline'}
+                          iconColor={favorites.has(oyster.id) ? '#e74c3c' : undefined}
+                          size={20}
+                          onPress={(e) => handleToggleFavorite(oyster.id, e)}
+                          style={styles.favoriteButton}
+                        />
+                      )}
+                      {isOwnReview && (
+                        <IconButton
+                          icon="delete"
+                          size={20}
+                          onPress={(event) => handleDeleteReview(review, event)}
+                          style={styles.deleteButton}
+                        />
+                      )}
                     </View>
-                    {isOwnReview && (
-                      <IconButton
-                        icon="delete"
-                        size={20}
-                        onPress={(event) => handleDeleteReview(review, event)}
-                        style={styles.deleteButton}
-                      />
-                    )}
                   </View>
-                  {review.notes && (
-                    <Text variant="bodyMedium" style={styles.reviewNotes} numberOfLines={3}>
-                      {review.notes}
+
+                  {oyster.species && oyster.species !== 'Unknown' && (
+                    <Text variant="bodySmall" style={styles.species}>{oyster.species}</Text>
+                  )}
+
+                  {oyster.origin && oyster.origin !== 'Unknown' && (
+                    <Text variant="bodySmall" style={styles.origin}>{oyster.origin}</Text>
+                  )}
+
+                  {oyster.standoutNotes && (
+                    <Text variant="bodySmall" style={styles.notes} numberOfLines={2}>
+                      {oyster.standoutNotes}
                     </Text>
                   )}
-                  <View style={styles.reviewFooter}>
-                    <Text variant="bodySmall" style={styles.reviewDate}>
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </Text>
-                    {(review.agreeCount > 0 || review.disagreeCount > 0) && (
-                      <Text variant="bodySmall" style={styles.reviewVotes}>
-                        👍 {review.agreeCount || 0} · 👎 {review.disagreeCount || 0}
-                      </Text>
-                    )}
+
+                  <View style={styles.attributesContainer}>
+                    <View style={styles.attributeItem}>
+                      <Text variant="labelSmall" style={styles.attributeLabel}>Size</Text>
+                      <Text variant="bodyMedium" style={styles.attributeValue}>{review.size || 5}/10</Text>
+                    </View>
+                    <View style={styles.attributeItem}>
+                      <Text variant="labelSmall" style={styles.attributeLabel}>Body</Text>
+                      <Text variant="bodyMedium" style={styles.attributeValue}>{review.body || 5}/10</Text>
+                    </View>
+                    <View style={styles.attributeItem}>
+                      <Text variant="labelSmall" style={styles.attributeLabel}>Brine</Text>
+                      <Text variant="bodyMedium" style={styles.attributeValue}>{review.sweetBrininess || 5}/10</Text>
+                    </View>
+                    <View style={styles.attributeItem}>
+                      <Text variant="labelSmall" style={styles.attributeLabel}>Flavor</Text>
+                      <Text variant="bodyMedium" style={styles.attributeValue}>{review.flavorfulness || 5}/10</Text>
+                    </View>
+                    <View style={styles.attributeItem}>
+                      <Text variant="labelSmall" style={styles.attributeLabel}>Cream</Text>
+                      <Text variant="bodyMedium" style={styles.attributeValue}>{review.creaminess || 5}/10</Text>
+                    </View>
                   </View>
                 </Card.Content>
               </Card>

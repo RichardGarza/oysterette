@@ -115,6 +115,7 @@ import PairedMatchesScreen from './src/screens/PairedMatchesScreen';
 import XPStatsScreen from './src/screens/XPStatsScreen';
 import MenuScreen from './src/screens/MenuScreen';
 import ReviewsScreen from './src/screens/ReviewsScreen';
+import FriendFavoritesScreen from './src/screens/FriendFavoritesScreen';
 import { Avatar } from 'react-native-paper'; // Add import for Avatar
 import { authStorage } from './src/services/auth'; // Add import for auth
 
@@ -365,6 +366,13 @@ function AppNavigator() {
         <Stack.Screen
           name="Reviews"
           component={ReviewsScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="FriendFavorites"
+          component={FriendFavoritesScreen}
           options={{
             headerShown: false,
           }}

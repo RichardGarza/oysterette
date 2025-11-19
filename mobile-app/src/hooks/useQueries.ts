@@ -5,7 +5,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { oysterApi, reviewApi, voteApi, userApi, recommendationApi, getXPStats } from '../services/api';
+import { oysterApi, reviewApi, voteApi, userApi, recommendationApi, friendApi, favoritesApi, getXPStats } from '../services/api';
 
 // ============================================================================
 // QUERY KEYS
@@ -20,6 +20,10 @@ export const queryKeys = {
   profile: ['profile'] as const,
   profileReviews: ['profile', 'reviews'] as const,
   profileXP: ['profile', 'xp'] as const,
+  publicProfile: (userId: string) => ['publicProfile', userId] as const,
+  publicProfileReviews: (userId: string) => ['publicProfile', userId, 'reviews'] as const,
+  publicProfileFavorites: (userId: string) => ['publicProfile', userId, 'favorites'] as const,
+  friends: ['friends'] as const,
   search: (params: any) => ['search', params] as const,
   topOysters: ['topOysters'] as const,
 };
@@ -150,6 +154,57 @@ export function useProfileXP() {
   return useQuery({
     queryKey: queryKeys.profileXP,
     queryFn: () => getXPStats(),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+}
+
+/**
+ * Get public user profile (5 min stale time)
+ */
+export function usePublicProfile(userId: string) {
+  return useQuery({
+    queryKey: queryKeys.publicProfile(userId),
+    queryFn: () => userApi.getPublicProfile(userId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!userId,
+  });
+}
+
+/**
+ * Get public user's reviews (2 min stale time)
+ */
+export function usePublicProfileReviews(userId: string, params?: { page?: number; limit?: number; sortBy?: string }) {
+  return useQuery({
+    queryKey: queryKeys.publicProfileReviews(userId),
+    queryFn: () => reviewApi.getPublicUserReviews(userId),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    enabled: !!userId,
+  });
+}
+
+/**
+ * Get public user's favorite oysters (5 min stale time)
+ */
+export function usePublicProfileFavorites(userId: string) {
+  return useQuery({
+    queryKey: queryKeys.publicProfileFavorites(userId),
+    queryFn: () => favoritesApi.getUserPublicFavorites(userId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!userId,
+  });
+}
+
+// ============================================================================
+// FRIENDS QUERIES
+// ============================================================================
+
+/**
+ * Get user's friends list (2 min stale time)
+ */
+export function useFriends() {
+  return useQuery({
+    queryKey: queryKeys.friends,
+    queryFn: () => friendApi.getFriends(),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }

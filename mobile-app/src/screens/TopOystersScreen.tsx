@@ -4,7 +4,7 @@
  * Leaderboard of top 50 highest-rated oysters with pull-to-refresh.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -23,11 +23,11 @@ import {
 } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { OysterListScreenNavigationProp } from '../navigation/types';
-import { oysterApi } from '../services/api';
 import { Oyster } from '../types/Oyster';
 import { RatingDisplay } from '../components/RatingDisplay';
 import { OysterCardSkeleton } from '../components/OysterCardSkeleton';
 import { useTheme } from '../context/ThemeContext';
+import { useTopOysters } from '../hooks/useQueries';
 
 // ============================================================================
 // CONSTANTS
@@ -45,48 +45,23 @@ const RANK_BADGE_SIZE = 50;
 export default function TopOystersScreen() {
   const navigation = useNavigation<OysterListScreenNavigationProp>();
   const { paperTheme } = useTheme();
-  const [oysters, setOysters] = useState<Oyster[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  // React Query hook for top oysters
+  const {
+    data: oysters = [],
+    isLoading: loading,
+    isError,
+    refetch
+  } = useTopOysters();
+
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const error = isError ? 'Failed to load top oysters' : null;
 
-  const fetchTopOysters = useCallback(async (isRefreshing = false) => {
-    try {
-      if (isRefreshing) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-      setError(null);
-
-      const data = await oysterApi.getAll();
-      const sorted = data
-        .filter(oyster => oyster.totalReviews > 0)
-        .sort((a, b) => b.overallScore - a.overallScore)
-        .slice(0, TOP_OYSTERS_LIMIT);
-
-      setOysters(sorted);
-    } catch (err) {
-      setError('Failed to load top oysters');
-      if (__DEV__) {
-        console.error('❌ [TopOystersScreen] Error fetching top oysters:', err);
-      }
-    } finally {
-      if (isRefreshing) {
-        setRefreshing(false);
-      } else {
-        setLoading(false);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchTopOysters();
-  }, [fetchTopOysters]);
-
-  const onRefresh = useCallback(() => {
-    fetchTopOysters(true);
-  }, [fetchTopOysters]);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const renderOysterItem = useCallback(({ item, index }: { item: Oyster; index: number }) => (
     <Card

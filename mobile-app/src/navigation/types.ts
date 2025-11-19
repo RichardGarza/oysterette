@@ -132,6 +132,7 @@ export type RootStackParamList = {
     }>;
   };
   Reviews: { userId?: string; userName?: string } | undefined;
+  FriendFavorites: { userId: string; userName: string };
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<

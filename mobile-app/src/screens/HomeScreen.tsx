@@ -45,7 +45,7 @@ const LOGO_SIZES = {
 
 const RECOMMENDATIONS_LIMIT = 5;
 
-const LAST_UPDATED = 'November 18, 2025 at 08:19 PM';
+const LAST_UPDATED = 'November 19, 2025 at 1:00 AM';
 const TOP_RATED_LIMIT = 5;
 
 // ============================================================================
@@ -129,7 +129,7 @@ export default function HomeScreen() {
       setIsLoggedIn(false);
       setChecking(false);
     }
-  }, [loadUserTheme, loadRecommendations, loadUserStats, loadTopRated]);
+  }, [loadUserTheme]);
 
   useEffect(() => {
     checkAuth();

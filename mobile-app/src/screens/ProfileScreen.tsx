@@ -82,7 +82,7 @@
  * 5. Pull-to-refresh updates all data
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -94,6 +94,7 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import {
   Text,
   Card,
@@ -111,13 +112,14 @@ import {
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { authStorage } from '../services/auth';
+import { favoritesStorage } from '../services/favorites';
 import { uploadApi } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { Review, User } from '../types/Oyster';
 import { EmptyState } from '../components/EmptyState';
 import { getRangeLabel, getAttributeLabel } from '../utils/flavorLabels';
 import { XPBadge } from '../components/XPBadge';
-import { useProfile, useProfileReviews, useProfileXP } from '../hooks/useQueries';
+import { useProfile, useProfileReviews, useProfileXP, usePublicProfile, usePublicProfileReviews } from '../hooks/useQueries';
 
 interface ProfileStats {
   totalReviews: number;
@@ -145,25 +147,44 @@ export default function ProfileScreen() {
   const viewingUserId = route.params?.userId;
   const isViewingOwnProfile = !viewingUserId;
 
-  // React Query hooks for own profile
+  // React Query hooks - conditionally fetch own or public profile
   const {
-    data: profileData,
-    isLoading: loading,
-    refetch: refetchProfile
+    data: ownProfileData,
+    isLoading: ownLoading,
+    refetch: refetchOwnProfile
   } = useProfile();
 
   const {
-    data: reviewsData,
-    refetch: refetchReviews
+    data: publicProfileData,
+    isLoading: publicLoading,
+    refetch: refetchPublicProfile
+  } = usePublicProfile(viewingUserId || '');
+
+  const {
+    data: ownReviewsData,
+    refetch: refetchOwnReviews
   } = useProfileReviews();
+
+  const {
+    data: publicReviewsData,
+    refetch: refetchPublicReviews
+  } = usePublicProfileReviews(viewingUserId || '');
 
   const {
     data: xpData,
     refetch: refetchXP
   } = useProfileXP();
 
+  // Use appropriate data based on whether viewing own or public profile
+  const profileData = isViewingOwnProfile ? ownProfileData : publicProfileData;
+  const reviewsData = isViewingOwnProfile ? ownReviewsData : publicReviewsData;
+  const loading = isViewingOwnProfile ? ownLoading : publicLoading;
+  const refetchProfile = isViewingOwnProfile ? refetchOwnProfile : refetchPublicProfile;
+  const refetchReviews = isViewingOwnProfile ? refetchOwnReviews : refetchPublicReviews;
+
   const reviews = reviewsData?.reviews || [];
   const [refreshing, setRefreshing] = useState(false);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   // Edit Profile Modal
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -184,6 +205,27 @@ export default function ProfileScreen() {
   // Flavor Attribute Tooltip
   const [tooltipAttribute, setTooltipAttribute] = useState<string | null>(null);
 
+  // Load favorites
+  const loadFavorites = useCallback(async () => {
+    const favs = await favoritesStorage.getFavorites();
+    setFavorites(new Set(favs));
+  }, []);
+
+  const handleToggleFavorite = useCallback(async (oysterId: string, e: any) => {
+    e.stopPropagation();
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newState = await favoritesStorage.toggleFavorite(oysterId);
+    if (newState) {
+      setFavorites(prev => new Set([...prev, oysterId]));
+    } else {
+      setFavorites(prev => {
+        const next = new Set(prev);
+        next.delete(oysterId);
+        return next;
+      });
+    }
+  }, []);
+
   // Initialize edit fields when profile data loads
   useEffect(() => {
     if (profileData?.user) {
@@ -191,6 +233,16 @@ export default function ProfileScreen() {
       setEditEmail(profileData.user.email);
     }
   }, [profileData]);
+
+  // Update header title based on viewing context
+  useEffect(() => {
+    if (profileData?.user) {
+      const title = isViewingOwnProfile
+        ? 'My Profile'
+        : `${profileData.user.name || profileData.user.username}'s Profile`;
+      navigation.setOptions({ title });
+    }
+  }, [profileData, isViewingOwnProfile, navigation]);
 
   // Refetch on screen focus
   useFocusEffect(
@@ -201,7 +253,8 @@ export default function ProfileScreen() {
       refetchProfile();
       refetchReviews();
       refetchXP();
-    }, [refetchProfile, refetchReviews, refetchXP])
+      loadFavorites();
+    }, [refetchProfile, refetchReviews, refetchXP, loadFavorites])
   );
 
   // Handle pull-to-refresh
@@ -410,11 +463,9 @@ export default function ProfileScreen() {
           onPress: async () => {
             try {
               await reviewApi.delete(review.id);
-              // Remove review from local state
-              setReviews(prevReviews => prevReviews.filter(r => r.id !== review.id));
               Alert.alert('Success', 'Review deleted successfully');
               // Refresh profile data to update stats
-              loadProfile();
+              await Promise.all([refetchProfile(), refetchReviews(), refetchXP()]);
             } catch (error) {
               console.error('Error deleting review:', error);
               Alert.alert('Error', 'Failed to delete review. Please try again.');
@@ -589,7 +640,14 @@ export default function ProfileScreen() {
           </Card>
 
           <Card mode="elevated" style={styles.statCard} onPress={() => {
-            navigation.navigate('OysterList' as any, { showFavorites: true });
+            if (isViewingOwnProfile) {
+              navigation.navigate('OysterList' as any, { showFavorites: true });
+            } else {
+              navigation.navigate('FriendFavorites' as any, {
+                userId: viewingUserId,
+                userName: profileData?.user?.name || profileData?.user?.username || 'User',
+              });
+            }
           }}>
             <Card.Content style={styles.statCardContent}>
               <Text variant="headlineMedium" style={styles.statValue}>{stats.totalFavorites}</Text>
@@ -609,7 +667,7 @@ export default function ProfileScreen() {
             </Card.Content>
           </Card>
 
-          <Card mode="elevated" style={styles.statCard} onPress={() => navigation.navigate('OysterList' as any)}>
+          <Card mode="elevated" style={styles.statCard}>
             <Card.Content style={styles.statCardContent}>
               <Text variant="headlineMedium" style={styles.statValue}>{stats.totalVotesReceived}</Text>
               <Text variant="bodySmall" style={styles.statLabel}>Votes Received</Text>
@@ -839,48 +897,86 @@ export default function ProfileScreen() {
         <View style={styles.reviewSection}>
           <Text variant="titleLarge" style={styles.sectionTitle}>Recent Reviews</Text>
           {reviews.length > 0 ? (
-            reviews.slice(0, 5).map((review) => (
-              <Card
-                key={review.id}
-                mode="elevated"
-                style={styles.reviewCard}
-                onPress={() => handleReviewPress(review)}
-              >
-                <Card.Content>
-                  <View style={styles.reviewHeader}>
-                    <View style={styles.reviewHeaderLeft}>
-                      <Text variant="titleMedium" style={styles.oysterName}>
-                        {review.oyster?.name || 'Unknown Oyster'}
+            reviews.slice(0, 5).map((review) => {
+              const oyster = review.oyster;
+              if (!oyster) return null;
+
+              return (
+                <Card
+                  key={review.id}
+                  mode="elevated"
+                  style={styles.reviewCard}
+                  onPress={() => handleReviewPress(review)}
+                >
+                  <Card.Content>
+                    <View style={styles.cardHeader}>
+                      <Text variant="titleMedium" style={styles.oysterName} numberOfLines={2}>
+                        {oyster.name}
                       </Text>
-                      <Text variant="bodyMedium" style={styles.reviewRating}>{review.rating.replace('_', ' ')}</Text>
+                      <View style={styles.headerRight}>
+                        <Text variant="bodyMedium" style={styles.userRating}>
+                          {review.rating.replace('_', ' ')}
+                        </Text>
+                        {oyster.id && (
+                          <IconButton
+                            icon={favorites.has(oyster.id) ? 'heart' : 'heart-outline'}
+                            iconColor={favorites.has(oyster.id) ? '#e74c3c' : undefined}
+                            size={20}
+                            onPress={(e) => handleToggleFavorite(oyster.id, e)}
+                            style={styles.favoriteButton}
+                          />
+                        )}
+                        {isViewingOwnProfile && (
+                          <IconButton
+                            icon="delete"
+                            size={20}
+                            onPress={(event) => handleDeleteReview(review, event)}
+                            style={styles.deleteButton}
+                          />
+                        )}
+                      </View>
                     </View>
-                    {isViewingOwnProfile && (
-                      <IconButton
-                        icon="delete"
-                        size={20}
-                        onPress={(event) => handleDeleteReview(review, event)}
-                        style={styles.deleteButton}
-                      />
+
+                    {oyster.species && oyster.species !== 'Unknown' && (
+                      <Text variant="bodySmall" style={styles.species}>{oyster.species}</Text>
                     )}
-                  </View>
-                  {review.notes && (
-                    <Text variant="bodyMedium" style={styles.reviewNotes} numberOfLines={2}>
-                      {review.notes}
-                    </Text>
-                  )}
-                  <View style={styles.reviewFooter}>
-                    <Text variant="bodySmall" style={styles.reviewDate}>
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </Text>
-                    {(review.agreeCount > 0 || review.disagreeCount > 0) && (
-                      <Text variant="bodySmall" style={styles.reviewVotes}>
-                        👍 {review.agreeCount || 0} · 👎 {review.disagreeCount || 0}
+
+                    {oyster.origin && oyster.origin !== 'Unknown' && (
+                      <Text variant="bodySmall" style={styles.origin}>{oyster.origin}</Text>
+                    )}
+
+                    {oyster.standoutNotes && (
+                      <Text variant="bodySmall" style={styles.notes} numberOfLines={2}>
+                        {oyster.standoutNotes}
                       </Text>
                     )}
-                  </View>
-                </Card.Content>
-              </Card>
-            ))
+
+                    <View style={styles.attributesContainer}>
+                      <View style={styles.attributeItem}>
+                        <Text variant="labelSmall" style={styles.attributeLabel}>Size</Text>
+                        <Text variant="bodyMedium" style={styles.attributeValue}>{review.size || 5}/10</Text>
+                      </View>
+                      <View style={styles.attributeItem}>
+                        <Text variant="labelSmall" style={styles.attributeLabel}>Body</Text>
+                        <Text variant="bodyMedium" style={styles.attributeValue}>{review.body || 5}/10</Text>
+                      </View>
+                      <View style={styles.attributeItem}>
+                        <Text variant="labelSmall" style={styles.attributeLabel}>Brine</Text>
+                        <Text variant="bodyMedium" style={styles.attributeValue}>{review.sweetBrininess || 5}/10</Text>
+                      </View>
+                      <View style={styles.attributeItem}>
+                        <Text variant="labelSmall" style={styles.attributeLabel}>Flavor</Text>
+                        <Text variant="bodyMedium" style={styles.attributeValue}>{review.flavorfulness || 5}/10</Text>
+                      </View>
+                      <View style={styles.attributeItem}>
+                        <Text variant="labelSmall" style={styles.attributeLabel}>Cream</Text>
+                        <Text variant="bodyMedium" style={styles.attributeValue}>{review.creaminess || 5}/10</Text>
+                      </View>
+                    </View>
+                  </Card.Content>
+                </Card>
+              );
+            })
           ) : (
             <EmptyState
               icon="📝"
@@ -1377,53 +1473,92 @@ const createStyles = (colors: any, isDark: boolean) =>
       marginBottom: 16,
     },
     reviewCard: {
-      marginBottom: 12,
+      backgroundColor: colors.cardBackground,
+      borderRadius: 12,
+      padding: 15,
+      marginBottom: 15,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadowColor,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isDark ? 0.3 : 0.1,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 3,
+        },
+      }),
     },
-    reviewHeader: {
+    cardHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       marginBottom: 8,
     },
-    reviewHeaderLeft: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-    },
     oysterName: {
-      fontSize: 16,
-      fontWeight: '600',
+      fontSize: 20,
+      fontWeight: 'bold',
       color: colors.text,
       flex: 1,
+      marginRight: 10,
     },
-    reviewRating: {
-      fontSize: 14,
+    headerRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    userRating: {
+      fontSize: 13,
       fontWeight: '600',
       color: colors.primary,
       textTransform: 'capitalize',
     },
-    deleteButton: {
-      // Paper IconButton handles styling
+    favoriteButton: {
+      padding: 4,
     },
-    reviewNotes: {
+    deleteButton: {
+      padding: 4,
+    },
+    species: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginBottom: 4,
+    },
+    origin: {
       fontSize: 14,
       color: colors.textSecondary,
       marginBottom: 8,
-      lineHeight: 20,
     },
-    reviewFooter: {
+    notes: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      fontStyle: 'italic',
+      marginBottom: 12,
+      lineHeight: 18,
+    },
+    attributesContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
+      marginTop: 10,
+      paddingTop: 10,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      flexWrap: 'wrap',
+    },
+    attributeItem: {
       alignItems: 'center',
+      minWidth: '18%',
     },
-    reviewDate: {
-      fontSize: 12,
+    attributeLabel: {
+      fontSize: 10,
       color: colors.textSecondary,
+      marginBottom: 4,
+      textAlign: 'center',
     },
-    reviewVotes: {
-      fontSize: 12,
-      color: colors.textSecondary,
+    attributeValue: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.primary,
     },
 
     // Dialog styles

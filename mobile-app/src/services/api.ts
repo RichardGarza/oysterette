@@ -602,6 +602,12 @@ export const favoritesApi = {
     return response.data.favorites || [];
   },
 
+  // Get a user's public favorite oysters (full Oyster objects)
+  getUserPublicFavorites: async (userId: string): Promise<Oyster[]> => {
+    const response = await api.get<ApiResponse<Oyster[]>>(`/favorites/user/${userId}`);
+    return response.data.data || [];
+  },
+
   // Add oyster to favorites
   addFavorite: async (oysterId: string): Promise<void> => {
     await api.post(`/favorites/${oysterId}`);

@@ -20,6 +20,7 @@ import { reviewApi } from '../services/api';
 import { ReviewRating, Review } from '../types/Oyster';
 import { RootStackParamList } from '../navigation/types';
 import { useTheme } from '../context/ThemeContext';
+import { useUpdateReview } from '../hooks/useQueries';
 
 // ============================================================================
 // CONSTANTS
@@ -69,6 +70,9 @@ export default function EditReviewScreen() {
   const { review } = route.params;
   const { theme } = useTheme();
 
+  // React Query mutation
+  const updateReviewMutation = useUpdateReview();
+
   const [rating, setRating] = useState<ReviewRating>(review.rating);
   const [size, setSize] = useState<number>(review.size ?? SLIDER_CONFIG.DEFAULT_VALUE);
   const [body, setBody] = useState<number>(review.body ?? SLIDER_CONFIG.DEFAULT_VALUE);
@@ -97,14 +101,17 @@ export default function EditReviewScreen() {
     try {
       setSubmitting(true);
 
-      await reviewApi.update(review.id, {
-        rating,
-        size,
-        body,
-        sweetBrininess,
-        flavorfulness,
-        creaminess,
-        notes: notes.trim() || undefined,
+      await updateReviewMutation.mutateAsync({
+        reviewId: review.id,
+        data: {
+          rating,
+          size,
+          body,
+          sweetBrininess,
+          flavorfulness,
+          creaminess,
+          notes: notes.trim() || undefined,
+        }
       });
 
       Alert.alert(

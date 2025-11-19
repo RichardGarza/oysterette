@@ -207,22 +207,10 @@ export default function OysterListScreen() {
     }
 
     if (query.trim() === '') {
-      fetchOysters();
+      refetch();
       return;
     }
-
-    try {
-      setLoading(true);
-      const data = await oysterApi.search(query);
-      setOysters(data);
-    } catch (err) {
-      if (__DEV__) {
-        console.error('❌ [OysterListScreen] Error searching oysters:', err);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchOysters]);
+  }, [refetch]);
 
   const getFilteredOysters = useMemo(() => {
     if (!showFavoritesOnly) {
@@ -492,7 +480,7 @@ export default function OysterListScreen() {
                 //     },
                 //   });
                 // }
-                fetchOysters();
+                refetch();
               },
             },
           ]}

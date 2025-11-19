@@ -24,11 +24,16 @@ import {
   addFavorite,
   removeFavorite,
   syncFavorites,
+  getUserPublicFavorites,
 } from '../controllers/favoriteController';
 
 const router = Router();
 
-// All routes require authentication
+// Public route (no auth required) - must be before authenticate middleware
+// GET /api/favorites/user/:userId - Get a user's public favorite oysters
+router.get('/user/:userId', getUserPublicFavorites);
+
+// All routes below require authentication
 router.use(authenticate);
 
 // GET /api/favorites - Get user's favorite oyster IDs
