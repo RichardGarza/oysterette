@@ -63,6 +63,12 @@ jest.mock('../../context/ThemeContext', () => ({
 jest.mock('../../services/auth');
 jest.mock('../../services/favorites');
 
+// Mock useOysters hook
+const mockRefetch = jest.fn();
+jest.mock('../../hooks/useQueries', () => ({
+  useOysters: jest.fn(),
+}));
+
 describe('OysterListScreen', () => {
   const mockOysters = [
     {
@@ -97,6 +103,18 @@ describe('OysterListScreen', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockRefetch.mockClear();
+
+    // Mock useOysters to return mock data
+    const { useOysters } = require('../../hooks/useQueries');
+    (useOysters as jest.Mock).mockReturnValue({
+      data: mockOysters,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: mockRefetch,
+    });
+
     (oysterApi.getAll as jest.Mock).mockResolvedValue(mockOysters);
     (favoritesStorage.getFavorites as jest.Mock).mockResolvedValue([]);
     (authStorage.getToken as jest.Mock).mockResolvedValue('test-token');
@@ -113,12 +131,7 @@ describe('OysterListScreen', () => {
   it('should load and display oysters', async () => {
     const { getByText } = render(<OysterListScreen />);
 
-    // Wait for API to be called
-    await waitFor(() => {
-      expect(oysterApi.getAll).toHaveBeenCalled();
-    }, { timeout: 3000 });
-
-    // Then wait for oysters to appear
+    // Wait for oysters to appear
     await waitFor(() => {
       expect(getByText('Kusshi')).toBeTruthy();
       expect(getByText('Blue Point')).toBeTruthy();
@@ -177,9 +190,15 @@ describe('OysterListScreen', () => {
   });
 
   it('should show loading state', () => {
-    (oysterApi.getAll as jest.Mock).mockImplementation(
-      () => new Promise(() => {}) // Never resolves
-    );
+    // Mock useOysters to return loading state
+    const { useOysters } = require('../../hooks/useQueries');
+    (useOysters as jest.Mock).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+      error: null,
+      refetch: mockRefetch,
+    });
 
     const { getAllByTestId } = render(<OysterListScreen />);
 
@@ -189,16 +208,19 @@ describe('OysterListScreen', () => {
   });
 
   it('should show empty state when no oysters', async () => {
-    (oysterApi.getAll as jest.Mock).mockResolvedValue([]);
+    // Mock useOysters to return empty data
+    const { useOysters } = require('../../hooks/useQueries');
+    (useOysters as jest.Mock).mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: mockRefetch,
+    });
 
     const { getByText } = render(<OysterListScreen />);
 
-    // Wait for API call to complete
-    await waitFor(() => {
-      expect(oysterApi.getAll).toHaveBeenCalled();
-    }, { timeout: 3000 });
-
-    // Then check for empty state - matches either "No Oysters Found" or "No Oysters Available"
+    // Check for empty state - matches either "No Oysters Found" or "No Oysters Available"
     await waitFor(() => {
       expect(getByText(/No Oysters/i)).toBeTruthy();
     }, { timeout: 3000 });
@@ -236,11 +258,11 @@ describe('OysterListScreen', () => {
   });
 
   it('should have refresh functionality configured', async () => {
-    const { getByTestId } = render(<OysterListScreen />);
+    const { getByTestId, getByText } = render(<OysterListScreen />);
 
     // Wait for initial load to complete
     await waitFor(() => {
-      expect(oysterApi.getAll).toHaveBeenCalled();
+      expect(getByText('Kusshi')).toBeTruthy();
     }, { timeout: 3000 });
 
     // Wait for the FlatList to be rendered (after loading completes)
