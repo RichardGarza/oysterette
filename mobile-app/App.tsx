@@ -354,12 +354,9 @@ function AppNavigator() {
         <Stack.Screen
           name="Reviews"
           component={ReviewsScreen}
-          options={({ navigation, route }) => ({
-            title: (route.params as any)?.userName 
-              ? `${(route.params as any).userName}'s Reviews` 
-              : 'My Reviews',
-            headerRight: () => <SettingsButton navigation={navigation} />,
-          })}
+          options={{
+            headerShown: false,
+          }}
         />
       </Stack.Navigator>
       </NavigationContainer>
