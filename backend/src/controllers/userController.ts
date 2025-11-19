@@ -22,7 +22,13 @@ import { updateProfileSchema } from '../validators/schemas'; // Assume schema up
 
 // Add new schema for username (inline or import)
 const usernameSchema = z.object({
-  username: z.string().regex(/^[a-zA-Z0-9]{3,20}$/, 'Username must be 3-20 alphanumeric characters').optional(),
+  username: z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9]{3,20}$/,
+      'Username must be 3-20 alphanumeric characters'
+    )
+    .optional(),
 });
 
 /**
@@ -34,7 +40,10 @@ const usernameSchema = z.object({
  * @returns 401 - Not authenticated
  * @returns 500 - Server error
  */
-export const getTopOysters = async (req: Request, res: Response): Promise<void> => {
+export const getTopOysters = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     if (!req.userId) {
       res.status(401).json({
@@ -79,7 +88,10 @@ export const getTopOysters = async (req: Request, res: Response): Promise<void> 
  * @returns 404 - Oyster not found
  * @returns 500 - Server error
  */
-export const addTopOyster = async (req: Request, res: Response): Promise<void> => {
+export const addTopOyster = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     if (!req.userId) {
       res.status(401).json({
@@ -160,7 +172,10 @@ export const addTopOyster = async (req: Request, res: Response): Promise<void> =
 };
 
 // Remove oyster from top list
-export const removeTopOyster = async (req: Request, res: Response): Promise<void> => {
+export const removeTopOyster = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     if (!req.userId) {
       res.status(401).json({
@@ -201,7 +216,10 @@ export const removeTopOyster = async (req: Request, res: Response): Promise<void
 };
 
 // Update user preferences
-export const updatePreferences = async (req: Request, res: Response): Promise<void> => {
+export const updatePreferences = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     if (!req.userId) {
       res.status(401).json({
@@ -246,7 +264,11 @@ export const updateProfile = async (req: Request, res: Response) => {
     if (username !== undefined) {
       const validation = usernameSchema.safeParse({ username });
       if (!validation.success) {
-        return res.status(400).json({ error: validation.error.issues[0]?.message || 'Validation error' });
+        return res
+          .status(400)
+          .json({
+            error: validation.error.issues[0]?.message || 'Validation error',
+          });
       }
 
       // Check uniqueness (exclude current user)
@@ -288,7 +310,11 @@ export const setUsername = async (req: Request, res: Response) => {
 
     const validation = usernameSchema.safeParse({ username });
     if (!validation.success) {
-      return res.status(400).json({ error: validation.error.issues[0]?.message || 'Validation error' });
+      return res
+        .status(400)
+        .json({
+          error: validation.error.issues[0]?.message || 'Validation error',
+        });
     }
 
     // Check uniqueness
@@ -336,7 +362,10 @@ export const setUsername = async (req: Request, res: Response) => {
  * @returns 404 - User not found
  * @returns 500 - Server error
  */
-export const getProfile = async (req: Request, res: Response): Promise<void> => {
+export const getProfile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     if (!req.userId) {
       res.status(401).json({
@@ -385,37 +414,52 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
 
     if (user.reviews.length > 0) {
       const ratingValues: Record<string, number> = {
-        LOVE_IT: 4,   // Best
-        LIKE_IT: 3,   // Good
-        OKAY: 2,      // Okay
-        MEH: 1,       // Worst
+        LOVE_IT: 4, // Best
+        LIKE_IT: 3, // Good
+        OKAY: 2, // Okay
+        MEH: 1, // Worst
       };
-      const totalRating = user.reviews.reduce((sum: number, review: any) => sum + (ratingValues[review.rating] || 0), 0);
+      const totalRating = user.reviews.reduce(
+        (sum: number, review: any) => sum + (ratingValues[review.rating] || 0),
+        0
+      );
       avgRatingGiven = totalRating / user.reviews.length;
     }
 
     // Find most reviewed species and origin
-    const speciesCounts = user.reviews.reduce((acc: Record<string, number>, review: any) => {
-      if (review.oyster.species) {
-        acc[review.oyster.species] = (acc[review.oyster.species] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<string, number>);
+    const speciesCounts = user.reviews.reduce(
+      (acc: Record<string, number>, review: any) => {
+        if (review.oyster.species) {
+          acc[review.oyster.species] = (acc[review.oyster.species] || 0) + 1;
+        }
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
-    const originCounts = user.reviews.reduce((acc: Record<string, number>, review: any) => {
-      if (review.oyster.origin) {
-        acc[review.oyster.origin] = (acc[review.oyster.origin] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<string, number>);
+    const originCounts = user.reviews.reduce(
+      (acc: Record<string, number>, review: any) => {
+        if (review.oyster.origin) {
+          acc[review.oyster.origin] = (acc[review.oyster.origin] || 0) + 1;
+        }
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
-    const mostReviewedSpecies = Object.keys(speciesCounts).length > 0
-      ? (Object.entries(speciesCounts) as [string, number][]).sort((a, b) => b[1] - a[1])[0]?.[0]
-      : undefined;
+    const mostReviewedSpecies =
+      Object.keys(speciesCounts).length > 0
+        ? (Object.entries(speciesCounts) as [string, number][]).sort(
+            (a, b) => b[1] - a[1]
+          )[0]?.[0]
+        : undefined;
 
-    const mostReviewedOrigin = Object.keys(originCounts).length > 0
-      ? (Object.entries(originCounts) as [string, number][]).sort((a, b) => b[1] - a[1])[0]?.[0]
-      : undefined;
+    const mostReviewedOrigin =
+      Object.keys(originCounts).length > 0
+        ? (Object.entries(originCounts) as [string, number][]).sort(
+            (a, b) => b[1] - a[1]
+          )[0]?.[0]
+        : undefined;
 
     // Determine badge level (based on review count AND credibility)
     let badgeLevel: 'Novice' | 'Trusted' | 'Expert' = 'Novice';
@@ -430,10 +474,14 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     // Calculate review streak (simplified - just days since last review)
     let reviewStreak = 0;
     if (user.reviews.length > 0) {
-      const sortedReviews = user.reviews.sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime());
+      const sortedReviews = user.reviews.sort(
+        (a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime()
+      );
       const lastReview = sortedReviews[0];
       if (lastReview) {
-        const daysSinceLastReview = Math.floor((Date.now() - lastReview.createdAt.getTime()) / (1000 * 60 * 60 * 24));
+        const daysSinceLastReview = Math.floor(
+          (Date.now() - lastReview.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+        );
         reviewStreak = daysSinceLastReview <= 7 ? user.reviews.length : 0;
       }
     }
@@ -442,10 +490,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     const friendsCount = await prisma.friendship.count({
       where: {
         status: 'accepted',
-        OR: [
-          { senderId: req.userId },
-          { receiverId: req.userId },
-        ],
+        OR: [{ senderId: req.userId }, { receiverId: req.userId }],
       },
     });
 
@@ -474,6 +519,28 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
           username: user.username, // Include username
           profilePhotoUrl: user.profilePhotoUrl,
           credibilityScore: user.credibilityScore,
+          // Baseline flavor profile
+          baselineSize: user.baselineSize,
+          baselineBody: user.baselineBody,
+          baselineSweetBrininess: user.baselineSweetBrininess,
+          baselineFlavorfulness: user.baselineFlavorfulness,
+          baselineCreaminess: user.baselineCreaminess,
+          // Flavor profile ranges
+          rangeMinSize: user.rangeMinSize,
+          rangeMaxSize: user.rangeMaxSize,
+          rangeMedianSize: user.rangeMedianSize,
+          rangeMinBody: user.rangeMinBody,
+          rangeMaxBody: user.rangeMaxBody,
+          rangeMedianBody: user.rangeMedianBody,
+          rangeMinSweetBrininess: user.rangeMinSweetBrininess,
+          rangeMaxSweetBrininess: user.rangeMaxSweetBrininess,
+          rangeMedianSweetBrininess: user.rangeMedianSweetBrininess,
+          rangeMinFlavorfulness: user.rangeMinFlavorfulness,
+          rangeMaxFlavorfulness: user.rangeMaxFlavorfulness,
+          rangeMedianFlavorfulness: user.rangeMedianFlavorfulness,
+          rangeMinCreaminess: user.rangeMinCreaminess,
+          rangeMaxCreaminess: user.rangeMaxCreaminess,
+          rangeMedianCreaminess: user.rangeMedianCreaminess,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
@@ -488,7 +555,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
 
 /**
  * Get public user profile by userId
- * 
+ *
  * Similar to getProfile but public (no auth required) and takes userId as param.
  * Returns user profile with stats for viewing other users' profiles.
  *
@@ -498,7 +565,10 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
  * @returns 404 - User not found
  * @returns 500 - Server error
  */
-export const getPublicProfile = async (req: Request, res: Response): Promise<void> => {
+export const getPublicProfile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { userId } = req.params;
 
@@ -554,31 +624,46 @@ export const getPublicProfile = async (req: Request, res: Response): Promise<voi
         OKAY: 2,
         MEH: 1,
       };
-      const totalRating = user.reviews.reduce((sum: number, review: any) => sum + (ratingValues[review.rating] || 0), 0);
+      const totalRating = user.reviews.reduce(
+        (sum: number, review: any) => sum + (ratingValues[review.rating] || 0),
+        0
+      );
       avgRatingGiven = totalRating / user.reviews.length;
     }
 
-    const speciesCounts = user.reviews.reduce((acc: Record<string, number>, review: any) => {
-      if (review.oyster.species) {
-        acc[review.oyster.species] = (acc[review.oyster.species] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<string, number>);
+    const speciesCounts = user.reviews.reduce(
+      (acc: Record<string, number>, review: any) => {
+        if (review.oyster.species) {
+          acc[review.oyster.species] = (acc[review.oyster.species] || 0) + 1;
+        }
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
-    const originCounts = user.reviews.reduce((acc: Record<string, number>, review: any) => {
-      if (review.oyster.origin) {
-        acc[review.oyster.origin] = (acc[review.oyster.origin] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<string, number>);
+    const originCounts = user.reviews.reduce(
+      (acc: Record<string, number>, review: any) => {
+        if (review.oyster.origin) {
+          acc[review.oyster.origin] = (acc[review.oyster.origin] || 0) + 1;
+        }
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
-    const mostReviewedSpecies = Object.keys(speciesCounts).length > 0
-      ? (Object.entries(speciesCounts) as [string, number][]).sort((a, b) => b[1] - a[1])[0]?.[0]
-      : undefined;
+    const mostReviewedSpecies =
+      Object.keys(speciesCounts).length > 0
+        ? (Object.entries(speciesCounts) as [string, number][]).sort(
+            (a, b) => b[1] - a[1]
+          )[0]?.[0]
+        : undefined;
 
-    const mostReviewedOrigin = Object.keys(originCounts).length > 0
-      ? (Object.entries(originCounts) as [string, number][]).sort((a, b) => b[1] - a[1])[0]?.[0]
-      : undefined;
+    const mostReviewedOrigin =
+      Object.keys(originCounts).length > 0
+        ? (Object.entries(originCounts) as [string, number][]).sort(
+            (a, b) => b[1] - a[1]
+          )[0]?.[0]
+        : undefined;
 
     let badgeLevel: 'Novice' | 'Trusted' | 'Expert' = 'Novice';
     const reviewCount = user._count.reviews;
@@ -591,10 +676,14 @@ export const getPublicProfile = async (req: Request, res: Response): Promise<voi
 
     let reviewStreak = 0;
     if (user.reviews.length > 0) {
-      const sortedReviews = user.reviews.sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime());
+      const sortedReviews = user.reviews.sort(
+        (a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime()
+      );
       const lastReview = sortedReviews[0];
       if (lastReview) {
-        const daysSinceLastReview = Math.floor((Date.now() - lastReview.createdAt.getTime()) / (1000 * 60 * 60 * 24));
+        const daysSinceLastReview = Math.floor(
+          (Date.now() - lastReview.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+        );
         reviewStreak = daysSinceLastReview <= 7 ? user.reviews.length : 0;
       }
     }
@@ -602,10 +691,7 @@ export const getPublicProfile = async (req: Request, res: Response): Promise<voi
     const friendsCount = await prisma.friendship.count({
       where: {
         status: 'accepted',
-        OR: [
-          { senderId: userId },
-          { receiverId: userId },
-        ],
+        OR: [{ senderId: userId }, { receiverId: userId }],
       },
     });
 
@@ -634,6 +720,28 @@ export const getPublicProfile = async (req: Request, res: Response): Promise<voi
           username: user.username,
           profilePhotoUrl: user.profilePhotoUrl,
           credibilityScore: user.credibilityScore,
+          // Baseline flavor profile
+          baselineSize: user.baselineSize,
+          baselineBody: user.baselineBody,
+          baselineSweetBrininess: user.baselineSweetBrininess,
+          baselineFlavorfulness: user.baselineFlavorfulness,
+          baselineCreaminess: user.baselineCreaminess,
+          // Flavor profile ranges
+          rangeMinSize: user.rangeMinSize,
+          rangeMaxSize: user.rangeMaxSize,
+          rangeMedianSize: user.rangeMedianSize,
+          rangeMinBody: user.rangeMinBody,
+          rangeMaxBody: user.rangeMaxBody,
+          rangeMedianBody: user.rangeMedianBody,
+          rangeMinSweetBrininess: user.rangeMinSweetBrininess,
+          rangeMaxSweetBrininess: user.rangeMaxSweetBrininess,
+          rangeMedianSweetBrininess: user.rangeMedianSweetBrininess,
+          rangeMinFlavorfulness: user.rangeMinFlavorfulness,
+          rangeMaxFlavorfulness: user.rangeMaxFlavorfulness,
+          rangeMedianFlavorfulness: user.rangeMedianFlavorfulness,
+          rangeMinCreaminess: user.rangeMinCreaminess,
+          rangeMaxCreaminess: user.rangeMaxCreaminess,
+          rangeMedianCreaminess: user.rangeMedianCreaminess,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
@@ -647,7 +755,10 @@ export const getPublicProfile = async (req: Request, res: Response): Promise<voi
 };
 
 // Get user's review history
-export const getMyReviews = async (req: Request, res: Response): Promise<void> => {
+export const getMyReviews = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     if (!req.userId) {
       res.status(401).json({
@@ -729,7 +840,10 @@ export const getMyReviews = async (req: Request, res: Response): Promise<void> =
  * @returns 404 - User not found
  * @returns 500 - Server error
  */
-export const changePassword = async (req: Request, res: Response): Promise<void> => {
+export const changePassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     if (!req.userId) {
       res.status(401).json({
@@ -815,7 +929,10 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
  * @returns 404 - User not found
  * @returns 500 - Server error
  */
-export const deleteAccount = async (req: Request, res: Response): Promise<void> => {
+export const deleteAccount = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     if (!req.userId) {
       res.status(401).json({
@@ -856,7 +973,8 @@ export const deleteAccount = async (req: Request, res: Response): Promise<void> 
     if (confirmText !== 'DELETE MY ACCOUNT') {
       res.status(400).json({
         success: false,
-        error: 'Confirmation text does not match. Please type "DELETE MY ACCOUNT"',
+        error:
+          'Confirmation text does not match. Please type "DELETE MY ACCOUNT"',
       });
       return;
     }
@@ -897,7 +1015,10 @@ export const deleteAccount = async (req: Request, res: Response): Promise<void> 
  * @returns 401 - Not authenticated
  * @returns 500 - Server error
  */
-export const updatePrivacySettings = async (req: Request, res: Response): Promise<void> => {
+export const updatePrivacySettings = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     if (!req.userId) {
       res.status(401).json({
@@ -907,13 +1028,21 @@ export const updatePrivacySettings = async (req: Request, res: Response): Promis
       return;
     }
 
-    const { profileVisibility, showReviewHistory, showFavorites, showStatistics } = req.body;
+    const {
+      profileVisibility,
+      showReviewHistory,
+      showFavorites,
+      showStatistics,
+    } = req.body;
 
     const updateData: any = {};
-    if (profileVisibility !== undefined) updateData.profileVisibility = profileVisibility;
-    if (showReviewHistory !== undefined) updateData.showReviewHistory = showReviewHistory;
+    if (profileVisibility !== undefined)
+      updateData.profileVisibility = profileVisibility;
+    if (showReviewHistory !== undefined)
+      updateData.showReviewHistory = showReviewHistory;
     if (showFavorites !== undefined) updateData.showFavorites = showFavorites;
-    if (showStatistics !== undefined) updateData.showStatistics = showStatistics;
+    if (showStatistics !== undefined)
+      updateData.showStatistics = showStatistics;
 
     const user = await prisma.user.update({
       where: { id: req.userId },
@@ -958,7 +1087,10 @@ export const updatePrivacySettings = async (req: Request, res: Response): Promis
  * @returns 401 - Not authenticated
  * @returns 500 - Server error
  */
-export const searchUsers = async (req: Request, res: Response): Promise<void> => {
+export const searchUsers = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { q } = req.query;
     if (!q || typeof q !== 'string') {
@@ -995,7 +1127,10 @@ export const searchUsers = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-export const setFlavorProfile = async (req: Request, res: Response): Promise<void> => {
+export const setFlavorProfile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     if (!req.userId) {
       res.status(401).json({

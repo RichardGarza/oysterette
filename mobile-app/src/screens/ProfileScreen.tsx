@@ -642,11 +642,13 @@ export default function ProfileScreen() {
         {(user.baselineSize || user.baselineBody || user.baselineSweetBrininess || user.baselineFlavorfulness || user.baselineCreaminess) && (
           <Card mode="elevated" style={styles.flavorProfileCard}>
             <Card.Content>
-              <Text variant="titleLarge" style={styles.sectionTitle}>Your Flavor Profile</Text>
+              <Text variant="titleLarge" style={styles.sectionTitle}>
+                {isViewingOwnProfile ? 'Your Flavor Profile' : 'Flavor Profile'}
+              </Text>
               <Text variant="bodyMedium" style={styles.flavorDescription}>
                 {stats.totalReviews >= 5
-                  ? 'Your taste range based on oysters you loved'
-                  : 'Your preferred oyster characteristics'}
+                  ? (isViewingOwnProfile ? 'Your taste range based on oysters you loved' : 'Taste range based on oysters they loved')
+                  : (isViewingOwnProfile ? 'Your preferred oyster characteristics' : 'Preferred oyster characteristics')}
               </Text>
             <View style={styles.flavorAttributesGrid}>
               {user.baselineSize && (

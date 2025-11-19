@@ -9,6 +9,7 @@ import EmptyState from '../../../components/EmptyState';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import { userApi, reviewApi } from '../../../lib/api';
 import { Review, User } from '../../../lib/types';
+import { getAttributeLabel, getRangeLabel } from '../../../lib/flavorLabels';
 
 export const dynamic = 'force-dynamic';
 
@@ -171,6 +172,204 @@ export default function PublicProfilePage() {
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{stats.badgeLevel}</h3>
           <p className="text-gray-600 dark:text-gray-400">Reviewer status based on review count and credibility</p>
         </div>
+
+        {/* Flavor Profile */}
+        {(user.baselineSize || user.baselineBody || user.baselineSweetBrininess || user.baselineFlavorfulness || user.baselineCreaminess) && (
+          <div className="bg-white dark:bg-[#243447] rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Flavor Profile</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              {stats.totalReviews >= 5
+                ? 'Taste range based on oysters they loved'
+                : 'Preferred oyster characteristics'}
+            </p>
+            <div className="space-y-4">
+              {user.baselineSize && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Size</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {user.rangeMinSize != null && user.rangeMaxSize != null
+                        ? `${user.rangeMinSize.toFixed(0)}-${user.rangeMaxSize.toFixed(0)}/10 (${getRangeLabel('size', user.rangeMinSize, user.rangeMaxSize)})`
+                        : `${user.baselineSize.toFixed(1)}/10 (${getAttributeLabel('size', user.baselineSize)})`}
+                    </p>
+                  </div>
+                  {user.rangeMinSize != null && user.rangeMaxSize != null ? (
+                    <div className="relative w-full h-3 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
+                      <div
+                        className="absolute h-full bg-[#FF6B35] opacity-30 transition-all duration-300"
+                        style={{
+                          left: `${(user.rangeMinSize / 10) * 100}%`,
+                          width: `${((user.rangeMaxSize - user.rangeMinSize) / 10) * 100}%`,
+                        }}
+                      />
+                      {user.rangeMedianSize != null && (
+                        <div
+                          className="absolute top-0 h-full w-0.5 bg-[#FF6B35]"
+                          style={{ left: `${(user.rangeMedianSize / 10) * 100}%` }}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="relative w-full h-3 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
+                      <div
+                        className="absolute h-full bg-[#FF6B35] transition-all duration-300"
+                        style={{ width: `${(user.baselineSize / 10) * 100}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {user.baselineBody && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Body</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {user.rangeMinBody != null && user.rangeMaxBody != null
+                        ? `${user.rangeMinBody.toFixed(0)}-${user.rangeMaxBody.toFixed(0)}/10 (${getRangeLabel('body', user.rangeMinBody, user.rangeMaxBody)})`
+                        : `${user.baselineBody.toFixed(1)}/10 (${getAttributeLabel('body', user.baselineBody)})`}
+                    </p>
+                  </div>
+                  {user.rangeMinBody != null && user.rangeMaxBody != null ? (
+                    <div className="relative w-full h-3 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
+                      <div
+                        className="absolute h-full bg-[#FF6B35] opacity-30 transition-all duration-300"
+                        style={{
+                          left: `${(user.rangeMinBody / 10) * 100}%`,
+                          width: `${((user.rangeMaxBody - user.rangeMinBody) / 10) * 100}%`,
+                        }}
+                      />
+                      {user.rangeMedianBody != null && (
+                        <div
+                          className="absolute top-0 h-full w-0.5 bg-[#FF6B35]"
+                          style={{ left: `${(user.rangeMedianBody / 10) * 100}%` }}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="relative w-full h-3 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
+                      <div
+                        className="absolute h-full bg-[#FF6B35] transition-all duration-300"
+                        style={{ width: `${(user.baselineBody / 10) * 100}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {user.baselineSweetBrininess && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Sweet/Brininess</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {user.rangeMinSweetBrininess != null && user.rangeMaxSweetBrininess != null
+                        ? `${user.rangeMinSweetBrininess.toFixed(0)}-${user.rangeMaxSweetBrininess.toFixed(0)}/10 (${getRangeLabel('sweetBrininess', user.rangeMinSweetBrininess, user.rangeMaxSweetBrininess)})`
+                        : `${user.baselineSweetBrininess.toFixed(1)}/10 (${getAttributeLabel('sweetBrininess', user.baselineSweetBrininess)})`}
+                    </p>
+                  </div>
+                  {user.rangeMinSweetBrininess != null && user.rangeMaxSweetBrininess != null ? (
+                    <div className="relative w-full h-3 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
+                      <div
+                        className="absolute h-full bg-[#FF6B35] opacity-30 transition-all duration-300"
+                        style={{
+                          left: `${(user.rangeMinSweetBrininess / 10) * 100}%`,
+                          width: `${((user.rangeMaxSweetBrininess - user.rangeMinSweetBrininess) / 10) * 100}%`,
+                        }}
+                      />
+                      {user.rangeMedianSweetBrininess != null && (
+                        <div
+                          className="absolute top-0 h-full w-0.5 bg-[#FF6B35]"
+                          style={{ left: `${(user.rangeMedianSweetBrininess / 10) * 100}%` }}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="relative w-full h-3 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
+                      <div
+                        className="absolute h-full bg-[#FF6B35] transition-all duration-300"
+                        style={{ width: `${(user.baselineSweetBrininess / 10) * 100}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {user.baselineFlavorfulness && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Flavorfulness</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {user.rangeMinFlavorfulness != null && user.rangeMaxFlavorfulness != null
+                        ? `${user.rangeMinFlavorfulness.toFixed(0)}-${user.rangeMaxFlavorfulness.toFixed(0)}/10 (${getRangeLabel('flavorfulness', user.rangeMinFlavorfulness, user.rangeMaxFlavorfulness)})`
+                        : `${user.baselineFlavorfulness.toFixed(1)}/10 (${getAttributeLabel('flavorfulness', user.baselineFlavorfulness)})`}
+                    </p>
+                  </div>
+                  {user.rangeMinFlavorfulness != null && user.rangeMaxFlavorfulness != null ? (
+                    <div className="relative w-full h-3 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
+                      <div
+                        className="absolute h-full bg-[#FF6B35] opacity-30 transition-all duration-300"
+                        style={{
+                          left: `${(user.rangeMinFlavorfulness / 10) * 100}%`,
+                          width: `${((user.rangeMaxFlavorfulness - user.rangeMinFlavorfulness) / 10) * 100}%`,
+                        }}
+                      />
+                      {user.rangeMedianFlavorfulness != null && (
+                        <div
+                          className="absolute top-0 h-full w-0.5 bg-[#FF6B35]"
+                          style={{ left: `${(user.rangeMedianFlavorfulness / 10) * 100}%` }}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="relative w-full h-3 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
+                      <div
+                        className="absolute h-full bg-[#FF6B35] transition-all duration-300"
+                        style={{ width: `${(user.baselineFlavorfulness / 10) * 100}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {user.baselineCreaminess && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Creaminess</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {user.rangeMinCreaminess != null && user.rangeMaxCreaminess != null
+                        ? `${user.rangeMinCreaminess.toFixed(0)}-${user.rangeMaxCreaminess.toFixed(0)}/10 (${getRangeLabel('creaminess', user.rangeMinCreaminess, user.rangeMaxCreaminess)})`
+                        : `${user.baselineCreaminess.toFixed(1)}/10 (${getAttributeLabel('creaminess', user.baselineCreaminess)})`}
+                    </p>
+                  </div>
+                  {user.rangeMinCreaminess != null && user.rangeMaxCreaminess != null ? (
+                    <div className="relative w-full h-3 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
+                      <div
+                        className="absolute h-full bg-[#FF6B35] opacity-30 transition-all duration-300"
+                        style={{
+                          left: `${(user.rangeMinCreaminess / 10) * 100}%`,
+                          width: `${((user.rangeMaxCreaminess - user.rangeMinCreaminess) / 10) * 100}%`,
+                        }}
+                      />
+                      {user.rangeMedianCreaminess != null && (
+                        <div
+                          className="absolute top-0 h-full w-0.5 bg-[#FF6B35]"
+                          style={{ left: `${(user.rangeMedianCreaminess / 10) * 100}%` }}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="relative w-full h-3 bg-gray-200 dark:bg-[#2d4054] rounded-full overflow-hidden">
+                      <div
+                        className="absolute h-full bg-[#FF6B35] transition-all duration-300"
+                        style={{ width: `${(user.baselineCreaminess / 10) * 100}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Reviews Section */}
         <section>

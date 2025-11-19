@@ -148,7 +148,7 @@ export const reviewIdParamSchema = z.object({
 });
 
 export const userIdParamSchema = z.object({
-  userId: z.string().uuid('Invalid user ID format'),
+  userId: z.string().min(1, 'User ID is required'), // Accepts CUID or UUID format
 });
 
 // ==================== User Profile Schemas ====================

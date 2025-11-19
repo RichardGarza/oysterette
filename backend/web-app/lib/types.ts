@@ -76,14 +76,19 @@ export interface User {
   baselineCreaminess?: number | null;
   rangeMinSize?: number | null;
   rangeMaxSize?: number | null;
+  rangeMedianSize?: number | null;
   rangeMinBody?: number | null;
   rangeMaxBody?: number | null;
+  rangeMedianBody?: number | null;
   rangeMinSweetBrininess?: number | null;
   rangeMaxSweetBrininess?: number | null;
+  rangeMedianSweetBrininess?: number | null;
   rangeMinFlavorfulness?: number | null;
   rangeMaxFlavorfulness?: number | null;
+  rangeMedianFlavorfulness?: number | null;
   rangeMinCreaminess?: number | null;
   rangeMaxCreaminess?: number | null;
+  rangeMedianCreaminess?: number | null;
   createdAt: string;
   updatedAt: string;
 }
