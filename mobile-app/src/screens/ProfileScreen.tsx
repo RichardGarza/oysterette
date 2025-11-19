@@ -588,7 +588,20 @@ export default function ProfileScreen() {
 
         {/* Stats Cards */}
         <View style={styles.statsGrid}>
-          <Card mode="elevated" style={styles.statCard} onPress={() => navigation.navigate('OysterList' as any)}>
+          <Card 
+            mode="elevated" 
+            style={styles.statCard} 
+            onPress={() => {
+              if (isViewingOwnProfile) {
+                navigation.navigate('Reviews' as any);
+              } else if (viewingUserId) {
+                navigation.navigate('Reviews' as any, { 
+                  userId: viewingUserId, 
+                  userName: user.name || user.username 
+                });
+              }
+            }}
+          >
             <Card.Content style={styles.statCardContent}>
               <Text variant="headlineMedium" style={styles.statValue}>{stats.totalReviews}</Text>
               <Text variant="bodySmall" style={styles.statLabel}>Reviews</Text>

@@ -131,6 +131,7 @@ export type RootStackParamList = {
       combinedScore: number;
     }>;
   };
+  Reviews: { userId?: string; userName?: string } | undefined;
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<

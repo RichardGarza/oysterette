@@ -113,6 +113,7 @@ import FriendsScreen from './src/screens/FriendsScreen';
 import PairedMatchesScreen from './src/screens/PairedMatchesScreen';
 import XPStatsScreen from './src/screens/XPStatsScreen';
 import MenuScreen from './src/screens/MenuScreen';
+import ReviewsScreen from './src/screens/ReviewsScreen';
 import { Avatar } from 'react-native-paper'; // Add import for Avatar
 import { authStorage } from './src/services/auth'; // Add import for auth
 
@@ -347,6 +348,16 @@ function AppNavigator() {
           component={XPStatsScreen}
           options={({ navigation }) => ({
             title: 'XP & Achievements',
+            headerRight: () => <SettingsButton navigation={navigation} />,
+          })}
+        />
+        <Stack.Screen
+          name="Reviews"
+          component={ReviewsScreen}
+          options={({ navigation, route }) => ({
+            title: (route.params as any)?.userName 
+              ? `${(route.params as any).userName}'s Reviews` 
+              : 'My Reviews',
             headerRight: () => <SettingsButton navigation={navigation} />,
           })}
         />
