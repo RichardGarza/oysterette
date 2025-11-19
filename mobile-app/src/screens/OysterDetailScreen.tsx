@@ -88,10 +88,6 @@ const ATTRIBUTE_SCALE = {
   MAX: 10,
 } as const;
 
-const BORDERS = {
-  HEADER_RATING_WIDTH: 1,
-} as const;
-
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -362,8 +358,8 @@ export default function OysterDetailScreen() {
       >
         <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
           <Appbar.BackAction onPress={() => navigation.goBack()} iconColor="#fff" />
-          <Appbar.Content 
-            title={oyster.name} 
+          <Appbar.Content
+            title={oyster.name}
             subtitle={oyster.species}
             titleStyle={{ color: '#fff', fontWeight: 'bold' }}
             subtitleStyle={{ color: '#fff' }}
@@ -375,46 +371,73 @@ export default function OysterDetailScreen() {
           />
         </Appbar.Header>
 
-        <Card mode="elevated" style={styles.headerRating}>
+        <Card mode="elevated" style={styles.mainOysterCard}>
           <Card.Content>
-            <RatingDisplay
-              overallScore={oyster.overallScore || 0}
-              totalReviews={oyster.totalReviews || 0}
-              size="medium"
-              showDetails={true}
-            />
-            {oyster.species === 'Unknown' && (
-              <Text variant="bodySmall" style={styles.unknownHintSmall}>
-                🔬 Know the species? Rate it and add the species!
+            <View style={styles.cardHeader}>
+              <Text variant="titleLarge" style={styles.oysterName} numberOfLines={2}>
+                {oyster.name}
+              </Text>
+              <IconButton
+                icon={isFavorite ? 'heart' : 'heart-outline'}
+                iconColor={isFavorite ? COLORS.FAVORITE_HEART : undefined}
+                size={SIZES.ICON_FAVORITE}
+                onPress={handleToggleFavorite}
+                style={styles.favoriteButton}
+              />
+            </View>
+
+            {oyster.species && oyster.species !== 'Unknown' && (
+              <Text variant="bodySmall" style={styles.species}>{oyster.species}</Text>
+            )}
+
+            {oyster.origin && oyster.origin !== 'Unknown' && (
+              <Text variant="bodySmall" style={styles.origin}>{oyster.origin}</Text>
+            )}
+
+            <View style={styles.ratingContainer}>
+              <RatingDisplay
+                overallScore={oyster.overallScore || 0}
+                totalReviews={oyster.totalReviews || 0}
+                size="small"
+              />
+            </View>
+
+            {oyster.standoutNotes && (
+              <Text variant="bodySmall" style={styles.notes} numberOfLines={2}>
+                {oyster.standoutNotes}
+              </Text>
+            )}
+
+            <View style={styles.attributesContainer}>
+              <View style={styles.attributeItem}>
+                <Text variant="labelSmall" style={styles.attributeLabel}>Size</Text>
+                <Text variant="bodyMedium" style={styles.attributeValue}>{oyster.size}/{ATTRIBUTE_SCALE.MAX}</Text>
+              </View>
+              <View style={styles.attributeItem}>
+                <Text variant="labelSmall" style={styles.attributeLabel}>Body</Text>
+                <Text variant="bodyMedium" style={styles.attributeValue}>{oyster.body}/{ATTRIBUTE_SCALE.MAX}</Text>
+              </View>
+              <View style={styles.attributeItem}>
+                <Text variant="labelSmall" style={styles.attributeLabel}>Brine</Text>
+                <Text variant="bodyMedium" style={styles.attributeValue}>{oyster.sweetBrininess}/{ATTRIBUTE_SCALE.MAX}</Text>
+              </View>
+              <View style={styles.attributeItem}>
+                <Text variant="labelSmall" style={styles.attributeLabel}>Flavor</Text>
+                <Text variant="bodyMedium" style={styles.attributeValue}>{oyster.flavorfulness}/{ATTRIBUTE_SCALE.MAX}</Text>
+              </View>
+              <View style={styles.attributeItem}>
+                <Text variant="labelSmall" style={styles.attributeLabel}>Cream</Text>
+                <Text variant="bodyMedium" style={styles.attributeValue}>{oyster.creaminess}/{ATTRIBUTE_SCALE.MAX}</Text>
+              </View>
+            </View>
+
+            {oyster.totalReviews > 0 && (
+              <Text variant="bodySmall" style={styles.reviewCount}>
+                {oyster.totalReviews} {oyster.totalReviews === 1 ? 'review' : 'reviews'}
               </Text>
             )}
           </Card.Content>
         </Card>
-
-        <Card mode="elevated" style={styles.section}>
-          <Card.Content>
-            <Text variant="titleMedium" style={styles.sectionTitle}>Origin</Text>
-            <Text variant="bodyMedium" style={styles.originText}>{oyster.origin}</Text>
-            {oyster.origin === 'Unknown' && (
-              <Banner
-                visible={true}
-                icon="map-marker-question"
-                style={styles.unknownBanner}
-              >
-                📍 Know where this oyster is from? Rate it and add the origin!
-              </Banner>
-            )}
-          </Card.Content>
-        </Card>
-
-        {oyster.standoutNotes && (
-          <Card mode="elevated" style={styles.section}>
-            <Card.Content>
-              <Text variant="titleMedium" style={styles.sectionTitle}>Standout Notes</Text>
-              <Text variant="bodyMedium" style={styles.notesText}>{oyster.standoutNotes}</Text>
-            </Card.Content>
-          </Card>
-        )}
 
         <Card mode="elevated" style={styles.section}>
           <Card.Content>
@@ -557,22 +580,6 @@ const createStyles = (colors: any, isDark: boolean) =>
     scrollView: {
       flex: 1,
     },
-    header: {
-      padding: SPACING.HEADER_PADDING,
-    },
-    nameRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: SPACING.NAME_ROW_BOTTOM,
-    },
-    name: {
-      flex: 1,
-      marginRight: SPACING.NAME_RIGHT,
-    },
-    speciesBadge: {
-      marginBottom: SPACING.SPECIES_BADGE_BOTTOM,
-    },
     loadingText: {
       marginTop: SPACING.LOADING_TEXT_TOP,
     },
@@ -585,15 +592,89 @@ const createStyles = (colors: any, isDark: boolean) =>
     sectionSubtitle: {
       marginBottom: SPACING.SECTION_SUBTITLE_BOTTOM,
     },
-    originText: {
-      // Paper handles text styling
+    mainOysterCard: {
+      backgroundColor: colors.cardBackground,
+      borderRadius: 12,
+      padding: 15,
+      marginTop: SPACING.SECTION_TOP,
+      marginHorizontal: 15,
+      ...Platform.select({
+        ios: {
+          shadowColor: colors.shadowColor,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isDark ? 0.3 : 0.1,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 3,
+        },
+      }),
     },
-    notesText: {
-      lineHeight: 24,
+    cardHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 8,
+    },
+    oysterName: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: colors.text,
+      flex: 1,
+      marginRight: 10,
+    },
+    favoriteButton: {
+      padding: 4,
+    },
+    species: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginBottom: 4,
+    },
+    origin: {
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
+    ratingContainer: {
+      marginBottom: 8,
+      paddingVertical: 4,
+    },
+    notes: {
+      fontSize: 13,
+      color: colors.textSecondary,
       fontStyle: 'italic',
+      marginBottom: 12,
+      lineHeight: 18,
     },
-    unknownBanner: {
-      marginTop: SPACING.UNKNOWN_BANNER_TOP,
+    attributesContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 10,
+      paddingTop: 10,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      flexWrap: 'wrap',
+    },
+    attributeItem: {
+      alignItems: 'center',
+      minWidth: '18%',
+    },
+    attributeLabel: {
+      fontSize: 10,
+      color: colors.textSecondary,
+      marginBottom: 4,
+      textAlign: 'center',
+    },
+    attributeValue: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.primary,
+    },
+    reviewCount: {
+      fontSize: 12,
+      color: colors.success,
+      marginTop: 8,
+      fontWeight: '500',
     },
     attributeBarContainer: {
       marginBottom: SPACING.ATTRIBUTE_BAR_BOTTOM,
@@ -626,16 +707,6 @@ const createStyles = (colors: any, isDark: boolean) =>
     },
     errorText: {
       // Paper handles text styling
-    },
-    headerRating: {
-      marginTop: SPACING.HEADER_RATING_TOP,
-      paddingTop: SPACING.HEADER_RATING_PADDING,
-      borderTopWidth: BORDERS.HEADER_RATING_WIDTH,
-      borderTopColor: colors.border,
-    },
-    unknownHintSmall: {
-      marginTop: SPACING.UNKNOWN_HINT_TOP,
-      fontStyle: 'italic',
     },
     reviewsHeader: {
       flexDirection: 'row',
