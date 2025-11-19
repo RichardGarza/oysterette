@@ -2,6 +2,12 @@
 global.__DEV__ = true;
 global.IS_REACT_ACT_ENVIRONMENT = true;
 
+// Set up native bridge config to prevent Invariant Violation
+global.__fbBatchedBridgeConfig = {
+  remoteModuleConfig: [],
+  localModulesConfig: [],
+};
+
 // Mock AsyncStorage
 import '@react-native-async-storage/async-storage/jest/async-storage-mock';
 
@@ -294,6 +300,81 @@ jest.mock('./src/services/tempReviews', () => ({
     get: jest.fn().mockResolvedValue(null),
     remove: jest.fn().mockResolvedValue(undefined),
     getAll: jest.fn().mockResolvedValue({}),
+  },
+}));
+
+// Mock React Query
+jest.mock('@tanstack/react-query', () => {
+  const actual = jest.requireActual('@tanstack/react-query');
+  return {
+    ...actual,
+    useQuery: jest.fn(() => ({
+      data: undefined,
+      error: null,
+      isLoading: false,
+      isError: false,
+      isSuccess: false,
+      refetch: jest.fn(),
+    })),
+    useMutation: jest.fn(() => ({
+      mutate: jest.fn(),
+      mutateAsync: jest.fn(),
+      isLoading: false,
+      isError: false,
+      isSuccess: false,
+    })),
+    useQueryClient: jest.fn(() => ({
+      invalidateQueries: jest.fn(),
+      setQueryData: jest.fn(),
+      getQueryData: jest.fn(),
+    })),
+  };
+});
+
+// Mock React Navigation
+jest.mock('@react-navigation/native', () => {
+  const actual = jest.requireActual('@react-navigation/native');
+  return {
+    ...actual,
+    NavigationContainer: ({ children }) => children,
+    useNavigation: () => ({
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      push: jest.fn(),
+      pop: jest.fn(),
+      setOptions: jest.fn(),
+      addListener: jest.fn(() => jest.fn()),
+    }),
+    useRoute: () => ({
+      params: {},
+      key: 'test',
+      name: 'Test',
+    }),
+    useFocusEffect: jest.fn((callback) => {
+      // Call callback once to simulate focus
+      if (typeof callback === 'function') {
+        callback();
+      }
+    }),
+    useIsFocused: () => true,
+  };
+});
+
+jest.mock('@react-navigation/native-stack', () => ({
+  createNativeStackNavigator: () => ({
+    Navigator: ({ children }) => children,
+    Screen: () => null,
+  }),
+}));
+
+// Mock React Native Safe Area Context
+jest.mock('react-native-safe-area-context', () => ({
+  SafeAreaProvider: ({ children }) => children,
+  SafeAreaView: ({ children }) => children,
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  initialWindowMetrics: {
+    frame: { x: 0, y: 0, width: 0, height: 0 },
+    insets: { top: 0, left: 0, right: 0, bottom: 0 },
   },
 }));
 
