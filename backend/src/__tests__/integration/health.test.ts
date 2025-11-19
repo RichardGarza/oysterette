@@ -20,8 +20,13 @@ jest.mock('../../lib/prisma', () => ({
 
 // Mock Redis
 jest.mock('../../lib/redis', () => ({
-  RedisClient: {
+  default: {
     healthCheck: jest.fn().mockResolvedValue({ status: 'healthy', latency: 2 }),
+    getInstance: jest.fn().mockResolvedValue({
+      ping: jest.fn().mockResolvedValue('PONG'),
+      status: 'ready',
+    }),
+    disconnect: jest.fn().mockResolvedValue(undefined),
   },
 }));
 
