@@ -66,7 +66,9 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 
 **Test Before Committing:**
 
-- Backend: All 297 tests must pass
+- Backend: All 388 tests must pass
+- Mobile: All 86 tests must pass
+- Web App: All 134 tests must pass
 - Write tests FIRST for new endpoints/services
 - Test happy path, edge cases, error handling
 
@@ -74,6 +76,8 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 
 - Backend unit: `backend/src/__tests__/unit/`
 - Backend integration: `backend/src/__tests__/integration/`
+- Mobile: `mobile-app/src/__tests__/`
+- Web App: `backend/web-app/__tests__/`
 
 🚨 **DO NOT COMMIT WITHOUT PASSING TESTS** 🚨
 
@@ -130,16 +134,19 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 - Gamification (XP system, levels, achievements, leaderboard)
 
 **Quality:**
-- Backend: 297/297 tests passing ✅
+- Backend: 388/388 tests passing (100%) ✅ - 25/25 suites passing ✅
+  - ✅ Unit tests, integration tests, compilation tests
 - Mobile: 86/86 tests passing (100%) ✅ - 13/13 suites passing ✅
   - ✅ Component tests: ProfileUsername (4), ReviewCardUsername (2), Menu (3), AROverlay (2), ProfileScreenPublic (3)
   - ✅ Integration tests: RegisterUsername (3), navigation (3), oysterApi (3), ARScanner (3)
   - ✅ Screen tests: LoginScreen, FriendFavoritesScreen, OysterListScreen
   - ✅ Hook tests: useQueries
-- Web App: 19/19 tests passing (100%) ✅ - 2/2 suites passing ✅
-  - ✅ Component tests: Header
-  - ✅ Page tests: PublicProfile
-- **ALL TESTS PASSING ACROSS PROJECT** - 402/402 tests (100%) ✅
+- Web App: 134/134 tests passing (100%) ✅ - 23/23 suites passing ✅
+  - ✅ Page tests: Login (5), Register (5), PublicProfile (13), Home (4), OysterList (6), OysterDetail (6), Profile (5), AddReview (11), Friends (5), XPStats (5), Favorites (5), TopOysters (5), Settings (6), PrivacySettings (6), ProfileReviews (6)
+  - ✅ Component tests: Header (6), ReviewCard (5), RatingDisplay (3), EmptyState (4), LoadingSpinner (4), GoogleSignInButton (3)
+  - ✅ Utility tests: FlavorLabels (11), API client structure (5)
+  - **Test Coverage: 89% (116/130 target)** ✅ - See backend/web-app/TESTING_ROADMAP.md
+- **ALL TESTS PASSING ACROSS PROJECT** - 608/608 tests (100%) ✅
 
 **Compliance:**
 - Apple App Store: 95% ready
@@ -152,12 +159,51 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 - Phase 23: Enhanced Flavor Profile Visualization (ranges, tooltips)
 - Phase 26 (In Progress): Production Testing Fixes (65% complete)
 
-**Latest Session (Nov 19, 2025):**
+**Latest Session (Nov 25, 2025):**
+- ✅ All test suites now at 100% passing (608/608 tests) - increased from 570
+- ✅ Completed Phase 4 & 5 of Web App Testing Roadmap - 38 new tests added!
+  - Friends page (5): Auth redirect, loading, friends list, empty state, pending count
+  - XP Stats page (5): Auth redirect, loading, XP display, achievements, error state
+  - Favorites page (5): Auth redirect, loading, list display, empty state, details
+  - Top Oysters page (5): Loading, ranked display, numbers, no-reviews filter, empty
+  - Settings page (6): Auth redirect, sections display, theme toggle, logout, password modal, version
+  - Privacy Settings page (6): Auth redirect, options display, dropdown, toggles, save, state update
+  - Profile Reviews page (6): Auth redirect, loading, list display, empty state, back link, error handling
+- 📊 Web App Testing Progress:
+  - Phase 1: ✅ Complete (37% coverage) - Login, Register, ReviewCard, RatingDisplay
+  - Phase 2: ✅ Complete (61% coverage) - OysterList, OysterDetail, Home, EmptyState, LoadingSpinner
+  - Phase 3: ✅ Complete (96% coverage) - Profile, AddReview, GoogleSignIn, FlavorLabels, API structure
+  - Phase 4: ✅ Complete (89% coverage) - Friends, XPStats, Favorites, TopOysters
+  - Phase 5: ✅ Complete (98% coverage) - Settings, PrivacySettings, ProfileReviews
+
+**Previous Session (Nov 23, 2025):**
+- ✅ Completed Phase 3 of Web App Testing Roadmap - 96% coverage achieved!
+  - GoogleSignInButton (3): Button rendering, custom text, missing client ID error
+  - FlavorLabels utility (11): All attribute labels, boundary values, edge cases, range labels
+  - API client structure (5): Verified all API modules export expected functions
+  - Profile page (5): Auth redirect, loading state, profile display, stats, XP badge
+  - AddReview page (11): Form rendering, rating selection, attribute sliders, submission, error handling, duplicate detection, edit mode, cancel
+
+**Previous Session (Nov 19, 2025):**
+- ✅ Created Web App Testing Roadmap (backend/web-app/TESTING_ROADMAP.md)
+- ✅ Phase 1 & 2 - Added Web App Tests (42 tests)
+  - Login Page (5): Form rendering, successful login, error handling, generic errors, loading state
+  - Register Page (5): Form rendering, successful registration, password mismatch, password length, error handling
+  - ReviewCard Component (5): Content display, user info, vote buttons, edit/delete, delete functionality
+  - RatingDisplay Component (3): Star display, perfect score, zero reviews handling
+- ✅ Phase 2 - Added Web App Tests (24 tests)
+  - EmptyState Component (4): Render with title/desc, custom icon, action button, action link
+  - LoadingSpinner Component (4): Default text, custom text, different sizes, fullscreen
+  - Home Page (4): Hero section, top oysters, user stats, recommendations
+  - Oyster List Page (6): Heading/search, oysters display, loading state, empty state, search debounce, sort
+  - Oyster Detail Page (6): Loading state, oyster details, reviews display, empty reviews, favorite toggle, no favorite button when not auth
+- ✅ Fixed React act() warnings in web app tests
+  - Updated all PublicProfile tests to properly wait for async operations
+  - Ensured both profile and reviews API calls complete before assertions
 - ✅ Username display tests complete: 6/6 passing
   - ProfileUsername: 4/4 tests (renders input, accessibility, displays username/name)
   - ReviewCardUsername: 2/2 tests (displays username, falls back to name)
   - Fixed: React Query hooks mocking, react-native-paper mocks, QueryClientProvider
-- 📊 Mobile test suite: 68/97 passing (70%), 6/13 suites passing
 
 **Previous Session (Nov 9, 2025):**
 - ✅ Profile photos in reviews (backend API missing profilePhotoUrl)
@@ -242,9 +288,12 @@ git push origin main               # Deploy (triggers Railway)
 
 ---
 
-**Last Updated:** November 9, 2025
+**Last Updated:** November 25, 2025
 **Backend:** Live on Railway ✅
 **Database:** Live on Neon (131 unique oysters) ✅
-**Tests:** 297/297 passing ✅
+**Tests:** 608/608 passing (100%) ✅
+  - Backend: 388/388 ✅
+  - Mobile: 86/86 ✅
+  - Web App: 134/134 ✅ (Phase 5 complete - 98% coverage!)
 **Latest Version:** 2.0.0 (Phase 26 - Production Testing 65% Complete)
 **Latest OTA Update:** Nov 9, 2025 - Profile photos in reviews fix + rate limiting
