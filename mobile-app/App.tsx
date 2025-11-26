@@ -38,9 +38,10 @@
  * - StatusBar: Dark/light based on theme
  *
  * Header Components:
- * - SettingsButton: Gear icon (⚙️) in top-right
- *   - Available on: Home, OysterList, OysterDetail, Profile
- *   - Navigates to Settings screen
+ * - SettingsButton: Hamburger menu icon (☰) in top-right
+ *   - Available on: Most screens (Home, OysterList, Profile, etc.)
+ *   - Navigates to Menu screen
+ *   - Shows profile photo avatar when logged in (next to hamburger)
  * - Back button: Custom "←" text (58px)
  *   - Available on: All non-Home screens
  *   - OysterList back button goes to Home (not Login)
@@ -49,9 +50,11 @@
  *
  * Special Navigation Behaviors:
  * - Home screen: headerLeft: null (no back button)
+ * - Home screen: Back button shows exit app confirmation (Android)
  * - OysterList: Custom back button to Home (prevents going to Login)
  * - OysterList: Clickable "Oysterette" title (home navigation)
- * - Settings: Available from multiple screens via gear icon
+ * - Menu: Available from multiple screens via hamburger icon
+ * - Profile photo: Shown in header when logged in (next to hamburger)
  *
  * Theme Integration:
  * - useTheme() hook accesses current theme
