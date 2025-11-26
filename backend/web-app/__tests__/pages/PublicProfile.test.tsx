@@ -150,14 +150,14 @@ describe('Public Profile Page', () => {
 
       await waitFor(() => {
         expect(api.userApi.getPublicProfile).toHaveBeenCalledWith(mockUserId);
+        expect(api.reviewApi.getPublicUserReviews).toHaveBeenCalledWith(mockUserId);
       });
 
       await waitFor(() => {
         expect(screen.getByText('Test User')).toBeInTheDocument();
         expect(screen.getByText('@testuser')).toBeInTheDocument();
+        expect(screen.getByTestId('review-review-1')).toBeInTheDocument();
       });
-
-      expect(api.reviewApi.getPublicUserReviews).toHaveBeenCalledWith(mockUserId);
     });
 
     it('should display user stats correctly', async () => {
@@ -165,6 +165,11 @@ describe('Public Profile Page', () => {
       (api.reviewApi.getPublicUserReviews as jest.Mock).mockResolvedValue([]);
 
       render(<PublicProfilePage />);
+
+      await waitFor(() => {
+        expect(api.userApi.getPublicProfile).toHaveBeenCalledWith(mockUserId);
+        expect(api.reviewApi.getPublicUserReviews).toHaveBeenCalledWith(mockUserId);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('20')).toBeInTheDocument(); // Total reviews
@@ -180,6 +185,11 @@ describe('Public Profile Page', () => {
       render(<PublicProfilePage />);
 
       await waitFor(() => {
+        expect(api.userApi.getPublicProfile).toHaveBeenCalledWith(mockUserId);
+        expect(api.reviewApi.getPublicUserReviews).toHaveBeenCalledWith(mockUserId);
+      });
+
+      await waitFor(() => {
         expect(screen.getByText('Trusted')).toBeInTheDocument();
       });
     });
@@ -189,6 +199,11 @@ describe('Public Profile Page', () => {
       (api.reviewApi.getPublicUserReviews as jest.Mock).mockResolvedValue(mockReviews);
 
       render(<PublicProfilePage />);
+
+      await waitFor(() => {
+        expect(api.userApi.getPublicProfile).toHaveBeenCalledWith(mockUserId);
+        expect(api.reviewApi.getPublicUserReviews).toHaveBeenCalledWith(mockUserId);
+      });
 
       await waitFor(() => {
         expect(screen.getByTestId('review-review-1')).toBeInTheDocument();
@@ -203,6 +218,11 @@ describe('Public Profile Page', () => {
       render(<PublicProfilePage />);
 
       await waitFor(() => {
+        expect(api.userApi.getPublicProfile).toHaveBeenCalledWith(mockUserId);
+        expect(api.reviewApi.getPublicUserReviews).toHaveBeenCalledWith(mockUserId);
+      });
+
+      await waitFor(() => {
         expect(screen.queryByText('Edit Profile')).not.toBeInTheDocument();
       });
     });
@@ -214,6 +234,11 @@ describe('Public Profile Page', () => {
       render(<PublicProfilePage />);
 
       await waitFor(() => {
+        expect(api.userApi.getPublicProfile).toHaveBeenCalledWith(mockUserId);
+        expect(api.reviewApi.getPublicUserReviews).toHaveBeenCalledWith(mockUserId);
+      });
+
+      await waitFor(() => {
         expect(screen.queryByText('Change Password')).not.toBeInTheDocument();
       });
     });
@@ -223,6 +248,11 @@ describe('Public Profile Page', () => {
       (api.reviewApi.getPublicUserReviews as jest.Mock).mockResolvedValue([]);
 
       render(<PublicProfilePage />);
+
+      await waitFor(() => {
+        expect(api.userApi.getPublicProfile).toHaveBeenCalledWith(mockUserId);
+        expect(api.reviewApi.getPublicUserReviews).toHaveBeenCalledWith(mockUserId);
+      });
 
       await waitFor(() => {
         expect(screen.getByText(/Member since/)).toBeInTheDocument();
@@ -242,6 +272,11 @@ describe('Public Profile Page', () => {
       render(<PublicProfilePage />);
 
       await waitFor(() => {
+        expect(api.userApi.getPublicProfile).toHaveBeenCalledWith(mockUserId);
+        expect(api.reviewApi.getPublicUserReviews).toHaveBeenCalledWith(mockUserId);
+      });
+
+      await waitFor(() => {
         const reviews = screen.queryAllByTestId(/review-/);
         expect(reviews.length).toBeLessThanOrEqual(3);
       });
@@ -252,6 +287,11 @@ describe('Public Profile Page', () => {
       (api.reviewApi.getPublicUserReviews as jest.Mock).mockResolvedValue([]);
 
       render(<PublicProfilePage />);
+
+      await waitFor(() => {
+        expect(api.userApi.getPublicProfile).toHaveBeenCalledWith(mockUserId);
+        expect(api.reviewApi.getPublicUserReviews).toHaveBeenCalledWith(mockUserId);
+      });
 
       await waitFor(() => {
         expect(screen.getByTestId('empty-state')).toBeInTheDocument();
@@ -270,6 +310,11 @@ describe('Public Profile Page', () => {
       render(<PublicProfilePage />);
 
       await waitFor(() => {
+        expect(api.userApi.getPublicProfile).toHaveBeenCalledWith(mockUserId);
+        expect(api.reviewApi.getPublicUserReviews).toHaveBeenCalledWith(mockUserId);
+      });
+
+      await waitFor(() => {
         expect(screen.getByText('Profile Not Found')).toBeInTheDocument();
         expect(screen.getByText('User not found')).toBeInTheDocument();
       });
@@ -282,6 +327,11 @@ describe('Public Profile Page', () => {
       (api.reviewApi.getPublicUserReviews as jest.Mock).mockResolvedValue([]);
 
       render(<PublicProfilePage />);
+
+      await waitFor(() => {
+        expect(api.userApi.getPublicProfile).toHaveBeenCalledWith(mockUserId);
+        expect(api.reviewApi.getPublicUserReviews).toHaveBeenCalledWith(mockUserId);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('Profile Not Found')).toBeInTheDocument();
@@ -297,6 +347,11 @@ describe('Public Profile Page', () => {
       render(<PublicProfilePage />);
 
       await waitFor(() => {
+        expect(api.userApi.getPublicProfile).toHaveBeenCalledWith(mockUserId);
+        expect(api.reviewApi.getPublicUserReviews).toHaveBeenCalledWith(mockUserId);
+      });
+
+      await waitFor(() => {
         // Profile should still load even if reviews fail
         expect(screen.getByText('Test User')).toBeInTheDocument();
       });
@@ -308,7 +363,9 @@ describe('Public Profile Page', () => {
       (api.userApi.getPublicProfile as jest.Mock).mockImplementation(
         () => new Promise(() => {}) // Never resolves
       );
-      (api.reviewApi.getPublicUserReviews as jest.Mock).mockResolvedValue([]);
+      (api.reviewApi.getPublicUserReviews as jest.Mock).mockImplementation(
+        () => new Promise(() => {}) // Never resolves
+      );
 
       render(<PublicProfilePage />);
 
