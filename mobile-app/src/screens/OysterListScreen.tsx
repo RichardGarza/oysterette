@@ -42,6 +42,7 @@ import { EmptyState } from '../components/EmptyState';
 import { OysterCardSkeleton } from '../components/OysterCardSkeleton';
 import { useTheme } from '../context/ThemeContext';
 import { useOysters } from '../hooks/useQueries';
+import { navigateToSuggestOyster } from '../utils/suggestOysterNavigation';
 // import * as Sentry from '@sentry/react-native';
 
 // ============================================================================
@@ -532,7 +533,7 @@ export default function OysterListScreen() {
         icon="plus"
         mode="contained"
         size={SIZES.ICON_MEDIUM}
-        onPress={() => navigation.navigate('AddOyster')}
+        onPress={() => navigateToSuggestOyster(navigation)}
         style={styles.fab}
         iconColor={paperTheme.colors.onPrimary}
       />

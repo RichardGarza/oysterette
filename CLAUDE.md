@@ -6,10 +6,12 @@
 
 **This file is for:** Core essentials and quick reference
 
+**For all docs:** See [DOCS.md](DOCS.md)
 **For session history:** See [SESSION_LOGS.md](SESSION_LOGS.md)
 **For feature planning:** See [ROADMAP.md](ROADMAP.md)
 **For code patterns:** See [STYLE_GUIDE.md](STYLE_GUIDE.md)
 **For refactoring details:** See [REFACTORING_SUMMARY.md](REFACTORING_SUMMARY.md)
+**For AI agents:** See [AGENTS.md](AGENTS.md)
 
 ---
 
@@ -76,7 +78,7 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 
 - Backend unit: `backend/src/__tests__/unit/`
 - Backend integration: `backend/src/__tests__/integration/`
-- Mobile: `mobile-app/src/__tests__/`
+- Mobile: `mobile-app/__tests__/`
 - Web App: `backend/web-app/__tests__/`
 
 🚨 **DO NOT COMMIT WITHOUT PASSING TESTS** 🚨
@@ -157,70 +159,16 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 - Phase 21: Social Features (friend system, activity feed, paired matches)
 - Phase 20: AR Menu Scanner (OCR, fuzzy matching, unmatched detection)
 - Phase 23: Enhanced Flavor Profile Visualization (ranges, tooltips)
-- Phase 26 (In Progress): Production Testing Fixes (65% complete)
+- Phase 26 (In Progress): Production & launch polish (~85% — see ROADMAP.md)
 
-**Latest Session (Nov 25, 2025):**
-- ✅ All test suites now at 100% passing (626/626 tests) - increased from 570
-- 🎉 **WEB APP TEST COVERAGE: 100% COMPLETE (152/152 tests)** 🎉
-- ✅ Completed Phase 4, 5 & 6 of Web App Testing Roadmap - 56 new tests added!
-  - Phase 4: Friends (5), XP Stats (5), Favorites (5), Top Oysters (5)
-  - Phase 5: Settings (6), Privacy Settings (6), Profile Reviews (6)
-  - Phase 6 (100% Coverage): Paired Matches (4), Add Oyster (5), User Reviews (3), User Favorites (3), User Friends (3)
-- 📊 Web App Testing Progress:
-  - Phase 1: ✅ Complete (37% coverage) - Login, Register, ReviewCard, RatingDisplay
-  - Phase 2: ✅ Complete (61% coverage) - OysterList, OysterDetail, Home, EmptyState, LoadingSpinner
-  - Phase 3: ✅ Complete (96% coverage) - Profile, AddReview, GoogleSignIn, FlavorLabels, API structure
-  - Phase 4: ✅ Complete (89% coverage) - Friends, XPStats, Favorites, TopOysters
-  - Phase 5: ✅ Complete (88% coverage) - Settings, PrivacySettings, ProfileReviews
-  - Phase 6: ✅ Complete (100% coverage) - PairedMatches, AddOyster, UserReviews, UserFavorites, UserFriends 🎉
+**Latest Session (June 15–16, 2026):**
+- Docs: [DOCS.md](DOCS.md), [AGENTS.md](AGENTS.md), [ROADMAP.md](ROADMAP.md), [PROJECT_STATUS.md](PROJECT_STATUS.md), local dev in [QUICK_START.md](QUICK_START.md)
+- Backend: `oysterController` `FILTER_CONFIG.CENTER` fix (local `npm run dev`)
+- Mobile Phase 26: suggest-oyster auth/copy, Add Oyster scroll/safe area, OysterList instant nav + back → Home — see [SESSION_LOGS.md](SESSION_LOGS.md)
 
-**Previous Session (Nov 23, 2025):**
-- ✅ Completed Phase 3 of Web App Testing Roadmap - 96% coverage achieved!
-  - GoogleSignInButton (3): Button rendering, custom text, missing client ID error
-  - FlavorLabels utility (11): All attribute labels, boundary values, edge cases, range labels
-  - API client structure (5): Verified all API modules export expected functions
-  - Profile page (5): Auth redirect, loading state, profile display, stats, XP badge
-  - AddReview page (11): Form rendering, rating selection, attribute sliders, submission, error handling, duplicate detection, edit mode, cancel
+**Nov 2025 (summary):** Web app tests → 152/152; project total 626/626. Production UX fixes (photos, dark mode, filters, XP reload, logos). Details: [SESSION_LOGS.md](SESSION_LOGS.md).
 
-**Previous Session (Nov 19, 2025):**
-- ✅ Created Web App Testing Roadmap (backend/web-app/TESTING_ROADMAP.md)
-- ✅ Phase 1 & 2 - Added Web App Tests (42 tests)
-  - Login Page (5): Form rendering, successful login, error handling, generic errors, loading state
-  - Register Page (5): Form rendering, successful registration, password mismatch, password length, error handling
-  - ReviewCard Component (5): Content display, user info, vote buttons, edit/delete, delete functionality
-  - RatingDisplay Component (3): Star display, perfect score, zero reviews handling
-- ✅ Phase 2 - Added Web App Tests (24 tests)
-  - EmptyState Component (4): Render with title/desc, custom icon, action button, action link
-  - LoadingSpinner Component (4): Default text, custom text, different sizes, fullscreen
-  - Home Page (4): Hero section, top oysters, user stats, recommendations
-  - Oyster List Page (6): Heading/search, oysters display, loading state, empty state, search debounce, sort
-  - Oyster Detail Page (6): Loading state, oyster details, reviews display, empty reviews, favorite toggle, no favorite button when not auth
-- ✅ Fixed React act() warnings in web app tests
-  - Updated all PublicProfile tests to properly wait for async operations
-  - Ensured both profile and reviews API calls complete before assertions
-- ✅ Username display tests complete: 6/6 passing
-  - ProfileUsername: 4/4 tests (renders input, accessibility, displays username/name)
-  - ReviewCardUsername: 2/2 tests (displays username, falls back to name)
-  - Fixed: React Query hooks mocking, react-native-paper mocks, QueryClientProvider
-
-**Previous Session (Nov 9, 2025):**
-- ✅ Profile photos in reviews (backend API missing profilePhotoUrl)
-- ✅ Rate limiting updated to industry standard (60 req/min)
-
-**Previous Session (Nov 8, 2025):**
-- ✅ Profile photos display immediately after upload
-- ✅ Review photos display in horizontal gallery
-- ✅ XP & Achievements page reloads on navigation
-- ✅ Dark mode persists after app close
-- ✅ Camera permissions only requested when needed
-- ✅ Review attributes pre-populate correctly in edit mode
-- ✅ Home screen shows logo (matches Browse screen)
-- ✅ Friends button hidden when not logged in
-- ✅ Stats cards clickable (Reviews → Profile, Favorites → List)
-- ✅ Empty states added to XP tabs
-- ✅ Debug logging added for troubleshooting
-
-**Next Tasks:** See ROADMAP.md Phase 26 for remaining production testing fixes
+**Next Tasks:** [ROADMAP.md](ROADMAP.md) — AR polish, device QA, store screenshots, TestFlight/Play internal testing
 
 ---
 
@@ -286,12 +234,13 @@ git push origin main               # Deploy (triggers Railway)
 
 ---
 
-**Last Updated:** November 25, 2025
+**Last Updated:** June 15, 2026
 **Backend:** Live on Railway ✅
 **Database:** Live on Neon (131 unique oysters) ✅
 **Tests:** 626/626 passing (100%) ✅
   - Backend: 388/388 ✅
   - Mobile: 86/86 ✅
-  - Web App: 152/152 ✅ (Phase 6 complete - 100% coverage! 🎉)
-**Latest Version:** 2.0.0 (Phase 26 - Production Testing 65% Complete)
-**Latest OTA Update:** Nov 9, 2025 - Profile photos in reviews fix + rate limiting
+  - Web App: 152/152 ✅
+**Docs:** [DOCS.md](DOCS.md) index; ROADMAP condensed June 2026 (history in SESSION_LOGS + git)
+**Latest Version:** 2.0.0 (Phase 26 ~85% — launch polish)
+**Latest OTA Update:** Nov 9, 2025 — ship next OTA after Phase 26 UX fixes

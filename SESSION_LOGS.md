@@ -1,12 +1,45 @@
 # Oysterette - Session Logs
 
-**Document Purpose:** Historical record of all development sessions
-
-**Session Dates:** October 28-29, 2025 | November 3-7, 2025
+**Document Purpose:** Historical record of all development sessions  
+**Index:** [DOCS.md](DOCS.md) · **Agent quick ref:** [CLAUDE.md](CLAUDE.md)
 
 ---
 
-## 🆕 SESSION: November 7, 2025 (Latest) - Seed Data Cleanup & Duplicate Detection ✅
+## SESSION: June 15–16, 2026 — Docs, Phase 26 UX, local dev fix
+
+### Documentation
+
+- **[DOCS.md](DOCS.md)** — master doc index
+- **[AGENTS.md](AGENTS.md)** — agent rules
+- **[PROJECT_STATUS.md](PROJECT_STATUS.md)**, **[ROADMAP.md](ROADMAP.md)** — current snapshot + Phase 26 checklist (condensed)
+- **[QUICK_START.md](QUICK_START.md)** — local backend (3000) + web UI (3001)
+- **[README.md](README.md)**, **[CLAUDE.md](CLAUDE.md)**, **[SESSION_SUMMARY.md](SESSION_SUMMARY.md)**
+- **[backend/.env.example](backend/.env.example)** — env template for local API
+- **[backend/web-app/README.md](backend/web-app/README.md)** — correct port 3001, `NEXT_PUBLIC_API_URL` for local
+
+### Backend
+
+- **`oysterController.ts`**: Fixed TS compile blocker — match scoring used undefined `CENTER`; now `FILTER_CONFIG.CENTER` with shared filter constants (unblocks `npm run dev`).
+- **`reviewController.ts`**: Shorter headers; typed `oysterUpdates`; optional chaining on crowd-sourced origin/species.
+
+### Mobile (Phase 26)
+
+- **`suggestOysterNavigation.ts`**: `navigateToSuggestOyster`, login alert, `SUGGEST_OYSTER_TITLE`.
+- **`AddOysterScreen`**: Auth on focus + 401 handling; safe-area scroll padding; “Suggest a new oyster” / “Submit suggestion”.
+- **`HomeScreen`**, **`OysterListScreen`**: FAB/card use `navigateToSuggestOyster`.
+- **`App.tsx`**: OysterList `animation: 'none'`, back button → Home; Add Oyster title “Suggest oyster”.
+
+### Local dev (not committed)
+
+- `backend/web-app/.env.local` may point at `http://localhost:3000/api` on developer machines (gitignored). Use production URL when not running API locally.
+
+### Note
+
+Pre–June 2026 detailed ROADMAP text lives in git history before this consolidation commit.
+
+---
+
+## SESSION: November 7, 2025 — Seed Data Cleanup & Duplicate Detection
 
 ### ✅ COMPLETED THIS SESSION
 

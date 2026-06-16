@@ -1,109 +1,102 @@
-# Oysterette - Quick Start Guide
+# Oysterette — Quick Start
 
-## 🚀 Start Development
+**Full doc index:** [DOCS.md](DOCS.md)
 
-### 1. Start Backend
+---
+
+## Local backend + web UI (fastest way to “see the app”)
+
+**Terminal 1 — API**
 ```bash
 cd backend
+# Requires backend/.env with DATABASE_URL and JWT_SECRET (see README)
 npm run dev
 ```
-Backend runs on: **http://localhost:3000**
+API: http://localhost:3000 · Health: http://localhost:3000/api/health (if routed)
 
-### 2. Start Mobile App
+**Terminal 2 — Web frontend**
+```bash
+cd backend/web-app
+# .env.local: NEXT_PUBLIC_API_URL=http://localhost:3000/api
+npm run dev
+```
+Open **http://localhost:3001** in your browser.
+
+Swagger (API docs UI): http://localhost:3000/api-docs (if enabled in backend)
+
+---
+
+## Mobile app (optional)
+
 ```bash
 cd mobile-app
 npm start
 ```
-Then press `i` for iOS or `a` for Android
+Press `i` (iOS) or `a` (Android). For local API, edit `mobile-app/src/services/api.ts` → uncomment `IOS_SIMULATOR_URL` or `ANDROID_EMULATOR_URL` instead of `PRODUCTION_URL`.
 
 ---
 
-## 🧪 Run Tests
+## Tests (required before commit)
+
+From **each** package directory:
+
+```bash
+npm test 2>&1 | tail -30
+```
+
+| Package | Directory | Expected |
+|---------|-----------|----------|
+| Backend | `backend/` | 388 passing |
+| Mobile | `mobile-app/` | 86 passing |
+| Web | `backend/web-app/` | 152 passing |
+
+Backend only:
 ```bash
 cd backend
-npm test                    # All tests
-npm run test:unit           # Unit tests only
-npm run test:integration    # Integration tests only
-npm run test:coverage       # With coverage
+npm run test:unit
+npm run test:integration
 ```
 
 ---
 
-## 🌊 Add More Oysters
+## Seed oysters
 
-1. Edit: `backend/data/oyster-list-for-seeding.json`
-2. Add your oysters in this format:
-```json
-{
-  "name": "Oyster Name",
-  "species": "Crassostrea gigas",
-  "origin": "Location",
-  "standout_note": "Notes",
-  "size": 5,
-  "body": 6,
-  "sweet_brininess": 7,
-  "flavorfulness": 8,
-  "creaminess": 5
-}
+1. Edit `backend/data/oyster-list-for-seeding.json` (131 unique entries today).
+2. `cd backend && npm run seed`
+
+Duplicate checks: `backend/src/__tests__/unit/seedData.test.ts`
+
+---
+
+## API smoke test
+
+```bash
+curl http://localhost:3000/api/oysters
 ```
-3. Run: `cd backend && npm run seed`
 
----
-
-## 📚 Documentation
-
-- **API Docs**: `backend/API_DOCUMENTATION.md`
-- **Project Status**: `PROJECT_STATUS.md`
-- **Original README**: `README.md`
-
----
-
-## 🔑 Test the API
-
-### Register
+Register:
 ```bash
 curl -X POST http://localhost:3000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","name":"Test","password":"pass123"}'
 ```
 
-### Get Oysters
+Details: [backend/API_DOCUMENTATION.md](backend/API_DOCUMENTATION.md)
+
+---
+
+## OTA update (mobile)
+
 ```bash
-curl http://localhost:3000/api/oysters
+cd mobile-app
+npm run deploy-update "Your message"
 ```
 
----
-
-## ✅ What's Complete
-
-✅ PostgreSQL database with 40 oysters
-✅ Complete backend API with authentication
-✅ 10-point attribute system
-✅ Reviews with ratings & sliders
-✅ User top oysters (favorites)
-✅ Comprehensive API documentation
-✅ Unit & integration tests
-✅ Mobile app API service layer
-✅ TypeScript types updated
+Always **`production`** branch; update `LAST_UPDATED` in `HomeScreen.tsx` — see [CLAUDE.md](CLAUDE.md).
 
 ---
 
-## 📱 What's Next
+## Status
 
-The mobile app foundation is ready! Next steps:
-1. Build Login/Register screens
-2. Update UI to show 10-point attributes
-3. Create review screen with sliders
-4. Add profile & favorites screens
-
----
-
-## 💾 Database
-
-**Name**: oysterette
-**Oysters**: 40 (ready for 100+ more)
-**Users**: 0 (create via /api/auth/register)
-
----
-
-**Your backend is production-ready!** 🎉
+Production API: `https://oysterette-production.up.railway.app/api`  
+Snapshot: [PROJECT_STATUS.md](PROJECT_STATUS.md) · Launch tasks: [ROADMAP.md](ROADMAP.md)

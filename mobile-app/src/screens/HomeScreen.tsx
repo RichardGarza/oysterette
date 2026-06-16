@@ -28,6 +28,7 @@ import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from '../navigation/types';
 import { useTheme } from '../context/ThemeContext';
 import { authStorage } from '../services/auth';
+import { navigateToSuggestOyster } from '../utils/suggestOysterNavigation';
 import { favoritesStorage } from '../services/favorites';
 import { oysterApi } from '../services/api';
 import { Oyster } from '../types/Oyster';
@@ -385,13 +386,13 @@ export default function HomeScreen() {
             <Card
               mode='elevated'
               style={styles.actionCard}
-              onPress={() => navigation.navigate('AddOyster')}>
+              onPress={() => navigateToSuggestOyster(navigation)}>
               <Card.Content style={styles.actionCardContent}>
                 <Text variant='headlineMedium' style={styles.actionIcon}>
                   ➕
                 </Text>
                 <Text variant='titleMedium' style={styles.actionTitle}>
-                  Add Oyster
+                  Suggest oyster
                 </Text>
               </Card.Content>
             </Card>

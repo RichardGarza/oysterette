@@ -14,17 +14,26 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { TextInput, Button, Card, Text, HelperText } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { oysterApi } from '../services/api';
+import { authStorage } from '../services/auth';
 import { useTheme } from '../context/ThemeContext';
+import {
+  showSuggestOysterLoginPrompt,
+  SUGGEST_OYSTER_TITLE,
+} from '../utils/suggestOysterNavigation';
 
 // ============================================================================
 // CONSTANTS
 // ============================================================================
+
+const SCROLL_BOTTOM_EXTRA = 80;
 
 const SLIDER_CONFIG = {
   MIN_VALUE: 1,
@@ -89,7 +98,25 @@ export default function AddOysterScreen() {
   const navigation = useNavigation<AddOysterScreenNavigationProp>();
   const route = useRoute<AddOysterScreenRouteProp>();
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      const ensureSignedIn = async () => {
+        const token = await authStorage.getToken();
+        if (!active || token) {
+          return;
+        }
+        showSuggestOysterLoginPrompt(navigation);
+      };
+      ensureSignedIn();
+      return () => {
+        active = false;
+      };
+    }, [navigation]),
+  );
 
   const [formData, setFormData] = useState<FormData>({
     name: route.params?.name || '',
@@ -153,9 +180,14 @@ export default function AddOysterScreen() {
       if (__DEV__) {
         console.error('❌ [AddOysterScreen] Error adding oyster:', error);
       }
+      const status = error?.response?.status;
+      if (status === 401) {
+        showSuggestOysterLoginPrompt(navigation);
+        return;
+      }
       Alert.alert(
         'Error',
-        error?.response?.data?.error || 'Failed to add oyster. Please try again.'
+        error?.response?.data?.error || 'Failed to add oyster. Please try again.',
       );
     } finally {
       setLoading(false);
@@ -204,11 +236,19 @@ export default function AddOysterScreen() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
       >
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: Math.max(insets.bottom, 24) + SCROLL_BOTTOM_EXTRA },
+          ]}
+          keyboardShouldPersistTaps="handled"
+        >
         <Card style={styles.header}>
           <Card.Content>
-            <Text variant="headlineMedium" style={{ color: theme.colors.text }}>Add New Oyster</Text>
+            <Text variant="headlineMedium" style={{ color: theme.colors.text }}>{SUGGEST_OYSTER_TITLE}</Text>
             <Text variant="bodyMedium" style={{ color: theme.colors.textSecondary, marginTop: 4 }}>
               Help grow our database by adding oysters you discover!
             </Text>
@@ -292,7 +332,7 @@ export default function AddOysterScreen() {
             style={styles.submitButton}
             contentStyle={styles.buttonContent}
           >
-            Add Oyster
+            Submit suggestion
           </Button>
         </View>
       </ScrollView>
@@ -312,7 +352,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
+    flexGrow: 1,
   },
   header: {
     marginBottom: 8,

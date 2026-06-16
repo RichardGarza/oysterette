@@ -21,6 +21,8 @@ Oysterette is a React Native mobile app that helps oyster lovers:
 
 The app uses a sophisticated rating algorithm that weights user reviews against curated seed data, ensuring new oysters have baseline scores while heavily-reviewed oysters reflect community consensus.
 
+**Documentation:** [DOCS.md](DOCS.md) (full index) · [QUICK_START.md](QUICK_START.md) · [CLAUDE.md](CLAUDE.md) (agents) · [ROADMAP.md](ROADMAP.md) (launch checklist)
+
 ---
 
 ## 🏗️ Technology Stack
@@ -361,46 +363,23 @@ npm run android
 
 ## 🧪 Testing
 
-### Backend Tests
+### Tests (all packages)
+
+From `backend/`, `mobile-app/`, or `backend/web-app/`:
+
 ```bash
-cd backend
-
-# Run all tests
-npm test
-
-# Run tests with coverage
-npm test -- --coverage
-
-# Run specific test file
-npm test ratingService.test.ts
+npm test 2>&1 | tail -30
 ```
 
-### Web App Tests
-```bash
-cd backend/web-app
+| Package | Tests |
+|---------|-------|
+| Backend | 388 |
+| Mobile | 86 |
+| Web (Jest) | 152 |
 
-# Unit tests (Jest)
-npm test
+Web E2E (Playwright): `cd backend/web-app && npm run test:e2e` when needed.
 
-# E2E tests (Playwright)
-npm run test:e2e
-
-# Lint and build
-npm run lint
-npm run build
-```
-
-### Test Coverage
-- **Backend**: 297/297 tests passing (unit + integration)
-- **Web App**: 6 Jest unit tests + 20 Playwright E2E tests (5 browsers)
-- **CI/CD**: GitHub Actions on every push/PR
-
-### Phase 26: Comprehensive Testing (November 2025)
-- ✅ **Jest Setup**: Unit tests for Header component (navigation, auth, theme)
-- ✅ **Playwright E2E**: Home page, browse, login flow across 5 browsers (Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari)
-- ✅ **GitHub Actions CI**: Automated lint, build, test workflow
-- ✅ **Test Artifacts Cleanup**: Removed test reports and logs from repo
-- ✅ **Dependency Cleanup**: Removed unused testing libraries (MSW, next-router-mock)
+Policy and agent safety rules: [CLAUDE.md](CLAUDE.md).
 
 ---
 
@@ -434,7 +413,10 @@ oysterette/
 │   ├── app.json              # Expo configuration
 │   └── eas.json              # EAS Build configuration
 │
-├── CLAUDE.md                 # Session progress documentation
+├── DOCS.md                   # Documentation index
+├── CLAUDE.md                 # Agent / session reference
+├── AGENTS.md                 # AI agent rules
+├── ROADMAP.md                # Launch checklist & future work
 └── README.md                 # This file
 ```
 
@@ -466,8 +448,8 @@ Set in Railway dashboard (same as above):
 
 ## ✅ Completed Features
 
-### Phase 1-4: Core Infrastructure (October 2024)
-- ✅ **Production Database**: Neon PostgreSQL with 850+ oysters
+### Phase 1-4: Core Infrastructure
+- ✅ **Production Database**: Neon PostgreSQL (131 unique oysters)
 - ✅ **Backend API**: Railway deployment with auto-deploy
 - ✅ **Mobile App**: React Native with Expo, EAS Build & Updates
 - ✅ **Android Distribution**: APK builds via EAS
@@ -485,7 +467,7 @@ Set in Railway dashboard (same as above):
 - ✅ **Error Tracking**: Sentry integration
 - ✅ **Logging**: Winston structured logging
 - ✅ **JWT Hardening**: Secure token handling
-- ✅ **Test Coverage**: 229 tests passing (100% coverage on core logic)
+- ✅ **Test Coverage**: 626 tests across backend, mobile, and web
 
 ### Phase 5.3: Search & Discovery (November 2024)
 - ✅ **Fuzzy Search**: Fuse.js with weighted name/origin/species matching
@@ -536,43 +518,11 @@ Set in Railway dashboard (same as above):
 
 ---
 
-## 📈 Future Roadmap
+## 📈 Roadmap
 
-### Phase 6: Social Features
-- **Share Oysters**
-  - Share oyster profiles to social media
-  - Send oysters to friends via messaging
-  - "Share Your Top 5" feature
-  - Export reviews as PDF/image
+**Launch (Phase 26):** [ROADMAP.md](ROADMAP.md) — UX polish, QA, screenshots, store submission.
 
-- **Additional OAuth Providers**
-  - Sign in with Apple (required for iOS App Store)
-  - Sign in with X/Twitter
-  - Sign in with Facebook
-
-### Phase 7: Community Data Enrichment
-- **Collaborative Editing**
-  - Edit oyster details when rating
-  - Contribute species for "Unknown" entries
-  - Add origin information for incomplete listings
-  - Update standout notes collaboratively
-  - Version history for edits
-
-### Phase 8: Photo Gallery
-- User-uploaded oyster photos
-- Image storage (Cloudinary/Supabase)
-- Photo moderation system
-- Gallery view on oyster detail pages
-
-### Phase 9: App Store Distribution
-- ✅ Legal documentation (Privacy Policy, Terms of Service)
-- ✅ GitHub Pages hosting for legal docs
-- Sign in with Apple implementation (required)
-- Screenshot capture for both stores
-- iOS TestFlight beta testing
-- Apple App Store submission
-- Google Play Store submission
-- Push notifications for review responses
+**Post-launch ideas:** push notifications, sharing, collaborative edits — listed in ROADMAP.md.
 
 ---
 
@@ -600,11 +550,6 @@ MIT License - See LICENSE file for details
 
 ---
 
-**Version:** 2.0.0
-**Last Updated:** November 18, 2025
-**Status:** Production Ready - Testing Complete
-**Tests:** Backend 297/297 + Web 26/26 passing ✅
-**Backend:** Live on Railway ✅
-**Database:** Live on Neon (131 unique oysters) ✅
-**UI:** React Native Paper (Material Design) ✅
-**Web App:** Next.js 16 with comprehensive testing ✅
+**Version:** 2.0.0 · **Updated:** June 15, 2026  
+**Status:** Production-ready · Phase 26 launch polish  
+**Tests:** 626/626 ✅ · **Backend:** Railway ✅ · **DB:** Neon (131 oysters) ✅

@@ -1,12 +1,7 @@
 /**
  * Review Controller
  *
- * Handles review operations including:
- * - Creating reviews with duplicate detection
- * - Fetching reviews for oysters and users
- * - Updating and deleting reviews
- * - Checking for existing user reviews
- * - Automatic rating recalculation after mutations
+ * Handles CRUD for reviews with duplicate detection, oyster updates, XP, and cache invalidation.
  */
 
 import { Request, Response } from 'express';
@@ -18,27 +13,9 @@ import { invalidateCache, updateBaselineWithReview } from '../services/recommend
 import { awardXP, updateStreak, XP_REWARDS } from '../services/xpService';
 
 /**
- * Create a new review for an oyster
+ * createReview
  *
- * Validates that the oyster exists and prevents duplicate reviews via unique constraint.
- * Automatically triggers oyster rating recalculation after creation.
- *
- * @route POST /api/reviews
- * @requires Authentication
- * @param req.body.oysterId - UUID of oyster being reviewed
- * @param req.body.rating - Overall rating (LOVE_IT | LIKE_IT | OKAY | MEH)
- * @param req.body.size - Size rating 1-10 (optional)
- * @param req.body.body - Body rating 1-10 (optional)
- * @param req.body.sweetBrininess - Sweet/briny rating 1-10 (optional)
- * @param req.body.flavorfulness - Flavor rating 1-10 (optional)
- * @param req.body.creaminess - Creaminess rating 1-10 (optional)
- * @param req.body.notes - Personal tasting notes (optional)
- * @param req.body.photoUrls - Array of Cloudinary URLs for review photos (optional, max 5)
- * @returns 201 - Created review with user and oyster info
- * @returns 400 - Missing required fields or duplicate review
- * @returns 401 - Not authenticated
- * @returns 404 - Oyster not found
- * @returns 500 - Server error
+ * Creates review (supports anonymous), handles crowd-sourced oyster data, duplicate check, XP, baseline update, and cache invalidation.
  */
 export const createReview = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -81,15 +58,14 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
     }
 
     // Update oyster with crowd-sourced data if provided and missing
-    const oysterUpdates: any = {};
-    if (origin && origin.trim() && oyster.origin === 'Unknown') {
+    const oysterUpdates: Partial<Record<'origin' | 'species', string>> = {};
+    if (origin?.trim() && oyster.origin === 'Unknown') {
       oysterUpdates.origin = origin.trim();
     }
-    if (species && species.trim() && oyster.species === 'Unknown') {
+    if (species?.trim() && oyster.species === 'Unknown') {
       oysterUpdates.species = species.trim();
     }
 
-    // Apply updates if any
     if (Object.keys(oysterUpdates).length > 0) {
       await prisma.oyster.update({
         where: { id: oysterId },
@@ -98,7 +74,7 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
       logger.info(`Oyster ${oysterId} updated with crowd-sourced data:`, oysterUpdates);
     }
 
-    // Check if authenticated user already reviewed this oyster
+    // Check for existing review (authenticated users only)
     if (req.userId) {
       const existingReview = await prisma.review.findUnique({
         where: {
@@ -149,10 +125,8 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
       },
     });
 
-    // Recalculate oyster ratings after creating review
     await recalculateOysterRatings(oysterId);
 
-    // Award XP and update streak (only for authenticated users)
     if (req.userId) {
       const reviewCount = await prisma.review.count({ where: { userId: req.userId } });
       const isFirstReview = reviewCount === 1;
@@ -160,20 +134,8 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
 
       await awardXP(req.userId, xpAmount, isFirstReview ? 'First review' : 'Review oyster');
       await updateStreak(req.userId);
-
-      // Update user's baseline profile if this is a positive review
-      await updateBaselineWithReview(req.userId, rating, {
-        size,
-        body,
-        sweetBrininess,
-        flavorfulness,
-        creaminess,
-      });
-
-      // Invalidate recommendation cache since user's preferences changed (fire and forget)
-      invalidateCache(req.userId).catch((error) => {
-        logger.error('Error invalidating cache:', error);
-      });
+      await updateBaselineWithReview(req.userId, rating, { size, body, sweetBrininess, flavorfulness, creaminess });
+      invalidateCache(req.userId).catch((error) => logger.error('Error invalidating cache:', error));
     }
 
     res.status(201).json({

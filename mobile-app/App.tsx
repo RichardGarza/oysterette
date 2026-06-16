@@ -251,6 +251,7 @@ function AppNavigator() {
           name="OysterList"
           component={OysterListScreen}
           options={({ navigation }) => ({
+            animation: 'none',
             headerTitle: () => (
               <TouchableOpacity onPress={() => navigation.navigate('Home')}>
                 <Image
@@ -258,6 +259,16 @@ function AppNavigator() {
                   style={{ width: 150, height: 40 }}
                   resizeMode="contain"
                 />
+              </TouchableOpacity>
+            ),
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Home')}
+                accessibilityRole="button"
+                accessibilityLabel="Back to home"
+                style={{ paddingHorizontal: 12, paddingVertical: 8 }}
+              >
+                <Text style={{ color: '#fff', fontSize: 28, lineHeight: 32 }}>←</Text>
               </TouchableOpacity>
             ),
             headerRight: () => <SettingsButton navigation={navigation} />,
@@ -274,7 +285,7 @@ function AppNavigator() {
           name="AddOyster"
           component={AddOysterScreen}
           options={({ navigation }) => ({
-            title: 'Add Oyster',
+            title: 'Suggest oyster',
             headerRight: () => <SettingsButton navigation={navigation} />,
           })}
         />

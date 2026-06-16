@@ -1,12 +1,7 @@
 /**
  * Oyster Controller
  *
- * Handles oyster data operations including:
- * - Fetching all oysters with filtering and sorting
- * - Getting individual oyster details with reviews
- * - Creating, updating, and deleting oysters
- * - Fuzzy search functionality
- * - Filter options for UI dropdown/chips
+ * Handles listing, detail, CRUD, fuzzy search, and filter options for oysters.
  */
 
 import { Request, Response } from 'express';
@@ -15,32 +10,16 @@ import prisma from '../lib/prisma';
 import Fuse from 'fuse.js';
 
 /**
- * Get all oysters with optional filtering and sorting
+ * getAllOysters
  *
- * Supports attribute-based filtering and bidirectional sorting for flexible
- * oyster discovery and browsing.
- *
- * @route GET /api/oysters
- * @param req.query.sortBy - Sort by: rating | name | size | sweetness | creaminess | flavorfulness | body
- * @param req.query.sortDirection - Sort direction: asc | desc (default: desc for attributes, asc for name)
- * @param req.query.sweetness - Filter by sweetness (fuzzy ±2): low (1-6) | high (4-10)
- * @param req.query.size - Filter by size (fuzzy ±2): low (1-6) | high (4-10)
- * @param req.query.body - Filter by body (fuzzy ±2): low (1-6) | high (4-10)
- * @param req.query.flavorfulness - Filter by flavorfulness (fuzzy ±2): low (1-6) | high (4-10)
- * @param req.query.creaminess - Filter by creaminess (fuzzy ±2): low (1-6) | high (4-10)
- * @returns 200 - Array of oysters with review counts
- * @returns 500 - Server error
- *
- * @example
- * GET /api/oysters?sweetness=low&sortBy=rating&sortDirection=desc  // Returns oysters with sweetness 1-6
- * GET /api/oysters?size=high&body=high&sortBy=name&sortDirection=asc  // Returns oysters with size 4-10 AND body 4-10
+ * Returns filtered/sorted oysters with review counts and optional match scoring for multi-attribute filters.
  */
 export const getAllOysters = async (req: Request, res: Response): Promise<void> => {
   try {
     const { sortBy, sortDirection, sweetness, size, body, flavorfulness, creaminess } = req.query;
 
     // Build individual filter conditions for scoring
-    const filterConditions: any[] = [];
+    const filterConditions: any[] = []; // TODO: Replace with proper Prisma type after full migration
     const activeFilters: string[] = [];
 
     // Sweetness filter (fuzzy ranges with ±2 overlap)
@@ -151,19 +130,21 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
       },
     });
 
-    // Calculate match score if multiple filters active
-    // Score = sum of distances from 5.5 (higher = better match)
-    // Example: Small filter (1-5), oyster size=1 → |5.5-1| = 4.5 (excellent)
-    //          Briny filter (6-10), oyster brine=10 → |5.5-10| = 4.5 (excellent)
     if (activeFilters.length > 0) {
-      const CENTER = 5.5;
+      const FILTER_CONFIG = {
+        CENTER: 5.5 as const,
+        LOW_MIN: 1,
+        LOW_MAX: 5,
+        HIGH_MIN: 6,
+        HIGH_MAX: 10,
+      } as const;
 
       const getFilterRanges = () => ({
-        sweetness: sweetness ? (sweetness === 'low' ? { min: 1, max: 5 } : { min: 6, max: 10 }) : null,
-        size: size ? (size === 'low' ? { min: 1, max: 5 } : { min: 6, max: 10 }) : null,
-        body: body ? (body === 'low' ? { min: 1, max: 5 } : { min: 6, max: 10 }) : null,
-        flavorfulness: flavorfulness ? (flavorfulness === 'low' ? { min: 1, max: 5 } : { min: 6, max: 10 }) : null,
-        creaminess: creaminess ? (creaminess === 'low' ? { min: 1, max: 5 } : { min: 6, max: 10 }) : null,
+        sweetness: sweetness ? (sweetness === 'low' ? { min: FILTER_CONFIG.LOW_MIN, max: FILTER_CONFIG.LOW_MAX } : { min: FILTER_CONFIG.HIGH_MIN, max: FILTER_CONFIG.HIGH_MAX }) : null,
+        size: size ? (size === 'low' ? { min: FILTER_CONFIG.LOW_MIN, max: FILTER_CONFIG.LOW_MAX } : { min: FILTER_CONFIG.HIGH_MIN, max: FILTER_CONFIG.HIGH_MAX }) : null,
+        body: body ? (body === 'low' ? { min: FILTER_CONFIG.LOW_MIN, max: FILTER_CONFIG.LOW_MAX } : { min: FILTER_CONFIG.HIGH_MIN, max: FILTER_CONFIG.HIGH_MAX }) : null,
+        flavorfulness: flavorfulness ? (flavorfulness === 'low' ? { min: FILTER_CONFIG.LOW_MIN, max: FILTER_CONFIG.LOW_MAX } : { min: FILTER_CONFIG.HIGH_MIN, max: FILTER_CONFIG.HIGH_MAX }) : null,
+        creaminess: creaminess ? (creaminess === 'low' ? { min: FILTER_CONFIG.LOW_MIN, max: FILTER_CONFIG.LOW_MAX } : { min: FILTER_CONFIG.HIGH_MIN, max: FILTER_CONFIG.HIGH_MAX }) : null,
       });
 
       const ranges = getFilterRanges();
@@ -175,31 +156,31 @@ export const getAllOysters = async (req: Request, res: Response): Promise<void> 
         if (ranges.sweetness) {
           const val = oyster.avgSweetBrininess ?? oyster.sweetBrininess;
           if (val >= ranges.sweetness.min && val <= ranges.sweetness.max) {
-            matchScore += Math.abs(CENTER - val);
+            matchScore += Math.abs(FILTER_CONFIG.CENTER - val);
           }
         }
         if (ranges.size) {
           const val = oyster.avgSize ?? oyster.size;
           if (val >= ranges.size.min && val <= ranges.size.max) {
-            matchScore += Math.abs(CENTER - val);
+            matchScore += Math.abs(FILTER_CONFIG.CENTER - val);
           }
         }
         if (ranges.body) {
           const val = oyster.avgBody ?? oyster.body;
           if (val >= ranges.body.min && val <= ranges.body.max) {
-            matchScore += Math.abs(CENTER - val);
+            matchScore += Math.abs(FILTER_CONFIG.CENTER - val);
           }
         }
         if (ranges.flavorfulness) {
           const val = oyster.avgFlavorfulness ?? oyster.flavorfulness;
           if (val >= ranges.flavorfulness.min && val <= ranges.flavorfulness.max) {
-            matchScore += Math.abs(CENTER - val);
+            matchScore += Math.abs(FILTER_CONFIG.CENTER - val);
           }
         }
         if (ranges.creaminess) {
           const val = oyster.avgCreaminess ?? oyster.creaminess;
           if (val >= ranges.creaminess.min && val <= ranges.creaminess.max) {
-            matchScore += Math.abs(CENTER - val);
+            matchScore += Math.abs(FILTER_CONFIG.CENTER - val);
           }
         }
 

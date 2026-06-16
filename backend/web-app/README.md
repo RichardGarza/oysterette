@@ -37,13 +37,16 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open **http://localhost:3001** (Next dev server; backend API stays on **3000**).
 
 ### Environment Variables
 
 Create a `.env.local` file:
 
 ```env
+# Local backend (use production URL when not running API locally)
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+
 # Google OAuth Client ID (required for Google Sign-In)
 # Get this from: https://console.cloud.google.com/apis/credentials
 # Create OAuth 2.0 Client ID for Web application
