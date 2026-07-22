@@ -15,13 +15,14 @@ app.use('/api/auth', authRoutes);
 describe('Oyster API Integration Tests', () => {
   let authToken: string;
   let testOysterId: string;
+  let overlapOysterId: string;
 
   // Setup: Create a test user and get auth token
   beforeAll(async () => {
     // Clean up test data
     await prisma.review.deleteMany({ where: { user: { email: 'test@oysterette.com' } } });
     await prisma.user.deleteMany({ where: { email: 'test@oysterette.com' } });
-    await prisma.oyster.deleteMany({ where: { name: 'Test Oyster for GET' } });
+    await prisma.oyster.deleteMany({ where: { name: { in: ['Test Oyster for GET', 'Test Oyster Overlap'] } } });
 
     // Register test user
     const response = await request(app)
@@ -48,13 +49,29 @@ describe('Oyster API Integration Tests', () => {
       },
     });
     testOysterId = oyster.id;
+
+    // Oyster in the 4-6 sweetness window so fuzzy low (1-6) and high (4-10)
+    // ranges overlap even on an otherwise-empty database (e.g. CI)
+    const overlapOyster = await prisma.oyster.create({
+      data: {
+        name: 'Test Oyster Overlap',
+        species: 'Crassostrea gigas',
+        origin: 'Test Bay',
+        size: 5,
+        body: 5,
+        sweetBrininess: 5,
+        flavorfulness: 5,
+        creaminess: 5,
+      },
+    });
+    overlapOysterId = overlapOyster.id;
   });
 
   // Cleanup after all tests
   afterAll(async () => {
     await prisma.review.deleteMany({ where: { user: { email: 'test@oysterette.com' } } });
     await prisma.user.deleteMany({ where: { email: 'test@oysterette.com' } });
-    await prisma.oyster.deleteMany({ where: { id: testOysterId } });
+    await prisma.oyster.deleteMany({ where: { id: { in: [testOysterId, overlapOysterId] } } });
     await prisma.$disconnect();
   });
 
