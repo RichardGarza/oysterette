@@ -74,7 +74,8 @@
             "deploymentTarget": "16.0"
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ]
   }
 }

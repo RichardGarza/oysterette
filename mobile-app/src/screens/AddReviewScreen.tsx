@@ -32,7 +32,7 @@ import Slider from '@react-native-community/slider';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AddReviewScreenRouteProp, AddReviewScreenNavigationProp } from '../navigation/types';
-import { reviewApi, userApi } from '../services/api';
+import { API_URL, reviewApi, userApi } from '../services/api';
 import { authStorage } from '../services/auth';
 import { ReviewRating } from '../types/Oyster';
 import { getAttributeDescriptor } from '../utils/ratingUtils';
@@ -256,7 +256,7 @@ export default function AddReviewScreen() {
 
       // Upload to backend
       // Note: Do NOT set Content-Type header - let FormData set it automatically with boundary
-      const response = await fetch('https://oysterette-production.up.railway.app/api/upload/image?folder=reviews', {
+      const response = await fetch(`${API_URL}/upload/image?folder=reviews`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

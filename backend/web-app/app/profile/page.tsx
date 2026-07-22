@@ -7,7 +7,7 @@ import Header from '../../components/Header';
 import ReviewCard from '../../components/ReviewCard';
 import EmptyState from '../../components/EmptyState';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { uploadApi, friendApi } from '../../lib/api';
+import { uploadApi, friendApi, userApi } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Review, User } from '../../lib/types';
 import { getAttributeLabel, getRangeLabel } from '../../lib/flavorLabels';
@@ -81,14 +81,14 @@ export default function ProfilePage() {
 
     try {
       setEditLoading(true);
-      const updatedUser = await userApi.updateProfile({
+      await userApi.updateProfile({
         name: editName,
         email: editEmail,
         username: editUsername || undefined,
       });
 
       // Update auth user
-      refreshUser(updatedUser);
+      await refreshUser();
 
       // Refresh profile with new data
       await refetchProfile();
@@ -110,15 +110,15 @@ export default function ProfilePage() {
 
     try {
       setUploadingPhoto(true);
-      const photoUrl = await uploadApi.uploadPhoto(file);
+      const photoUrl = await uploadApi.uploadProfilePhoto(file);
 
       // Update profile photo
-      const updatedUser = await userApi.updateProfile({
+      await userApi.updateProfile({
         profilePhotoUrl: photoUrl,
       });
 
       // Update auth user
-      refreshUser(updatedUser);
+      await refreshUser();
 
       // Refresh profile with new photo
       await refetchProfile();

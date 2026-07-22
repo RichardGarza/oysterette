@@ -5,6 +5,39 @@
 
 ---
 
+## SESSION: July 21, 2026 — CI fix, mobile token security, latent web build breaks
+
+### CI/CD (was silently dead)
+
+- **`.github/workflows/ci.yml`** (repo root, NEW): backend (Postgres 16 service, `prisma migrate deploy`, tests `--runInBand`, tsc build), mobile (Jest), web (lint non-blocking / Jest / `next build`), manual-only Playwright e2e job. The old workflow lived at `backend/web-app/.github/` where GitHub never executes it — deleted.
+- **`backend/src/__tests__/setup.ts`**: test DB URL overridable via `TEST_DATABASE_URL` (CI); unchanged local default. Backend tests run serially in CI — suites share one test DB and parallel workers race (observed 1 flaky failure locally).
+- Web lint is `continue-on-error`: 101 pre-existing errors (mostly `no-explicit-any`) to burn down before making it a gate.
+
+### Mobile security (Phase 26 launch-relevant)
+
+- **`services/auth.ts`**: JWT moved from plaintext AsyncStorage to `expo-secure-store` (keychain). Auto-migrates existing sessions; falls back to AsyncStorage on OTA-updated binaries that predate the native module. ⚠️ Requires a new EAS build to take effect on device.
+- **`services/api.ts`**: removed unconditional token/header logging from request interceptor; API base URL now `EXPO_PUBLIC_API_URL` env override (committed LAN IP removed); exported `API_URL`.
+- **`AddReviewScreen.tsx`**: photo upload uses `API_URL` instead of hardcoded prod URL.
+- **`jest.setup.js`**: SecureStore mock. **`QUICK_START.md`**: local API via `mobile-app/.env`.
+
+### Backend security
+
+- **`userController.ts`**: `updateProfile` and `setUsername` returned the raw Prisma user **including the bcrypt password hash**; now stripped. (`register`/`getProfile` were already safe via field whitelists.)
+
+### Web app — `next build` was broken on main (Jest mocks hid it)
+
+- **`app/profile/page.tsx`**: missing `userApi` import; `refreshUser()` takes no args; `uploadApi.uploadPhoto` → `uploadProfilePhoto`.
+- **`lib/api.ts`**: `updateProfile` now takes an object incl. `username` (matches backend + callers); `getProfile` stats type gained `friendsCount`.
+- **`app/profile/reviews/page.tsx`**: ReviewCard props `onUpdate`/`showEditButton` don't exist → `onVoteChange`/`onDelete` (edit-button UI was never built).
+- **`app/settings/page.tsx`**: removed delete-account password field gated on `user?.password` — API never returns that field, so it never rendered (backend treats password as optional on delete).
+- **`hooks/useQueries.ts`**: null-guards for `getById`/mutation results.
+
+### Tests
+
+- Backend 388/388 · Mobile 86/86 · Web 152/152; web `next build` compiles clean. Mobile `tsc --noEmit` has 73 pre-existing errors (untouched by this session).
+
+---
+
 ## SESSION: June 15–16, 2026 — Docs, Phase 26 UX, local dev fix
 
 ### Documentation

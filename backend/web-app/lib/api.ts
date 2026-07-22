@@ -226,6 +226,7 @@ export const userApi = {
       memberSince: string;
       totalVotesGiven: number;
       totalVotesReceived: number;
+      friendsCount: number;
     };
   }> => {
     const response = await api.get<ApiResponse<any>>('/users/profile');
@@ -233,12 +234,13 @@ export const userApi = {
     return response.data.data;
   },
 
-  updateProfile: async (name?: string, email?: string, profilePhotoUrl?: string): Promise<User> => {
-    const response = await api.put<ApiResponse<User>>('/users/profile', {
-      name,
-      email,
-      profilePhotoUrl,
-    });
+  updateProfile: async (updates: {
+    name?: string;
+    email?: string;
+    username?: string;
+    profilePhotoUrl?: string;
+  }): Promise<User> => {
+    const response = await api.put<ApiResponse<User>>('/users/profile', updates);
     if (!response.data.data) throw new Error('Failed to update profile');
     return response.data.data;
   },

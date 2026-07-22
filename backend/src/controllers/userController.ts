@@ -292,7 +292,9 @@ export const updateProfile = async (req: Request, res: Response) => {
       },
     });
 
-    res.json({ data: updatedUser });
+    // Never return the password hash to clients
+    const { password: _password, ...safeUser } = updatedUser;
+    res.json({ data: safeUser });
   } catch (error) {
     console.error('❌ [userController] Error updating profile:', error);
     res.status(500).json({ error: 'Failed to update profile' });
@@ -332,7 +334,9 @@ export const setUsername = async (req: Request, res: Response) => {
       data: { username },
     });
 
-    res.json({ data: user });
+    // Never return the password hash to clients
+    const { password: _password, ...safeUser } = user;
+    res.json({ data: safeUser });
   } catch (error) {
     console.error('❌ [userController] Error setting username:', error);
     res.status(500).json({ error: 'Failed to set username' });

@@ -86,8 +86,8 @@ export default function ProfileReviewsPage() {
               <ReviewCard
                 key={review.id}
                 review={review}
-                onUpdate={loadReviews}
-                showEditButton={true}
+                onVoteChange={loadReviews}
+                onDelete={loadReviews}
               />
             ))}
           </div>

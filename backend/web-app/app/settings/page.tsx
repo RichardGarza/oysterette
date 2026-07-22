@@ -225,19 +225,6 @@ export default function SettingsPage() {
               This action cannot be undone. This will permanently delete your account and all associated data.
             </p>
             <form onSubmit={handleDeleteAccount} className="space-y-4">
-              {user?.password && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Password (required for verification)
-                  </label>
-                  <input
-                    type="password"
-                    value={deletePassword}
-                    onChange={(e) => setDeletePassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-[#334e68] dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
-                </div>
-              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Type "DELETE MY ACCOUNT" to confirm

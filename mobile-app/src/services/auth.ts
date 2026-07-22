@@ -1,10 +1,13 @@
 /**
  * Auth Storage Service
  *
- * Persistent storage for JWT token and user data using AsyncStorage.
+ * JWT token lives in SecureStore (device keychain); non-sensitive user data
+ * stays in AsyncStorage. Falls back to AsyncStorage on binaries that predate
+ * the SecureStore native module (OTA-updated older builds).
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { User } from '../types/Oyster';
 
 // ============================================================================
@@ -12,10 +15,13 @@ import { User } from '../types/Oyster';
 // ============================================================================
 
 const STORAGE_KEYS = {
-  TOKEN: '@oysterette_token',
+  TOKEN: '@oysterette_token', // legacy AsyncStorage key, kept for migration/fallback
   USER: '@oysterette_user',
   BADGE_LEVEL: '@oysterette_badge_level',
 } as const;
+
+// SecureStore keys may only contain [A-Za-z0-9._-]
+const SECURE_TOKEN_KEY = 'oysterette_token';
 
 // ============================================================================
 // STORAGE INTERFACE
@@ -27,13 +33,22 @@ export const authStorage = {
    */
   async saveToken(token: string): Promise<void> {
     try {
-      await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, token);
+      await SecureStore.setItemAsync(SECURE_TOKEN_KEY, token);
+      // Drop any legacy plaintext copy
+      await AsyncStorage.removeItem(STORAGE_KEYS.TOKEN);
       if (__DEV__) {
-        console.log('💾 [AuthStorage] Token saved:', token.substring(0, 20) + '...');
+        console.log('💾 [AuthStorage] Token saved');
       }
-    } catch (error) {
-      console.error('❌ [AuthStorage] Error saving token:', error);
-      throw error;
+    } catch {
+      // SecureStore native module unavailable (older binary via OTA)
+      try {
+        await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, token);
+      } catch (error) {
+        if (__DEV__) {
+          console.error('❌ [AuthStorage] Error saving token:', error);
+        }
+        throw error;
+      }
     }
   },
 
@@ -42,13 +57,29 @@ export const authStorage = {
    */
   async getToken(): Promise<string | null> {
     try {
-      const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
-      if (__DEV__) {
-        console.log('🔍 [AuthStorage] Token retrieved:', token ? token.substring(0, 20) + '...' : 'NULL');
+      const token = await SecureStore.getItemAsync(SECURE_TOKEN_KEY);
+      if (token) {
+        return token;
       }
-      return token;
+    } catch {
+      // SecureStore unavailable — fall through to AsyncStorage
+    }
+    try {
+      const legacyToken = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+      if (legacyToken) {
+        // Migrate existing sessions into the keychain
+        try {
+          await SecureStore.setItemAsync(SECURE_TOKEN_KEY, legacyToken);
+          await AsyncStorage.removeItem(STORAGE_KEYS.TOKEN);
+        } catch {
+          // Keep using AsyncStorage on binaries without SecureStore
+        }
+      }
+      return legacyToken;
     } catch (error) {
-      console.error('❌ [AuthStorage] Error getting token:', error);
+      if (__DEV__) {
+        console.error('❌ [AuthStorage] Error getting token:', error);
+      }
       return null;
     }
   },
@@ -58,12 +89,19 @@ export const authStorage = {
    */
   async removeToken(): Promise<void> {
     try {
+      await SecureStore.deleteItemAsync(SECURE_TOKEN_KEY);
+    } catch {
+      // SecureStore unavailable — legacy key removal below still runs
+    }
+    try {
       await AsyncStorage.removeItem(STORAGE_KEYS.TOKEN);
       if (__DEV__) {
         console.log('🗑️ [AuthStorage] Token removed');
       }
     } catch (error) {
-      console.error('❌ [AuthStorage] Error removing token:', error);
+      if (__DEV__) {
+        console.error('❌ [AuthStorage] Error removing token:', error);
+      }
     }
   },
 

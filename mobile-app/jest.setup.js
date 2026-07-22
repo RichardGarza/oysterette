@@ -11,6 +11,13 @@ global.__fbBatchedBridgeConfig = {
 // Mock AsyncStorage
 import '@react-native-async-storage/async-storage/jest/async-storage-mock';
 
+// Mock SecureStore (token storage)
+jest.mock('expo-secure-store', () => ({
+  getItemAsync: jest.fn().mockResolvedValue(null),
+  setItemAsync: jest.fn().mockResolvedValue(undefined),
+  deleteItemAsync: jest.fn().mockResolvedValue(undefined),
+}));
+
 // Mock React Native completely
 jest.mock('react-native', () => {
   const React = require('react');

@@ -8,21 +8,17 @@
  * - Environment-aware URL configuration (production/development)
  * - Request/response interceptors for auth and error handling
  * - Organized API namespaces: auth, oyster, review, vote, user, favorite
- * - 10-second timeout for all requests
- * - Auto-retry disabled (manual retry in UI)
- * - Extensive console logging for debugging
+ * - 30-second timeout for all requests (Railway/Neon cold starts)
+ * - Automatic retry with exponential backoff (axios-retry)
  *
  * API URL Configuration:
  * - Production (default): https://oysterette-production.up.railway.app/api
- * - iOS Simulator: http://localhost:3000/api
- * - Android Emulator: http://10.0.2.2:3000/api
- * - Physical Device: http://192.168.0.120:3000/api
+ * - Local development: set EXPO_PUBLIC_API_URL (see comment above API_URL below)
  *
  * Request Interceptor:
  * - Loads JWT token from authStorage
  * - Creates Authorization header if token exists
  * - Critical fix: Ensures headers object exists before setting
- * - Logs token presence and request details
  *
  * Response Interceptor:
  * - Handles 401 Unauthorized responses
@@ -66,28 +62,14 @@ import {
 import { authStorage } from './auth';
 
 // API URL Configuration
-// Choose the appropriate URL for your testing environment:
-
-// Production API (Railway)
+// Defaults to production (Railway). For local development, set EXPO_PUBLIC_API_URL
+// in mobile-app/.env, e.g.:
+//   EXPO_PUBLIC_API_URL=http://localhost:3000/api      (iOS simulator)
+//   EXPO_PUBLIC_API_URL=http://10.0.2.2:3000/api       (Android emulator)
+//   EXPO_PUBLIC_API_URL=http://<your-lan-ip>:3000/api  (physical device)
 const PRODUCTION_URL = 'https://oysterette-production.up.railway.app/api';
 
-// Development URLs (for local testing)
-const IOS_SIMULATOR_URL = 'http://localhost:3000/api';
-const ANDROID_EMULATOR_URL = 'http://10.0.2.2:3000/api';
-const PHYSICAL_DEVICE_URL = 'http://192.168.0.120:3000/api';
-
-// Automatically select based on environment
-const getApiUrl = (): string => {
-  // Use production by default for all builds
-  // To test locally, uncomment one of the lines below:
-  // return IOS_SIMULATOR_URL;
-  // return ANDROID_EMULATOR_URL;
-  // return PHYSICAL_DEVICE_URL;
-
-  return PRODUCTION_URL;
-};
-
-const API_URL = getApiUrl();
+export const API_URL = process.env.EXPO_PUBLIC_API_URL || PRODUCTION_URL;
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
@@ -125,25 +107,19 @@ axiosRetry(api, {
 api.interceptors.request.use(
   async (config) => {
     const token = await authStorage.getToken();
-    console.log('🔑 [API Interceptor] Token from storage:', token ? `${token.substring(0, 20)}...` : 'NULL');
-    console.log('🔑 [API Interceptor] Request URL:', config.url);
-    console.log('🔑 [API Interceptor] Headers before:', JSON.stringify(config.headers));
-
     if (token) {
       // Ensure headers object exists (critical fix!)
       if (!config.headers) {
         config.headers = new AxiosHeaders();
       }
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('✅ [API Interceptor] Authorization header set');
-      console.log('🔑 [API Interceptor] Headers after:', JSON.stringify(config.headers));
-    } else {
-      console.log('❌ [API Interceptor] No token available');
     }
     return config;
   },
   (error) => {
-    console.error('❌ [API Interceptor] Request error:', error);
+    if (__DEV__) {
+      console.error('❌ [API Interceptor] Request error:', error);
+    }
     return Promise.reject(error);
   }
 );

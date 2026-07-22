@@ -60,6 +60,9 @@ export function useOysterRating(id: string) {
     queryKey: queryKeys.oysterRating(id),
     queryFn: async () => {
       const oyster = await oysterApi.getById(id);
+      if (!oyster) {
+        throw new Error('Oyster not found');
+      }
       return {
         overallScore: oyster.overallScore,
         totalReviews: oyster.totalReviews,
@@ -207,6 +210,7 @@ export function useUpdateReview() {
     mutationFn: ({ reviewId, data }: { reviewId: string; data: any }) =>
       reviewApi.update(reviewId, data),
     onSuccess: (data, variables) => {
+      if (!data) return;
       // Invalidate all affected queries
       queryClient.invalidateQueries({ queryKey: queryKeys.oysterRating(data.oysterId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.oysterReviews(data.oysterId) });

@@ -32,7 +32,7 @@ Swagger (API docs UI): http://localhost:3000/api-docs (if enabled in backend)
 cd mobile-app
 npm start
 ```
-Press `i` (iOS) or `a` (Android). For local API, edit `mobile-app/src/services/api.ts` → uncomment `IOS_SIMULATOR_URL` or `ANDROID_EMULATOR_URL` instead of `PRODUCTION_URL`.
+Press `i` (iOS) or `a` (Android). For local API, create `mobile-app/.env` with `EXPO_PUBLIC_API_URL=http://localhost:3000/api` (iOS simulator), `http://10.0.2.2:3000/api` (Android emulator), or `http://<your-lan-ip>:3000/api` (physical device). Defaults to production when unset.
 
 ---
 
