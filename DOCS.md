@@ -27,7 +27,6 @@ Use this file to find the right doc. Prefer **CLAUDE.md** for day-to-day agent/d
 | [STYLE_GUIDE.md](STYLE_GUIDE.md) | Mobile patterns (constants, hooks, types) |
 | [REFACTORING_SUMMARY.md](REFACTORING_SUMMARY.md) | Refactor metrics (Nov 2025) |
 | [SESSION_LOGS.md](SESSION_LOGS.md) | Session-by-session history |
-| [SESSION_SUMMARY.md](SESSION_SUMMARY.md) | Legacy pointer → SESSION_LOGS |
 
 ---
 

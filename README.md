@@ -59,7 +59,7 @@ The app uses a sophisticated rating algorithm that weights user reviews against 
 | Component | Hosted On | URL | Status |
 |-----------|-----------|-----|--------|
 | **Database** | [Neon](https://neon.tech) | `ep-falling-shadow-ahmk229r-pooler.c-3.us-east-1.aws.neon.tech` | ✅ Live |
-| **Backend API** | [Railway](https://railway.app) | https://oysterette-production.up.railway.app | ✅ Live |
+| **Backend API** | [Railway](https://railway.app) | https://oysterette-production.up.railway.app | ⏸️ Paused (cost) — resume from Railway dashboard |
 | **Codebase** | [GitHub](https://github.com) | https://github.com/RichardGarza/oysterette | ✅ Public |
 | **Mobile App (Android)** | EAS Build | [Download APK](https://expo.dev/accounts/rgactr/projects/oysterette/builds/45f05f60-fe6d-4fe3-bfbb-9da657b2c7e1) | ✅ Available |
 | **Mobile App (Updates)** | EAS Update | Automatic OTA updates | ✅ Active |

@@ -1,8 +1,8 @@
 # Oysterette — Project Status
 
-**Last updated:** June 15, 2026  
+**Last updated:** July 21, 2026  
 **Version:** 2.0.0  
-**Overall:** Production-ready · **626/626 tests passing**
+**Overall:** Production-ready · **626/626 tests passing** · CI green on every push
 
 ---
 
@@ -11,7 +11,8 @@
 | Component | Host | Status |
 |-----------|------|--------|
 | PostgreSQL | Neon | Live · **131 unique oysters** |
-| API | Railway (`main`) | Live |
+| API | Railway (`main`) | **Paused intentionally (cost)** — resume from dashboard; pending migrations apply on next deploy |
+| CI | GitHub Actions | Backend (Postgres service + migrations) · mobile · web on every push |
 | Mobile | EAS Build / Update | OTA branch: **`production`** |
 | Web | Next.js in `backend/web-app` | Full Jest coverage |
 

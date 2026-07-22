@@ -36,6 +36,15 @@
 
 - Backend 388/388 · Mobile 86/86 · Web 152/152; web `next build` compiles clean. Mobile `tsc --noEmit` has 73 pre-existing errors (untouched by this session).
 
+### Afternoon — first CI runs exposed 8 months of schema drift
+
+- **First-ever CI run failed backend**: migration history stopped at `add_username` (Nov 2025) while Phases 20–23 (gamification, social, baseline flavor, OAuth, privacy) were applied to Neon via `prisma db push` only — CI's fresh DB lacked ~30 `users` columns, 3 tables (`friendships`, `achievements`, `user_achievements`), and the `ReviewRating` `WHATEVER→OKAY` rename.
+- **`backend/prisma/migrations/20260721000000_reconcile_dbpush_drift/`** (`a210438`): idempotent catch-up migration (`IF NOT EXISTS` / `pg_enum` guards). Verified locally three ways: fresh replay → zero drift vs `schema.prisma`; simulated-Neon (db-push replica) → clean no-op twice; seeded `WHATEVER` rows convert to `OKAY`. Will no-op safely on Neon at next deploy.
+- **`oysters.test.ts`** (`7d454d2`): fuzzy-overlap test assumed an oyster in the 4–6 sweetness window (true on seeded dev DBs, order-dependent in CI). Added dedicated fixture; suite passes standalone on an empty DB.
+- **CI green** (run `29881962956`): backend + web + mobile all passing. ⚠️ Known risk: backend integration suites share one DB; several implicitly assume data from other suites — one unreproduced 2-failure run observed locally.
+- **Railway intentionally shut down** (cost) — API URL returns Railway's 404 fallback until resumed. Redeploy from `main` picks everything up; catch-up migration runs then.
+- **`.claude/launch.json`**: dev-server configs (backend-api 3000 · web-app 3001 · mobile-expo 8081).
+
 ---
 
 ## SESSION: June 15–16, 2026 — Docs, Phase 26 UX, local dev fix

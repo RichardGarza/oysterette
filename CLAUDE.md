@@ -119,7 +119,8 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 
 **Infrastructure:**
 - Database: Neon PostgreSQL (131 unique oysters)
-- Backend: Railway (auto-deploy from GitHub)
+- Backend: Railway (auto-deploy from GitHub) — paused July 2026 (cost)
+- CI: GitHub Actions (backend + mobile + web on every push)
 - Mobile: EAS Build + OTA Updates
 - Security: Rate limiting, validation, JWT, Sentry
 
@@ -135,38 +136,16 @@ npm test 2>&1 | tail -30  # MANDATORY truncation, timeout: 120000
 - Social features (friends, activity feed, paired recommendations)
 - Gamification (XP system, levels, achievements, leaderboard)
 
-**Quality:**
-- Backend: 388/388 tests passing (100%) ✅ - 25/25 suites passing ✅
-  - ✅ Unit tests, integration tests, compilation tests
-- Mobile: 86/86 tests passing (100%) ✅ - 13/13 suites passing ✅
-  - ✅ Component tests: ProfileUsername (4), ReviewCardUsername (2), Menu (3), AROverlay (2), ProfileScreenPublic (3)
-  - ✅ Integration tests: RegisterUsername (3), navigation (3), oysterApi (3), ARScanner (3)
-  - ✅ Screen tests: LoginScreen, FriendFavoritesScreen, OysterListScreen
-  - ✅ Hook tests: useQueries
-- Web App: 152/152 tests passing (100%) ✅ - 28/28 suites passing ✅
-  - ✅ Page tests: Login (5), Register (5), PublicProfile (13), Home (4), OysterList (6), OysterDetail (6), Profile (5), AddReview (11), Friends (5), XPStats (5), Favorites (5), TopOysters (5), Settings (6), PrivacySettings (6), ProfileReviews (6), PairedMatches (4), AddOyster (5), UserReviews (3), UserFavorites (3), UserFriends (3)
-  - ✅ Component tests: Header (6), ReviewCard (5), RatingDisplay (3), EmptyState (4), LoadingSpinner (4), GoogleSignInButton (3)
-  - ✅ Utility tests: FlavorLabels (11), API client structure (5)
-  - **Test Coverage: 100% (152/152 target)** 🎉 - See backend/web-app/TESTING_ROADMAP.md
-- **ALL TESTS PASSING ACROSS PROJECT** - 626/626 tests (100%) ✅
+**Quality:** 626/626 tests passing (backend 388/25 suites · mobile 86/13 · web 152/28) ✅ — enforced by CI on every push. Per-suite breakdown: [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
-**Compliance:**
-- Apple App Store: 95% ready
-- Google Play Store: 100% documentation-ready
+**Compliance:** Apple App Store ~95% ready; Google Play docs ready.
 
-**Recent Completions:**
-- Phase 22: Gamification & XP System (XP, levels, achievements, notifications)
-- Phase 21: Social Features (friend system, activity feed, paired matches)
-- Phase 20: AR Menu Scanner (OCR, fuzzy matching, unmatched detection)
-- Phase 23: Enhanced Flavor Profile Visualization (ranges, tooltips)
-- Phase 26 (In Progress): Production & launch polish (~85% — see ROADMAP.md)
+**Phases:** 20–23 shipped (AR scanner, social, gamification, flavor viz); Phase 26 launch polish in progress (~85% — see ROADMAP.md).
 
-**Latest Session (June 15–16, 2026):**
-- Docs: [DOCS.md](DOCS.md), [AGENTS.md](AGENTS.md), [ROADMAP.md](ROADMAP.md), [PROJECT_STATUS.md](PROJECT_STATUS.md), local dev in [QUICK_START.md](QUICK_START.md)
-- Backend: `oysterController` `FILTER_CONFIG.CENTER` fix (local `npm run dev`)
-- Mobile Phase 26: suggest-oyster auth/copy, Add Oyster scroll/safe area, OysterList instant nav + back → Home — see [SESSION_LOGS.md](SESSION_LOGS.md)
-
-**Nov 2025 (summary):** Web app tests → 152/152; project total 626/626. Production UX fixes (photos, dark mode, filters, XP reload, logos). Details: [SESSION_LOGS.md](SESSION_LOGS.md).
+**Latest Session (July 21, 2026):**
+- CI/CD: working GitHub Actions workflow at repo root (backend w/ Postgres service, mobile, web) — first runs exposed and fixed 8 months of schema drift
+- Backend: idempotent catch-up migration for all `db push`-only changes (Phases 20–23); fuzzy-overlap test made self-sufficient
+- Mobile: JWT → expo-secure-store (needs new EAS build); web `next build` repaired — see [SESSION_LOGS.md](SESSION_LOGS.md)
 
 **Next Tasks:** [ROADMAP.md](ROADMAP.md) — AR polish, device QA, store screenshots, TestFlight/Play internal testing
 
@@ -225,17 +204,18 @@ git push origin main               # Deploy (triggers Railway)
    - SENTRY_DSN - OPTIONAL (error tracking)
 2. **API URL:** Production: `https://oysterette-production.up.railway.app/api`
 3. **Testing:** All tests must pass before push
-4. **Railway:** Auto-deploys from main, $5/month credit, auto-sleeps
-5. **Neon:** 3GB storage, auto-sleeps
-6. **Redis:** Optional (recommendations use in-memory cache if unavailable)
-7. **Session Logs:** See SESSION_LOGS.md for detailed session history
-8. **Roadmap:** See ROADMAP.md for future feature planning
-9. **OTA Updates:** ALWAYS deploy to `production` branch: `eas update --branch production --message "msg"`
+4. **Railway:** Auto-deploys from main, $5/month credit, auto-sleeps. **Currently shut down intentionally (cost)** — resume from Railway dashboard; next deploy applies pending migrations automatically
+5. **Schema changes:** ALWAYS create a migration (`npx prisma migrate dev --name <name>`) — NEVER bare `db push`. Drift between Neon and `prisma/migrations/` broke CI for every environment built from scratch (fixed July 2026 via catch-up migration)
+6. **Neon:** 3GB storage, auto-sleeps
+7. **Redis:** Optional (recommendations use in-memory cache if unavailable)
+8. **Session Logs:** See SESSION_LOGS.md for detailed session history
+9. **Roadmap:** See ROADMAP.md for future feature planning
+10. **OTA Updates:** ALWAYS deploy to `production` branch: `eas update --branch production --message "msg"`
 
 ---
 
-**Last Updated:** June 15, 2026
-**Backend:** Live on Railway ✅
+**Last Updated:** July 21, 2026
+**Backend:** Railway paused intentionally (cost) — resume from dashboard; CI green ✅
 **Database:** Live on Neon (131 unique oysters) ✅
 **Tests:** 626/626 passing (100%) ✅
   - Backend: 388/388 ✅
